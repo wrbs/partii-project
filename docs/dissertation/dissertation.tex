@@ -1,0 +1,25 @@
+% !TEX program xelatex
+
+\documentclass[12pt,a4paper,twoside,headings=standardclasses,titlepage]{scrreprt}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{kpfonts}
+\usepackage{graphicx,pict2e}
+\usepackage{fancybox,multido}
+
+\usepackage{biblatex}
+\addbibresource{../bib.bib}
+
+\begin{document}
+
+\include{src/0_frontmatter}
+\include{src/1_introduction}
+\include{src/2_preparation}
+\include{src/3_implementation}
+\include{src/4_evaluation}
+\include{src/5_conclusions}
+\include{src/6_endmatter}
+
+\end{document}
