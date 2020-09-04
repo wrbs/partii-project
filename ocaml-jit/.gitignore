@@ -13,6 +13,13 @@
 #*                                                                        *
 #**************************************************************************
 
+# rust jit special
+
+/runtime/jit_objects_debug
+/runtime/jit_objects_release
+/runtime/libocamljit.a
+/runtime/libocamljit_debug.a
+
 # general patterns
 
 *.o

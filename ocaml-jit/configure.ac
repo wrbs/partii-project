@@ -167,6 +167,7 @@ AC_SUBST([flexdll_chain])
 AC_SUBST([flexlink_flags])
 AC_SUBST([PACKLD])
 AC_SUBST([stdlib_manpages])
+AC_SUBST([use_rust_jit])
 
 ## Generated files
 
@@ -404,6 +405,11 @@ AS_IF([test x"$enable_unix_lib" = "xno" -o x"$enable_str_lib" = "xno"],
      with_camltex=""])],
   [with_camltex="true"])
 
+# Custom rust JIT
+AC_ARG_ENABLE([rust-jit],
+  [AS_HELP_STRING([--enable-rust-jit],
+    [enable the Rust-using JIT])])
+
 # Initialization of libtool
 # Allow the MSVC linker to be found even if ld isn't installed.
 # User-specified LD still takes precedence.
@@ -411,7 +417,9 @@ AC_CHECK_TOOLS([LD],[ld link])
 # libtool expects host_os=mingw for native Windows
 old_host_os=$host_os
 AS_IF([test x"$host_os" = "xwindows"],[host_os=mingw])
+
 LT_INIT
+
 host_os=$old_host_os
 
 # Extracting information from libtool's configuration
@@ -622,6 +630,18 @@ AS_CASE([$host],
 AS_CASE([$host],
   [*-*-mingw32|*-pc-windows], [],
   [common_cppflags="$common_cppflags -D_FILE_OFFSET_BITS=64"])
+
+# Check for rust
+
+AS_IF([test "x$enable_rust_jit" = "xyes"], [
+  use_rust_jit=true
+  AC_DEFINE([USE_RUST_JIT]) 
+  # Disable shared libraries, they don't work
+  enable_shared=no
+],
+  use_rust_jit=false
+)
+
 
 # Adjust according to target
 

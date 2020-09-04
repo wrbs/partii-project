@@ -1,0 +1,11 @@
+[package]
+name = "ocaml-jit-staticlib"
+version = "0.1.0"
+authors = ["Will Robson <will@willrobson.uk>"]
+edition = "2018"
+license = "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
+
+[lib]
+crate_type = ["staticlib"]
+
+[dependencies]

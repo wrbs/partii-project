@@ -1,0 +1,5 @@
+[workspace]
+
+members = [
+    "ocaml-jit-staticlib"
+]

@@ -336,7 +336,11 @@ extern int caml_ensure_spacetime_dot_o_is_included;
 
 /* Main entry point when loading code from a file */
 
+#ifdef USE_RUST_JIT
+CAMLexport void caml_byt_main(char_os **argv)
+#else
 CAMLexport void caml_main(char_os **argv)
+#endif
 {
   int fd, pos;
   struct exec_trailer trail;

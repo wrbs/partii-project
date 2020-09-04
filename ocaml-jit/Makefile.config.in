@@ -208,6 +208,7 @@ EXTRALIBS=@extralibs@
 CCOMPTYPE=@ccomptype@
 TOOLCHAIN=@toolchain@
 CMXS=@cmxs@
+CARGO=@CARGO@
 
 # On Windows, MKDLL, MKEXE and MKMAINDLL must ultimately be equivalent to
 #   $(FLEXLINK_CMD) $(FLEXLINK_FLAGS) [-exe|-maindll]
@@ -247,6 +248,7 @@ FLAT_FLOAT_ARRAY=@flat_float_array@
 FUNCTION_SECTIONS=@function_sections@
 AWK=@AWK@
 STDLIB_MANPAGES=@stdlib_manpages@
+USE_RUST_JIT=@use_rust_jit@
 
 
 ### Native command to build ocamlrun.exe
