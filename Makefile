@@ -1,6 +1,6 @@
 # Entrypoint for all the tooling set up
 
--include Makefile.Shared
+-include Makefile.shared
 
 OCAML_DIR := ocaml-jit
 OCAML_STATIC_LIBS := $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB) $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
@@ -15,12 +15,10 @@ STATIC_LIB_FILE := libocaml_jit_staticlib.a
 # ============
 
 .PHONY: all
-all: ocaml_all
-
-.PHONY: ocaml_all
-ocaml_all: $(OCAML_STATIC_LIBS)
+all:
+	make cargo_builds
 	make -C $(OCAML_DIR)
-
+		
 .PHONY: ocamltests
 ocamltests:
 	make -C $(OCAML_DIR) tests
@@ -39,6 +37,13 @@ fullclean:
 setup: fullclean
 	cd $(OCAML_DIR) && ./configure --enable-rust-jit
 
+.PHONY: cargo_builds
+cargo_builds:
+	cd $(STATIC_LIB_CRATE) && cargo build
+	cd $(STATIC_LIB_CRATE) && cargo build --release
+	cp $(DEBUG_TARGET)/$(STATIC_LIB_FILE) $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB)
+	cp $(RELEASE_TARGET)/$(STATIC_LIB_FILE) $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
+
 # Static lib
 # ==========
 #
@@ -49,14 +54,3 @@ $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB): $(DEBUG_TARGET)/$(STATIC_LIB_FILE)
 
 $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB): $(RELEASE_TARGET)/$(STATIC_LIB_FILE)
 	cp $< $@
-
-$(DEBUG_TARGET)/$(STATIC_LIB_FILE): cargo_debug_build
-$(RELEASE_TARGET)/$(STATIC_LIB_FILE): cargo_release_build
-
-.PHONY: cargo_debug_build
-cargo_debug_build:
-	cd $(STATIC_LIB_CRATE) && cargo build
-
-.PHONY: cargo_release_build
-cargo_release_build:
-	cd $(STATIC_LIB_CRATE) && cargo build --release
