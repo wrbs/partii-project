@@ -636,8 +636,6 @@ AS_CASE([$host],
 AS_IF([test "x$enable_rust_jit" = "xyes"], [
   use_rust_jit=true
   AC_DEFINE([USE_RUST_JIT]) 
-  # Disable shared libraries, they don't work
-  enable_shared=no
 ],
   use_rust_jit=false
 )

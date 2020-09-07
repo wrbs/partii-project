@@ -2,6 +2,7 @@ mod caml;
 
 #[no_mangle]
 pub extern "C" fn caml_main(args: *mut *mut caml::char_os) {
+    println!("Starting");
     unsafe { caml::byt_main(args); }
 }
 

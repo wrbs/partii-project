@@ -76,9 +76,9 @@ endif
 
 ifeq "$(UNIX_OR_WIN32)" "unix"
 ifeq "$(SUPPORTS_SHARED_LIBRARIES)" "true"
-ifeq "$(USE_RUST_JIT)" "true"
-$(error "No shared librarires for Rust JIT - I can't get the linker to work")
-endif
+# ifeq "$(USE_RUST_JIT)" "true"
+# $(error "No shared librarires for Rust JIT - I can't get the linker to work")
+# endif
 
 BYTECODE_STATIC_LIBRARIES += libcamlrun_pic.$(A)
 BYTECODE_SHARED_LIBRARIES += libcamlrun_shared.$(SO)
@@ -344,11 +344,21 @@ libcamlruni.$(A): $(libcamlruni_OBJECTS)
 	$(call MKLIB,$@, $^)
 endif
 
+ifeq "$(USE_RUST_JIT)" "true"
+libcamlrun_pic.$(A): $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
+	$(call MKLIB,$@, $^ $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o)
+else
 libcamlrun_pic.$(A): $(libcamlrunpic_OBJECTS)
 	$(call MKLIB,$@, $^)
+endif
 
+ifeq "$(USE_RUST_JIT)" "true"
+libcamlrun_shared.$(SO): $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
+	$(MKDLL) -o $@ $^ $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o $(BYTECCLIBS)
+else
 libcamlrun_shared.$(SO): $(libcamlrunpic_OBJECTS)
 	$(MKDLL) -o $@ $^ $(BYTECCLIBS)
+endif
 
 libasmrun.$(A): $(libasmrun_OBJECTS)
 	$(call MKLIB,$@, $^)
