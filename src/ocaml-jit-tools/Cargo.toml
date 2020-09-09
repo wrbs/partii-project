@@ -1,0 +1,17 @@
+[package]
+name = "ocaml-jit-tools"
+version = "0.1.0"
+authors = ["Will Robson <will@willrobson.uk>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3"
+ocaml-bytecode = { path = "../ocaml-bytecode" }
+pretty-hex = "0.2"
+prettytable-rs = "0.8"
+colored = "2"
+
+[target.'cfg(target_family = "unix")'.dependencies]
+nix = "0.18.0"

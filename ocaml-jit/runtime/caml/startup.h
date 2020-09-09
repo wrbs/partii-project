@@ -23,6 +23,10 @@
 
 CAMLextern void caml_main(char_os **argv);
 
+#ifdef USE_RUST_JIT
+CAMLextern void ocaml_jit_on_startup();
+#endif
+
 CAMLextern void caml_startup_code(
            code_t code, asize_t code_size,
            char *data, asize_t data_size,

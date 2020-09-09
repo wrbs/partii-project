@@ -236,7 +236,7 @@ $(RUST_JIT_DEBUG_OBJECT_DIR)/.d: $(RUST_JIT_DEBUG_LIB)
 	cd $(RUST_JIT_DEBUG_OBJECT_DIR) && ar x ../$(RUST_JIT_DEBUG_LIB)
 	touch $(RUST_JIT_DEBUG_OBJECT_DIR)/.d
 
-$(RUST_JIT_RELEASE_OBJECT_DIR)/.d: $(RUST_JIT_RELEASE__IB)
+$(RUST_JIT_RELEASE_OBJECT_DIR)/.d: $(RUST_JIT_RELEASE_LIB)
 	rm -rf $(RUST_JIT_RELEASE_OBJECT_DIR)
 	mkdir $(RUST_JIT_RELEASE_OBJECT_DIR)
 	cd $(RUST_JIT_RELEASE_OBJECT_DIR) && ar x ../$(RUST_JIT_RELEASE_LIB)
@@ -343,7 +343,7 @@ endif
 
 ifeq "$(USE_RUST_JIT)" "true"
 libcamlrun_pic.$(A): $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
-	$(call MKLIB,$@, $^ $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o)
+	$(call MKLIB,$@, $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o)
 else
 libcamlrun_pic.$(A): $(libcamlrunpic_OBJECTS)
 	$(call MKLIB,$@, $^)
@@ -351,7 +351,7 @@ endif
 
 ifeq "$(USE_RUST_JIT)" "true"
 libcamlrun_shared.$(SO): $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
-	$(MKDLL) -o $@ $^ $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o $(BYTECCLIBS)
+	$(MKDLL) -o $@ $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o $(BYTECCLIBS)
 else
 libcamlrun_shared.$(SO): $(libcamlrunpic_OBJECTS)
 	$(MKDLL) -o $@ $^ $(BYTECCLIBS)

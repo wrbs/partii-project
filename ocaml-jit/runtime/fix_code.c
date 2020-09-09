@@ -34,6 +34,7 @@
 #include "caml/misc.h"
 #include "caml/mlvalues.h"
 #include "caml/reverse.h"
+#include "caml/interp.h"
 
 code_t caml_start_code;
 asize_t caml_code_size;
@@ -67,6 +68,7 @@ void caml_load_code(int fd, asize_t len)
 #ifdef THREADED_CODE
   caml_thread_code(caml_start_code, caml_code_size);
 #endif
+    caml_prepare_bytecode(caml_start_code, caml_code_size);
 }
 
 /* This code is needed only if the processor is big endian */

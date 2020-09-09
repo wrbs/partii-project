@@ -15,6 +15,7 @@
 
 #define CAML_INTERNALS
 
+
 /* The bytecode interpreter */
 #include <stdio.h>
 #include "caml/alloc.h"
@@ -34,6 +35,7 @@
 #include "caml/signals.h"
 #include "caml/stacks.h"
 #include "caml/startup_aux.h"
+
 
 /* Registers for the abstract machine:
         pc         the code pointer
@@ -211,7 +213,11 @@ static intnat caml_bcodcount;
 
 /* The interpreter itself */
 
+#ifdef USE_RUST_JIT
+value actual_caml_interprete(code_t prog, asize_t prog_size)
+#else
 value caml_interprete(code_t prog, asize_t prog_size)
+#endif
 {
 #ifdef PC_REG
   register code_t pc PC_REG;
@@ -249,6 +255,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
 
   if (prog == NULL) {           /* Interpreter is initializing */
 #ifdef THREADED_CODE
+      printf("Threaded!\n");
     caml_instr_table = (char **) jumptable;
     caml_instr_base = Jumptbl_base;
 #endif
@@ -1182,6 +1189,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
 #endif
 }
 
+#ifndef USE_RUST_JIT
 void caml_prepare_bytecode(code_t prog, asize_t prog_size) {
   /* other implementations of the interpreter (such as an hypothetical
      JIT translator) might want to do something with a bytecode before
@@ -1198,3 +1206,5 @@ void caml_release_bytecode(code_t prog, asize_t prog_size) {
   CAMLassert(prog);
   CAMLassert(prog_size>0);
 }
+
+#endif // USE_RUST_JIT

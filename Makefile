@@ -5,20 +5,34 @@
 OCAML_DIR := ocaml-jit
 OCAML_STATIC_LIBS := $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB) $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
 
-DEBUG_TARGET := target/debug
-RELEASE_TARGET := target/debug
+RUST_DIR := src
 
-STATIC_LIB_CRATE := ocaml-jit-staticlib
+DEBUG_TARGET := $(RUST_DIR)/target/debug
+RELEASE_TARGET := $(RUST_DIR)/target/debug
+
+STATIC_LIB_CRATE := $(RUST_DIR)/ocaml-jit-staticlib
 STATIC_LIB_FILE := libocaml_jit_staticlib.a
+
+BUILT_DIR := dist
+
+RESOURCES_DIR := resources
 
 # Main targets
 # ============
+
+.PHONY: only_runtime
+runtime_only:
+	make cargo_builds
+	make -C $(OCAML_DIR)/runtime
+	make -C $(OCAML_DIR) install
 
 .PHONY: all
 all:
 	make cargo_builds
 	make -C $(OCAML_DIR)
-		
+	make -C $(OCAML_DIR) install
+	make -C $(RESOURCES_DIR) all
+
 .PHONY: ocamltests
 ocamltests:
 	make -C $(OCAML_DIR) tests
@@ -26,16 +40,18 @@ ocamltests:
 .PHONY: clean
 clean:
 	make -C $(OCAML_DIR) clean
-	cargo clean
+	rm -rf $(BUILT_DIR)
+	cd $(RUST_DIR) && cargo clean
+	make -C $(RESOURCES_DIR) clean
 
 .PHONY: fullclean
-fullclean:
+fullclean: clean
 	make -C $(OCAML_DIR) distclean
-	cargo clean
 
 .PHONY: setup
 setup: fullclean
-	cd $(OCAML_DIR) && ./configure --enable-rust-jit
+	cd $(OCAML_DIR) && ./configure --enable-rust-jit --prefix=$(abspath .)/$(BUILT_DIR)
+	echo "BUILT_DIR_ABS=$(abspath .)/$(BUILT_DIR)" > Makefile.toolchain
 
 .PHONY: cargo_builds
 cargo_builds:
