@@ -2,6 +2,25 @@
 
 ## Initial setup
 
+### Requirements
+
+You'll need to be on either Linux or macOS. If on Windows, use WSL. Install
+the basics you'll need to build packages on your system.
+
+Install rust: https://www.rust-lang.org/tools/install
+
+### Optional
+
+Install nodejs and `npm install -g prettier`. It's for autoformatting markdown
+files.
+
+Install clippy and rustfmt:
+
+    rustup component add clippy
+    rustup component add rustfmt
+
+### Instructions
+
 Make sure you have rust installed (google it) and enough build basics for OCaml
 
 Then run
@@ -19,7 +38,7 @@ to build everything (including OCaml). This will take a while. If you have a
 multicore processor using
 
     MAKEFLAGS="-j {number of threads}" make all
-    
+
 helps a lot.
 
 However, in most development iterations you can probably get away with only
@@ -33,22 +52,22 @@ of JIT compilation to replace the OCaml bytecode interpreter.
 ### Directory contents
 
 - `ocmal-jit`: a fork of the OCaml compiler's source tree. The bits of
-   interest for this project are in:
-    - `ocaml-jit/runtime` - the runtime C library
+  interest for this project are in:
+  - `ocaml-jit/runtime` - the runtime C library
 - `src`: main Rust source for the project. There are a few different Rust
   crates included:
-    - `src/ocaml-jit-staticlib`: the static library that links into the OCaml
-      runtime providing the JIT
-    - `src/ocaml-jit-tools`: standalone tools for testing and debugging the
-      core without having to go through the OCaml runtime
-    - `src/ocaml-bytecode`: depended on by both of these files, it contains
-      the core logic
+  - `src/ocaml-jit-staticlib`: the static library that links into the OCaml
+    runtime providing the JIT
+  - `src/ocaml-jit-tools`: standalone tools for testing and debugging the
+    core without having to go through the OCaml runtime
+  - `src/ocaml-bytecode`: depended on by both of these files, it contains
+    the core logic
 - `docs`: dissertation LaTeX source
 - `resources`: test files
 - `dist`: once you run the setup, this is used as the prefix for OCaml's
-  `make install`.  You, using `export PATH="$PWD/dist/bin:$PATH` (or absolute
-   paths to binaries) and our Makefiles can then use our custom compiler
-   version.
+  `make install`. You, using `export PATH="$PWD/dist/bin:$PATH` (or absolute
+  paths to binaries) and our Makefiles can then use our custom compiler
+  version.
 
 ### Bytecode vs native code
 
@@ -58,9 +77,9 @@ bytecode compiler in most actual uses is
 1. running the toplevel (REPL)
 2. bootstrapping the OCaml compiler
 3. as an easier target for experimenting with new compiler features before
- having to write platform-specific codegen
-4 m.akes porting OCaml to new platforms is easier as only (already fairly
- portable) C needs to be ported before needing to do the work on 
+   having to write platform-specific codegen
+   4 m.akes porting OCaml to new platforms is easier as only (already fairly
+   portable) C needs to be ported before needing to do the work on
 
 Experimenting with making a JIT is could be an improvement to the first 2 of
 these.
@@ -101,7 +120,7 @@ reading either [this project's rust parser](src/ocaml-bytecode/src/trailer.rs)
 or looking into the compiler's source. However, it's very simple:
 
 It consists of a trailer (at the end of the file) with a magic number and a
-count of the number of *sections* in the file. Based on the number of
+count of the number of _sections_ in the file. Based on the number of
 sections, it reads a table of contents section immediately preceding
 that containing `(section name (4*u8), section length)` tuples. These
 sections are assumed to be packed in order immediately preceding the table
@@ -115,7 +134,7 @@ format of `#!` of any length, or even another stub for other platforms.
 - `CODE`: Bytecode
 - `DATA`: Initial global data
 - `PRIMS`: names of imported C primitives used by the program (which later
- refers to them by number).
+  refers to them by number).
 - some other stuff for debugging and shared library loading
 
 ### Startup
@@ -129,7 +148,7 @@ bytecode element to read.
 ### The toplevel
 
 The toplevel is the OCaml name for the REPL prompt allowing interactive
-development and testing of OCaml. 
+development and testing of OCaml.
 
 It works by compiling the code you write to bytecode and using some
 meta-features in the runtime (`meta.c`, `Meta` compiler module) to execute it
@@ -174,11 +193,11 @@ To run the OCaml tests run
 To clean up run
 
     make clean
-    
+
 To clean up and also remove the configure stuff
 
     make fullclean
-    
+
 If you make changes to the ocaml configure scripts (`configure.ac`)
 
     cd ocaml-jit && autoconf

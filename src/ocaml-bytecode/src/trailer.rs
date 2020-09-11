@@ -6,7 +6,7 @@ use io::{Read, Seek};
 
 use crate::error::ParseFileError;
 
-pub const EXEC_MAGIC: &[u8] = "Caml1999X028".as_bytes();
+pub const EXEC_MAGIC: &[u8] = b"Caml1999X028";
 pub const EXEC_MAGIC_LENGTH: usize = EXEC_MAGIC.len();
 pub const TRAILER_LENGTH: usize = 4 + EXEC_MAGIC_LENGTH;
 
@@ -31,7 +31,7 @@ pub fn parse_trailer(f: &mut File) -> Result<Trailer, ParseFileError> {
     if f.read(&mut read_magic)? != EXEC_MAGIC_LENGTH {
         return Err(ParseFileError::BadSize("could not read magic"));
     }
-    if &read_magic != EXEC_MAGIC {
+    if read_magic != EXEC_MAGIC {
         return Err(ParseFileError::WrongMagic);
     }
 
@@ -76,7 +76,7 @@ impl Trailer {
     pub fn find_section(&self, name: &str) -> Option<&SectionEntry> {
         let name_bytes = name.as_bytes();
 
-        return self.sections.iter().find(|s| s.name == name_bytes);
+        self.sections.iter().find(|s| s.name == name_bytes)
     }
 
     pub fn find_required_section(

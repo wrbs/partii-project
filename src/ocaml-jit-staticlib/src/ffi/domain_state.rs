@@ -68,6 +68,7 @@ extern "C" {
     static CAML_STATE: *mut DomainState;
 }
 
+#[allow(dead_code)]
 pub fn get_stack_low() -> Value {
     unsafe { *(*CAML_STATE).stack_low }
 }

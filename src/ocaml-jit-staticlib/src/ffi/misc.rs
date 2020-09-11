@@ -1,6 +1,5 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
-use std::panic;
 
 extern "C" {
     fn caml_fatal_error(s: *const c_char, ...) -> !;

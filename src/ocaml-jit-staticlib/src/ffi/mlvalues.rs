@@ -19,7 +19,7 @@ impl Value {
 }
 
 impl HeaderPointer {
-    fn to_value(&self) -> Value {
+    pub fn to_value(&self) -> Value {
         Value(self.0 as i64)
     }
 }
@@ -29,6 +29,7 @@ impl HeaderPointer {
 extern "C" {
     static mut caml_atom_table: [u64; 255];
 }
+
 impl Value {
     pub fn atom(tag: Tag) -> Value {
         // This is safe in the context of the runtime, because this table is statically allocated

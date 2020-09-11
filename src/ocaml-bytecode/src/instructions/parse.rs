@@ -1,5 +1,3 @@
-use std::io::Read;
-
 use super::types::*;
 use crate::Opcode;
 use std::iter::Peekable;
@@ -233,8 +231,6 @@ fn get_instruction<I: Iterator<Item = i32>>(context: &mut ParseContext<I>) -> Op
         Opcode::Stop => Instruction::Stop,
         Opcode::Break => Instruction::Break,
         Opcode::Event => Instruction::Event,
-
-        _ => return None,
     })
 }
 
@@ -256,7 +252,7 @@ impl<I: Iterator<Item = i32>> ParseContext<I> {
     }
 
     fn i32(&mut self) -> Option<i32> {
-        let v = self.iter.next()?.into();
+        let v = self.iter.next()?;
         self.position += 1;
         Some(v)
     }
@@ -290,7 +286,7 @@ impl<I: Iterator<Item = i32>> ParseContext<I> {
             result.push(self.label_at(position)?);
         }
 
-        return Some(result);
+        Some(result)
     }
 
     fn primitive(&mut self) -> Option<usize> {

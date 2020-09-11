@@ -3,7 +3,7 @@ use crate::instructions::parse_instructions;
 use crate::trailer::Trailer;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read};
+use std::io::BufReader;
 
 const CODE_SECTION: &str = "CODE";
 
@@ -27,11 +27,11 @@ pub fn parse_bytecode(f: &mut File, trailer: &Trailer) -> Result<Vec<()>, ParseF
         words.push(section_read.read_i32::<LittleEndian>()?);
     }
 
-    let mut instructions = parse_instructions(words.iter().map(|x| *x)).unwrap();
+    let instructions = parse_instructions(words.iter().copied()).unwrap();
 
     for (loc, instruction) in instructions {
         println!("{:8}: {:?}", loc, instruction);
     }
 
-    return Ok(vec![]);
+    Ok(vec![])
 }

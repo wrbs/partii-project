@@ -60,6 +60,34 @@ cargo_builds:
 	cp $(DEBUG_TARGET)/$(STATIC_LIB_FILE) $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB)
 	cp $(RELEASE_TARGET)/$(STATIC_LIB_FILE) $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
 
+# Autoformatting
+# ==============
+
+.PHONY: format
+format: prettier rustfmt
+
+.PHONY: prettier
+prettier:
+	if command -v prettier &>/dev/null; then \
+		prettier -w .; \
+	else \
+		echo Prettier not found, install it with npm; \
+	fi
+
+.PHONY: rustfmt
+rustfmt:
+	cd $(RUST_DIR) && cargo fmt
+
+
+# Linting
+# =======
+
+.PHONY: lint
+lint:
+	prettier --check .
+	cd $(RUST_DIR) && cargo clippy --all
+
+
 # Static lib
 # ==========
 #

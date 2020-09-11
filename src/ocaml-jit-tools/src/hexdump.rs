@@ -1,6 +1,6 @@
 use crate::utils::{die, die_dyn};
 use colored::Colorize;
-use ocaml_bytecode::trailer::{parse_trailer, SectionEntry, TRAILER_LENGTH};
+use ocaml_bytecode::trailer::{parse_trailer, TRAILER_LENGTH};
 use pretty_hex::PrettyHex;
 use prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE;
 use prettytable::Table;
@@ -78,7 +78,7 @@ fn run_exn(options: Options) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn print_overview_table(sections: &Vec<ParsedSection>) {
+fn print_overview_table(sections: &[ParsedSection]) {
     let mut table = Table::new();
     table.set_format(*FORMAT_NO_LINESEP_WITH_TITLE);
     table.set_titles(row![b => "Section", "Offset", "Length"]);
@@ -92,7 +92,7 @@ fn print_overview_table(sections: &Vec<ParsedSection>) {
     table.printstd();
 }
 
-fn print_hexdumps(f: &mut File, sections: &Vec<ParsedSection>) -> io::Result<()> {
+fn print_hexdumps(f: &mut File, sections: &[ParsedSection]) -> io::Result<()> {
     for (idx, section) in sections.iter().enumerate() {
         if idx != 0 {
             println!();

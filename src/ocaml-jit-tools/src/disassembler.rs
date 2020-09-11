@@ -1,7 +1,7 @@
 use crate::utils::die;
 use colored::Colorize;
 use ocaml_bytecode::parse_bytecode_file;
-use std::error::Error;
+
 use std::fs::File;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -21,7 +21,7 @@ pub fn run(options: Options) {
     show_primitives(&bcf.primitives);
 }
 
-fn show_primitives(primitives: &Vec<String>) {
+fn show_primitives(primitives: &[String]) {
     println!("{}", "Primitives:".red().bold());
     for primitive in primitives {
         println!("{}", primitive)

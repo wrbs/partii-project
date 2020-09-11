@@ -24,7 +24,7 @@ pub extern "C" fn caml_prepare_bytecode(prog: *const i32, prog_size: usize) {
         let code_slice = unsafe { slice::from_raw_parts(prog, prog_size / 4) };
 
         let e1;
-        match parse_instructions(code_slice.iter().map(|x| *x)) {
+        match parse_instructions(code_slice.iter().copied()) {
             Some(instructions) => {
                 e1 = now.elapsed();
                 for (index, instruction) in instructions {
@@ -42,9 +42,10 @@ pub extern "C" fn caml_prepare_bytecode(prog: *const i32, prog_size: usize) {
             "Time taken: {} {}",
             e1.as_secs_f32(),
             now.elapsed().as_secs_f32()
-        );
+        )
+        .unwrap();
     }
 }
 
 #[no_mangle]
-pub extern "C" fn caml_release_bytecode(prog: *const i32, prog_size: usize) {}
+pub extern "C" fn caml_release_bytecode(_prog: *const i32, _prog_size: usize) {}

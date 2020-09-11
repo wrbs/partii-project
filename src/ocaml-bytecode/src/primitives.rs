@@ -1,7 +1,7 @@
 use crate::error::ParseFileError;
 use crate::trailer::Trailer;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader};
 
 const PRIM_SECTION: &str = "PRIM";
 
@@ -20,7 +20,7 @@ pub fn parse_primitives(f: &mut File, trailer: &Trailer) -> Result<Vec<String>, 
         // read up to the null byte or eof - includes it if it finds the null byte
         section_read.read_until(0, &mut read_buf)?;
 
-        if read_buf.len() == 0 {
+        if read_buf.is_empty() {
             break;
         } else if read_buf[read_buf.len() - 1] == 0 {
             // Parse as UTF8 string and add it
@@ -30,5 +30,5 @@ pub fn parse_primitives(f: &mut File, trailer: &Trailer) -> Result<Vec<String>, 
         }
     }
 
-    return Ok(result);
+    Ok(result)
 }
