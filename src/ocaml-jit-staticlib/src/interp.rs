@@ -1,4 +1,4 @@
-use crate::ffi::mlvalues::Value;
+use crate::caml::mlvalues::Value;
 use chrono::Utc;
 use ocaml_jit_shared::parse_instructions;
 use std::env;

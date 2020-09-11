@@ -1,7 +1,7 @@
-use crate::ffi::misc::fatal_error;
+use crate::caml::misc::fatal_error;
 use std::panic;
 
-mod ffi;
+mod caml;
 mod interp;
 
 #[no_mangle]
