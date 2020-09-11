@@ -1,6 +1,6 @@
+use crate::bytecode_files::trailer::{parse_trailer, TRAILER_LENGTH};
 use crate::utils::die;
 use colored::Colorize;
-use ocaml_jit_shared::trailer::{parse_trailer, TRAILER_LENGTH};
 use pretty_hex::PrettyHex;
 use prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE;
 use prettytable::Table;

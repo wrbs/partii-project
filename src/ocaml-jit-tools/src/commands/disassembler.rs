@@ -1,7 +1,7 @@
 use crate::utils::die;
 use colored::Colorize;
-use ocaml_jit_shared::parse_bytecode_file;
 
+use crate::bytecode_files::parse_bytecode_file;
 use std::fs::File;
 use std::path::PathBuf;
 use structopt::StructOpt;

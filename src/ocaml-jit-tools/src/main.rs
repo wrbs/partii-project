@@ -1,3 +1,4 @@
+mod bytecode_files;
 mod commands;
 mod utils;
 

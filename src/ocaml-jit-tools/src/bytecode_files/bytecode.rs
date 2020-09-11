@@ -1,7 +1,6 @@
-use crate::error::ParseFileError;
-use crate::instructions::parse_instructions;
-use crate::trailer::Trailer;
+use crate::bytecode_files::{ParseFileError, Trailer};
 use byteorder::{LittleEndian, ReadBytesExt};
+use ocaml_jit_shared::parse_instructions;
 use std::fs::File;
 use std::io::BufReader;
 

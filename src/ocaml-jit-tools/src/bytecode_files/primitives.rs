@@ -1,5 +1,4 @@
-use crate::error::ParseFileError;
-use crate::trailer::Trailer;
+use crate::bytecode_files::{ParseFileError, Trailer};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 

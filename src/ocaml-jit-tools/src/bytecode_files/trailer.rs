@@ -4,7 +4,7 @@ use std::io;
 use byteorder::{BigEndian, ReadBytesExt};
 use io::{Read, Seek};
 
-use crate::error::ParseFileError;
+use crate::bytecode_files::ParseFileError;
 
 pub const EXEC_MAGIC: &[u8] = b"Caml1999X028";
 pub const EXEC_MAGIC_LENGTH: usize = EXEC_MAGIC.len();
