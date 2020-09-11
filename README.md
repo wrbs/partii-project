@@ -56,12 +56,12 @@ of JIT compilation to replace the OCaml bytecode interpreter.
   - `ocaml-jit/runtime` - the runtime C library
 - `src`: main Rust source for the project. There are a few different Rust
   crates included:
+  - `src/ocaml-jit-shared`: the core crate with the logic, but no interfacing
+    with either the CLI or OCaml runtime
   - `src/ocaml-jit-staticlib`: the static library that links into the OCaml
     runtime providing the JIT
   - `src/ocaml-jit-tools`: standalone tools for testing and debugging the
     core without having to go through the OCaml runtime
-  - `src/ocaml-bytecode`: depended on by both of these files, it contains
-    the core logic
 - `docs`: dissertation LaTeX source
 - `resources`: test files
 - `dist`: once you run the setup, this is used as the prefix for OCaml's
@@ -116,7 +116,7 @@ built. You can also execute directly using `ocamlrun`.
 
 The runtime library parses the bytecode file. The format is custom and
 not really documented so is best understood by
-reading either [this project's rust parser](src/ocaml-bytecode/src/trailer.rs)
+reading either [this project's rust parser](src/ocaml-jit-shared/src/trailer.rs)
 or looking into the compiler's source. However, it's very simple:
 
 It consists of a trailer (at the end of the file) with a magic number and a

@@ -9,5 +9,5 @@ license = "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
 crate_type = ["staticlib"]
 
 [dependencies]
-ocaml-bytecode = { path = "../ocaml-bytecode" }
+ocaml-jit-shared = { path = "../ocaml-jit-shared" }
 chrono = "0.4"
