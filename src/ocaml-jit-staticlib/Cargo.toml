@@ -10,4 +10,3 @@ crate_type = ["staticlib"]
 
 [dependencies]
 ocaml-jit-shared = { path = "../ocaml-jit-shared" }
-chrono = "0.4"

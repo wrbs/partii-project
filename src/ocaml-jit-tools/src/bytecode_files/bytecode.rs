@@ -6,7 +6,7 @@ use std::io::BufReader;
 
 const CODE_SECTION: &str = "CODE";
 
-pub fn parse_bytecode(f: &mut File, trailer: &Trailer) -> Result<Vec<()>, ParseFileError> {
+pub fn parse_bytecode(f: &mut File, trailer: &Trailer) -> Result<(), ParseFileError> {
     let section = trailer.find_required_section(CODE_SECTION)?;
 
     if section.length % 4 != 0 {
@@ -23,11 +23,38 @@ pub fn parse_bytecode(f: &mut File, trailer: &Trailer) -> Result<Vec<()>, ParseF
         words.push(section_read.read_i32::<LittleEndian>()?);
     }
 
-    let instructions = parse_instructions(words.iter().copied()).unwrap();
+    let parsed = parse_instructions(words.iter().copied()).unwrap();
 
-    for (loc, instruction) in instructions {
-        println!("{:8}: {:?}", loc, instruction);
+    // Print it out in the format
+    // original location: instructions, for, that, location
+
+    let mut first_line = true;
+    let mut first_instruction_on_line = true;
+    for (index, instruction) in parsed.instructions.iter().enumerate() {
+        if let Some(original_location) = parsed.labels.get_by_right(&index) {
+            if first_line {
+                first_line = false;
+            } else {
+                println!();
+            }
+
+            print!("{}: ", original_location);
+
+            first_instruction_on_line = true;
+        }
+
+        if first_instruction_on_line {
+            first_instruction_on_line = false;
+        } else {
+            print!(", ");
+        }
+
+        print!("{:?}", instruction);
     }
 
-    Ok(vec![])
+    if !first_line {
+        println!();
+    }
+
+    Ok(())
 }
