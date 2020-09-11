@@ -1,10 +1,12 @@
 use std::io::Read;
 
-use crate::Opcode;
 use super::types::*;
+use crate::Opcode;
 use std::iter::Peekable;
 
-pub fn parse_instructions<I: Iterator<Item=i32>>(iterator: I) -> Option<Vec<(usize, Instruction)>> {
+pub fn parse_instructions<I: Iterator<Item = i32>>(
+    iterator: I,
+) -> Option<Vec<(usize, Instruction)>> {
     let mut context = ParseContext::new(iterator);
     let mut instructions = Vec::new();
 
@@ -16,7 +18,7 @@ pub fn parse_instructions<I: Iterator<Item=i32>>(iterator: I) -> Option<Vec<(usi
     Some(instructions)
 }
 
-fn get_instruction<I: Iterator<Item=i32>>(context: &mut ParseContext<I>) -> Option<Instruction> {
+fn get_instruction<I: Iterator<Item = i32>>(context: &mut ParseContext<I>) -> Option<Instruction> {
     Some(match context.opcode()? {
         Opcode::Acc0 => Instruction::Acc(0),
         Opcode::Acc1 => Instruction::Acc(1),
@@ -73,7 +75,7 @@ fn get_instruction<I: Iterator<Item=i32>>(context: &mut ParseContext<I>) -> Opti
             let n = context.i32()?;
             let label = context.label()?;
             Instruction::Closure(label, n)
-        },
+        }
         Opcode::ClosureRec => {
             let length = context.i32()?;
             assert!(length > 0);
@@ -81,7 +83,7 @@ fn get_instruction<I: Iterator<Item=i32>>(context: &mut ParseContext<I>) -> Opti
             let pos = context.position();
             let data = context.get_label_list(length as usize, pos)?;
             Instruction::ClosureRec(data, n)
-        },
+        }
 
         Opcode::OffsetClosure0 => Instruction::OffsetClosure(0),
         Opcode::OffsetClosure2 => Instruction::OffsetClosure(2),
@@ -96,12 +98,13 @@ fn get_instruction<I: Iterator<Item=i32>>(context: &mut ParseContext<I>) -> Opti
         Opcode::GetGlobal => Instruction::GetGlobal(context.i32()?),
         Opcode::PushGetGlobal => Instruction::PushGetGlobal(context.i32()?),
         Opcode::GetGlobalField => Instruction::GetGlobalField(context.i32()?, context.i32()?),
-        Opcode::PushGetGlobalField => Instruction::PushGetGlobalField(context.i32()?, context.i32()?),
+        Opcode::PushGetGlobalField => {
+            Instruction::PushGetGlobalField(context.i32()?, context.i32()?)
+        }
 
         Opcode::SetGlobal => Instruction::SetGlobal(context.i32()?),
 
         // todo: const, makeblock
-
         Opcode::GetField0 => Instruction::GetField(0),
         Opcode::GetField1 => Instruction::GetField(1),
         Opcode::GetField2 => Instruction::GetField(2),
@@ -231,21 +234,20 @@ fn get_instruction<I: Iterator<Item=i32>>(context: &mut ParseContext<I>) -> Opti
         Opcode::Break => Instruction::Break,
         Opcode::Event => Instruction::Event,
 
-        _ => return None
+        _ => return None,
     })
 }
 
-
-struct ParseContext<I: Iterator<Item=i32>> {
+struct ParseContext<I: Iterator<Item = i32>> {
     iter: Peekable<I>,
     position: usize,
 }
 
-impl<I: Iterator<Item=i32>> ParseContext<I> {
+impl<I: Iterator<Item = i32>> ParseContext<I> {
     fn new(iterator: I) -> ParseContext<I> {
         ParseContext {
             iter: iterator.peekable(),
-            position: 0
+            position: 0,
         }
     }
 
@@ -278,7 +280,6 @@ impl<I: Iterator<Item=i32>> ParseContext<I> {
         Some(location as usize)
     }
 
-
     fn label(&mut self) -> Option<usize> {
         self.label_at(self.position())
     }
@@ -296,4 +297,3 @@ impl<I: Iterator<Item=i32>> ParseContext<I> {
         self.u32().map(|x| x as usize)
     }
 }
-

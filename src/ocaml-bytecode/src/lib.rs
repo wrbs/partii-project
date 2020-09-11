@@ -2,15 +2,15 @@ use std::fs::File;
 
 mod bytecode;
 mod error;
+mod instructions;
 mod opcodes;
 mod primitives;
-mod instructions;
 
 pub mod trailer;
 
 pub use error::ParseFileError;
-pub use opcodes::*;
 pub use instructions::*;
+pub use opcodes::*;
 
 pub struct BytecodeFile {
     pub trailer: trailer::Trailer,

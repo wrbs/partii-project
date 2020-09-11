@@ -1,10 +1,10 @@
 use crate::ffi::mlvalues::Value;
-use std::slice;
-use std::io::{Write, BufWriter};
+use chrono::Utc;
+use ocaml_bytecode::parse_instructions;
 use std::env;
 use std::fs;
-use ocaml_bytecode::parse_instructions;
-use chrono::Utc;
+use std::io::{BufWriter, Write};
+use std::slice;
 use std::time::Instant;
 
 extern "C" {
@@ -30,18 +30,21 @@ pub extern "C" fn caml_prepare_bytecode(prog: *const i32, prog_size: usize) {
                 for (index, instruction) in instructions {
                     writeln!(f, "{:10}: {:?}", index, instruction).unwrap();
                 }
-            },
+            }
             None => {
                 e1 = now.elapsed();
                 writeln!(f, "Error when decoding").unwrap();
-            },
+            }
         }
 
-        writeln!(f, "Time taken: {} {}", e1.as_secs_f32(), now.elapsed().as_secs_f32());
+        writeln!(
+            f,
+            "Time taken: {} {}",
+            e1.as_secs_f32(),
+            now.elapsed().as_secs_f32()
+        );
     }
 }
 
 #[no_mangle]
 pub extern "C" fn caml_release_bytecode(prog: *const i32, prog_size: usize) {}
-
-

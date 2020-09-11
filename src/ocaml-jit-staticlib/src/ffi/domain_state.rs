@@ -29,7 +29,7 @@ pub struct DomainState {
     extern_sp: *mut Value,
     trapsp: *mut Value,
     trap_barrier: *mut Value,
-    external_raise: *const c_void,  // todo - sigjmp_buf, get _JBLEN
+    external_raise: *const c_void, // todo - sigjmp_buf, get _JBLEN
     exn_bucket: Value,
 
     top_of_stack: *const c_void,
@@ -61,7 +61,7 @@ pub struct DomainState {
     eventlog_startup_pid: u32,
     eventlog_paused: u64,
     eventlog_enabled: u64,
-    eventlog_out: *const c_void
+    eventlog_out: *const c_void,
 }
 
 extern "C" {

@@ -1,9 +1,9 @@
 use crate::error::ParseFileError;
+use crate::instructions::parse_instructions;
 use crate::trailer::Trailer;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
-use crate::instructions::parse_instructions;
 
 const CODE_SECTION: &str = "CODE";
 

@@ -2,24 +2,43 @@ use std::fmt::Debug;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ArithOp {
-    Neg, Add, Sub, Mul, Div, Mod,
-    And, Or,  Xor, Lsl, Lsr, Asr
+    Neg,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    And,
+    Or,
+    Xor,
+    Lsl,
+    Lsr,
+    Asr,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum RaiseKind {
-    Regular, ReRaise, NoTrace
+    Regular,
+    ReRaise,
+    NoTrace,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Comp {
-    Eq, Ne, Lt, Le, Gt, Ge, ULt, UGe
+    Eq,
+    Ne,
+    Lt,
+    Le,
+    Gt,
+    Ge,
+    ULt,
+    UGe,
 }
 
 // Instructions are generic over a few parameters
 // L: the type of labels
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Instruction<Label=usize, Primitive=usize> {
+pub enum Instruction<Label = usize, Primitive = usize> {
     Acc(i32),
     EnvAcc(i32),
     Push,

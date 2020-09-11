@@ -1,5 +1,5 @@
-use std::panic;
 use crate::ffi::misc::fatal_error;
+use std::panic;
 
 mod ffi;
 mod interp;
@@ -12,4 +12,3 @@ pub extern "C" fn ocaml_jit_on_startup() {
         fatal_error(format!("{}", p).as_str());
     }))
 }
-

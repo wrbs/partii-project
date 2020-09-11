@@ -1,8 +1,7 @@
-mod types;
 mod parse;
+mod types;
 
 use crate::Opcode;
 
-pub use types::{Instruction, ArithOp, RaiseKind, Comp};
 pub use parse::parse_instructions;
-
+pub use types::{ArithOp, Comp, Instruction, RaiseKind};
