@@ -1,6 +1,7 @@
-mod disassembler;
-mod hexdump;
+mod commands;
 mod utils;
+
+use commands::{disassembler, hexdump};
 
 #[macro_use]
 extern crate prettytable;

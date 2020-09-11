@@ -10,12 +10,12 @@ RUST_DIR := src
 DEBUG_TARGET := $(RUST_DIR)/target/debug
 RELEASE_TARGET := $(RUST_DIR)/target/debug
 
-STATIC_LIB_CRATE := $(RUST_DIR)/ocaml-jit-staticlib
 STATIC_LIB_FILE := libocaml_jit_staticlib.a
 
-BUILT_DIR := dist
-
 RESOURCES_DIR := resources
+
+BUILT_DIR := dist
+PREFIX := $(abspath .)/$(BUILT_DIR)
 
 # Main targets
 # ============
@@ -50,15 +50,17 @@ fullclean: clean
 
 .PHONY: setup
 setup: fullclean
-	cd $(OCAML_DIR) && ./configure --enable-rust-jit --prefix=$(abspath .)/$(BUILT_DIR)
+	@echo $(PREFIX)
+	cd $(OCAML_DIR) && ./configure --enable-rust-jit --prefix=$(PREFIX)
 	echo "BUILT_DIR_ABS=$(abspath .)/$(BUILT_DIR)" > Makefile.toolchain
 
 .PHONY: cargo_builds
 cargo_builds:
-	cd $(STATIC_LIB_CRATE) && cargo build
-	cd $(STATIC_LIB_CRATE) && cargo build --release
+	cd $(RUST_DIR) && cargo build --all
+	cd $(RUST_DIR) && cargo build --all --release
 	cp $(DEBUG_TARGET)/$(STATIC_LIB_FILE) $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB)
 	cp $(RELEASE_TARGET)/$(STATIC_LIB_FILE) $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
+
 
 # Autoformatting
 # ==============
@@ -76,7 +78,7 @@ prettier:
 
 .PHONY: rustfmt
 rustfmt:
-	cd $(RUST_DIR) && cargo fmt
+	cd $(RUST_DIR) && cargo fmt --all
 
 
 # Linting

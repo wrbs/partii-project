@@ -1,4 +1,4 @@
-use crate::utils::{die, die_dyn};
+use crate::utils::die;
 use colored::Colorize;
 use ocaml_jit_shared::trailer::{parse_trailer, TRAILER_LENGTH};
 use pretty_hex::PrettyHex;
@@ -20,7 +20,7 @@ pub struct Options {
 }
 
 pub fn run(options: Options) {
-    let () = run_exn(options).unwrap_or_else(die_dyn);
+    let () = run_exn(options).unwrap_or_else(die);
 }
 
 struct ParsedSection {
