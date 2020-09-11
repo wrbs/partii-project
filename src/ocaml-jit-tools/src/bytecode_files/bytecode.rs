@@ -7,10 +7,7 @@ use std::io::BufReader;
 const CODE_SECTION: &str = "CODE";
 
 pub fn parse_bytecode(f: &mut File, trailer: &Trailer) -> Result<Vec<()>, ParseFileError> {
-    let section = match trailer.find_section(CODE_SECTION) {
-        None => return Ok(Vec::new()),
-        Some(s) => s,
-    };
+    let section = trailer.find_required_section(CODE_SECTION)?;
 
     if section.length % 4 != 0 {
         return Err(ParseFileError::BadSize(

@@ -119,10 +119,6 @@ impl<R: Read> ReadAtMost<R> {
             to_read: maximum_bytes,
         }
     }
-
-    pub fn release(self) -> R {
-        self.source
-    }
 }
 
 impl<R: Read> Read for ReadAtMost<R> {

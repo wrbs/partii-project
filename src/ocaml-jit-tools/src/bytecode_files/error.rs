@@ -18,7 +18,4 @@ pub enum ParseFileError {
 
     #[error("Invalid primitive formatting found")]
     BadPrimitiveFormatting,
-
-    #[error("Deserializing error: '{0}'")]
-    DeserializingError(&'static str),
 }

@@ -4,27 +4,23 @@ use ocaml_jit_shared::parse_instructions;
 use std::env;
 use std::fs;
 use std::io::{BufWriter, Write};
-use std::slice;
 use std::time::Instant;
 
 extern "C" {
     fn actual_caml_interprete(prog: *const i32, prog_size: usize) -> Value;
 }
 
-#[no_mangle]
-pub extern "C" fn caml_interprete(prog: *const i32, prog_size: usize) -> Value {
-    unsafe { actual_caml_interprete(prog, prog_size) }
+pub fn interpret_bytecode(code: &[i32]) -> Value {
+    unsafe { actual_caml_interprete(code.as_ptr(), code.len()) }
 }
 
-#[no_mangle]
-pub extern "C" fn caml_prepare_bytecode(prog: *const i32, prog_size: usize) {
+pub fn on_bytecode_loaded(code: &[i32]) {
     if env::var("PRINT_INSTRS") == Ok("1".to_string()) {
         let now = Instant::now();
         let mut f = BufWriter::new(fs::File::create(format!("/tmp/dis_{}", Utc::now())).unwrap());
-        let code_slice = unsafe { slice::from_raw_parts(prog, prog_size / 4) };
 
         let e1;
-        match parse_instructions(code_slice.iter().copied()) {
+        match parse_instructions(code.iter().copied()) {
             Some(instructions) => {
                 e1 = now.elapsed();
                 for (index, instruction) in instructions {
@@ -47,5 +43,4 @@ pub extern "C" fn caml_prepare_bytecode(prog: *const i32, prog_size: usize) {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn caml_release_bytecode(_prog: *const i32, _prog_size: usize) {}
+pub fn on_bytecode_released(_code: &[i32]) {}
