@@ -22,31 +22,31 @@ PREFIX := $(abspath .)/$(BUILT_DIR)
 
 .PHONY: only_runtime
 runtime_only:
-	make cargo_builds
-	make -C $(OCAML_DIR)/runtime
-	make -C $(OCAML_DIR) install
+	$(MAKE) cargo_builds
+	$(MAKE) -C $(OCAML_DIR)/runtime
+	$(MAKE) -C $(OCAML_DIR) install
 
 .PHONY: all
 all:
-	make cargo_builds
-	make -C $(OCAML_DIR)
-	make -C $(OCAML_DIR) install
-	make -C $(RESOURCES_DIR) all
+	$(MAKE) cargo_builds
+	$(MAKE) -C $(OCAML_DIR)
+	$(MAKE) -C $(OCAML_DIR) install
+	$(MAKE) -C $(RESOURCES_DIR) all
 
 .PHONY: ocamltests
 ocamltests:
-	make -C $(OCAML_DIR) tests
+	$(MAKE) -C $(OCAML_DIR) tests
 
 .PHONY: clean
 clean:
-	make -C $(OCAML_DIR) clean
+	$(MAKE) -C $(OCAML_DIR) clean
 	rm -rf $(BUILT_DIR)
 	cd $(RUST_DIR) && cargo clean
-	make -C $(RESOURCES_DIR) clean
+	$(MAKE) -C $(RESOURCES_DIR) clean
 
 .PHONY: fullclean
 fullclean: clean
-	make -C $(OCAML_DIR) distclean
+	$(MAKE) -C $(OCAML_DIR) distclean
 
 .PHONY: setup
 setup: fullclean
