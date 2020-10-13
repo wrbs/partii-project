@@ -1,17 +1,17 @@
 use super::types::*;
 use crate::Opcode;
-use bimap::BiMap;
 use std::iter::Peekable;
+use std::ops::RangeFull;
 use thiserror::Error;
 
 #[derive(Debug, Clone)]
 pub struct ParsedInstructions {
-    pub instructions: Vec<Instruction>,
+    pub instructions: Vec<Instruction<usize>>,
     // It's a map of (original location, new location) pairs
     // This is because each original instruction can have multiple operands
     // and a new opcode can have multiple parsed instructions
     // (we turn things like PUSHACC into PUSH then ACC for later simplicity)
-    pub labels: BiMap<usize, usize>,
+    pub lookup: Vec<Option<(usize, usize)>>, // start, number of instructions
 }
 
 #[derive(Debug, Error)]
@@ -39,10 +39,11 @@ type Result<T, E = InstructionParseErrorType> = std::result::Result<T, E>;
 
 pub fn parse_instructions<I: Iterator<Item = i32>>(
     iterator: I,
+    instruction_count: usize,
 ) -> Result<ParsedInstructions, InstructionParseError> {
     let mut result = ParsedInstructions {
         instructions: Vec::new(),
-        labels: BiMap::new(),
+        lookup: vec![None; instruction_count],
     };
 
     let mut context = ParseContext::new(iterator);
@@ -62,10 +63,22 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
     result: &mut ParsedInstructions,
 ) -> Result<()> {
     while !context.at_end() {
-        // Associate the current source byte with the current instruction (both 0-indexed)
-        result
-            .labels
-            .insert(context.position(), result.instructions.len());
+        /*
+         * The thing that makes this complicated is that we simplify the bytecode format as we load
+         * things. Specifically one original bytecode instruction can correspond to multiple
+         * simplified instructions:
+         *
+         * eg.
+         * PushAcc => Push, Acc
+         * PushGetGlobalField => Push, GetGlobal, GetField
+         *
+         * for debugging/tracing I want to be able to go from original pointers in the bytecode
+         * to the slice of instructions.
+         *
+         * We store the start here and the end after we've worked out the instruction
+         */
+        let start_input_pos = context.position();
+        let start_output_pos = result.instructions.len();
 
         // Every bytecode instruction has at least one simplified instruction pushed so we simplify
         // things in most cases by pushing this at the end
@@ -300,12 +313,12 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
 
             Opcode::GetDynMet => Instruction::GetDynMet,
 
-            Opcode::CCall1 => Instruction::CCall(1, context.primitive()?),
-            Opcode::CCall2 => Instruction::CCall(2, context.primitive()?),
-            Opcode::CCall3 => Instruction::CCall(3, context.primitive()?),
-            Opcode::CCall4 => Instruction::CCall(4, context.primitive()?),
-            Opcode::CCall5 => Instruction::CCall(5, context.primitive()?),
-            Opcode::CCallN => Instruction::CCall(context.u32()?, context.primitive()?),
+            Opcode::CCall1 => Instruction::CCall1(context.u32()?),
+            Opcode::CCall2 => Instruction::CCall2(context.u32()?),
+            Opcode::CCall3 => Instruction::CCall3(context.u32()?),
+            Opcode::CCall4 => Instruction::CCall4(context.u32()?),
+            Opcode::CCall5 => Instruction::CCall5(context.u32()?),
+            Opcode::CCallN => Instruction::CCallN(context.u32()?, context.u32()?),
 
             Opcode::Raise => Instruction::Raise(RaiseKind::Regular),
             Opcode::ReRaise => Instruction::Raise(RaiseKind::ReRaise),
@@ -365,6 +378,11 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::Break => Instruction::Break,
             Opcode::Event => Instruction::Event,
         };
+
+        let number_of_instructions = result.instructions.len() - start_output_pos;
+
+        // Associate the current source byte with the current instruction (both 0-indexed)
+        result.lookup[start_input_pos] = Some((start_output_pos, number_of_instructions));
 
         result.instructions.push(to_push);
     }
@@ -439,9 +457,5 @@ impl<I: Iterator<Item = i32>> ParseContext<I> {
         }
 
         Ok(result)
-    }
-
-    fn primitive(&mut self) -> Result<usize> {
-        self.u32().map(|x| x as usize)
     }
 }

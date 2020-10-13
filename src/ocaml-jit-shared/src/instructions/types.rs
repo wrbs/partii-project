@@ -38,20 +38,20 @@ pub enum Comp {
 // Instructions are generic over a few parameters
 // L: the type of labels
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Instruction<Label = usize, Primitive = usize> {
+pub enum Instruction<L> {
     Acc(u32),
     EnvAcc(u32),
     Push,
     Pop(u32),
     Assign(u32),
-    PushRetAddr(Label),
+    PushRetAddr(L),
     Apply(u32),
     ApplyTerm(u32, u32),
     Return(u32),
     Restart,
     Grab(u32),
-    Closure(Label, u32),
-    ClosureRec(Vec<Label>, u32),
+    Closure(L, u32),
+    ClosureRec(Vec<L>, u32),
     OffsetClosure(i32),
     GetGlobal(u32),
     SetGlobal(u32),
@@ -69,19 +69,24 @@ pub enum Instruction<Label = usize, Primitive = usize> {
     GetStringChar,
     GetBytesChar,
     SetBytesChar,
-    Branch(Label),
-    BranchIf(Label),
-    BranchIfNot(Label),
-    Switch(Vec<Label>, Vec<Label>),
+    Branch(L),
+    BranchIf(L),
+    BranchIfNot(L),
+    Switch(Vec<L>, Vec<L>),
     BoolNot,
-    PushTrap(Label),
+    PushTrap(L),
     PopTrap,
     Raise(RaiseKind),
     CheckSignals,
-    CCall(u32, Primitive),
+    CCall1(u32),
+    CCall2(u32),
+    CCall3(u32),
+    CCall4(u32),
+    CCall5(u32),
+    CCallN(u32, u32),
     ArithInt(ArithOp),
     IntCmp(Comp),
-    BranchCmp(Comp, i32, Label),
+    BranchCmp(Comp, i32, L),
     OffsetInt(i32),
     OffsetRef(i32),
     IsInt,
@@ -91,4 +96,76 @@ pub enum Instruction<Label = usize, Primitive = usize> {
     Stop,
     Break,
     Event,
+}
+
+impl<L1> Instruction<L1> {
+    pub fn map_labels<L2, F: FnMut(&L1) -> L2>(&self, mut f: F) -> Instruction<L2> {
+        match self {
+            // Cases with labels
+            Instruction::PushRetAddr(l) => Instruction::PushRetAddr(f(l)),
+            Instruction::Closure(l, x) => Instruction::Closure(f(l), *x),
+            Instruction::ClosureRec(ls, x) => {
+                Instruction::ClosureRec(ls.iter().map(f).collect(), *x)
+            }
+            Instruction::Branch(l) => Instruction::Branch(f(l)),
+            Instruction::BranchIf(l) => Instruction::BranchIf(f(l)),
+            Instruction::BranchIfNot(l) => Instruction::BranchIf(f(l)),
+            Instruction::Switch(l1s, l2s) => {
+                let l1s_mapped = l1s.iter().map(&mut f).collect();
+                let l2s_mapped = l2s.iter().map(&mut f).collect();
+                Instruction::Switch(l1s_mapped, l2s_mapped)
+            }
+            Instruction::PushTrap(l) => Instruction::PushTrap(f(l)),
+            Instruction::BranchCmp(x, y, l) => Instruction::BranchCmp(*x, *y, f(l)),
+
+            // Other cases
+            Instruction::Acc(x) => Instruction::Acc(*x),
+            Instruction::EnvAcc(x) => Instruction::EnvAcc(*x),
+            Instruction::Push => Instruction::Push,
+            Instruction::Pop(x) => Instruction::Pop(*x),
+            Instruction::Assign(x) => Instruction::Assign(*x),
+            Instruction::Apply(x) => Instruction::Apply(*x),
+            Instruction::ApplyTerm(x, y) => Instruction::ApplyTerm(*x, *y),
+            Instruction::Return(x) => Instruction::Return(*x),
+            Instruction::Restart => Instruction::Restart,
+            Instruction::Grab(x) => Instruction::Grab(*x),
+            Instruction::OffsetClosure(x) => Instruction::OffsetClosure(*x),
+            Instruction::GetGlobal(x) => Instruction::GetGlobal(*x),
+            Instruction::SetGlobal(x) => Instruction::SetGlobal(*x),
+            Instruction::Const(x) => Instruction::Const(*x),
+            Instruction::MakeBlock(x, y) => Instruction::MakeBlock(*x, *y),
+            Instruction::MakeFloatBlock(x) => Instruction::MakeFloatBlock(*x),
+            Instruction::GetField(x) => Instruction::GetField(*x),
+            Instruction::SetField(x) => Instruction::SetField(*x),
+            Instruction::GetFloatField(x) => Instruction::GetFloatField(*x),
+            Instruction::SetFloatField(x) => Instruction::SetFloatField(*x),
+            Instruction::VecTLength => Instruction::VecTLength,
+            Instruction::GetVecTItem => Instruction::GetVecTItem,
+            Instruction::SetVecTItem => Instruction::SetVecTItem,
+            Instruction::GetStringChar => Instruction::GetStringChar,
+            Instruction::GetBytesChar => Instruction::GetBytesChar,
+            Instruction::SetBytesChar => Instruction::SetBytesChar,
+            Instruction::BoolNot => Instruction::BoolNot,
+            Instruction::PopTrap => Instruction::PopTrap,
+            Instruction::Raise(x) => Instruction::Raise(*x),
+            Instruction::CheckSignals => Instruction::CheckSignals,
+            Instruction::CCall1(x) => Instruction::CCall1(*x),
+            Instruction::CCall2(x) => Instruction::CCall2(*x),
+            Instruction::CCall3(x) => Instruction::CCall3(*x),
+            Instruction::CCall4(x) => Instruction::CCall4(*x),
+            Instruction::CCall5(x) => Instruction::CCall5(*x),
+            Instruction::CCallN(x, y) => Instruction::CCallN(*x, *y),
+            Instruction::ArithInt(x) => Instruction::ArithInt(*x),
+            Instruction::IntCmp(x) => Instruction::IntCmp(*x),
+            Instruction::OffsetInt(x) => Instruction::OffsetInt(*x),
+            Instruction::OffsetRef(x) => Instruction::OffsetRef(*x),
+            Instruction::IsInt => Instruction::IsInt,
+            Instruction::GetMethod => Instruction::GetMethod,
+            Instruction::GetPubMet(x, y) => Instruction::GetPubMet(*x, *y),
+            Instruction::GetDynMet => Instruction::GetDynMet,
+            Instruction::Stop => Instruction::Stop,
+            Instruction::Break => Instruction::Break,
+            Instruction::Event => Instruction::Event,
+        }
+    }
 }

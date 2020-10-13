@@ -5,3 +5,7 @@ members = [
     "ocaml-jit-shared",              # type definitions for OCaml bytecode
     "ocaml-jit-tools"              # standalone tools (dissasembler, hex dump) for bytecode files and testing the JIT
 ]
+
+[profile.release]
+lto = true
+debug-assertions = true  # while testing

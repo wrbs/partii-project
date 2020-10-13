@@ -84,6 +84,16 @@ NATIVE_SHARED_LIBRARIES += libasmrun_shared.$(SO)
 endif
 endif
 
+# Rust JIT
+
+ifdef USE_RUST_JIT
+-include $(ROOTDIR)/../Makefile.shared
+
+RUST_JIT_DEBUG_OBJECT_DIR = jit_objects_debug
+RUST_JIT_RELEASE_OBJECT_DIR = jit_objects_release
+BYTECODE_C_SOURCES += jit_support.c
+endif
+
 
 # List of object files for each target
 
@@ -106,16 +116,6 @@ libasmruni_OBJECTS := $(NATIVE_C_SOURCES:.c=_ni.$(O)) $(ASM_OBJECTS)
 
 libasmrunpic_OBJECTS := $(NATIVE_C_SOURCES:.c=_npic.$(O)) \
   $(ASM_OBJECTS:.$(O)=_libasmrunpic.$(O))
-
-# Rust JIT
-
-ifdef USE_RUST_JIT
--include $(ROOTDIR)/../Makefile.shared
-
-RUST_JIT_DEBUG_OBJECT_DIR = jit_objects_debug
-RUST_JIT_RELEASE_OBJECT_DIR = jit_objects_release
-endif
-
 
 # General (non target-specific) assembler and compiler flags
 

@@ -36,6 +36,11 @@
 #include "caml/stacks.h"
 #include "caml/startup_aux.h"
 
+#ifdef USE_RUST_JIT
+#include "caml/jit_support.h"
+#endif
+
+#define TESTING_TRACE
 
 /* Registers for the abstract machine:
         pc         the code pointer
@@ -319,9 +324,14 @@ value caml_interprete(code_t prog, asize_t prog_size)
     CAMLassert(sp >= Caml_state->stack_low);
     CAMLassert(sp <= Caml_state->stack_high);
 #endif
+#ifdef TESTING_TRACE
+    rust_jit_trace(pc, Caml_state->stack_high - sp, accu);
+#endif
+
     curr_instr = *pc++;
 
   dispatch_instr:
+
     switch(curr_instr) {
 #endif
 

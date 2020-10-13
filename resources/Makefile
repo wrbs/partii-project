@@ -13,7 +13,7 @@ all: $(TEST_CASES)
 
 .PHONY: clean
 clean:
-	rm test_bc/*.byte
+	rm -f test_bc/*.byte
 
 $(TEST_COMPILED_DIR)/%.byte: $(TEST_SOURCES_DIR)/%.ml $(OCAMLC)
 	$(OCAMLC) -o $@ $<

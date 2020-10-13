@@ -13,6 +13,7 @@ pub struct DomainState {
     young_base: *const c_void,
     young_start: *const c_void,
     young_end: *const c_void,
+    young_alloc_start: *const c_void,
     young_alloc_end: *const c_void,
     young_alloc_mid: *const c_void,
     young_trigger: *const c_void,
@@ -65,10 +66,17 @@ pub struct DomainState {
 }
 
 extern "C" {
-    static CAML_STATE: *mut DomainState;
+    static Caml_state: *mut DomainState;
 }
 
-#[allow(dead_code)]
-pub fn get_stack_low() -> Value {
-    unsafe { *(*CAML_STATE).stack_low }
+pub fn get_sp() -> *mut Value {
+    unsafe { (*Caml_state).extern_sp }
+}
+
+pub fn set_sp(to: *mut Value) {
+    unsafe { (*Caml_state).extern_sp = to }
+}
+
+pub fn stack_size() -> i64 {
+    unsafe { ((*Caml_state).stack_high as i64 - (*Caml_state).extern_sp as i64) / 8 }
 }
