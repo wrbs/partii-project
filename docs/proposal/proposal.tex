@@ -4,11 +4,16 @@
 \usepackage[utf8]{inputenc}
 
 \usepackage{kpfonts}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
 
 \begin{document}
 
-\title{This is the name of the proposal}
-\author{William Robson, Selwyn College}
+\title{A JIT compiler for OCaml bytecode}
+\author{William Robson (wnr21), Selwyn College}
 \date{21 November 2020}
 
 \maketitle
@@ -16,9 +21,9 @@
 \begin{center}
 \begin{tabular}{rl}
     \textbf{Special Resources:} & \textit{None required} \\
-    \textbf{Project Supervisor:} & Name \\
-    \textbf{Director of Stuides:} & Name \\
-    \textbf{Project Overseers:} & Name \\
+    \textbf{Project Supervisor:} & Timothy Jones \\
+    \textbf{Director of Studies:} & Richard Watts \\
+    \textbf{Project Overseers:} & Neel Krishnaswami \& Sean Holden \\
 \end{tabular}
 \end{center}
 
@@ -26,93 +31,340 @@
 
 \section*{Introduction}
 
-Many students write their CST and Diploma dissertations in \LaTeX\ and
-spend a fair amount of time learning just how to do that. The purpos of 
-this project is to write a demonsatration dissertation that explains in
-detail how it done and how the result can be given to the Bookshop
-on an MSDOS floppy disk for printing and binding.
+The OCaml compiler has two main targets - to platform-specific machine code
+and an interpreted bytecode.
+
+Although the bytecode interpreter is fairly well optimised for interpreting a
+functional language it still has some degree of overhead over what even a
+simple JIT compiler could achieve as it cannot benefit from modern CPU
+pipelining and branch prediction as an abstract machine PC is used rather than
+the CPU's.
+
+This project aims to experiment with replacing the core interpreter loop with
+JIT compiling the bytecode and to quantify how much faster could be achieved.
+
+Beyond this basic core the project aims to use remaining time to discover and
+implement performance optimisations in the compiler and its emitted machine
+code.
+
+To make the project more interesting and allow the use of higher level
+features while writing the interpreter the project will have as much of it as
+possible written in the Rust programming language. Both the compiled native
+code and bytecode of the existing compiler have a runtime component written
+in C. Therefore the project will also serve as an experiment into what extent
+it is possible to create a safer abstraction around the OCaml runtime.
+
+\subsection*{Technical Decisions and Scope}
+
+The project will only target x86\_64 Linux and macOS and no attempts will be made
+two be portable to other platforms.
+
+The bytecode interpreter implements an abstract machine which uses a shared
+stack heavily. My preliminary research has found that the design of the
+abstract machine (especially with regards to functional language features
+like partial application of functions) makes it very difficult to modify the
+calling convention or structure of the bytecode.
+
+The way closures are implemented in this abstract machine means that the common JIT
+design of delaying the compilation of a block of code until it is determined
+to be in the hot path is more difficult to implement correctly.
+\footnote{Functions do not have a fixed entry and exit point as the abstract
+machine follows the push-enter not eval-apply model described in slides
+32-43 of Leroy, KAZAM 2005
+\href{https://xavierleroy.org/talks/zam-kazam05.pdf}{https://xavierleroy.org/talks/zam-kazam05.pdf}}
+
+Therefore initial design of the JIT compiler will be to compile
+all bytecode sections as they are loaded (at program startup or by the
+toplevel) to machine code, which is then branched to. This entirely replaces the
+interpreter loop rather than augmenting it. In all other aspects the compiled
+code will behave identically to the interpreter but with set concrete machine
+registers for the abstract machine registers.
+
+Most of the work doing all compilation upfront could be reused mostly without change
+in a future more elaborate scheme as a potential extension.
 
 \section*{Work that has to be done}
 
-The project breaks down into the following main sections:-
+\subsection*{Starting Point}
+
+I have decent working knowledge of Rust, C and OCaml. I have experience with
+writing virtual machines and emulators but I have not yet learned as much about
+the x86\_64 platform.
+
+This project forks from the OCaml compiler source 4.11.1 \footnote{Latest at
+time of project start}. For this reason all work is licensed under the same
+LGPL 2.1 with linking exception.
+
+In preparation for this project prior to formal start I have already:
+
+\begin{itemize}
+    \item Modified the Makefiles and autoconf scripts to support linking to
+        a static library component written in Rust.
+    \item Added a Rust hook functions when bytecode gets loaded and unloaded
+        and the interpreter is called.
+    \item Added Rust type definitions for the structure of the bytecode instructions
+        and a parser and disassembler for them.
+\end{itemize}
+
+To avoid confusion about what work was completed before the project start
+submission of the code will have 3 components:
+
+\begin{itemize}
+    \item The final state of the code
+    \item A full git history \footnote{as a \href{https://git-scm.com/docs/git-archive}{git-archive} file}
+    \item A snapshot of the state of the code at time of formal project start for comparisons
+\end{itemize}
+
+This issue will also be covered explicitly in the final dissertation to avoid
+misleading the examiners about how much was achieved in the time allotted.
+
+However, the work already completed is nearly all tooling and as such does
+not overlap with the core work to be completed.
+
+\subsection*{Success criteria}
+
+I will consider the project successful if
 
 \begin{enumerate}
-
-\item The construction of a skeleton dissertation with the required 
-structure. This involves writing the Makefile and makeing dummy files
-for the title page, the proforma, chapters 1 to 5, the appendices and
-the proposal.
-
-\item Filling in the details required in the cover page and proforma.
-
-\item Writing the contents of chapters 1 to 5, including examples
-of common \LaTeX\ constructs.
-
-\item Adding a example of how to use floating figures and encapsulated
-postscript diagrams.
-
+    \item There is a JIT compiler implemented into the existing OCaml source
+        replacing the interpreter
+    \item There is a useful suite of benchmarks built comparing its
+        performance to other alternatives
+    \item It performs favourably when discounting initial compile time for all programs
+        and overall for longer running programs
 \end{enumerate}
+
+In addition to the basic criteria I have left time in the plan for
+performance and functionality related extensions. 
+
+However, I cannot yet say what these will be as I cannot measure where the overhead lies most.
+
+\subsection*{Components}
+
+This breaks down into these major components:
+
+\begin{enumerate}
+\item Design a scheme for mapping original bytecode locations to absolute
+    machine code addresses and use it instead of bytecode-relative instructions
+    for the implementation of closures.
+\item A solution for allocating memory, emitting instructions to it,
+    relocating labels, marking the region as executable and jumping to it.
+\item The compiler itself, which emits assembly for a given stream of bytecode
+    instructions
+\item Adding any new support primitives that are better implemented by functions
+    than inlining into the compiler
+\item Collecting a series of test programs and benchmarks and creating
+    tooling to automate running them against the native code compiler's
+    output and the existing interpreter
+\end{enumerate}
+
+In pursuit of this goal I can foresee that tools and tests will be created to
+help with debugging or stub out not yet implemented features. It is hard to
+say at this point exactly what will become necessary for success but I can
+envision now:
+
+\begin{enumerate}
+\item Smaller, self-contained tests of just the compiler's output.
+\item A way of comparing traces of the interpreter and the JIT compiler down to the registers and stack state. \footnote{This may require partially modifying the garbage collector to make when it decides to trigger deterministic}
+\end{enumerate}
+
+However, these are not the core goals of the project and instead things that
+may be created to make achieving them less painful.
+
+\subsection*{Evaluation}
+
+The key metrics are benchmarks and which features are supported.
+
+For benchmarking I will measure:
+
+\begin{enumerate}
+    \item Time to startup and start interpreting\footnote{If I have time due to completing the plan significantly early and change when compilation happens, this will change}
+    \item Program execution time
+\end{enumerate}
+
+I will compare these values and the total execution time against the native
+code compiler and existing interpreter on a variety of test programs of
+different sizes and types of computation being done.
+
+There is an inherent tradeoff and the aim of the evaluation section will be
+to quantify where it lies for different classes of programs.
 
 \section*{Difficulties to Overcome}
 
-The following main learning tasks will have to be undertaken before 
-the project can be started:
+The following main learning tasks will have to be undertaken as part of the
+project.
 
 \begin{itemize}
 
-\item To learn \LaTeX\ and its use on Thor.
-
-\item To discover how to incorporate encapsulated postscript into
-a \LaTeX\ document, and to find a suitable drawing package on Thor
-to recommend.
-
-\item To discover what format the Bookshop would like for the finished
-dissertation, and how to deal with postscript files that are too
-large to fit on a single floppy disk.
-
+    \item Understand the semantics of the instruction set and enough of the
+        runtime that the interpreter interacts with.
+    \item Learn enough about x86\_64 assembly to be able to know the right
+        instructions to emit to replace the existing C.
 \end{itemize}
 
+The main difficulty I envision is with the first of these tasks. There isn't
+much complete documentation so a lot of the learning will have to be done by
+reading the code. I believe that extending my current interpreter rewrite will
+help with this at the start but do not plan to finish it.
 
+There are plenty of resources I have found for the second task and I have
+confidence that it will be achievable.
 
-\section*{Starting Point}
-
-I have a reasonable working knowledge of \LaTeX\ and have convenient
-access to Thor using an IBM PC in my office. Writing MSDOS disks is no 
-problem.
+The other major potential difficulty is the risk of hard-to-debug issues
+slowing progress. Upfront investment into automated testing will help
+significantly.
 
 \section*{Resources}
 
-This project requires little file space so 25Mbytes of disk space on Thor
-should be sufficient. I plan to use my own IBM PC to write floppy disks, 
-but could use the PWF PCs if my own machine breaks down. 
+This project only requires a modern Unix environment with the build
+requirements for OCaml and the Rust compiler installed. So far I have tested
+this on Linux, Windows Subsystem for Linux and macOS.
 
-Backup will be on floppy disks.
+I plan to use my own computers. I have a desktop that I recently built with a
+10700K CPU and 32GB of RAM. It runs triple-boot Windows, Arch Linux and
+macOS. All OSes use seperate SSDs.
+
+I also have a 2018 laptop running Arch Linux which is my secondary
+development system and can serve as backup against main system failure.
+
+I am using Git for version control of the dissertation source and source code
+and the repository is frequently pushed to GitHub. This is my primary line of
+defence against system failure.
+
+I additionally have already set up automated synchronisation between all of
+my computers and a server I have. This server runs daily incremental backups
+of all data to OneDrive.
+
+The repository will also be automatically backed up with this system.
 
 \section*{Work Plan}
 
-Planned starting date is 01/12/2000.
+\subsection*{Overview}
 
-\subsection*{Michaelmas Term} 
+The goal is to get something working as quickly as possible to allow for
+consistent continual testing of actual programs.
 
-By the end of this term I intend to have completed the learning tasks 
-outlined in the relevant section.
+To this end the first milestone will be to implement the compiler entirely by
+jumping to functions written in C that implement each of the instructions.
+These temporary stub functions will take as parameters the same things they
+would read from the bytecode.
 
+The main challenge at this stage will be support for relocations. I can build
+on my existing work that knows about which instructions have a label but
+I will need to create a method for relocating the emitted machine code too.
 
-\subsection*{Lent Term}
+At this point the system should support all OCaml bytecode programs but with
+machine code responsible for branching rather than using the abstract
+machine's PC.
 
-By the division of term the overall structure of the dissertation
-will have been written and tested.
+Then the goal is to create and collect a suite of test programs that can
+easily be run and later used for benchmarks.
 
-By the end of term, example figures using encapsulated postscript
-will have been included.
- 
+From then on work can continue by iteratively implementing more and more
+instructions replacing the function call with actual assembly performing the
+same task.
 
-\subsection*{Easter Term}
+I hope to reach the milestone of most programs working by the end of Michaelmas
+and have finished the success criteria by the start of Lent.
 
-On completion of the exams I will incorporate final details into 
-the dissertation including a bibliography using bibtex and a table of contents.
-The estimated completion date being 25/07/2001 to allow 
-plenty of time should any unforeseen problems arise.
+The rest of Lent will be spent optimising performance and adding extensions to
+increase the functionality and performance of the new system.
+
+Code completion is achieved the end of Lent leaving the Easter holidays for
+focusing on the dissertation.
+
+\subsection*{Timetable}
+
+The milestone is listed below each chunk of work
+
+\subsubsection*{Michaelmas Term} 
+
+\begin{tabularx}{\textwidth}{rX} \toprule
+    Dates & Work to be completed \\ \midrule
+    16/10 - 28/10
+    &\tabitem Decide on method for emitting bytecode from Rust.\\
+    &\tabitem Create mechanism for doing relocations from initial bytecode address to final machine code address.\\
+    &\textit{Creation of framework for emitting machine code and performing relocations. Test with small example.} \\
+
+    &\\
+
+    29/10 - 11/11
+    &\tabitem Create C functions implementing all the opcodes from the existing interpreter source.\\
+    &\tabitem Create compiler emitting jumps to these functions.\\
+    &\textit{Most programs now run using the native code PC as the actual PC} \\
+    
+    &\\
+
+    29/10 - 11/11
+    &\tabitem Start replacing the generated calls to the temporary functions with the assembly code that replaces them.\\
+    &\tabitem Start with the smaller and simpler to implement functions first.\\
+    &\textit{Most programs now run with some degree of JIT compilation} \\
+
+    &\\
+
+    12/11 - 25/01
+    &\tabitem Implement the remaining operations.\\
+    \textit{Milestone:}
+    &\textit{Success criteria nearly completed barring testing} \\
+
+    &\\
+
+    26/11 - 26/01
+    &\tabitem Recover from term.\\
+    &\tabitem Fix out any smaller fiddly unimplemented features.\\
+    &\tabitem Try to get the compiler building and then use the
+        compiler's test suite to test the correctness of the JIT runtime.\\
+    &\tabitem Create a benchmark suite and tooling to run it automated \\
+    &\textit{Benchmarks working and so success criteria done} \\
+\bottomrule
+\end{tabularx}
+
+\subsubsection*{Lent Term} 
+
+\begin{tabularx}{\textwidth}{rX} \toprule
+    27/12 - 03/02
+    &\tabitem Slack time in case initial Michaelmas plan was overly optimistic. \\
+    &\tabitem Optimise performance of compiler and emitted assembly. \\
+    &\tabitem Write the progress report. \\
+    &\tabitem Decide on any other extensions to pick up and cover them in the progress report. \\
+    &\textit{Progress report completed. Plan n place for any remaining extensions.} \\
+
+    &\\
+
+    4/02 - 17/03
+    &\tabitem By this point the project should be mainly interesting extensions and optimisations. \\
+    &\tabitem Start collecting together notes and references for the dissertation. \\
+    &\textit{Code completion of project} \\
+\bottomrule
+\end{tabularx}
+
+\subsubsection*{Easter Term}
+
+\begin{tabularx}{\textwidth}{rX} \toprule
+
+    18/03 - 28/04
+    &\tabitem Write the first few drafts of the dissertation. \\
+    \textit{Milestone:}
+    &\textit{A few rounds of dissertation feedback} \\
+
+    &\\
+
+    29/05 - 9/06
+    &\tabitem Gather and respond to final feedback. \\
+    &\tabitem Ensure bib file is complete. \\
+    &\tabitem Proofread. \\
+    &\tabitem Final submission. \\
+    \textit{Milestone:}
+    &\textit{Project done} \\
+
+    &\\
+
+    10/06 - 14/06
+    &\tabitem Submit early. \\
+    \textit{Milestone:}
+    &\textit{Project done (officially)} \\
+\bottomrule
+\end{tabularx}
 
 \end{document}
 
