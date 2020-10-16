@@ -86,7 +86,6 @@ pub enum Instruction<L> {
     CCallN(u32, u32),
     ArithInt(ArithOp),
     IntCmp(Comp),
-    BranchCmp(Comp, i32, L),
     OffsetInt(i32),
     OffsetRef(i32),
     IsInt,
@@ -116,7 +115,6 @@ impl<L1> Instruction<L1> {
                 Instruction::Switch(l1s_mapped, l2s_mapped)
             }
             Instruction::PushTrap(l) => Instruction::PushTrap(f(l)),
-            Instruction::BranchCmp(x, y, l) => Instruction::BranchCmp(*x, *y, f(l)),
 
             // Other cases
             Instruction::Acc(x) => Instruction::Acc(*x),

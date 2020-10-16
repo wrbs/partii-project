@@ -1,7 +1,6 @@
 use super::types::*;
 use crate::Opcode;
 use std::iter::Peekable;
-use std::ops::RangeFull;
 use thiserror::Error;
 
 #[derive(Debug, Clone)]
@@ -294,14 +293,14 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::ULtInt => Instruction::IntCmp(Comp::ULt),
             Opcode::UGeInt => Instruction::IntCmp(Comp::UGe),
 
-            Opcode::BEq => Instruction::BranchCmp(Comp::Eq, context.i32()?, context.label()?),
-            Opcode::BNeq => Instruction::BranchCmp(Comp::Ne, context.i32()?, context.label()?),
-            Opcode::BLtInt => Instruction::BranchCmp(Comp::Lt, context.i32()?, context.label()?),
-            Opcode::BLeInt => Instruction::BranchCmp(Comp::Le, context.i32()?, context.label()?),
-            Opcode::BGtInt => Instruction::BranchCmp(Comp::Gt, context.i32()?, context.label()?),
-            Opcode::BGeInt => Instruction::BranchCmp(Comp::Ge, context.i32()?, context.label()?),
-            Opcode::BULtInt => Instruction::BranchCmp(Comp::ULt, context.i32()?, context.label()?),
-            Opcode::BUGeInt => Instruction::BranchCmp(Comp::UGe, context.i32()?, context.label()?),
+            Opcode::BEq => emit_branch_cmp(result, Comp::Eq, context.i32()?, context.label()?),
+            Opcode::BNeq => emit_branch_cmp(result, Comp::Ne, context.i32()?, context.label()?),
+            Opcode::BLtInt => emit_branch_cmp(result, Comp::Lt, context.i32()?, context.label()?),
+            Opcode::BLeInt => emit_branch_cmp(result, Comp::Le, context.i32()?, context.label()?),
+            Opcode::BGtInt => emit_branch_cmp(result, Comp::Gt, context.i32()?, context.label()?),
+            Opcode::BGeInt => emit_branch_cmp(result, Comp::Ge, context.i32()?, context.label()?),
+            Opcode::BULtInt => emit_branch_cmp(result, Comp::ULt, context.i32()?, context.label()?),
+            Opcode::BUGeInt => emit_branch_cmp(result, Comp::UGe, context.i32()?, context.label()?),
 
             Opcode::IsInt => Instruction::IsInt,
 
@@ -379,15 +378,22 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::Event => Instruction::Event,
         };
 
-        let number_of_instructions = result.instructions.len() - start_output_pos;
+        result.instructions.push(to_push);
 
+        let number_of_instructions = result.instructions.len() - start_output_pos;
         // Associate the current source byte with the current instruction (both 0-indexed)
         result.lookup[start_input_pos] = Some((start_output_pos, number_of_instructions));
-
-        result.instructions.push(to_push);
     }
 
     Ok(())
+}
+
+fn emit_branch_cmp(result: &mut ParsedInstructions, comp: Comp, value: i32, label: usize) -> Instruction<usize> {
+    // Turn BEQ 2, 111 to
+    // Const 2, IntComp Eq, BranchIf 111
+    result.instructions.push(Instruction::Const(value));
+    result.instructions.push(Instruction::IntCmp(comp));
+    Instruction::BranchIf(label)
 }
 
 struct ParseContext<I: Iterator<Item = i32>> {

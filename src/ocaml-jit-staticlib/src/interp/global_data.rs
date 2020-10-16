@@ -22,6 +22,7 @@ pub struct GlobalData {
     pub lookup: LoadedCodeLookup,
     pub instructions: Vec<Instruction<usize>>,
     pub use_new_interpreter: bool,
+    pub trace: bool,
 }
 
 static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(GlobalData::new()));
@@ -32,6 +33,7 @@ impl GlobalData {
             lookup: LoadedCodeLookup::new(),
             instructions: Vec::new(),
             use_new_interpreter: env::var("OLD_INTERP").is_err(),
+            trace: !env::var("TRACE").is_err(),
         }
     }
 

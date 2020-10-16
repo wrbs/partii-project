@@ -33,8 +33,12 @@ pub fn on_bytecode_released(_code: &[i32]) {
 }
 
 pub fn trace(pc: *const i32, sp: u64, acc: i64) {
-    let opcode = unsafe { Opcode::from_i32(*pc).expect("Invalid opcode") };
     let global_data = GlobalData::get();
+    if !global_data.trace {
+        return;
+    }
+
+    let opcode = unsafe { Opcode::from_i32(*pc).expect("Invalid opcode") };
 
     let (start, number_of_instructions) = global_data
         .lookup
