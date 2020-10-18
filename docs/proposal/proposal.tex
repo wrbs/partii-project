@@ -14,17 +14,17 @@
 
 \title{A JIT compiler for OCaml bytecode}
 \author{William Robson (wnr21), Selwyn College}
-\date{21 November 2020}
+\date{23 October 2020}
 
 \maketitle
 
 \begin{center}
-\begin{tabular}{rl}
-    \textbf{Special Resources:} & \textit{None required} \\
-    \textbf{Project Supervisor:} & Timothy Jones \\
-    \textbf{Director of Studies:} & Richard Watts \\
-    \textbf{Project Overseers:} & Neel Krishnaswami \& Sean Holden \\
-\end{tabular}
+    \begin{tabular}{rl}
+        \textbf{Special Resources:}   & \textit{None required}           \\
+        \textbf{Project Supervisor:}  & Timothy Jones                    \\
+        \textbf{Director of Studies:} & Richard Watts                    \\
+        \textbf{Project Overseers:}   & Neel Krishnaswami \& Sean Holden \\
+    \end{tabular}
 \end{center}
 
 \vspace{2cm}
@@ -69,9 +69,9 @@ The way closures are implemented in this abstract machine means that the common 
 design of delaying the compilation of a block of code until it is determined
 to be in the hot path is more difficult to implement correctly.
 \footnote{Functions do not have a fixed entry and exit point as the abstract
-machine follows the push-enter not eval-apply model described in slides
-32-43 of Leroy, KAZAM 2005
-\href{https://xavierleroy.org/talks/zam-kazam05.pdf}{https://xavierleroy.org/talks/zam-kazam05.pdf}}
+    machine follows the push-enter not eval-apply model described in slides
+    32-43 of Leroy, KAZAM 2005
+    \href{https://xavierleroy.org/talks/zam-kazam05.pdf}{https://xavierleroy.org/talks/zam-kazam05.pdf}}
 
 Therefore initial design of the JIT compiler will be to compile
 all bytecode sections as they are loaded (at program startup or by the
@@ -92,18 +92,18 @@ writing virtual machines and emulators but I have not yet learned as much about
 the x86\_64 platform.
 
 This project forks from the OCaml compiler source 4.11.1 \footnote{Latest at
-time of project start}. For this reason all work is licensed under the same
+    time of project start}. For this reason all work is licensed under the same
 LGPL 2.1 with linking exception.
 
 In preparation for this project prior to formal start I have already:
 
 \begin{itemize}
     \item Modified the Makefiles and autoconf scripts to support linking to
-        a static library component written in Rust.
+          a static library component written in Rust.
     \item Added a Rust hook functions when bytecode gets loaded and unloaded
-        and the interpreter is called.
+          and the interpreter is called.
     \item Added Rust type definitions for the structure of the bytecode instructions
-        and a parser and disassembler for them.
+          and a parser and disassembler for them.
 \end{itemize}
 
 To avoid confusion about what work was completed before the project start
@@ -127,15 +127,15 @@ I will consider the project successful if
 
 \begin{enumerate}
     \item There is a JIT compiler implemented into the existing OCaml source
-        replacing the interpreter
+          replacing the interpreter
     \item There is a useful suite of benchmarks built comparing its
-        performance to other alternatives
+          performance to other alternatives
     \item It performs favourably when discounting initial compile time for all programs
-        and overall for longer running programs
+          and overall for longer running programs
 \end{enumerate}
 
 In addition to the basic criteria I have left time in the plan for
-performance and functionality related extensions. 
+performance and functionality related extensions.
 
 However, I cannot yet say what these will be as I cannot measure where the overhead lies most.
 
@@ -144,18 +144,18 @@ However, I cannot yet say what these will be as I cannot measure where the overh
 This breaks down into these major components:
 
 \begin{enumerate}
-\item Design a scheme for mapping original bytecode locations to absolute
-    machine code addresses and use it instead of bytecode-relative instructions
-    for the implementation of closures.
-\item A solution for allocating memory, emitting instructions to it,
-    relocating labels, marking the region as executable and jumping to it.
-\item The compiler itself, which emits assembly for a given stream of bytecode
-    instructions
-\item Adding any new support primitives that are better implemented by functions
-    than inlining into the compiler
-\item Collecting a series of test programs and benchmarks and creating
-    tooling to automate running them against the native code compiler's
-    output and the existing interpreter
+    \item Design a scheme for mapping original bytecode locations to absolute
+          machine code addresses and use it instead of bytecode-relative instructions
+          for the implementation of closures.
+    \item A solution for allocating memory, emitting instructions to it,
+          relocating labels, marking the region as executable and jumping to it.
+    \item The compiler itself, which emits assembly for a given stream of bytecode
+          instructions
+    \item Adding any new support primitives that are better implemented by functions
+          than inlining into the compiler
+    \item Collecting a series of test programs and benchmarks and creating
+          tooling to automate running them against the native code compiler's
+          output and the existing interpreter
 \end{enumerate}
 
 In pursuit of this goal I can foresee that tools and tests will be created to
@@ -164,8 +164,8 @@ say at this point exactly what will become necessary for success but I can
 envision now:
 
 \begin{enumerate}
-\item Smaller, self-contained tests of just the compiler's output.
-\item A way of comparing traces of the interpreter and the JIT compiler down to the registers and stack state. \footnote{This may require partially modifying the garbage collector to make when it decides to trigger deterministic}
+    \item Smaller, self-contained tests of just the compiler's output.
+    \item A way of comparing traces of the interpreter and the JIT compiler down to the registers and stack state. \footnote{This may require partially modifying the garbage collector to make when it decides to trigger deterministic}
 \end{enumerate}
 
 However, these are not the core goals of the project and instead things that
@@ -197,9 +197,9 @@ project.
 \begin{itemize}
 
     \item Understand the semantics of the instruction set and enough of the
-        runtime that the interpreter interacts with.
+          runtime that the interpreter interacts with.
     \item Learn enough about x86\_64 assembly to be able to know the right
-        instructions to emit to replace the existing C.
+          instructions to emit to replace the existing C.
 \end{itemize}
 
 The main difficulty I envision is with the first of these tasks. There isn't
@@ -277,65 +277,65 @@ focusing on the dissertation.
 
 The milestone is listed below each chunk of work
 
-\subsubsection*{Michaelmas Term} 
+\subsubsection*{Michaelmas Term}
 
 \begin{tabularx}{\textwidth}{rX} \toprule
-    Dates & Work to be completed \\ \midrule
+    Dates & Work to be completed                                                                                               \\ \midrule
     16/10 - 28/10
-    &\tabitem Decide on method for emitting bytecode from Rust.\\
-    &\tabitem Create mechanism for doing relocations from initial bytecode address to final machine code address.\\
-    &\textit{Creation of framework for emitting machine code and performing relocations. Test with small example.} \\
+          & \tabitem Decide on method for emitting bytecode from Rust.                                                         \\
+          & \tabitem Create mechanism for doing relocations from initial bytecode address to final machine code address.       \\
+          & \textit{Creation of framework for emitting machine code and performing relocations. Test with small example.}      \\
 
-    &\\
-
-    29/10 - 11/11
-    &\tabitem Create C functions implementing all the opcodes from the existing interpreter source.\\
-    &\tabitem Create compiler emitting jumps to these functions.\\
-    &\textit{Most programs now run using the native code PC as the actual PC} \\
-    
-    &\\
+          &                                                                                                                    \\
 
     29/10 - 11/11
-    &\tabitem Start replacing the generated calls to the temporary functions with the assembly code that replaces them.\\
-    &\tabitem Start with the smaller and simpler to implement functions first.\\
-    &\textit{Most programs now run with some degree of JIT compilation} \\
+          & \tabitem Create C functions implementing all the opcodes from the existing interpreter source.                     \\
+          & \tabitem Create compiler emitting jumps to these functions.                                                        \\
+          & \textit{Most programs now run using the native code PC as the actual PC}                                           \\
 
-    &\\
+          &                                                                                                                    \\
+
+    29/10 - 11/11
+          & \tabitem Start replacing the generated calls to the temporary functions with the assembly code that replaces them. \\
+          & \tabitem Start with the smaller and simpler to implement functions first.                                          \\
+          & \textit{Most programs now run with some degree of JIT compilation}                                                 \\
+
+          &                                                                                                                    \\
 
     12/11 - 25/01
-    &\tabitem Implement the remaining operations.\\
+          & \tabitem Implement the remaining operations.                                                                       \\
     \textit{Milestone:}
-    &\textit{Success criteria nearly completed barring testing} \\
+          & \textit{Success criteria nearly completed barring testing}                                                         \\
 
-    &\\
+          &                                                                                                                    \\
 
     26/11 - 26/01
-    &\tabitem Recover from term.\\
-    &\tabitem Fix out any smaller fiddly unimplemented features.\\
-    &\tabitem Try to get the compiler building and then use the
-        compiler's test suite to test the correctness of the JIT runtime.\\
-    &\tabitem Create a benchmark suite and tooling to run it automated \\
-    &\textit{Benchmarks working and so success criteria done} \\
-\bottomrule
+          & \tabitem Recover from term.                                                                                        \\
+          & \tabitem Fix out any smaller fiddly unimplemented features.                                                        \\
+          & \tabitem Try to get the compiler building and then use the
+    compiler's test suite to test the correctness of the JIT runtime.                                                          \\
+          & \tabitem Create a benchmark suite and tooling to run it automated                                                  \\
+          & \textit{Benchmarks working and so success criteria done}                                                           \\
+    \bottomrule
 \end{tabularx}
 
-\subsubsection*{Lent Term} 
+\subsubsection*{Lent Term}
 
 \begin{tabularx}{\textwidth}{rX} \toprule
     27/12 - 03/02
-    &\tabitem Slack time in case initial Michaelmas plan was overly optimistic. \\
-    &\tabitem Optimise performance of compiler and emitted assembly. \\
-    &\tabitem Write the progress report. \\
-    &\tabitem Decide on any other extensions to pick up and cover them in the progress report. \\
-    &\textit{Progress report completed. Plan n place for any remaining extensions.} \\
+     & \tabitem Slack time in case initial Michaelmas plan was overly optimistic.                    \\
+     & \tabitem Optimise performance of compiler and emitted assembly.                               \\
+     & \tabitem Write the progress report.                                                           \\
+     & \tabitem Decide on any other extensions to pick up and cover them in the progress report.     \\
+     & \textit{Progress report completed. Plan n place for any remaining extensions.}                \\
 
-    &\\
+     &                                                                                               \\
 
     4/02 - 17/03
-    &\tabitem By this point the project should be mainly interesting extensions and optimisations. \\
-    &\tabitem Start collecting together notes and references for the dissertation. \\
-    &\textit{Code completion of project} \\
-\bottomrule
+     & \tabitem By this point the project should be mainly interesting extensions and optimisations. \\
+     & \tabitem Start collecting together notes and references for the dissertation.                 \\
+     & \textit{Code completion of project}                                                           \\
+    \bottomrule
 \end{tabularx}
 
 \subsubsection*{Easter Term}
@@ -343,27 +343,27 @@ The milestone is listed below each chunk of work
 \begin{tabularx}{\textwidth}{rX} \toprule
 
     18/03 - 28/04
-    &\tabitem Write the first few drafts of the dissertation. \\
+     & \tabitem Write the first few drafts of the dissertation. \\
     \textit{Milestone:}
-    &\textit{A few rounds of dissertation feedback} \\
+     & \textit{A few rounds of dissertation feedback}           \\
 
-    &\\
+     &                                                          \\
 
     29/05 - 9/06
-    &\tabitem Gather and respond to final feedback. \\
-    &\tabitem Ensure bib file is complete. \\
-    &\tabitem Proofread. \\
-    &\tabitem Final submission. \\
+     & \tabitem Gather and respond to final feedback.           \\
+     & \tabitem Ensure bib file is complete.                    \\
+     & \tabitem Proofread.                                      \\
+     & \tabitem Final submission.                               \\
     \textit{Milestone:}
-    &\textit{Project done} \\
+     & \textit{Project done}                                    \\
 
-    &\\
+     &                                                          \\
 
     10/06 - 14/06
-    &\tabitem Submit early. \\
+     & \tabitem Submit early.                                   \\
     \textit{Milestone:}
-    &\textit{Project done (officially)} \\
-\bottomrule
+     & \textit{Project done (officially)}                       \\
+    \bottomrule
 \end{tabularx}
 
 \end{document}
