@@ -1,9 +1,9 @@
-use crate::interp::loaded_code_lookup::LoadedCodeLookup;
 use ocaml_jit_shared::Instruction;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::env;
 use std::sync::{Mutex, MutexGuard};
+use crate::caml::mlvalues::Value;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 struct CodePtr(pub usize);
@@ -18,11 +18,17 @@ impl CodePtr {
     }
 }
 
-pub struct GlobalData {
-    pub lookup: LoadedCodeLookup,
+pub struct Section {
+    pub base_address: usize,
+    pub length: usize,
+    pub entrypoint: extern fn () -> Value,
     pub instructions: Vec<Instruction<usize>>,
+}
+
+pub struct GlobalData {
     pub use_new_interpreter: bool,
     pub trace: bool,
+    pub sections: Vec<Section>
 }
 
 static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(GlobalData::new()));
@@ -30,10 +36,9 @@ static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(GlobalData
 impl GlobalData {
     fn new() -> GlobalData {
         GlobalData {
-            lookup: LoadedCodeLookup::new(),
-            instructions: Vec::new(),
             use_new_interpreter: env::var("OLD_INTERP").is_err(),
             trace: !env::var("TRACE").is_err(),
+            sections: Vec::new()
         }
     }
 
@@ -41,14 +46,16 @@ impl GlobalData {
         GLOBAL_DATA.try_lock().expect("Global data already locked")
     }
 
-    pub fn translate_pc(&self, pointer: *const i32) -> Option<usize> {
-        self.lookup.lookup(pointer).map(|(start, _)| start)
-    }
+    pub fn find_section(&self, code: &[i32]) -> Option<&Section> {
+        let base_address = code.as_ptr() as usize;
+        let length = code.len();
 
-    pub fn translate_pc_exn(&self, pointer: *const i32) -> usize {
-        match self.translate_pc(pointer) {
-            Some(v) => v,
-            None => panic!("Could not find loaded instruction at {:?}", pointer),
-        }
+        self.sections.iter().find(|s| s.base_address == base_address && s.length == length)
+    }
+}
+
+impl Section {
+    pub fn execute(&self) -> Value {
+        unsafe { self.entrypoint() }
     }
 }

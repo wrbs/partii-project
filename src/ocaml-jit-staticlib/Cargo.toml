@@ -11,3 +11,5 @@ crate_type = ["staticlib"]
 [dependencies]
 ocaml-jit-shared = { path = "../ocaml-jit-shared" }
 once_cell = "1.4.1"
+dynasm = "1.0.0"
+dynasmrt = "1.0.0"

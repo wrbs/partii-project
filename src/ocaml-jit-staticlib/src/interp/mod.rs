@@ -3,15 +3,14 @@ use std::sync::{Mutex, MutexGuard};
 
 mod code_preparation;
 mod global_data;
-mod interpreter;
-mod loaded_code_lookup;
+mod compiler;
 
 use global_data::GlobalData;
 use ocaml_jit_shared::Opcode;
 
 pub fn on_bytecode_loaded(code: &[i32]) {
     let mut global_data = GlobalData::get();
-    code_preparation::relocate_and_load_instructions(code, &mut global_data);
+    code_preparation::relocate_and_load_instructions(code);
 }
 
 extern "C" {
@@ -19,13 +18,7 @@ extern "C" {
 }
 
 pub fn interpret_bytecode(code: &[i32]) -> Value {
-    let use_new = GlobalData::get().use_new_interpreter;
-
-    if use_new {
-        interpreter::interpret(code)
-    } else {
-        unsafe { actual_caml_interprete(code.as_ptr(), code.len()) }
-    }
+    unsafe { actual_caml_interprete(code.as_ptr(), code.len()) }
 }
 
 pub fn on_bytecode_released(_code: &[i32]) {
@@ -33,7 +26,7 @@ pub fn on_bytecode_released(_code: &[i32]) {
 }
 
 pub fn trace(pc: *const i32, sp: u64, acc: i64) {
-    let global_data = GlobalData::get();
+    /*let global_data = GlobalData::get();
     if !global_data.trace {
         return;
     }
@@ -56,5 +49,5 @@ pub fn trace(pc: *const i32, sp: u64, acc: i64) {
     for instruction_index in start + 1..=start + number_of_instructions {
         print!(", {:?}", global_data.instructions[instruction_index]);
     }
-    println!();
+    println!();*/
 }

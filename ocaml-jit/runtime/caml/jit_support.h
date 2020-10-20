@@ -31,6 +31,18 @@ void rust_jit_trace(code_t pc, uint64_t sp, int64_t value);
 
 value jit_support_alloc_small(int64_t wosize, uint8_t tag);
 
+value jit_support_get_field(value ptr, int64_t fieldno);
+value* jit_support_check_stacks(value* sp);
+value* jit_support_appterm_stacks(int64_t nargs, int64_t slotsize, value* sp);
+
+struct jit_state {
+    value accu;
+    value env;
+    value* sp;
+    value extra_args;
+};
+
+void jit_support_closure(struct jit_state* state, int64_t nvars, void* codeval);
 
 #endif /* CAML_INTERNALS */
 
