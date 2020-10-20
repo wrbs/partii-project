@@ -1,12 +1,16 @@
 use crate::bytecode_files::{ParseFileError, Trailer};
 use byteorder::{LittleEndian, ReadBytesExt};
-use ocaml_jit_shared::{Instruction, parse_instructions};
+use ocaml_jit_shared::{parse_instructions, Instruction};
 use std::fs::File;
 use std::io::BufReader;
 
 const CODE_SECTION: &str = "CODE";
 
-pub fn parse_bytecode(f: &mut File, trailer: &Trailer) -> Result<Vec<(usize, Vec<Instruction<usize>>)>, ParseFileError> {
+#[allow(clippy::type_complexity)]
+pub fn parse_bytecode(
+    f: &mut File,
+    trailer: &Trailer,
+) -> Result<Vec<(usize, Vec<Instruction<usize>>)>, ParseFileError> {
     let section = trailer.find_required_section(CODE_SECTION)?;
 
     if section.length % 4 != 0 {
@@ -32,7 +36,7 @@ pub fn parse_bytecode(f: &mut File, trailer: &Trailer) -> Result<Vec<(usize, Vec
             Some((start, num_instructions)) => {
                 let start = *start;
                 let end = start + *num_instructions;
-                let contained_instructions = parsed.instructions[start..end].iter().map(|x| x.clone()).collect();
+                let contained_instructions = parsed.instructions[start..end].to_vec();
                 final_instructions.push((bytecode_location, contained_instructions));
             }
         }

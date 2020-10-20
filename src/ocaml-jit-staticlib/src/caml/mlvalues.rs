@@ -97,12 +97,12 @@ mod cast_tests {
 // Conversion
 impl LongValue {
     #[inline]
-    const fn from_i64(i: i64) -> LongValue {
+    pub const fn from_i64(i: i64) -> LongValue {
         LongValue((((i as u64) << 1) as i64) + 1)
     }
 
     #[inline]
-    fn to_i64(&self) -> i64 {
+    pub fn to_i64(&self) -> i64 {
         self.0 >> 1
     }
 }
@@ -238,6 +238,6 @@ impl BlockValue {
     pub fn atom(tag: Tag) -> Value {
         // This is safe in the context of the runtime, because this table is statically allocated
         // once
-        unsafe { Value(caml_atom_table[tag.0 as usize] as i64) }
+        unsafe { Value((caml_atom_table[(tag.0 as usize)] + 8) as i64) }
     }
 }

@@ -1,5 +1,5 @@
 use std::ffi::CString;
-use std::os::raw::{c_char, c_void};
+use std::os::raw::c_char;
 
 extern "C" {
     fn caml_fatal_error(s: *const c_char, ...) -> !;
@@ -10,6 +10,7 @@ pub fn fatal_error(message: &str) -> ! {
     unsafe { caml_fatal_error(msg.as_ptr()) }
 }
 
+/*
 #[repr(C)]
 pub struct ExtTable {
     size: i32,
@@ -22,3 +23,5 @@ impl ExtTable {
         unsafe { *self.contents.add(index) }
     }
 }
+
+ */

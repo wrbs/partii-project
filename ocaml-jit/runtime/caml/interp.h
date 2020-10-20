@@ -26,6 +26,10 @@
 /* interpret a bytecode */
 value caml_interprete (code_t prog, asize_t prog_size);
 
+#ifdef USE_RUST_JIT
+value actual_caml_interprete (code_t prog, asize_t prog_size, int print_traces);
+#endif
+
 /* tell the runtime that a bytecode program might be needed */
 void caml_prepare_bytecode(code_t prog, asize_t prog_size);
 

@@ -4,9 +4,9 @@ mod primitives;
 pub mod trailer;
 
 pub use error::ParseFileError;
+use ocaml_jit_shared::Instruction;
 use std::fs::File;
 pub use trailer::Trailer;
-use ocaml_jit_shared::Instruction;
 
 pub struct BytecodeFile {
     pub trailer: Trailer,
@@ -22,6 +22,6 @@ pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile, ParseFileError>
     Ok(BytecodeFile {
         trailer,
         primitives,
-        instructions
+        instructions,
     })
 }

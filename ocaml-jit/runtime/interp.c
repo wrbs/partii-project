@@ -40,8 +40,6 @@
 #include "caml/jit_support.h"
 #endif
 
-#define TESTING_TRACE
-
 /* Registers for the abstract machine:
         pc         the code pointer
         sp         the stack pointer (grows downward)
@@ -219,7 +217,7 @@ static intnat caml_bcodcount;
 /* The interpreter itself */
 
 #ifdef USE_RUST_JIT
-value actual_caml_interprete(code_t prog, asize_t prog_size)
+value actual_caml_interprete(code_t prog, asize_t prog_size, int print_traces)
 #else
 value caml_interprete(code_t prog, asize_t prog_size)
 #endif
@@ -324,8 +322,12 @@ value caml_interprete(code_t prog, asize_t prog_size)
     CAMLassert(sp >= Caml_state->stack_low);
     CAMLassert(sp <= Caml_state->stack_high);
 #endif
-#ifdef TESTING_TRACE
-    rust_jit_trace(pc, Caml_state->stack_high - sp, accu);
+#ifdef USE_RUST_JIT
+    if(print_traces) {
+        // FIXME: This doesn't work with things like the toplevel
+        // which jump around between code sections
+        rust_jit_trace(pc - prog, accu, env, extra_args, sp);
+    }
 #endif
 
     curr_instr = *pc++;

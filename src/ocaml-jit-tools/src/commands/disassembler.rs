@@ -2,10 +2,10 @@ use crate::utils::die;
 use colored::Colorize;
 
 use crate::bytecode_files::{parse_bytecode_file, BytecodeFile};
+use ocaml_jit_shared::Instruction;
 use std::fs::File;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use ocaml_jit_shared::Instruction;
 
 #[derive(StructOpt)]
 #[structopt(about = "disassemble bytecode files")]
@@ -29,7 +29,7 @@ fn show_instructions(bcf: &BytecodeFile) {
         print!("{}\t", offset);
 
         for (count, instruction) in instructions.iter().enumerate() {
-            if count > 0  {
+            if count > 0 {
                 print!(", ")
             }
             show_instruction(instruction);

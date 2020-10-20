@@ -24,7 +24,7 @@
 
 /* Callbacks from C to Rust */
 
-void rust_jit_trace(code_t pc, uint64_t sp, int64_t value);
+void rust_jit_trace(uint64_t  pc, uint64_t accu, uint64_t env, uint64_t extra_args, value* sp);
 
 /* Exposing some of the macro stuff as functions to avoid having to rewrite them in Rust when it's
  * out of scope for the JIT */
@@ -32,8 +32,10 @@ void rust_jit_trace(code_t pc, uint64_t sp, int64_t value);
 value jit_support_alloc_small(int64_t wosize, uint8_t tag);
 
 value jit_support_get_field(value ptr, int64_t fieldno);
-value* jit_support_check_stacks(value* sp);
-value* jit_support_appterm_stacks(int64_t nargs, int64_t slotsize, value* sp);
+void jit_support_set_field(value ptr, int64_t fieldno, value to);
+
+value *jit_support_check_stacks(value* sp);
+value *jit_support_appterm_stacks(int64_t nargs, int64_t slotsize, value* sp);
 
 struct jit_state {
     value accu;
@@ -43,6 +45,11 @@ struct jit_state {
 };
 
 void jit_support_closure(struct jit_state* state, int64_t nvars, void* codeval);
+void jit_support_closure_rec(struct jit_state* state, int64_t nvars, void* codeval);
+
+void jit_support_make_block(struct jit_state* state, int64_t wosize, int64_t tag);
+
+void *jit_support_get_primitive(uint64_t primno);
 
 #endif /* CAML_INTERNALS */
 

@@ -14,7 +14,7 @@ pub struct ParsedInstructions {
 }
 
 #[derive(Debug, Error)]
-pub enum InstructionParseErrorType {
+pub enum InstructionParseErrorReason {
     #[error("unexpected end of stream")]
     UnexpectedEnd,
 
@@ -28,13 +28,19 @@ pub enum InstructionParseErrorType {
 #[derive(Debug, Error)]
 #[error("Instruction parse error at {current_position}: {reason}")]
 pub struct InstructionParseError {
-    pub reason: InstructionParseErrorType,
+    pub reason: InstructionParseErrorReason,
     pub current_position: usize,
     pub parsed_so_far: ParsedInstructions,
 }
 
 // default reuslt type in this file
-type Result<T, E = InstructionParseErrorType> = std::result::Result<T, E>;
+type Result<T, E = InstructionParseErrorReason> = std::result::Result<T, E>;
+
+pub fn parse_instructions_from_code_slice(
+    code: &[i32],
+) -> Result<ParsedInstructions, InstructionParseError> {
+    parse_instructions(code.iter().copied(), code.len())
+}
 
 pub fn parse_instructions<I: Iterator<Item = i32>>(
     iterator: I,
@@ -388,7 +394,12 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
     Ok(())
 }
 
-fn emit_branch_cmp(result: &mut ParsedInstructions, comp: Comp, value: i32, label: usize) -> Instruction<usize> {
+fn emit_branch_cmp(
+    result: &mut ParsedInstructions,
+    comp: Comp,
+    value: i32,
+    label: usize,
+) -> Instruction<usize> {
     // Turn BEQ 2, 111 to
     // Const 2, IntComp Eq, BranchIf 111
     result.instructions.push(Instruction::Const(value));
@@ -427,7 +438,7 @@ impl<I: Iterator<Item = i32>> ParseContext<I> {
                 self.position += 1;
                 Ok(v)
             }
-            None => Err(InstructionParseErrorType::UnexpectedEnd),
+            None => Err(InstructionParseErrorReason::UnexpectedEnd),
         }
     }
 
@@ -439,7 +450,7 @@ impl<I: Iterator<Item = i32>> ParseContext<I> {
         let v = self.i32()?;
         match Opcode::from_i32(v) {
             Some(x) => Ok(x),
-            None => Err(InstructionParseErrorType::BadOpcode(v)),
+            None => Err(InstructionParseErrorReason::BadOpcode(v)),
         }
     }
 
@@ -447,7 +458,7 @@ impl<I: Iterator<Item = i32>> ParseContext<I> {
         let rel = self.i32()?;
         let location = position as i32 + rel;
         if location < 0 {
-            return Err(InstructionParseErrorType::NegativeLabel(location));
+            return Err(InstructionParseErrorReason::NegativeLabel(location));
         }
         Ok(location as usize)
     }

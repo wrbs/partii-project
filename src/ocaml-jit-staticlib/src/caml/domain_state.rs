@@ -69,6 +69,7 @@ extern "C" {
     static Caml_state: *mut DomainState;
 }
 
+/*
 pub fn get_sp() -> *mut Value {
     unsafe { (*Caml_state).extern_sp }
 }
@@ -79,4 +80,9 @@ pub fn set_sp(to: *mut Value) {
 
 pub fn stack_size() -> i64 {
     unsafe { ((*Caml_state).stack_high as i64 - (*Caml_state).extern_sp as i64) / 8 }
+}
+ */
+
+pub fn get_stack_high() -> *const Value {
+    unsafe { (*Caml_state).stack_high }
 }
