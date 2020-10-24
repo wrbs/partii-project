@@ -1,6 +1,5 @@
 mod bytecode_files;
 mod commands;
-mod ring_buffer;
 mod utils;
 
 use commands::{compare_traces, disassembler, hexdump};

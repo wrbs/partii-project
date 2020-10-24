@@ -238,6 +238,6 @@ impl BlockValue {
     pub fn atom(tag: Tag) -> Value {
         // This is safe in the context of the runtime, because this table is statically allocated
         // once
-        unsafe { Value((caml_atom_table[(tag.0 as usize)] + 8) as i64) }
+        unsafe { Value(caml_atom_table[tag.0 as usize] as i64 + 8) }
     }
 }

@@ -108,7 +108,7 @@ impl<L1> Instruction<L1> {
             }
             Instruction::Branch(l) => Instruction::Branch(f(l)),
             Instruction::BranchIf(l) => Instruction::BranchIf(f(l)),
-            Instruction::BranchIfNot(l) => Instruction::BranchIf(f(l)),
+            Instruction::BranchIfNot(l) => Instruction::BranchIfNot(f(l)),
             Instruction::Switch(l1s, l2s) => {
                 let l1s_mapped = l1s.iter().map(&mut f).collect();
                 let l2s_mapped = l2s.iter().map(&mut f).collect();

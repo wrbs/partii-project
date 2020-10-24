@@ -201,10 +201,9 @@ impl CompilerContext {
                 // sp[n] = accu;
                 // accu = Val_unit;
                 let offset = (n * 8) as i32;
-                let unit_v: i64 = mlvalues::LongValue::UNIT.into();
                 oc_dynasm!(self.ops
                     ; mov [r_sp + offset], r_accu
-                    ; mov r_accu, unit_v as i32
+                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
                 );
             }
             // There are two ways to call something in OCaml bytecode
@@ -436,7 +435,6 @@ impl CompilerContext {
                 );
             }
             Instruction::SetGlobal(field_no) => {
-                let unit_v: i64 = mlvalues::LongValue::UNIT.into();
                 oc_dynasm!(self.ops
                     ; mov rax, QWORD get_global_data_addr()
                     ; mov rdi, [rax]
@@ -444,7 +442,7 @@ impl CompilerContext {
                     ; mov rdx, r_accu
                     ; mov rax, QWORD jit_support_set_field as i64
                     ; call rax
-                    ; mov r_accu, unit_v as i32
+                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
                 );
             }
             Instruction::Const(i) => {
@@ -455,7 +453,7 @@ impl CompilerContext {
             }
             Instruction::MakeBlock(0, tag) => {
                 oc_dynasm!(self.ops
-                    ; mov r_env, QWORD BlockValue::atom(Tag(*tag)).0
+                    ; mov r_accu, QWORD BlockValue::atom(Tag(*tag)).0
                 );
             }
             Instruction::MakeBlock(wosize, tag) => {
