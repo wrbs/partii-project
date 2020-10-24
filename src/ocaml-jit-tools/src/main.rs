@@ -1,8 +1,9 @@
 mod bytecode_files;
 mod commands;
+mod ring_buffer;
 mod utils;
 
-use commands::{disassembler, hexdump};
+use commands::{compare_traces, disassembler, hexdump};
 
 #[macro_use]
 extern crate prettytable;
@@ -16,6 +17,7 @@ use structopt::StructOpt;
 enum BaseCli {
     Dis(disassembler::Options),
     Hexdump(hexdump::Options),
+    CompareTraces(compare_traces::Options),
 }
 
 fn main() {
@@ -25,6 +27,7 @@ fn main() {
     match subcommand {
         BaseCli::Dis(opts) => disassembler::run(opts),
         BaseCli::Hexdump(opts) => hexdump::run(opts),
+        BaseCli::CompareTraces(opts) => compare_traces::run(opts),
     }
 }
 

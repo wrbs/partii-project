@@ -3,7 +3,13 @@ use crate::caml::mlvalues::Value;
 use ocaml_jit_shared::Instruction;
 
 pub fn print_bytecode_trace(pc: usize, accu: u64, env: u64, extra_args: u64, sp: *const Value) {
-    trace(format!("# PC = {}", pc).as_str(), accu, env, extra_args, sp);
+    trace(
+        format!("!T! PC = {}", pc).as_str(),
+        accu,
+        env,
+        extra_args,
+        sp,
+    );
 }
 
 pub fn print_instruction_trace(
@@ -14,7 +20,7 @@ pub fn print_instruction_trace(
     sp: *const Value,
 ) {
     trace(
-        format!("  - {:?}", instruction).as_str(),
+        format!("      - {:?}", instruction).as_str(),
         accu,
         env,
         extra_args,

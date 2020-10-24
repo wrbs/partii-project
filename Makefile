@@ -14,6 +14,8 @@ STATIC_LIB_FILE := libocaml_jit_staticlib.a
 
 RESOURCES_DIR := resources
 
+NO_ASLR_DIR := vendor/no-aslr
+
 BUILT_DIR := dist
 PREFIX := $(abspath .)/$(BUILT_DIR)
 
@@ -32,6 +34,7 @@ all:
 	$(MAKE) -C $(OCAML_DIR)
 	$(MAKE) -C $(OCAML_DIR) install
 	$(MAKE) -C $(RESOURCES_DIR) all
+	$(MAKE) -C $(NO_ASLR_DIR)
 
 .PHONY: ocamltests
 ocamltests:
