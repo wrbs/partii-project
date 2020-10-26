@@ -28,6 +28,7 @@ pub fn compile<P: AsRef<Path>>(
         section_number,
         &relocated_instructions,
         &bytecode_offsets,
+        bytecode,
         print_traces,
     );
 

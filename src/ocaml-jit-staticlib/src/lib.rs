@@ -67,12 +67,14 @@ pub fn on_bytecode_released(_code: &[i32]) {
     // For now, don't cleanup and just leak memory
 }
 
-pub fn old_interpreter_trace(pc: usize, accu: u64, env: u64, extra_args: u64, sp: *const Value) {
+pub fn old_interpreter_trace(
+    pc: *const i32,
+    accu: u64,
+    env: u64,
+    extra_args: u64,
+    sp: *const Value,
+) {
     let global_data = GlobalData::get();
-    let (section, pc_offset) = global_data
-        .compiler_data
-        .translate_bytecode_address(pc)
-        .expect("Could not find bytecode offset for PC");
 
-    print_bytecode_trace(&global_data, section, pc_offset, accu, env, extra_args, sp);
+    print_bytecode_trace(&global_data, pc, accu, env, extra_args, sp);
 }

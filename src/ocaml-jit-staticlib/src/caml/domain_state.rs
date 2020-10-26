@@ -28,7 +28,7 @@ pub struct DomainState {
     stack_high: *mut Value,
     stack_threshold: *mut Value,
     extern_sp: *mut Value,
-    trapsp: *mut Value,
+    trapsp: u64,
     trap_barrier: *mut Value,
     external_raise: *const c_void, // todo - sigjmp_buf, get _JBLEN
     exn_bucket: Value,
@@ -85,4 +85,7 @@ pub fn stack_size() -> i64 {
 
 pub fn get_stack_high() -> *const Value {
     unsafe { (*Caml_state).stack_high }
+}
+pub fn get_trap_sp_addr() -> *const u64 {
+    unsafe { &(*Caml_state).trapsp }
 }

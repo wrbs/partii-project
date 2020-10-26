@@ -40,7 +40,7 @@ pub unsafe extern "C" fn caml_release_bytecode(prog: *const i32, prog_size: usiz
 
 #[no_mangle]
 pub unsafe extern "C" fn rust_jit_trace(
-    pc: usize,
+    pc: *const i32,
     accu: u64,
     env: u64,
     extra_args: u64,

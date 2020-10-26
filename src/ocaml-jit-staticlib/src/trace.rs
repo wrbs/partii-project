@@ -1,21 +1,27 @@
-use crate::caml::domain_state::get_stack_high;
+use crate::caml::domain_state::{get_stack_high, get_trap_sp_addr};
 use crate::caml::mlvalues::{Value, ValueType};
 use crate::compiler::CompilerData;
 use crate::global_data::GlobalData;
-use ocaml_jit_shared::Instruction;
+use ocaml_jit_shared::{Instruction, Opcode};
 
 pub fn print_bytecode_trace(
     global_data: &GlobalData,
-    section: usize,
-    pc: usize,
+    pc: *const i32,
     accu: u64,
     env: u64,
     extra_args: u64,
     sp: *const Value,
 ) {
+    let (section, pc_offset) = global_data
+        .compiler_data
+        .translate_bytecode_address(pc as usize)
+        .expect("Could not find bytecode offset for PC");
+
+    let opcode_val = unsafe { *pc };
+    let opcode = Opcode::from_i32(opcode_val).expect("Invalid opcode");
     trace(
         global_data,
-        format!("!T! PC = <{}; {}>", section, pc).as_str(),
+        format!("!T! PC = <{}; {}> {:?}", section, pc_offset, opcode).as_str(),
         accu,
         env,
         extra_args,
@@ -72,13 +78,16 @@ fn trace(
         on_stack.push_str(", ...");
     }
 
+    let tsp = unsafe { *get_trap_sp_addr() };
+
     println!(
-        "{:<30}  ACCU={} ENV={:016X} E_A={:<3} SP={:<3} TOS={}",
+        "{:<40}  ACCU={} ENV={:016X} E_A={:<3} SP={:<3} TSP={:016X} TOS={}",
         start,
         display_value(compiler_data, Value::from(accu as i64)),
         env,
         extra_args,
         stack_size,
+        tsp,
         on_stack
     );
 }

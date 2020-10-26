@@ -36,7 +36,7 @@ fn run_exn(options: Options) -> Result<()> {
             match interpreted_output {
                 Output::Trace(_) => (),
                 Output::Exited { exit_code } => {
-                    println!("Exited: {}", exit_code);
+                    println!("{}", format!("Exited: {}", exit_code).green().bold());
                     break;
                 }
             }
@@ -87,11 +87,15 @@ fn check_and_show_differences(interp: &Output, compiled: &Output) -> bool {
                 false
             }
         }
-        _ => {
-            println!("{}", "Programs didn't both exit the same way:".bold().red());
-            print!("Interpreted: {:?}", interp);
-            print!("Compiled:    {:?}", compiled);
-            false
+        (a, b) => {
+            if a == b {
+                true
+            } else {
+                println!("{}", "Programs didn't both exit the same way:".bold().red());
+                println!("Interpreted: {:?}", interp);
+                println!("Compiled:    {:?}", compiled);
+                false
+            }
         }
     }
 }

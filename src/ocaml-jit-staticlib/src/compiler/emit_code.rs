@@ -1,8 +1,8 @@
 use super::c_primitives::*;
 use super::saved_data::EntryPoint;
 use crate::caml::misc::fatal_error;
-use crate::caml::mlvalues;
 use crate::caml::mlvalues::{BlockValue, LongValue, Tag, Value};
+use crate::caml::{domain_state, mlvalues};
 use crate::global_data::GlobalData;
 use crate::trace::{print_bytecode_trace, print_instruction_trace};
 use dynasmrt::x64::Assembler;
@@ -13,6 +13,7 @@ pub fn compile_instructions(
     section_number: usize,
     instructions: &[Instruction<usize>],
     bytecode_offsets: &[Option<usize>],
+    code: &[i32],
     print_traces: bool,
 ) -> (ExecutableBuffer, EntryPoint) {
     let ops = Assembler::new().unwrap();
@@ -29,7 +30,11 @@ pub fn compile_instructions(
     let entrypoint_offset = cc.emit_entrypoint();
 
     for (offset, instruction) in instructions.iter().enumerate() {
-        cc.emit_instruction(instruction, offset, bytecode_offsets[offset]);
+        cc.emit_instruction(
+            instruction,
+            offset,
+            bytecode_offsets[offset].map(|x| unsafe { code.as_ptr().offset(x as isize) }),
+        );
     }
 
     let ops = cc.ops;
@@ -133,7 +138,7 @@ impl CompilerContext {
         &mut self,
         instruction: &Instruction<usize>,
         offset: usize,
-        bytecode_offset: Option<usize>,
+        bytecode_pointer: Option<*const i32>,
     ) -> Option<()> {
         let label = self.get_label(offset);
 
@@ -142,14 +147,13 @@ impl CompilerContext {
         );
 
         if self.print_traces {
-            if let Some(bytecode_offset) = bytecode_offset {
+            if let Some(bytecode_pointer) = bytecode_pointer {
                 oc_dynasm!(self.ops
-                    ; mov rdi, self.section_number as i32
-                    ; mov rsi, QWORD bytecode_offset as i64
-                    ; mov rdx, r_accu
-                    ; mov rcx, r_env
-                    ; mov r8, r_extra_args
-                    ; mov r9, r_sp
+                    ; mov rdi, QWORD bytecode_pointer as i64
+                    ; mov rsi, r_accu
+                    ; mov rdx, r_env
+                    ; mov rcx, r_extra_args
+                    ; mov r8, r_sp
                     ; mov rax, QWORD bytecode_trace as i64
                     ; call rax
                 );
@@ -509,7 +513,7 @@ impl CompilerContext {
             Instruction::BranchIf(loc) => {
                 let label = self.get_label(*loc);
                 oc_dynasm!(self.ops
-                    ; cmp r_accu, BYTE 3 // Which is Val_false
+                    ; cmp r_accu, BYTE 1 // Which is Val_false
                     ; je >next
                     ; jmp =>label
                     ; next:
@@ -518,7 +522,7 @@ impl CompilerContext {
             Instruction::BranchIfNot(loc) => {
                 let label = self.get_label(*loc);
                 oc_dynasm!(self.ops
-                    ; cmp r_accu, BYTE 3 // Which is Val_false
+                    ; cmp r_accu, BYTE 1 // Which is Val_false
                     ; jne >next
                     ; jmp =>label
                     ; next:
@@ -528,14 +532,38 @@ impl CompilerContext {
             Instruction::Switch(_, _) => {}
             Instruction::BoolNot => {}
             */
-            Instruction::PushTrap(_) => {
-                // TODO implement traps
+            Instruction::PushTrap(loc) => {
+                let label = self.get_label(*loc);
+                let trap_sp = domain_state::get_trap_sp_addr();
                 oc_dynasm!(self.ops
+                    // Get the trapsp address
+                    ; mov rsi, QWORD (trap_sp as usize) as i64
+                    // Push the trap frame
                     ; sub r_sp, 32
+                    // Push pc to go to
+                    ; lea rcx, [=>label]
+                    ; mov [r_sp], rcx
+                    // Push current trapsp
+                    ; mov rax, [rsi]
+                    ; mov [r_sp + 8], rax
+                    // Push current env
+                    ; mov [r_sp + 16], r_env
+                    // Push Val_long(extra_args)
+                    ; mov rax, r_extra_args
+                    ; shl rax, 1
+                    ; inc rax
+                    ; mov [r_sp + 24], rax
+                    // Set the trapsp to current sp
+                    ; mov [rsi], r_sp
                 );
             }
             Instruction::PopTrap => {
+                let trap_sp = domain_state::get_trap_sp_addr();
                 oc_dynasm!(self.ops
+                    // Get the trapsp address
+                    ; mov rax, QWORD (trap_sp as usize) as i64
+                    ; mov rcx, [r_sp + 8]
+                    ; mov [rax], rcx
                     ; add r_sp, 32
                 );
             }
@@ -687,23 +715,14 @@ extern "C" fn unimplemented() {
 }
 
 extern "C" fn bytecode_trace(
-    section_number: usize,
-    bytecode_pc: usize,
+    pc: *const i32,
     accu: u64,
     env: u64,
     extra_args: u64,
     sp: *const Value,
 ) {
     let global_data = GlobalData::get();
-    print_bytecode_trace(
-        &global_data,
-        section_number,
-        bytecode_pc,
-        accu,
-        env,
-        extra_args,
-        sp,
-    );
+    print_bytecode_trace(&global_data, pc, accu, env, extra_args, sp);
 }
 
 extern "C" fn instruction_trace(
