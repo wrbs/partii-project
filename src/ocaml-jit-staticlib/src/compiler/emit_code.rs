@@ -409,7 +409,6 @@ impl CompilerContext {
                 if funcs.len() == 1 {
                     self.unimplemented();
                 } else {
-                    // assert_eq!(funcs.len(), 1);
                     let func = self.get_label(funcs[0]);
                     oc_dynasm!(self.ops
                         ; push r_extra_args

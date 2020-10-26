@@ -27,6 +27,8 @@ runtime_only:
 	$(MAKE) cargo_builds
 	$(MAKE) -C $(OCAML_DIR)/runtime
 	$(MAKE) -C $(OCAML_DIR) install
+	$(MAKE) -C $(RESOURCES_DIR) all
+	$(MAKE) -C $(NO_ASLR_DIR)
 
 .PHONY: all
 all:
