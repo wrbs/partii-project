@@ -7,7 +7,7 @@ use crate::global_data::GlobalData;
 use crate::trace::{print_bytecode_trace, print_instruction_trace};
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
-use ocaml_jit_shared::{ArithOp, Instruction};
+use ocaml_jit_shared::{ArithOp, Comp, Instruction};
 
 pub fn compile_instructions(
     section_number: usize,
@@ -406,23 +406,27 @@ impl CompilerContext {
             }
             Instruction::ClosureRec(funcs, nvars) => {
                 // FIXME simplifying assumption to avoid complicated stuff with lea
-                assert_eq!(funcs.len(), 1);
-                let func = self.get_label(funcs[0]);
-                oc_dynasm!(self.ops
-                    ; push r_extra_args
-                    ; push r_sp
-                    ; push r_env
-                    ; push r_accu
-                    ; mov rdi, rsp
-                    ; mov rsi, *nvars as i32
-                    ; lea rdx, [=>func]
-                    ; mov rax, QWORD jit_support_closure_rec as i64
-                    ; call rax
-                    ; pop r_accu
-                    ; pop r_env
-                    ; pop r_sp
-                    ; pop r_extra_args
-                );
+                if funcs.len() == 1 {
+                    self.unimplemented();
+                } else {
+                    // assert_eq!(funcs.len(), 1);
+                    let func = self.get_label(funcs[0]);
+                    oc_dynasm!(self.ops
+                        ; push r_extra_args
+                        ; push r_sp
+                        ; push r_env
+                        ; push r_accu
+                        ; mov rdi, rsp
+                        ; mov rsi, *nvars as i32
+                        ; lea rdx, [=>func]
+                        ; mov rax, QWORD jit_support_closure_rec as i64
+                        ; call rax
+                        ; pop r_accu
+                        ; pop r_env
+                        ; pop r_sp
+                        ; pop r_extra_args
+                    );
+                }
             }
             Instruction::OffsetClosure(n) => {
                 oc_dynasm!(self.ops
@@ -653,6 +657,21 @@ impl CompilerContext {
                     ; add r_sp, 8 * nargs
                 );
             }
+            Instruction::ArithInt(ArithOp::Mul) => {
+                oc_dynasm!(self.ops
+                    // Convert from ocaml longs to actual longs, multiply, convert back
+                    ; mov rax, [r_sp]
+                    ; sar rax, 1
+                    ; mov rdx, rax
+                    ; mov rax, r_accu
+                    ; sar rax, 1
+                    ; imul rax, rdx
+                    ; add rax, rax
+                    ; add rax, 1
+                    ; mov r_accu, rax
+                    ; add r_sp, BYTE 8
+                );
+            }
             Instruction::ArithInt(ArithOp::Lsr) => {
                 oc_dynasm!(self.ops
                     ; mov ecx, [r_sp]
@@ -664,8 +683,108 @@ impl CompilerContext {
             }
             /*
             Instruction::ArithInt(_) => {}
-            Instruction::IntCmp(_) => {}
             */
+            Instruction::IntCmp(cmp) => {
+                oc_dynasm!(self.ops
+                    ; mov rax, [r_sp]
+                    ; add r_sp, BYTE 8
+                    ; cmp r_accu, r_sp
+                    ; mov rdi, 3 // Val_true
+                    ; mov r_accu, 1 // Val_false
+                );
+                match cmp {
+                    Comp::Eq => {
+                        oc_dynasm!(self.ops
+                            ; cmove r_accu, rdi
+                        );
+                    }
+                    Comp::Ne => {
+                        oc_dynasm!(self.ops
+                            ; cmovne r_accu, rdi
+                        );
+                    }
+                    Comp::Lt => {
+                        oc_dynasm!(self.ops
+                            ; cmovl r_accu, rdi
+                        );
+                    }
+                    Comp::Le => {
+                        oc_dynasm!(self.ops
+                            ; cmovle r_accu, rdi
+                        );
+                    }
+                    Comp::Gt => {
+                        oc_dynasm!(self.ops
+                            ; cmovg r_accu, rdi
+                        );
+                    }
+                    Comp::Ge => {
+                        oc_dynasm!(self.ops
+                            ; cmovge r_accu, rdi
+                        );
+                    }
+                    Comp::ULt => {
+                        oc_dynasm!(self.ops
+                            ; cmovb r_accu, rdi
+                        );
+                    }
+                    Comp::UGe => {
+                        oc_dynasm!(self.ops
+                            ; cmova r_accu, rdi
+                        );
+                    }
+                }
+            }
+            Instruction::BranchCmp(cmp, i, l) => {
+                let label = self.get_label(*l);
+                oc_dynasm!(self.ops
+                    ; mov eax, caml_i32_of_int(*i as i64)
+                    ; movsxd rcx, eax
+                    ; cmp rcx, r_accu
+                );
+                match cmp {
+                    Comp::Eq => {
+                        oc_dynasm!(self.ops
+                            ; je =>label
+                        );
+                    }
+                    Comp::Ne => {
+                        oc_dynasm!(self.ops
+                            ; jne =>label
+                        );
+                    }
+                    Comp::Lt => {
+                        oc_dynasm!(self.ops
+                            ; jl =>label
+                        );
+                    }
+                    Comp::Le => {
+                        oc_dynasm!(self.ops
+                            ; jle =>label
+                        );
+                    }
+                    Comp::Gt => {
+                        oc_dynasm!(self.ops
+                            ; jg =>label
+                        );
+                    }
+                    Comp::Ge => {
+                        oc_dynasm!(self.ops
+                            ; jge =>label
+                        );
+                    }
+                    Comp::ULt => {
+                        oc_dynasm!(self.ops
+                            ; jb =>label
+                        );
+                    }
+                    Comp::UGe => {
+                        oc_dynasm!(self.ops
+                            ; ja =>label
+                        );
+                    }
+                }
+            }
             Instruction::OffsetInt(n) => {
                 oc_dynasm!(self.ops
                     ; mov ecx, *n as i32
@@ -698,15 +817,17 @@ impl CompilerContext {
             /*
             Instruction::Break => {}
             Instruction::Event => {}*/
-            _ => {
-                oc_dynasm!(self.ops
-                    ; mov rax, QWORD unimplemented as i64
-                    ; call rax
-                );
-            }
+            _ => self.unimplemented(),
         }
 
         Some(())
+    }
+
+    fn unimplemented(&mut self) {
+        oc_dynasm!(self.ops
+            ; mov rax, QWORD unimplemented as i64
+            ; call rax
+        );
     }
 }
 

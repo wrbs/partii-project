@@ -86,6 +86,7 @@ pub enum Instruction<L> {
     CCallN(u32, u32),
     ArithInt(ArithOp),
     IntCmp(Comp),
+    BranchCmp(Comp, i32, L),
     OffsetInt(i32),
     OffsetRef(i32),
     IsInt,
@@ -109,6 +110,7 @@ impl<L1> Instruction<L1> {
             Instruction::Branch(l) => Instruction::Branch(f(l)),
             Instruction::BranchIf(l) => Instruction::BranchIf(f(l)),
             Instruction::BranchIfNot(l) => Instruction::BranchIfNot(f(l)),
+            Instruction::BranchCmp(cmp, v, l) => Instruction::BranchCmp(*cmp, *v, f(l)),
             Instruction::Switch(l1s, l2s) => {
                 let l1s_mapped = l1s.iter().map(&mut f).collect();
                 let l2s_mapped = l2s.iter().map(&mut f).collect();
