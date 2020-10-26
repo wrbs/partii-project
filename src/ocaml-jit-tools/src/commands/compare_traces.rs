@@ -1,4 +1,5 @@
 use crate::utils::die;
+use colored::Colorize;
 use std::error::Error;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader};
@@ -31,23 +32,68 @@ fn run_exn(options: Options) -> Result<()> {
         let compiled_output = compiled.get_trace_line_or_exit(true)?;
         let interpreted_output = interpreted.get_trace_line_or_exit(false)?;
 
-        if compiled_output != interpreted_output {
-            println!("Mismatch between states!");
-            println!("Compiled:    {:?}", compiled_output);
-            println!("Interpreted: {:?}", interpreted_output);
-            break;
-        } else {
-            match compiled_output {
-                Output::Trace(s) => print!("{}", s),
+        if check_and_show_differences(&interpreted_output, &compiled_output) {
+            match interpreted_output {
+                Output::Trace(_) => (),
                 Output::Exited { exit_code } => {
                     println!("Exited: {}", exit_code);
                     break;
                 }
             }
+        } else {
+            break;
         }
     }
 
     Ok(())
+}
+
+fn check_and_show_differences(interp: &Output, compiled: &Output) -> bool {
+    match (interp, compiled) {
+        (Output::Trace(si), Output::Trace(sc)) => {
+            println!();
+
+            print!("{}", si.yellow());
+
+            if si == sc {
+                print!("{}", sc);
+                return true;
+            }
+
+            let mut closure_differences_only = true;
+            let mut closure_diff = false;
+
+            for (compiled_char, interp_char) in sc.chars().zip(si.chars()) {
+                if closure_diff {
+                    print!("{}", String::from(compiled_char).green());
+                    if interp_char == '>' {
+                        closure_diff = false;
+                    }
+                } else if compiled_char == interp_char {
+                    print!("{}", compiled_char);
+                } else if interp_char == '@' {
+                    closure_diff = true;
+                    print!("{}", String::from(compiled_char).green());
+                } else {
+                    closure_differences_only = false;
+                    print!("{}", String::from(compiled_char).bold().red());
+                }
+            }
+
+            if closure_differences_only {
+                true
+            } else {
+                println!("{}", "Mismatch between states!".bold().red());
+                false
+            }
+        }
+        _ => {
+            println!("{}", "Programs didn't both exit the same way:".bold().red());
+            print!("Interpreted: {:?}", interp);
+            print!("Compiled:    {:?}", compiled);
+            false
+        }
+    }
 }
 
 #[derive(Eq, PartialEq, Debug)]

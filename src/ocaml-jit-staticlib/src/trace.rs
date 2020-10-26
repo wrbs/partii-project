@@ -1,10 +1,21 @@
 use crate::caml::domain_state::get_stack_high;
-use crate::caml::mlvalues::Value;
+use crate::caml::mlvalues::{Value, ValueType};
+use crate::compiler::CompilerData;
+use crate::global_data::GlobalData;
 use ocaml_jit_shared::Instruction;
 
-pub fn print_bytecode_trace(pc: usize, accu: u64, env: u64, extra_args: u64, sp: *const Value) {
+pub fn print_bytecode_trace(
+    global_data: &GlobalData,
+    section: usize,
+    pc: usize,
+    accu: u64,
+    env: u64,
+    extra_args: u64,
+    sp: *const Value,
+) {
     trace(
-        format!("!T! PC = {}", pc).as_str(),
+        global_data,
+        format!("!T! PC = <{}; {}>", section, pc).as_str(),
         accu,
         env,
         extra_args,
@@ -13,6 +24,7 @@ pub fn print_bytecode_trace(pc: usize, accu: u64, env: u64, extra_args: u64, sp:
 }
 
 pub fn print_instruction_trace(
+    global_data: &GlobalData,
     instruction: &Instruction<usize>,
     accu: u64,
     env: u64,
@@ -20,6 +32,7 @@ pub fn print_instruction_trace(
     sp: *const Value,
 ) {
     trace(
+        global_data,
         format!("      - {:?}", instruction).as_str(),
         accu,
         env,
@@ -28,24 +41,58 @@ pub fn print_instruction_trace(
     );
 }
 
-fn trace(start: &str, accu: u64, env: u64, extra_args: u64, sp: *const Value) {
+const STACK_ELEMENTS_TO_SHOW: usize = 5;
+
+fn trace(
+    global_data: &GlobalData,
+    start: &str,
+    accu: u64,
+    env: u64,
+    extra_args: u64,
+    sp: *const Value,
+) {
+    let compiler_data = &global_data.compiler_data;
+
     let stack_high = get_stack_high();
 
     let stack_size = (stack_high as usize - sp as usize) / 8;
 
     let mut on_stack = String::new();
-    for i in 0..stack_size.min(1) {
+    for i in 0..stack_size.min(STACK_ELEMENTS_TO_SHOW) {
         unsafe {
             let val = *sp.offset(i as isize);
             if i > 0 {
                 on_stack.push_str(", ");
             }
-            on_stack.push_str(&format!("{:016X}", val.0 as u64))
+            on_stack.push_str(display_value(compiler_data, val).as_str());
         }
     }
 
+    if stack_size > STACK_ELEMENTS_TO_SHOW {
+        on_stack.push_str(", ...");
+    }
+
     println!(
-        "{:<30}  ACCU={:016X} ENV={:016X} E_A={:<3} SP={:<3} TOS={}",
-        start, accu, env, extra_args, stack_size, on_stack
+        "{:<30}  ACCU={} ENV={:016X} E_A={:<3} SP={:<3} TOS={}",
+        start,
+        display_value(compiler_data, Value::from(accu as i64)),
+        env,
+        extra_args,
+        stack_size,
+        on_stack
     );
+}
+
+fn display_value(compiler_data: &CompilerData, value: Value) -> String {
+    // In most cases it just shows the value as a 64 bit number;
+
+    if let ValueType::Block(v) = value.decode_type() {
+        let address = v.0 as usize;
+        if let Some((section_number, offset_pc)) = compiler_data.translate_bytecode_address(address)
+        {
+            return format!("@{:>15}", format!("<{}; {}>", section_number, offset_pc));
+        }
+    }
+
+    return format!("{:016X}", value.0 as u64);
 }

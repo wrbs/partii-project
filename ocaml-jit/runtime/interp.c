@@ -324,9 +324,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
 #endif
 #ifdef USE_RUST_JIT
     if(print_traces) {
-        // FIXME: This doesn't work with things like the toplevel
-        // which jump around between code sections
-        rust_jit_trace(pc - prog, accu, env, extra_args, sp);
+        rust_jit_trace((uint64_t) pc, accu, env, extra_args, sp);
     }
 #endif
 

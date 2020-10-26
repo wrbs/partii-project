@@ -10,6 +10,7 @@ use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, 
 use ocaml_jit_shared::{ArithOp, Instruction};
 
 pub fn compile_instructions(
+    section_number: usize,
     instructions: &[Instruction<usize>],
     bytecode_offsets: &[Option<usize>],
     print_traces: bool,
@@ -22,6 +23,7 @@ pub fn compile_instructions(
         ops,
         labels,
         print_traces,
+        section_number,
     };
 
     let entrypoint_offset = cc.emit_entrypoint();
@@ -42,6 +44,7 @@ struct CompilerContext {
     ops: Assembler,
     labels: Vec<Option<DynamicLabel>>,
     print_traces: bool,
+    section_number: usize,
 }
 
 // Define aliases for the abstract machine registers
@@ -141,11 +144,12 @@ impl CompilerContext {
         if self.print_traces {
             if let Some(bytecode_offset) = bytecode_offset {
                 oc_dynasm!(self.ops
-                    ; mov rdi, QWORD bytecode_offset as i64
-                    ; mov rsi, r_accu
-                    ; mov rdx, r_env
-                    ; mov rcx, r_extra_args
-                    ; mov r8, r_sp
+                    ; mov rdi, self.section_number as i32
+                    ; mov rsi, QWORD bytecode_offset as i64
+                    ; mov rdx, r_accu
+                    ; mov rcx, r_env
+                    ; mov r8, r_extra_args
+                    ; mov r9, r_sp
                     ; mov rax, QWORD bytecode_trace as i64
                     ; call rax
                 );
@@ -157,6 +161,7 @@ impl CompilerContext {
                 ; mov rdx, r_env
                 ; mov rcx, r_extra_args
                 ; mov r8, r_sp
+                ; mov r9, self.section_number as i32
                 ; mov rax, QWORD instruction_trace as i64
                 ; call rax
             );
@@ -682,17 +687,35 @@ extern "C" fn unimplemented() {
 }
 
 extern "C" fn bytecode_trace(
-    bytecode_pc: i64,
+    section_number: usize,
+    bytecode_pc: usize,
     accu: u64,
     env: u64,
     extra_args: u64,
     sp: *const Value,
 ) {
-    print_bytecode_trace(bytecode_pc as usize, accu, env, extra_args, sp);
+    let global_data = GlobalData::get();
+    print_bytecode_trace(
+        &global_data,
+        section_number,
+        bytecode_pc,
+        accu,
+        env,
+        extra_args,
+        sp,
+    );
 }
 
-extern "C" fn instruction_trace(pc: i64, accu: u64, env: u64, extra_args: u64, sp: *const Value) {
-    // FIXME - hacky, assumes first section.
-    let instruction = &GlobalData::get().compiler_data.sections[0].instructions[pc as usize];
-    print_instruction_trace(&instruction, accu, env, extra_args, sp);
+extern "C" fn instruction_trace(
+    pc: i64,
+    accu: u64,
+    env: u64,
+    extra_args: u64,
+    sp: *const Value,
+    section_number: u64,
+) {
+    let global_data = GlobalData::get();
+    let instruction =
+        &global_data.compiler_data.sections[section_number as usize].instructions[pc as usize];
+    print_instruction_trace(&global_data, instruction, accu, env, extra_args, sp);
 }

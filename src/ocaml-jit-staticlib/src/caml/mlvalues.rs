@@ -20,6 +20,12 @@ pub struct LongValue(pub i64);
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct BlockValue(pub i64);
 
+impl From<i64> for Value {
+    fn from(x: i64) -> Self {
+        Value(x)
+    }
+}
+
 // Either specific type of value can take the place of a value
 impl From<LongValue> for Value {
     fn from(x: LongValue) -> Self {
