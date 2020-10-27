@@ -173,8 +173,8 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::Apply => Instruction::Apply(context.u32()?),
 
             Opcode::AppTerm1 => Instruction::ApplyTerm(1, context.u32()?),
-            Opcode::AppTerm2 => Instruction::ApplyTerm(1, context.u32()?),
-            Opcode::AppTerm3 => Instruction::ApplyTerm(1, context.u32()?),
+            Opcode::AppTerm2 => Instruction::ApplyTerm(2, context.u32()?),
+            Opcode::AppTerm3 => Instruction::ApplyTerm(3, context.u32()?),
             Opcode::AppTerm => Instruction::ApplyTerm(context.u32()?, context.u32()?),
 
             Opcode::Return => Instruction::Return(context.u32()?),

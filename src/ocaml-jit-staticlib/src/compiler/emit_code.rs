@@ -366,8 +366,23 @@ impl CompilerContext {
                     ; jmp rax
                 );
             }
-            // Instruction::Restart => {}
+            Instruction::Restart => {
+                oc_dynasm!(self.ops
+                    ; push r_extra_args
+                    ; push r_sp
+                    ; push r_env
+                    ; push r_accu
+                    ; mov rdi, rsp
+                    ; mov rax, QWORD jit_support_restart as i64
+                    ; call rax
+                    ; pop r_accu
+                    ; pop r_env
+                    ; pop r_sp
+                    ; pop r_extra_args
+                );
+            }
             Instruction::Grab(required_arg_count) => {
+                let prev_restart = self.get_label(offset - 1);
                 oc_dynasm!(self.ops
                     ; mov rax, *required_arg_count as i32
                     // If extra_args >= required
@@ -379,9 +394,19 @@ impl CompilerContext {
 
                     // Otherwise something more complicated - leave for now
                     ; re_closure:
-                    ; mov rax, QWORD unimplemented as i64
+                    ; push r_extra_args
+                    ; push r_sp
+                    ; push r_env
+                    ; push r_accu
+                    ; mov rdi, rsp
+                    ; lea rsi, [=>prev_restart]
+                    ; mov rax, QWORD jit_support_grab_closure as i64
                     ; call rax
-
+                    ; pop r_accu
+                    ; pop r_env
+                    ; pop r_sp
+                    ; pop r_extra_args
+                    ; jmp rax
                     ; next:
                 );
             }
@@ -405,27 +430,50 @@ impl CompilerContext {
                 );
             }
             Instruction::ClosureRec(funcs, nvars) => {
-                // FIXME simplifying assumption to avoid complicated stuff with lea
-                if funcs.len() == 1 {
-                    self.unimplemented();
-                } else {
-                    let func = self.get_label(funcs[0]);
+                // Set up for a call
+                oc_dynasm!(self.ops
+                    ; push r_extra_args
+                    ; push r_sp
+                    ; push r_env
+                    ; push r_accu
+                    ; mov rdi, rsp
+                    ; mov rsi, *nvars as i32
+                );
+
+                // Push all of the functions also onto the stack and put a pointer in the
+                // argument position
+                for offset in funcs.iter().rev() {
+                    let func = self.get_label(*offset);
                     oc_dynasm!(self.ops
-                        ; push r_extra_args
-                        ; push r_sp
-                        ; push r_env
-                        ; push r_accu
-                        ; mov rdi, rsp
-                        ; mov rsi, *nvars as i32
-                        ; lea rdx, [=>func]
-                        ; mov rax, QWORD jit_support_closure_rec as i64
-                        ; call rax
-                        ; pop r_accu
-                        ; pop r_env
-                        ; pop r_sp
-                        ; pop r_extra_args
+                        ; lea rax, [=>func]
+                        ; push rax
                     );
                 }
+                oc_dynasm!(self.ops
+                    ; mov rdx, rsp
+                    ; mov ecx, funcs.len() as i32
+                );
+
+                let unaligned = funcs.len() % 2 == 1;
+                if unaligned {
+                    oc_dynasm!(self.ops
+                        ; sub rsp, 8
+                    );
+                }
+
+                let to_pop = (funcs.len() + if unaligned { 1 } else { 0 }) as i32;
+                oc_dynasm!(self.ops
+                    // Call c support function
+                    ; mov rax, QWORD jit_support_closure_rec as i64
+                    ; call rax
+                    // Pop off functions from stack + alignment
+                    ; add rsp, to_pop * 8
+                    // Pop the actual registers
+                    ; pop r_accu
+                    ; pop r_env
+                    ; pop r_sp
+                    ; pop r_extra_args
+                );
             }
             Instruction::OffsetClosure(n) => {
                 oc_dynasm!(self.ops
@@ -531,8 +579,32 @@ impl CompilerContext {
                     ; next:
                 );
             }
+            Instruction::Switch(ints, blocks) => {
+                // Really inefficient for now - in the future I'll work out how to do a jump table
+                for (i, offset) in ints.iter().enumerate() {
+                    let label = self.get_label(*offset);
+                    oc_dynasm!(self.ops
+                        ; cmp r_accu, caml_i32_of_int(i as i64)
+                        ; je =>label
+                    );
+                }
+
+                // Ok it's not an int
+                oc_dynasm!(self.ops
+                    ; mov al, [BYTE r_env - 1]
+                );
+
+                for (tag, offset) in blocks.iter().enumerate() {
+                    let label = self.get_label(*offset);
+                    oc_dynasm!(self.ops
+                        ; cmp al, tag as i8
+                        ; je =>label
+                    );
+                }
+
+                self.unreachable();
+            }
             /*
-            Instruction::Switch(_, _) => {}
             Instruction::BoolNot => {}
             */
             Instruction::PushTrap(loc) => {
@@ -671,6 +743,38 @@ impl CompilerContext {
                     ; add r_sp, BYTE 8
                 );
             }
+            Instruction::ArithInt(ArithOp::Add) => {
+                oc_dynasm!(self.ops
+                    ; add r_accu, [r_sp]
+                    ; dec r_accu
+                    ; add r_sp, BYTE 8
+                );
+            }
+            Instruction::ArithInt(ArithOp::Div) => {
+                oc_dynasm!(self.ops
+                    // Convert from ocaml longs to actual longs, multiply, convert back
+                    ; mov rax, [r_sp]
+                    ; sar rax, 1
+                    ; cmp rax, 0
+                    ; je >div0
+                    ; mov rdx, rax
+                    ; mov rcx, rdx
+                    ; mov rax, r_accu
+                    ; sar rax, 1
+                    ; cqo
+                    ; idiv rcx
+                    ; add rax, rax
+                    ; add rax, 1
+                    ; mov r_accu, rax
+                    ; add r_sp, BYTE 8
+                    ; jmp >next
+                    // Raise divide 0
+                    ; div0:
+                    ; mov rax, QWORD caml_raise_zero_divide as i64
+                    ; call rax
+                    ; next:
+                );
+            }
             Instruction::ArithInt(ArithOp::Lsr) => {
                 oc_dynasm!(self.ops
                     ; mov ecx, [r_sp]
@@ -794,7 +898,15 @@ impl CompilerContext {
             }
             /*
             Instruction::OffsetRef(_) => {}
-            Instruction::IsInt => {}
+            */
+            Instruction::IsInt => {
+                oc_dynasm!(self.ops
+                    ; and r_accu, 1
+                    ; shl r_accu, 1
+                    ; add r_accu, 1
+                );
+            }
+            /*
             Instruction::GetMethod => {}
             Instruction::GetPubMet(_, _) => {}
             Instruction::GetDynMet => {}
@@ -828,6 +940,17 @@ impl CompilerContext {
             ; call rax
         );
     }
+
+    fn unreachable(&mut self) {
+        oc_dynasm!(self.ops
+            ; mov rax, QWORD unreachable as i64
+            ; call rax
+        );
+    }
+}
+
+extern "C" fn unreachable() {
+    fatal_error("Should be unreachable!");
 }
 
 extern "C" fn unimplemented() {

@@ -9,6 +9,11 @@ extern "C" {
     pub fn jit_support_make_block(state: i64, wosize: i64, tag: i64);
     pub fn jit_support_get_primitive(primno: i64) -> i64;
 
+    pub fn caml_raise_zero_divide();
+
+    pub fn jit_support_restart(state: i64);
+    pub fn jit_support_grab_closure(state: i64, prev_restart: i64) -> i64;
+
     #[link_name = "caml_global_data"]
     static CAML_GLOBAL_DATA: i64;
 }

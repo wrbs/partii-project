@@ -87,8 +87,7 @@ value *jit_support_get_initial_sp() {
     return Caml_state->extern_sp;
 }
 
-void jit_support_closure_rec(struct jit_state* state, int64_t nvars, void* codeval) {
-    int nfuncs = 1;
+void jit_support_closure_rec(struct jit_state* state, int64_t nvars, void** codevals, int64_t nfuncs) {
     mlsize_t blksize = nfuncs * 2 - 1 + nvars;
     int i;
     value * p;
@@ -110,8 +109,16 @@ void jit_support_closure_rec(struct jit_state* state, int64_t nvars, void* codev
     /* The code pointers and infix headers are not in the heap,
        so no need to go through caml_initialize. */
     p = &Field(state->accu, 0);
-    *p = (value) codeval;
+    *p = (value) codevals[0];
     *--state->sp = state->accu;
+    p++;
+    for (i = 1; i < nfuncs; i++) {
+        *p = Make_header(i * 2, Infix_tag, Caml_white);  /* color irrelevant. */
+        p++;
+        *p = (value) codevals[i];
+        *--state->sp = (value) p;
+        p++;
+    }
 }
 
 void jit_support_make_block(struct jit_state* state, int64_t _wosize, int64_t _tag) {
@@ -130,7 +137,34 @@ void jit_support_make_block(struct jit_state* state, int64_t _wosize, int64_t _t
     }
     state->accu = block;
 }
- 
+
 void *jit_support_get_primitive(uint64_t primno) {
     return Primitive(primno);
+}
+
+void jit_support_restart(struct jit_state* state) {
+    int num_args = Wosize_val(state->env) - 2;
+    int i;
+    state->sp -= num_args;
+    for (i = 0; i < num_args; i++) state->sp[i] = Field(state->env, i + 2);
+    state->env = Field(state->env, 1);
+    state->extra_args += num_args;
+}
+
+void* jit_support_grab_closure(struct jit_state* state, void* prev_restart) {
+    mlsize_t num_args, i;
+    void* next_pc;
+
+    num_args = 1 + state->extra_args; /* arg1 + extra args */
+    Alloc_small(state->accu, num_args + 2, Closure_tag);
+    Field(state->accu, 1) = state->env;
+    for (i = 0; i < num_args; i++) Field(state->accu, i + 2) = state->sp[i];
+    Code_val(state->accu) = prev_restart; /* Point to the preceding RESTART instr. */
+    state->sp += num_args;
+    next_pc = (void*)(state->sp[0]);
+    state->env = state->sp[1];
+    state->extra_args = Long_val(state->sp[2]);
+    state->sp += 3;
+
+    return next_pc;
 }

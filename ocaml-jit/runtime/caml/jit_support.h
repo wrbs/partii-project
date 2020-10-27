@@ -45,11 +45,14 @@ struct jit_state {
 };
 
 void jit_support_closure(struct jit_state* state, int64_t nvars, void* codeval);
-void jit_support_closure_rec(struct jit_state* state, int64_t nvars, void* codeval);
+void jit_support_closure_rec(struct jit_state* state, int64_t nvars, void** codevals, int64_t nfuncs);
 
 void jit_support_make_block(struct jit_state* state, int64_t wosize, int64_t tag);
 
 void *jit_support_get_primitive(uint64_t primno);
+
+void jit_support_restart(struct jit_state* state);
+void* jit_support_grab_closure(struct jit_state* state, void* prev_restart);
 
 #endif /* CAML_INTERNALS */
 
