@@ -362,7 +362,6 @@ impl CompilerContext {
                     ; dec r_extra_args
                     ; mov r_env, r_accu
                     ; mov rax, [r_accu]
-                    ; call rax
                     ; jmp rax
                 );
             }
@@ -584,14 +583,16 @@ impl CompilerContext {
                 for (i, offset) in ints.iter().enumerate() {
                     let label = self.get_label(*offset);
                     oc_dynasm!(self.ops
-                        ; cmp r_accu, caml_i32_of_int(i as i64)
+                        ; mov eax, caml_i32_of_int(i as i64)
+                        ; movsx rax, eax
+                        ; cmp r_accu, rax
                         ; je =>label
                     );
                 }
 
                 // Ok it's not an int
                 oc_dynasm!(self.ops
-                    ; mov al, [BYTE r_env - 1]
+                    ; mov rax, [r_accu - 8]
                 );
 
                 for (tag, offset) in blocks.iter().enumerate() {
@@ -750,6 +751,13 @@ impl CompilerContext {
                     ; add r_sp, BYTE 8
                 );
             }
+            Instruction::ArithInt(ArithOp::Sub) => {
+                oc_dynasm!(self.ops
+                    ; sub r_accu, [r_sp]
+                    ; inc r_accu
+                    ; add r_sp, BYTE 8
+                );
+            }
             Instruction::ArithInt(ArithOp::Div) => {
                 oc_dynasm!(self.ops
                     // Convert from ocaml longs to actual longs, multiply, convert back
@@ -790,10 +798,11 @@ impl CompilerContext {
             Instruction::IntCmp(cmp) => {
                 oc_dynasm!(self.ops
                     ; mov rax, [r_sp]
+                    ; mov rcx, r_accu
                     ; add r_sp, BYTE 8
-                    ; cmp r_accu, r_sp
                     ; mov rdi, 3 // Val_true
                     ; mov r_accu, 1 // Val_false
+                    ; cmp rcx, rax
                 );
                 match cmp {
                     Comp::Eq => {
@@ -950,7 +959,7 @@ impl CompilerContext {
 }
 
 extern "C" fn unreachable() {
-    fatal_error("Should be unreachable!");
+    // fatal_error("Should be unreachable!");
 }
 
 extern "C" fn unimplemented() {

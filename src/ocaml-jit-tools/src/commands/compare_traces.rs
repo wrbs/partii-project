@@ -15,6 +15,9 @@ pub struct Options {
 
     #[structopt(name = "ARGUMENTS")]
     other_args: Vec<OsString>,
+
+    #[structopt(short = "q", long="quiet")]
+    quiet: bool,
 }
 
 type Result<O, E = Box<dyn Error>> = std::result::Result<O, E>;
@@ -29,10 +32,10 @@ fn run_exn(options: Options) -> Result<()> {
     let mut interpreted = RunningProgram::new(path, "-t", options.other_args.iter())?;
 
     loop {
-        let compiled_output = compiled.get_trace_line_or_exit(true)?;
-        let interpreted_output = interpreted.get_trace_line_or_exit(false)?;
+        let compiled_output = compiled.get_trace_line_or_exit(!options.quiet)?;
+        let interpreted_output = interpreted.get_trace_line_or_exit(!options.quiet)?;
 
-        if check_and_show_differences(&interpreted_output, &compiled_output) {
+        if check_and_show_differences(&interpreted_output, &compiled_output, options.quiet) {
             match interpreted_output {
                 Output::Trace(_) => (),
                 Output::Exited { exit_code } => {
@@ -48,9 +51,13 @@ fn run_exn(options: Options) -> Result<()> {
     Ok(())
 }
 
-fn check_and_show_differences(interp: &Output, compiled: &Output) -> bool {
+fn check_and_show_differences(interp: &Output, compiled: &Output, quiet: bool) -> bool {
     match (interp, compiled) {
         (Output::Trace(si), Output::Trace(sc)) => {
+            if quiet && si == sc {
+                return true;
+            }
+
             println!();
 
             print!("{}", si.yellow());
@@ -126,7 +133,7 @@ impl RunningProgram {
         Ok(RunningProgram { child, stdout })
     }
 
-    fn get_trace_line_or_exit(&mut self, print_non_matching: bool) -> Result<Output> {
+    fn get_trace_line_or_exit(&mut self, show_output: bool) -> Result<Output> {
         loop {
             let mut line = String::new();
             let read = self.stdout.read_line(&mut line)?;
@@ -136,7 +143,7 @@ impl RunningProgram {
             } else {
                 if line.starts_with("!T!") {
                     return Ok(Output::Trace(line));
-                } else if print_non_matching {
+                } else if show_output {
                     print!("{}", line);
                 }
             }
