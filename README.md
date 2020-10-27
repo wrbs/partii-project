@@ -9,6 +9,9 @@ the basics you'll need to build packages on your system.
 
 Install rust: https://www.rust-lang.org/tools/install
 
+You'll also need a system version of LLVM which matches to the version
+the rust compiler is using. This shouldn't be needed but it is.
+
 ### Optional
 
 Install nodejs and `npm install -g prettier`. It's for autoformatting markdown
