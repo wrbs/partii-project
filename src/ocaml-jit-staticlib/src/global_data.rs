@@ -1,5 +1,5 @@
 use crate::compiler::CompilerData;
-use crate::configuration::{get_options_from_env, Options};
+use crate::configuration::Options;
 use once_cell::sync::Lazy;
 use std::sync::{Mutex, MutexGuard};
 
@@ -13,7 +13,7 @@ static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(GlobalData
 impl GlobalData {
     fn new() -> GlobalData {
         GlobalData {
-            options: get_options_from_env(),
+            options: Options::get_from_env(),
             compiler_data: CompilerData::initialise(),
         }
     }

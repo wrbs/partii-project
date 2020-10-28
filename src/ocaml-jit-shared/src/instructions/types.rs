@@ -1,11 +1,12 @@
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct BytecodeRelativeOffset(pub usize);
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct ParsedRelativeOffset(pub usize);
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ArithOp {
     Neg,
     Add,
@@ -21,14 +22,14 @@ pub enum ArithOp {
     Asr,
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum RaiseKind {
     Regular,
     ReRaise,
     NoTrace,
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Comp {
     Eq,
     Ne,
@@ -42,7 +43,7 @@ pub enum Comp {
 
 // Instructions are generic over a few parameters
 // L: the type of labels
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub enum Instruction<L> {
     Acc(u32),
     EnvAcc(u32),

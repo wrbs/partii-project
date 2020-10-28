@@ -89,3 +89,7 @@ pub fn get_stack_high() -> *const Value {
 pub fn get_trap_sp_addr() -> *const u64 {
     unsafe { &(*Caml_state).trapsp }
 }
+
+pub fn get_trap_sp() -> u64 {
+    unsafe { *get_trap_sp_addr() }
+}

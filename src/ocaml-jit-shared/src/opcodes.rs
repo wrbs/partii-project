@@ -1,9 +1,10 @@
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 pub const NUM_OPERATIONS: usize = 149;
 
 // All opcodes
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Opcode {
     Acc0 = 0,
     Acc1 = 1,

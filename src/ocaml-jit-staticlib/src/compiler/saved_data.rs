@@ -1,6 +1,6 @@
 use crate::caml::mlvalues::Value;
 use dynasmrt::ExecutableBuffer;
-use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
+use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
 
 const CODE_SIZE: usize = 4; // i32
 
@@ -41,10 +41,13 @@ impl CompilerData {
         })
     }
 
-    pub fn translate_bytecode_address(&self, address: usize) -> Option<(usize, usize)> {
+    pub fn translate_bytecode_address(&self, address: usize) -> Option<BytecodeLocation> {
         self.find_section_for_address(address).map(|s| {
             let offset = (address - s.base_address) / CODE_SIZE;
-            (s.section_number, offset)
+            BytecodeLocation {
+                section_number: s.section_number,
+                offset: BytecodeRelativeOffset(offset),
+            }
         })
     }
 }

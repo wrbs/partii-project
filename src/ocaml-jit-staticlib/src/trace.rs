@@ -1,8 +1,13 @@
-use crate::caml::domain_state::{get_stack_high, get_trap_sp_addr};
+use crate::caml::domain_state::{get_stack_high, get_trap_sp};
 use crate::caml::mlvalues::{Value, ValueType};
 use crate::compiler::CompilerData;
+use crate::configuration::TraceType;
 use crate::global_data::GlobalData;
-use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction, Opcode};
+use ocaml_jit_shared::{
+    BytecodeRelativeOffset, Instruction, Opcode, TraceEntry, TraceLocation, ValueOrBytecodeLocation,
+};
+
+const STACK_ELEMENTS_TO_SHOW: usize = 5;
 
 pub fn print_bytecode_trace(
     global_data: &GlobalData,
@@ -12,21 +17,8 @@ pub fn print_bytecode_trace(
     extra_args: u64,
     sp: *const Value,
 ) {
-    let (section, pc_offset) = global_data
-        .compiler_data
-        .translate_bytecode_address(pc as usize)
-        .expect("Could not find bytecode offset for PC");
-
-    let opcode_val = unsafe { *pc };
-    let opcode = Opcode::from_i32(opcode_val).expect("Invalid opcode");
-    trace(
-        global_data,
-        format!("!T! PC = <{}; {}> {:?}", section, pc_offset, opcode).as_str(),
-        accu,
-        env,
-        extra_args,
-        sp,
-    );
+    let trace = get_bytecode_trace(global_data, pc, accu, env, extra_args, sp);
+    print_trace(global_data.options.trace_format, &trace);
 }
 
 pub fn print_instruction_trace(
@@ -37,72 +29,104 @@ pub fn print_instruction_trace(
     extra_args: u64,
     sp: *const Value,
 ) {
-    let instruction = instruction.map_labels(|x| x.0);
-    trace(
-        global_data,
-        format!("      - {:?}", instruction).as_str(),
-        accu,
-        env,
-        extra_args,
-        sp,
-    );
+    let trace = get_instruction_trace(global_data, instruction, accu, env, extra_args, sp);
+    print_trace(global_data.options.trace_format, &trace);
 }
 
-const STACK_ELEMENTS_TO_SHOW: usize = 5;
-
-fn trace(
+fn get_bytecode_trace(
     global_data: &GlobalData,
-    start: &str,
+    pc: *const i32,
     accu: u64,
     env: u64,
     extra_args: u64,
     sp: *const Value,
-) {
+) -> TraceEntry {
+    let bytecode_loc = global_data
+        .compiler_data
+        .translate_bytecode_address(pc as usize)
+        .expect("Could not find bytecode offset for PC");
+
+    let opcode_val = unsafe { *pc };
+    let opcode = Opcode::from_i32(opcode_val).expect("Invalid opcode");
+
+    let location = TraceLocation::Bytecode {
+        pc: bytecode_loc,
+        opcode,
+    };
+
+    return get_trace(global_data, location, accu, env, extra_args, sp);
+}
+
+pub fn get_instruction_trace(
+    global_data: &GlobalData,
+    instruction: &Instruction<BytecodeRelativeOffset>,
+    accu: u64,
+    env: u64,
+    extra_args: u64,
+    sp: *const Value,
+) -> TraceEntry {
+    get_trace(
+        global_data,
+        TraceLocation::ParsedInstruction(instruction.clone()),
+        accu,
+        env,
+        extra_args,
+        sp,
+    )
+}
+
+fn get_trace(
+    global_data: &GlobalData,
+    location: TraceLocation,
+    accu: u64,
+    env: u64,
+    extra_args: u64,
+    sp: *const Value,
+) -> TraceEntry {
     let compiler_data = &global_data.compiler_data;
 
     let stack_high = get_stack_high();
 
     let stack_size = (stack_high as usize - sp as usize) / 8;
 
-    let mut on_stack = String::new();
+    let mut top_of_stack = Vec::new();
     for i in 0..stack_size.min(STACK_ELEMENTS_TO_SHOW) {
         unsafe {
             let val = *sp.offset(i as isize);
-            if i > 0 {
-                on_stack.push_str(", ");
-            }
-            on_stack.push_str(display_value(compiler_data, val).as_str());
+            top_of_stack.push(process_value(compiler_data, val));
         }
     }
 
-    if stack_size > STACK_ELEMENTS_TO_SHOW {
-        on_stack.push_str(", ...");
-    }
+    let trap_sp = get_trap_sp();
 
-    let tsp = unsafe { *get_trap_sp_addr() };
-
-    println!(
-        "{:<40}  ACCU={} ENV={:016X} E_A={:<3} SP={:<3} TSP={:016X} TOS={}",
-        start,
-        display_value(compiler_data, Value::from(accu as i64)),
+    return TraceEntry {
+        location,
+        accu: process_value(compiler_data, Value(accu as i64)),
         env,
         extra_args,
+        sp: sp as u64,
+        trap_sp,
         stack_size,
-        tsp,
-        on_stack
-    );
+        top_of_stack,
+    };
 }
 
-fn display_value(compiler_data: &CompilerData, value: Value) -> String {
+fn process_value(compiler_data: &CompilerData, value: Value) -> ValueOrBytecodeLocation {
     // In most cases it just shows the value as a 64 bit number;
 
     if let ValueType::Block(v) = value.decode_type() {
         let address = v.0 as usize;
-        if let Some((section_number, offset_pc)) = compiler_data.translate_bytecode_address(address)
-        {
-            return format!("@{:>15}", format!("<{}; {}>", section_number, offset_pc));
+        if let Some(loc) = compiler_data.translate_bytecode_address(address) {
+            return ValueOrBytecodeLocation::BytecodeLocation(loc);
         }
     }
 
-    return format!("{:016X}", value.0 as u64);
+    ValueOrBytecodeLocation::Value(value.0 as u64)
+}
+
+fn print_trace(trace_format: TraceType, trace: &TraceEntry) {
+    match trace_format {
+        TraceType::Debug => println!("{:?}", trace),
+        TraceType::DebugPretty => println!("{:#?}", trace),
+    }
 }
