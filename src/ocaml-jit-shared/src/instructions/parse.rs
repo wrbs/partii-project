@@ -3,14 +3,29 @@ use crate::Opcode;
 use std::iter::Peekable;
 use thiserror::Error;
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub struct BytecodeLookupEntry {
+    pub start_offset: ParsedRelativeOffset,
+    pub length: usize,
+}
+
 #[derive(Debug, Clone)]
 pub struct ParsedInstructions {
-    pub instructions: Vec<Instruction<usize>>,
+    pub instructions: Vec<Instruction<BytecodeRelativeOffset>>,
     // It's a map of (original location, new location) pairs
     // This is because each original instruction can have multiple operands
     // and a new opcode can have multiple parsed instructions
     // (we turn things like PUSHACC into PUSH then ACC for later simplicity)
-    pub lookup: Vec<Option<(usize, usize)>>, // start, number of instructions
+    pub lookup_data: Vec<Option<BytecodeLookupEntry>>, // start, number of instructions
+}
+
+impl ParsedInstructions {
+    pub fn lookup_bytecode_offset(
+        &self,
+        offset: BytecodeRelativeOffset,
+    ) -> Option<BytecodeLookupEntry> {
+        self.lookup_data.get(offset.0).and_then(|x| *x)
+    }
 }
 
 #[derive(Debug, Error)]
@@ -48,7 +63,7 @@ pub fn parse_instructions<I: Iterator<Item = i32>>(
 ) -> Result<ParsedInstructions, InstructionParseError> {
     let mut result = ParsedInstructions {
         instructions: Vec::new(),
-        lookup: vec![None; instruction_count],
+        lookup_data: vec![None; instruction_count],
     };
 
     let mut context = ParseContext::new(iterator);
@@ -388,7 +403,10 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
 
         let number_of_instructions = result.instructions.len() - start_output_pos;
         // Associate the current source byte with the current instruction (both 0-indexed)
-        result.lookup[start_input_pos] = Some((start_output_pos, number_of_instructions));
+        result.lookup_data[start_input_pos] = Some(BytecodeLookupEntry {
+            start_offset: ParsedRelativeOffset(start_output_pos),
+            length: number_of_instructions,
+        });
     }
 
     Ok(())
@@ -441,20 +459,24 @@ impl<I: Iterator<Item = i32>> ParseContext<I> {
         }
     }
 
-    fn label_at(&mut self, position: usize) -> Result<usize> {
+    fn label_at(&mut self, position: usize) -> Result<BytecodeRelativeOffset> {
         let rel = self.i32()?;
         let location = position as i32 + rel;
         if location < 0 {
             return Err(InstructionParseErrorReason::NegativeLabel(location));
         }
-        Ok(location as usize)
+        Ok(BytecodeRelativeOffset(location as usize))
     }
 
-    fn label(&mut self) -> Result<usize> {
+    fn label(&mut self) -> Result<BytecodeRelativeOffset> {
         self.label_at(self.position())
     }
 
-    fn get_label_list(&mut self, count: usize, position: usize) -> Result<Vec<usize>> {
+    fn get_label_list(
+        &mut self,
+        count: usize,
+        position: usize,
+    ) -> Result<Vec<BytecodeRelativeOffset>> {
         let mut result = Vec::new();
         for _ in 0..count {
             result.push(self.label_at(position)?);

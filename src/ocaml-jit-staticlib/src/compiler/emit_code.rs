@@ -7,12 +7,12 @@ use crate::global_data::GlobalData;
 use crate::trace::{print_bytecode_trace, print_instruction_trace};
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
-use ocaml_jit_shared::{ArithOp, Comp, Instruction};
+use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction, ParsedRelativeOffset};
 
 pub fn compile_instructions(
     section_number: usize,
-    instructions: &[Instruction<usize>],
-    bytecode_offsets: &[Option<usize>],
+    instructions: &[Instruction<ParsedRelativeOffset>],
+    bytecode_offsets: &[Option<BytecodeRelativeOffset>],
     code: &[i32],
     print_traces: bool,
 ) -> (ExecutableBuffer, EntryPoint) {
@@ -32,8 +32,8 @@ pub fn compile_instructions(
     for (offset, instruction) in instructions.iter().enumerate() {
         cc.emit_instruction(
             instruction,
-            offset,
-            bytecode_offsets[offset].map(|x| unsafe { code.as_ptr().offset(x as isize) }),
+            ParsedRelativeOffset(offset),
+            bytecode_offsets[offset].map(|x| unsafe { code.as_ptr().offset(x.0 as isize) }),
         );
     }
 
@@ -96,8 +96,8 @@ fn caml_i32_of_int(orig: i64) -> i32 {
 }
 
 impl CompilerContext {
-    fn get_label(&mut self, offset: usize) -> DynamicLabel {
-        let label_ref = &mut self.labels[offset];
+    fn get_label(&mut self, offset: ParsedRelativeOffset) -> DynamicLabel {
+        let label_ref = &mut self.labels[offset.0];
         match label_ref {
             Some(l) => *l,
             None => {
@@ -136,8 +136,8 @@ impl CompilerContext {
     #[allow(clippy::fn_to_numeric_cast)]
     fn emit_instruction(
         &mut self,
-        instruction: &Instruction<usize>,
-        offset: usize,
+        instruction: &Instruction<ParsedRelativeOffset>,
+        offset: ParsedRelativeOffset,
         bytecode_pointer: Option<*const i32>,
     ) -> Option<()> {
         let label = self.get_label(offset);
@@ -160,7 +160,7 @@ impl CompilerContext {
             }
 
             oc_dynasm!(self.ops
-                ; mov rdi, QWORD offset as i64
+                ; mov rdi, QWORD offset.0 as i64
                 ; mov rsi, r_accu
                 ; mov rdx, r_env
                 ; mov rcx, r_extra_args
@@ -381,7 +381,7 @@ impl CompilerContext {
                 );
             }
             Instruction::Grab(required_arg_count) => {
-                let prev_restart = self.get_label(offset - 1);
+                let prev_restart = self.get_label(ParsedRelativeOffset(offset.0 - 1));
                 oc_dynasm!(self.ops
                     ; mov rax, *required_arg_count as i32
                     // If extra_args >= required

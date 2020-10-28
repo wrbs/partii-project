@@ -4,14 +4,17 @@ mod primitives;
 pub mod trailer;
 
 pub use error::ParseFileError;
-use ocaml_jit_shared::Instruction;
+use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 use std::fs::File;
 pub use trailer::Trailer;
 
 pub struct BytecodeFile {
     pub trailer: Trailer,
     pub primitives: Vec<String>,
-    pub instructions: Vec<(usize, Vec<Instruction<usize>>)>,
+    pub instructions: Vec<(
+        BytecodeRelativeOffset,
+        Vec<Instruction<BytecodeRelativeOffset>>,
+    )>,
 }
 
 pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile, ParseFileError> {

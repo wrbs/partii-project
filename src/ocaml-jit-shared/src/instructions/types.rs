@@ -1,5 +1,10 @@
 use std::fmt::Debug;
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+pub struct BytecodeRelativeOffset(pub usize);
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+pub struct ParsedRelativeOffset(pub usize);
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ArithOp {
     Neg,

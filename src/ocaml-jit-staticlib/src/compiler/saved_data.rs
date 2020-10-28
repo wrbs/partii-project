@@ -1,6 +1,6 @@
 use crate::caml::mlvalues::Value;
 use dynasmrt::ExecutableBuffer;
-use ocaml_jit_shared::Instruction;
+use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 
 const CODE_SIZE: usize = 4; // i32
 
@@ -15,7 +15,7 @@ pub struct Section {
     pub base_address: usize,
     pub length: usize,
     pub entrypoint: EntryPoint,
-    pub instructions: Vec<Instruction<usize>>,
+    pub instructions: Vec<Instruction<BytecodeRelativeOffset>>,
     pub compiled_code: ExecutableBuffer,
 }
 
@@ -55,7 +55,7 @@ impl Section {
         bytecode: &[i32],
         compiled_code: ExecutableBuffer,
         entrypoint: EntryPoint,
-        instructions: Vec<Instruction<usize>>,
+        instructions: Vec<Instruction<BytecodeRelativeOffset>>,
     ) -> Section {
         Section {
             section_number,

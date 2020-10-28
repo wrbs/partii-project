@@ -1,6 +1,8 @@
 use crate::bytecode_files::{ParseFileError, Trailer};
 use byteorder::{LittleEndian, ReadBytesExt};
-use ocaml_jit_shared::{parse_instructions, Instruction};
+use ocaml_jit_shared::{
+    parse_instructions, BytecodeLookupEntry, BytecodeRelativeOffset, Instruction,
+};
 use std::fs::File;
 use std::io::BufReader;
 
@@ -10,7 +12,13 @@ const CODE_SECTION: &str = "CODE";
 pub fn parse_bytecode(
     f: &mut File,
     trailer: &Trailer,
-) -> Result<Vec<(usize, Vec<Instruction<usize>>)>, ParseFileError> {
+) -> Result<
+    Vec<(
+        BytecodeRelativeOffset,
+        Vec<Instruction<BytecodeRelativeOffset>>,
+    )>,
+    ParseFileError,
+> {
     let section = trailer.find_required_section(CODE_SECTION)?;
 
     if section.length % 4 != 0 {
@@ -30,14 +38,20 @@ pub fn parse_bytecode(
 
     let mut final_instructions = Vec::new();
 
-    for (bytecode_location, maybe_parsed_offset) in parsed.lookup.iter().enumerate() {
+    for (bytecode_location, maybe_parsed_offset) in parsed.lookup_data.iter().enumerate() {
         match maybe_parsed_offset {
             None => (),
-            Some((start, num_instructions)) => {
-                let start = *start;
-                let end = start + *num_instructions;
+            Some(BytecodeLookupEntry {
+                start_offset,
+                length,
+            }) => {
+                let start = start_offset.0;
+                let end = start + *length;
                 let contained_instructions = parsed.instructions[start..end].to_vec();
-                final_instructions.push((bytecode_location, contained_instructions));
+                final_instructions.push((
+                    BytecodeRelativeOffset(bytecode_location),
+                    contained_instructions,
+                ));
             }
         }
     }

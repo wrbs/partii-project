@@ -2,7 +2,7 @@ use crate::caml::domain_state::{get_stack_high, get_trap_sp_addr};
 use crate::caml::mlvalues::{Value, ValueType};
 use crate::compiler::CompilerData;
 use crate::global_data::GlobalData;
-use ocaml_jit_shared::{Instruction, Opcode};
+use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction, Opcode};
 
 pub fn print_bytecode_trace(
     global_data: &GlobalData,
@@ -31,12 +31,13 @@ pub fn print_bytecode_trace(
 
 pub fn print_instruction_trace(
     global_data: &GlobalData,
-    instruction: &Instruction<usize>,
+    instruction: &Instruction<BytecodeRelativeOffset>,
     accu: u64,
     env: u64,
     extra_args: u64,
     sp: *const Value,
 ) {
+    let instruction = instruction.map_labels(|x| x.0);
     trace(
         global_data,
         format!("      - {:?}", instruction).as_str(),

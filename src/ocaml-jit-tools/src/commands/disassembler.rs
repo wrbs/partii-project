@@ -2,7 +2,7 @@ use crate::utils::die;
 use colored::Colorize;
 
 use crate::bytecode_files::{parse_bytecode_file, BytecodeFile};
-use ocaml_jit_shared::Instruction;
+use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 use std::fs::File;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -26,7 +26,7 @@ pub fn run(options: Options) {
 fn show_instructions(bcf: &BytecodeFile) {
     println!("{}", "Instructions:".red().bold());
     for (offset, instructions) in bcf.instructions.iter() {
-        print!("{}\t", offset);
+        print!("{}\t", offset.0);
 
         for (count, instruction) in instructions.iter().enumerate() {
             if count > 0 {
@@ -39,8 +39,8 @@ fn show_instructions(bcf: &BytecodeFile) {
     }
 }
 
-fn show_instruction(instruction: &Instruction<usize>) {
-    print!("{:?}", instruction);
+fn show_instruction(instruction: &Instruction<BytecodeRelativeOffset>) {
+    print!("{:?}", instruction.map_labels(|x| x.0));
 }
 
 fn show_primitives(primitives: &[String]) {
