@@ -1,5 +1,6 @@
 use crate::utils::die;
 use colored::Colorize;
+use ocaml_jit_shared::{compare_traces, TraceEntry};
 use std::error::Error;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader};
@@ -16,7 +17,7 @@ pub struct Options {
     #[structopt(name = "ARGUMENTS")]
     other_args: Vec<OsString>,
 
-    #[structopt(short = "q", long="quiet")]
+    #[structopt(short = "q", long = "quiet")]
     quiet: bool,
 }
 
@@ -28,89 +29,65 @@ pub fn run(options: Options) {
 
 fn run_exn(options: Options) -> Result<()> {
     let path = &options.bytecode_file;
-    let mut compiled = RunningProgram::new(path, "-jt", options.other_args.iter())?;
-    let mut interpreted = RunningProgram::new(path, "-t", options.other_args.iter())?;
+    let mut compiled =
+        RunningProgram::new(path, "-jt --trace-format JSON", options.other_args.iter())?;
+    let mut interpreted =
+        RunningProgram::new(path, "-t --trace-format JSON", options.other_args.iter())?;
 
     loop {
-        let compiled_output = compiled.get_trace_line_or_exit(!options.quiet)?;
         let interpreted_output = interpreted.get_trace_line_or_exit(!options.quiet)?;
+        let compiled_output = compiled.get_trace_line_or_exit(!options.quiet)?;
 
-        if check_and_show_differences(&interpreted_output, &compiled_output, options.quiet) {
-            match interpreted_output {
-                Output::Trace(_) => (),
-                Output::Exited { exit_code } => {
-                    println!("{}", format!("Exited: {}", exit_code).green().bold());
-                    break;
+        if compiled_output != interpreted_output {
+            match (&compiled_output, &interpreted_output) {
+                (Output::Trace(compiled_trace), Output::Trace(interpreted_trace)) => {
+                    println!("{}", "Difference in outputs!".red().bold());
+                    compare_traces(interpreted_trace, compiled_trace);
+                }
+                _ => {
+                    println!();
+                    println!(
+                        "{}",
+                        format!("Interpreted: {}", interpreted_output.format()).bold()
+                    );
+                    println!("Compiled:    {}", compiled_output.format());
+                    println!("{}", "One program exited early!".red().bold());
                 }
             }
-        } else {
-            break;
+            std::process::exit(1);
+        }
+
+        match interpreted_output {
+            Output::Trace(_) => {
+                if !options.quiet {
+                    println!("{}", interpreted_output.format().yellow().bold());
+                    println!("{}", compiled_output.format());
+                }
+            }
+            Output::Exited { exit_code } => {
+                if !options.quiet {
+                    println!("{}", format!("Exited: {}", exit_code).green().bold());
+                }
+                break;
+            }
         }
     }
 
     Ok(())
 }
-
-fn check_and_show_differences(interp: &Output, compiled: &Output, quiet: bool) -> bool {
-    match (interp, compiled) {
-        (Output::Trace(si), Output::Trace(sc)) => {
-            if quiet && si == sc {
-                return true;
-            }
-
-            println!();
-
-            print!("{}", si.yellow());
-
-            if si == sc {
-                print!("{}", sc);
-                return true;
-            }
-
-            let mut closure_differences_only = true;
-            let mut closure_diff = false;
-
-            for (compiled_char, interp_char) in sc.chars().zip(si.chars()) {
-                if closure_diff {
-                    print!("{}", String::from(compiled_char).green());
-                    if interp_char == '>' {
-                        closure_diff = false;
-                    }
-                } else if compiled_char == interp_char {
-                    print!("{}", compiled_char);
-                } else if interp_char == '@' {
-                    closure_diff = true;
-                    print!("{}", String::from(compiled_char).green());
-                } else {
-                    closure_differences_only = false;
-                    print!("{}", String::from(compiled_char).bold().red());
-                }
-            }
-
-            if closure_differences_only {
-                true
-            } else {
-                println!("{}", "Mismatch between states!".bold().red());
-                false
-            }
-        }
-        (a, b) => {
-            if a == b {
-                true
-            } else {
-                println!("{}", "Programs didn't both exit the same way:".bold().red());
-                println!("Interpreted: {:?}", interp);
-                println!("Compiled:    {:?}", compiled);
-                false
-            }
-        }
-    }
+#[derive(PartialEq, Debug)]
+enum Output {
+    Trace(TraceEntry),
+    Exited { exit_code: i32 },
 }
 
-#[derive(Eq, PartialEq, Debug)]
-enum Output {
-    Trace(String),
-    Exited { exit_code: i32 },
+impl Output {
+    fn format(&self) -> String {
+        match self {
+            Output::Trace(t) => t.format(),
+            Output::Exited { exit_code } => format!("Exited with code {}", exit_code),
+        }
+    }
 }
 
 struct RunningProgram {
@@ -142,7 +119,13 @@ impl RunningProgram {
                 return Ok(Output::Exited { exit_code });
             } else {
                 if line.starts_with("!T!") {
-                    return Ok(Output::Trace(line));
+                    let trace: TraceEntry =
+                        serde_json::from_str(line.trim_start_matches("!T!")).unwrap();
+                    if trace.location.is_bytecode() {
+                        return Ok(Output::Trace(trace));
+                    } else if show_output {
+                        trace.print();
+                    }
                 } else if show_output {
                     print!("{}", line);
                 }

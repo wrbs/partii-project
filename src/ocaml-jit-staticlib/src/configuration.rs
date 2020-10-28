@@ -13,6 +13,9 @@ const ENV_VAR_KEY: &str = "JIT_OPTIONS";
 arg_enum! {
     #[derive(Debug, Copy, Clone, Eq, PartialEq)]
     pub enum TraceType {
+        Colorful,
+        Plain,
+        JSON,
         Debug,
         DebugPretty,
     }
@@ -30,7 +33,7 @@ pub struct Options {
     pub trace: bool,
 
     /// The trace format to use if tracing is enabled
-    #[structopt(long, default_value = "Debug", possible_values = &TraceType::variants(), case_insensitive = true)]
+    #[structopt(long, default_value = "Colorful", possible_values = &TraceType::variants(), case_insensitive = true)]
     pub trace_format: TraceType,
 
     #[structopt(long)]

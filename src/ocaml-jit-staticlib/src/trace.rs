@@ -126,6 +126,9 @@ fn process_value(compiler_data: &CompilerData, value: Value) -> ValueOrBytecodeL
 
 fn print_trace(trace_format: TraceType, trace: &TraceEntry) {
     match trace_format {
+        TraceType::Colorful => trace.print_colored(),
+        TraceType::Plain => trace.print(),
+        TraceType::JSON => println!("!T! {}", serde_json::to_string(trace).unwrap()),
         TraceType::Debug => println!("{:?}", trace),
         TraceType::DebugPretty => println!("{:#?}", trace),
     }
