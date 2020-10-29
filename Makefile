@@ -3,7 +3,9 @@
 -include Makefile.shared
 
 OCAML_DIR := ocaml-jit
-OCAML_STATIC_LIBS := $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB) $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
+DEBUG_COPIED := $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB)
+RELEASE_COPIED := $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
+OCAML_STATIC_LIBS := $(DEBUG_COPIED) $(RELEASE_COPIED)
 
 RUST_DIR := src
 
@@ -25,6 +27,7 @@ PREFIX := $(abspath .)/$(BUILT_DIR)
 .PHONY: only_runtime
 runtime_only:
 	$(MAKE) cargo_builds
+	$(MAKE) $(OCAML_STATIC_LIBS)
 	$(MAKE) -C $(OCAML_DIR)/runtime
 	$(MAKE) -C $(OCAML_DIR) install
 	$(MAKE) -C $(RESOURCES_DIR) all
@@ -33,6 +36,7 @@ runtime_only:
 .PHONY: all
 all:
 	$(MAKE) cargo_builds
+	$(MAKE) $(OCAML_STATIC_LIBS)
 	$(MAKE) -C $(OCAML_DIR)
 	$(MAKE) -C $(OCAML_DIR) install
 	$(MAKE) -C $(RESOURCES_DIR) all
@@ -59,13 +63,20 @@ setup: fullclean
 	cd $(OCAML_DIR) && ./configure --enable-rust-jit --prefix=$(PREFIX)
 	echo "BUILT_DIR_ABS=$(abspath .)/$(BUILT_DIR)" > Makefile.toolchain
 
+
 .PHONY: cargo_builds
 cargo_builds:
 	cd $(RUST_DIR) && cargo build --all
 	cd $(RUST_DIR) && cargo build --all --release
-	cp $(DEBUG_TARGET)/$(STATIC_LIB_FILE) $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB)
-	cp $(RELEASE_TARGET)/$(STATIC_LIB_FILE) $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
 
+# Copying built libs into the OCaml compiler's tree
+# =================================================
+
+$(DEBUG_COPIED): $(DEBUG_TARGET)/$(STATIC_LIB_FILE)
+	cp $? $@
+
+$(RELEASE_COPIED): $(RELEASE_TARGET)/$(STATIC_LIB_FILE)
+	cp $? $@
 
 # Autoformatting
 # ==============
@@ -93,15 +104,3 @@ rustfmt:
 lint:
 	prettier --check .
 	cd $(RUST_DIR) && cargo clippy --all
-
-
-# Static lib
-# ==========
-#
-# This gets linked in with the ocaml's runtime source
-
-$(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB): $(DEBUG_TARGET)/$(STATIC_LIB_FILE)
-	cp $< $@
-
-$(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB): $(RELEASE_TARGET)/$(STATIC_LIB_FILE)
-	cp $< $@
