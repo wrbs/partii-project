@@ -63,8 +63,9 @@ pub fn interpret_bytecode(code: &[i32]) -> Value {
     }
 }
 
-pub fn on_bytecode_released(_code: &[i32]) {
-    // For now, don't cleanup and just leak memory
+pub fn on_bytecode_released(code: &[i32]) {
+    let mut global_data = GlobalData::get();
+    global_data.compiler_data.release_section(code);
 }
 
 pub fn old_interpreter_trace(

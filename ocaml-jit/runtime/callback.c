@@ -33,12 +33,15 @@
 #include "caml/fix_code.h"
 #include "caml/stacks.h"
 
+#ifdef USE_RUST_JIT
+#define LOCAL_CALLBACK_BYTECODE
+#endif
+
 CAMLexport int caml_callback_depth = 0;
 
 #ifndef LOCAL_CALLBACK_BYTECODE
 static opcode_t callback_code[] = { ACC, 0, APPLY, 0, POP, 1, STOP };
 #endif
-
 
 #ifdef THREADED_CODE
 
@@ -96,6 +99,7 @@ CAMLexport value caml_callbackN_exn(value closure, int narg, value args[])
   local_callback_code[4] = POP;
   local_callback_code[5] =  1;
   local_callback_code[6] = STOP;
+  caml_prepare_bytecode(local_callback_code, sizeof(local_callback_code));
 #ifdef THREADED_CODE
   caml_thread_code(local_callback_code, sizeof(local_callback_code));
 #endif /*THREADED_CODE*/

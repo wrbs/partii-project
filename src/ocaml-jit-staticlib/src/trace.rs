@@ -3,8 +3,11 @@ use crate::caml::mlvalues::{Value, ValueType};
 use crate::compiler::CompilerData;
 use crate::configuration::TraceType;
 use crate::global_data::GlobalData;
+use dynasmrt::relocations::RelocationSize::Byte;
+use ocaml_jit_shared::TraceLocation::Bytecode;
 use ocaml_jit_shared::{
-    BytecodeRelativeOffset, Instruction, Opcode, TraceEntry, TraceLocation, ValueOrBytecodeLocation,
+    BytecodeLocation, BytecodeRelativeOffset, Instruction, Opcode, TraceEntry, TraceLocation,
+    ValueOrBytecodeLocation,
 };
 
 const STACK_ELEMENTS_TO_SHOW: usize = 5;

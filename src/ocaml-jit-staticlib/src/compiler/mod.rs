@@ -36,13 +36,13 @@ pub fn compile<P: AsRef<Path>>(
         std::fs::write(p, &*compiled_code).unwrap();
     }
 
-    compiler_data.sections.push(Section::new(
+    compiler_data.sections.push(Some(Section::new(
         section_number,
         bytecode,
         compiled_code,
         entrypoint,
         parsed_instructions.instructions,
-    ));
+    )));
 }
 
 pub fn get_entrypoint(compiler_data: &CompilerData, code: &[i32]) -> impl Fn() -> Value {

@@ -24,13 +24,13 @@ pub struct DomainState {
     ephe_ref_table: *const c_void,
     custom_table: *const c_void,
 
-    stack_low: *mut Value,
-    stack_high: *mut Value,
-    stack_threshold: *mut Value,
-    extern_sp: *mut Value,
+    stack_low: *const Value,
+    stack_high: *const Value,
+    stack_threshold: *const Value,
+    extern_sp: u64,
     trapsp: u64,
     trap_barrier: *mut Value,
-    external_raise: *const c_void, // todo - sigjmp_buf, get _JBLEN
+    external_raise: u64, // todo - sigjmp_buf, get _JBLEN
     exn_bucket: Value,
 
     top_of_stack: *const c_void,
@@ -46,7 +46,7 @@ pub struct DomainState {
     compare_unordered: i64,
     requested_major_slice: i64,
     requested_minor_gc: i64,
-    local_roots: *const c_void,
+    local_roots: u64,
 
     stat_minor_words: f64,
     stat_promoted_words: f64,
@@ -83,13 +83,28 @@ pub fn stack_size() -> i64 {
 }
  */
 
-pub fn get_stack_high() -> *const Value {
-    unsafe { (*Caml_state).stack_high }
+pub fn get_stack_high_addr() -> *const (*const Value) {
+    unsafe { &(*Caml_state).stack_high }
 }
+
+pub fn get_stack_high() -> *const Value {
+    unsafe { *get_stack_high_addr() }
+}
+
 pub fn get_trap_sp_addr() -> *const u64 {
     unsafe { &(*Caml_state).trapsp }
 }
 
 pub fn get_trap_sp() -> u64 {
     unsafe { *get_trap_sp_addr() }
+}
+
+pub fn get_local_roots_addr() -> *const u64 {
+    unsafe { &(*Caml_state).local_roots }
+}
+pub fn get_extern_sp_addr() -> *const u64 {
+    unsafe { &(*Caml_state).extern_sp }
+}
+pub fn get_external_raise_addr() -> *const u64 {
+    unsafe { &(*Caml_state).external_raise }
 }

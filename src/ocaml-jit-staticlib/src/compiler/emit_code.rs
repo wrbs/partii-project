@@ -111,7 +111,6 @@ impl CompilerContext {
     #[allow(clippy::fn_to_numeric_cast)]
     fn emit_entrypoint(&mut self) -> AssemblyOffset {
         let offset = self.ops.offset();
-
         oc_dynasm!(self.ops
             // Push callee-save registers I use
             ; push r_accu
@@ -131,6 +130,22 @@ impl CompilerContext {
         );
 
         offset
+    }
+
+    #[allow(clippy::fn_to_numeric_cast)]
+    fn emit_stop(&mut self) {
+        // Clean up what the initial code did and return to the caller
+        oc_dynasm!(self.ops
+            // TODO set external sp, external raise and callback depth
+            // Undo align for C calling convention
+            ; add rsp, 8
+            // Undo original pushes
+            ; pop r_sp
+            ; pop r_extra_args
+            ; pop r_env
+            ; pop r_accu
+            ; ret
+        );
     }
 
     #[allow(clippy::fn_to_numeric_cast)]
@@ -643,8 +658,29 @@ impl CompilerContext {
                     ; add r_sp, 32
                 );
             }
+            Instruction::Raise(kind) => {
+                let trap_sp = domain_state::get_trap_sp_addr();
+                // TODO backtraces, checking if the trapsp is above initial sp offest
+                oc_dynasm!(self.ops
+                    // Get the current trap sp
+                    ; mov rsi, QWORD (trap_sp as usize) as i64
+                    // Set the sp from it
+                    ; mov r_sp, [rsi]
+                    // Set the new trap sp to the next one in the link
+                    ; mov rax, [r_sp + 8]
+                    ; mov [rsi], rax
+                    // Restore the env
+                    ; mov r_env, [r_sp + 16]
+                    // Restore the extra args - un-Val_long it
+                    ; mov r_extra_args, [r_sp + 24]
+                    ; shr r_extra_args, 1
+                    // Save location to jump, increment sp and go to it
+                    ; mov rax, [r_sp]
+                    ; add r_sp, 32
+                    ; jmp rax
+                );
+            }
             /*
-            Instruction::Raise(_) => {}
             Instruction::CheckSignals => {}
             */
             Instruction::CCall1(primno) => {
@@ -921,18 +957,9 @@ impl CompilerContext {
             Instruction::GetDynMet => {}
             */
             Instruction::Stop => {
-                // Clean up what the initial code did and return to the caller
-                oc_dynasm!(self.ops
-                    // TODO set external sp, external raise and callback depth
-                    // Undo align for C calling convention
-                    ; add rsp, 8
-                    // Undo original pushes
-                    ; pop r_sp
-                    ; pop r_extra_args
-                    ; pop r_env
-                    ; pop r_accu
-                    ; ret
-                );
+                // Call the function so that the entrypoint and code that uses it is visually nearby
+                // for easier changes
+                self.emit_stop();
             }
             /*
             Instruction::Break => {}
@@ -986,7 +1013,9 @@ extern "C" fn instruction_trace(
     section_number: u64,
 ) {
     let global_data = GlobalData::get();
-    let instruction =
-        &global_data.compiler_data.sections[section_number as usize].instructions[pc as usize];
+    let section = global_data.compiler_data.sections[section_number as usize]
+        .as_ref()
+        .expect("Section already released");
+    let instruction = &section.instructions[pc as usize];
     print_instruction_trace(&global_data, instruction, accu, env, extra_args, sp);
 }

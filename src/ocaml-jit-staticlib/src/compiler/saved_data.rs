@@ -7,7 +7,7 @@ const CODE_SIZE: usize = 4; // i32
 pub type EntryPoint = extern "C" fn() -> Value;
 
 pub struct CompilerData {
-    pub sections: Vec<Section>,
+    pub sections: Vec<Option<Section>>,
 }
 
 pub struct Section {
@@ -26,17 +26,23 @@ impl CompilerData {
         }
     }
 
+    fn actual_sections(&self) -> impl Iterator<Item = &Section> {
+        self.sections.iter().filter_map(|x| match x {
+            Some(s) => Some(s),
+            None => None,
+        })
+    }
+
     pub fn get_section_for_code(&self, code: &[i32]) -> Option<&Section> {
         let base_address = code.as_ptr() as usize;
         let length = code.len();
 
-        self.sections
-            .iter()
+        self.actual_sections()
             .find(|s| s.base_address == base_address && s.length == length)
     }
 
     pub fn find_section_for_address(&self, address: usize) -> Option<&Section> {
-        self.sections.iter().find(|s| {
+        self.actual_sections().find(|s| {
             s.base_address <= address && address < s.base_address + (s.length * CODE_SIZE)
         })
     }
@@ -49,6 +55,11 @@ impl CompilerData {
                 offset: BytecodeRelativeOffset(offset),
             }
         })
+    }
+
+    pub fn release_section(&mut self, code: &[i32]) {
+        let section_number = self.get_section_for_code(code).unwrap().section_number;
+        self.sections[section_number] = None;
     }
 }
 
