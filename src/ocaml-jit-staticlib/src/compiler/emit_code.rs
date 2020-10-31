@@ -939,6 +939,35 @@ impl CompilerContext {
                     ; next:
                 );
             }
+            Instruction::ArithInt(ArithOp::Or) => {
+                oc_dynasm!(self.ops
+                    ; or r_accu, [r_sp]
+                    ; add r_sp, BYTE 8
+                );
+            }
+            Instruction::ArithInt(ArithOp::And) => {
+                oc_dynasm!(self.ops
+                    ; and r_accu, [r_sp]
+                    ; add r_sp, BYTE 8
+                );
+            }
+            Instruction::ArithInt(ArithOp::Xor) => {
+                oc_dynasm!(self.ops
+                    ; xor r_accu, [r_sp]
+                    ; or r_accu, BYTE 1
+                    ; add r_sp, BYTE 8
+                );
+            }
+            Instruction::ArithInt(ArithOp::Lsl) => {
+                oc_dynasm!(self.ops
+                    ; mov ecx, [r_sp]
+                    ; shr ecx, BYTE 1
+                    ; dec r_accu
+                    ; shl r_accu, cl
+                    ; inc r_accu
+                    ; add r_sp, BYTE 8
+                );
+            }
             Instruction::ArithInt(ArithOp::Lsr) => {
                 oc_dynasm!(self.ops
                     ; mov ecx, [r_sp]
@@ -948,9 +977,15 @@ impl CompilerContext {
                     ; add r_sp, BYTE 8
                 );
             }
-            /*
-            Instruction::ArithInt(_) => {}
-            */
+            Instruction::ArithInt(ArithOp::Asr) => {
+                oc_dynasm!(self.ops
+                    ; mov ecx, [r_sp]
+                    ; shr ecx, BYTE 1
+                    ; sar r_accu, cl
+                    ; or r_accu, BYTE 1
+                    ; add r_sp, BYTE 8
+                );
+            }
             Instruction::IntCmp(cmp) => {
                 oc_dynasm!(self.ops
                     ; mov rax, [r_sp]
