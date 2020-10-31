@@ -2,11 +2,10 @@ mod c_primitives;
 mod emit_code;
 mod saved_data;
 
-use crate::caml::mlvalues::Value;
 use ocaml_jit_shared::{
     get_bytecode_references, parse_instructions_from_code_slice, relocate_instructions,
 };
-pub use saved_data::{CompilerData, Section};
+pub use saved_data::{CompilerData, EntryPoint, Section};
 use std::path::Path;
 
 pub fn compile<P: AsRef<Path>>(
@@ -45,11 +44,9 @@ pub fn compile<P: AsRef<Path>>(
     )));
 }
 
-pub fn get_entrypoint(compiler_data: &CompilerData, code: &[i32]) -> impl Fn() -> Value {
-    let entrypoint = compiler_data
+pub fn get_entrypoint(compiler_data: &CompilerData, code: &[i32]) -> EntryPoint {
+    compiler_data
         .get_section_for_code(code)
         .expect("Section not compiled!")
-        .entrypoint;
-
-    move || entrypoint()
+        .entrypoint
 }

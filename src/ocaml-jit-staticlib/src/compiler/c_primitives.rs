@@ -5,7 +5,6 @@ extern "C" {
     pub fn jit_support_appterm_stacks(nargs: i64, slotsize: i64, sp: i64) -> i64;
     pub fn jit_support_closure(state: i64, nvars: i64, codeval: i64);
     pub fn jit_support_closure_rec(state: i64, nargs: i64, codeval: i64);
-    pub fn jit_support_get_initial_sp() -> i64;
     pub fn jit_support_make_block(state: i64, wosize: i64, tag: i64);
     pub fn jit_support_get_primitive(primno: i64) -> i64;
 
@@ -13,6 +12,9 @@ extern "C" {
 
     pub fn jit_support_restart(state: i64);
     pub fn jit_support_grab_closure(state: i64, prev_restart: i64) -> i64;
+
+    pub fn jit_support_stop(initial_state: i64, sp: i64);
+    pub fn jit_support_raise_check(initial_state: i64) -> i64;
 
     #[link_name = "caml_global_data"]
     static CAML_GLOBAL_DATA: i64;

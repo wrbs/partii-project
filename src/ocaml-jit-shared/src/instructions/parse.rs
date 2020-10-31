@@ -182,9 +182,9 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::Assign => Instruction::Assign(context.u32()?),
             Opcode::PushRetAddr => Instruction::PushRetAddr(context.label()?),
 
-            Opcode::Apply1 => Instruction::Apply(1),
-            Opcode::Apply2 => Instruction::Apply(2),
-            Opcode::Apply3 => Instruction::Apply(3),
+            Opcode::Apply1 => Instruction::Apply1,
+            Opcode::Apply2 => Instruction::Apply2,
+            Opcode::Apply3 => Instruction::Apply3,
             Opcode::Apply => Instruction::Apply(context.u32()?),
 
             Opcode::AppTerm1 => Instruction::ApplyTerm(1, context.u32()?),

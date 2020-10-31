@@ -1,10 +1,11 @@
 use crate::caml::mlvalues::Value;
 use dynasmrt::ExecutableBuffer;
 use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
+use std::ffi::c_void;
 
 const CODE_SIZE: usize = 4; // i32
 
-pub type EntryPoint = extern "C" fn() -> Value;
+pub type EntryPoint = extern "C" fn(initial_state: *const c_void) -> Value;
 
 pub struct CompilerData {
     pub sections: Vec<Option<Section>>,

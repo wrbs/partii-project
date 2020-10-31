@@ -38,6 +38,10 @@ fn run_exn(options: Options) -> Result<()> {
         let interpreted_output = interpreted.get_trace_line_or_exit(!options.quiet)?;
         let compiled_output = compiled.get_trace_line_or_exit(!options.quiet)?;
 
+        if !options.quiet {
+            println!();
+        }
+
         if compiled_output != interpreted_output {
             match (&compiled_output, &interpreted_output) {
                 (Output::Trace(compiled_trace), Output::Trace(interpreted_trace)) => {
@@ -45,12 +49,8 @@ fn run_exn(options: Options) -> Result<()> {
                     compare_traces(interpreted_trace, compiled_trace);
                 }
                 _ => {
-                    println!();
-                    println!(
-                        "{}",
-                        format!("Interpreted: {}", interpreted_output.format()).bold()
-                    );
-                    println!("Compiled:    {}", compiled_output.format());
+                    println!("{}", interpreted_output.format().yellow().bold());
+                    println!("{}", compiled_output.format());
                     println!("{}", "One program exited early!".red().bold());
                 }
             }
@@ -111,25 +111,24 @@ impl RunningProgram {
     }
 
     fn get_trace_line_or_exit(&mut self, show_output: bool) -> Result<Output> {
+        let mut line = String::new();
         loop {
-            let mut line = String::new();
             let read = self.stdout.read_line(&mut line)?;
             if read == 0 {
                 let exit_code = self.child.wait()?.code().unwrap();
                 return Ok(Output::Exited { exit_code });
-            } else {
-                if line.starts_with("!T!") {
-                    let trace: TraceEntry =
-                        serde_json::from_str(line.trim_start_matches("!T!")).unwrap();
-                    if trace.location.is_bytecode() {
-                        return Ok(Output::Trace(trace));
-                    } else if show_output {
-                        trace.print();
-                    }
+            } else if line.starts_with("!T!") {
+                let trace: TraceEntry =
+                    serde_json::from_str(line.trim_start_matches("!T!")).unwrap();
+                if trace.location.is_bytecode() {
+                    return Ok(Output::Trace(trace));
                 } else if show_output {
-                    print!("{}", line);
+                    trace.print();
                 }
+            } else if show_output {
+                print!("{}", line);
             }
+            line.clear();
         }
     }
 }

@@ -21,12 +21,26 @@
 #include "caml/domain.h"
 #include "caml/stacks.h"
 #include "caml/prims.h"
+#include "caml/callback.h"
 
 // Set up the macros needed
 #undef Alloc_small_origin
 #define Alloc_small_origin CAML_FROM_CAML
 #define Setup_for_gc
 #define Restore_after_gc
+
+value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*)) {
+    struct initial_state is;
+
+    is.initial_local_roots = Caml_state->local_roots;
+
+    is.initial_sp_offset = (char *) Caml_state->stack_high - (char *) Caml_state->extern_sp;
+    is.initial_sp = Caml_state->extern_sp;
+    is.initial_external_raise = Caml_state->external_raise;
+    caml_callback_depth++;
+
+    return compiled_function(&is);
+}
 
 value jit_support_alloc_small(int64_t wosize, uint8_t tag) {
     value result;
@@ -81,10 +95,6 @@ void jit_support_closure(struct jit_state* state, int64_t nvars, void* codeval) 
        caml_initialize. */
     Code_val(state->accu) = codeval;
     state->sp += nvars;
-}
-
-value *jit_support_get_initial_sp() {
-    return Caml_state->extern_sp;
 }
 
 void jit_support_closure_rec(struct jit_state* state, int64_t nvars, void** codevals, int64_t nfuncs) {
@@ -167,4 +177,23 @@ void* jit_support_grab_closure(struct jit_state* state, void* prev_restart) {
     state->sp += 3;
 
     return next_pc;
+}
+
+void jit_support_stop(struct initial_state* is, value *sp) {
+    Caml_state->external_raise = is->initial_external_raise;
+    Caml_state->extern_sp = sp;
+    caml_callback_depth--;
+}
+
+long jit_support_raise_check(struct initial_state* is) {
+    if ((char *) Caml_state->trapsp
+        >= (char *) Caml_state->stack_high - is->initial_sp_offset) {
+        Caml_state->external_raise = is->initial_external_raise;
+        Caml_state->extern_sp = (value *) ((char *) Caml_state->stack_high
+                                           - is->initial_sp_offset);
+        caml_callback_depth--;
+        return 1;
+    } else {
+        return 0;
+    }
 }

@@ -10,7 +10,7 @@ mod global_data;
 mod trace;
 
 use crate::caml::mlvalues::LongValue;
-use crate::compiler::{compile, get_entrypoint};
+use crate::compiler::{compile, get_entrypoint, EntryPoint};
 use crate::trace::print_bytecode_trace;
 use caml::mlvalues::Value;
 use global_data::GlobalData;
@@ -36,6 +36,7 @@ pub fn on_bytecode_loaded(code: &[i32]) {
 }
 
 extern "C" {
+    fn jit_support_main_wrapper(entrypoint: EntryPoint) -> Value;
     fn actual_caml_interprete(prog: *const i32, prog_size: usize, print_traces: bool) -> Value;
 }
 
@@ -55,7 +56,7 @@ pub fn interpret_bytecode(code: &[i32]) -> Value {
         // and we don't want to be holding it when that happens
         std::mem::drop(global_data);
 
-        entrypoint()
+        unsafe { jit_support_main_wrapper(entrypoint) }
     } else {
         std::mem::drop(global_data);
 

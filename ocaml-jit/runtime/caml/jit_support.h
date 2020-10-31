@@ -21,6 +21,23 @@
 #include <stdint.h>
 #include "mlvalues.h"
 #include "exec.h"
+#include "fail.h"
+
+/* There's some interpreter state I don't want the JIT code to care about keeping track of
+ * and will be passing to C primitives anyway. jit_support_main_wrapper is responsible for
+ * setting up this stuff and branching into the JIT compiled code with a pointer to this
+ * state struct on the stack. Other callbacks can use it by taking a pointer to it from
+ * the JIT code */
+ 
+struct initial_state {
+    value* initial_sp;
+    struct longjmp_buffer * initial_external_raise;
+    intnat initial_sp_offset;
+    struct caml__roots_block * volatile initial_local_roots;
+    struct longjmp_buffer raise_buf;
+};
+
+value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*));
 
 /* Callbacks from C to Rust */
 
@@ -53,6 +70,9 @@ void *jit_support_get_primitive(uint64_t primno);
 
 void jit_support_restart(struct jit_state* state);
 void* jit_support_grab_closure(struct jit_state* state, void* prev_restart);
+
+void jit_support_stop(struct initial_state* is, value *sp);
+long jit_support_raise_check(struct initial_state* is);
 
 #endif /* CAML_INTERNALS */
 

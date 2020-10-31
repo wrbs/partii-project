@@ -1,5 +1,6 @@
 use super::c_primitives::*;
 use super::saved_data::EntryPoint;
+use crate::caml::domain_state::get_extern_sp_addr;
 use crate::caml::misc::fatal_error;
 use crate::caml::mlvalues::{BlockValue, LongValue, Tag, Value};
 use crate::caml::{domain_state, mlvalues};
@@ -117,27 +118,27 @@ impl CompilerContext {
             ; push r_env
             ; push r_extra_args
             ; push r_sp
-            // Align for C calling convention
-            ; sub rsp, 8
+            // Push the pointer to the initial state struct
+            ; push rdi
+            // We're now aligned for the C calling convention
             // Set up initial register values
             ; mov r_accu, caml_i32_of_int(0)
             ; mov r_env, QWORD BlockValue::atom(Tag(0)).0
             ; mov r_extra_args, 0
-            // Get the sp with a support function
-            ; mov rax, QWORD jit_support_get_initial_sp as i64
-            ; call rax
-            ; mov r_sp, rax
+            // The first field in the initial state struct is the initial sp value to use
+            // That's the thing on the top of the stack
+            ; mov rax, [rsp]
+            ; mov r_sp, [rax]
         );
 
         offset
     }
 
     #[allow(clippy::fn_to_numeric_cast)]
-    fn emit_stop(&mut self) {
+    fn emit_return(&mut self) {
         // Clean up what the initial code did and return to the caller
         oc_dynasm!(self.ops
-            // TODO set external sp, external raise and callback depth
-            // Undo align for C calling convention
+            // Undo push of initial state pointer
             ; add rsp, 8
             // Undo original pushes
             ; pop r_sp
@@ -246,7 +247,7 @@ impl CompilerContext {
                 oc_pushretaddr!(self.ops, 0, rcx);
             }
             Instruction::Apply(0) => panic!("Apply(0) found!"),
-            Instruction::Apply(1) => {
+            Instruction::Apply1 => {
                 oc_dynasm!(self.ops
                     // Save the first argument, drop the sp and restore it
                     ; mov rax, [r_sp]
@@ -273,7 +274,7 @@ impl CompilerContext {
                     ; retloc:
                 );
             }
-            Instruction::Apply(2) => {
+            Instruction::Apply2 => {
                 // Like for Apply(1), but saving two args
                 oc_dynasm!(self.ops
                     ; mov rax, [r_sp]
@@ -298,7 +299,7 @@ impl CompilerContext {
                     ; retloc:
                 );
             }
-            Instruction::Apply(3) => {
+            Instruction::Apply3 => {
                 // Like one, but saving two args
                 oc_dynasm!(self.ops
                     ; mov rax, [r_sp]
@@ -658,10 +659,19 @@ impl CompilerContext {
                     ; add r_sp, 32
                 );
             }
-            Instruction::Raise(kind) => {
+            Instruction::Raise(_kind) => {
                 let trap_sp = domain_state::get_trap_sp_addr();
                 // TODO backtraces, checking if the trapsp is above initial sp offest
                 oc_dynasm!(self.ops
+                    // Check if we've gone too high in the stack
+                    ; mov rdi, [rsp]  // Initial state pointer
+                    ; mov rsi, r_sp   // Current sp
+                    ; mov rax, QWORD jit_support_raise_check as i64
+                    ; call rax
+                    ; cmp rax, 0
+                    ; jne >return_exception_result
+
+                    // Ok, not too high, can do the link stuff
                     // Get the current trap sp
                     ; mov rsi, QWORD (trap_sp as usize) as i64
                     // Set the sp from it
@@ -678,7 +688,13 @@ impl CompilerContext {
                     ; mov rax, [r_sp]
                     ; add r_sp, 32
                     ; jmp rax
+
+                    // Otherwise
+                    ; return_exception_result:
+                    ; mov rax, r_accu
+                    ; or rax, 2
                 );
+                self.emit_return();
             }
             /*
             Instruction::CheckSignals => {}
@@ -687,6 +703,7 @@ impl CompilerContext {
                 // FIXME Setup_for_c_call
                 // TODO - possible optimisation, could load the static address
                 // if it's currently in the table
+                self.setup_for_c_call(offset);
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
@@ -695,47 +712,61 @@ impl CompilerContext {
                     ; call rax
                     ; mov r_accu, rax
                 );
+                self.restore_after_c_call();
             }
             Instruction::CCall2(primno) => {
+                self.setup_for_c_call(offset);
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
                     ; call rax
                     ; mov rdi, r_accu
-                    ; mov rsi, [r_sp]
+                    ; mov rsi, [r_sp + 2 * 8]
                     ; call rax
-                    ; add r_sp, 8
                     ; mov r_accu, rax
+                );
+                self.restore_after_c_call();
+                oc_dynasm!(self.ops
+                    ; add r_sp, 8
                 );
             }
             Instruction::CCall3(primno) => {
+                self.setup_for_c_call(offset);
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
                     ; call rax
                     ; mov rdi, r_accu
-                    ; mov rsi, [r_sp]
-                    ; mov rdx, [r_sp + 8]
+                    ; mov rsi, [r_sp + 2 * 8]
+                    ; mov rdx, [r_sp + 3 * 8]
                     ; call rax
-                    ; add r_sp, 16
                     ; mov r_accu, rax
+                );
+                self.restore_after_c_call();
+                oc_dynasm!(self.ops
+                    ; add r_sp, 16
                 );
             }
             Instruction::CCall4(primno) => {
+                self.setup_for_c_call(offset);
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
                     ; call rax
                     ; mov rdi, r_accu
-                    ; mov rsi, [r_sp]
-                    ; mov rdx, [r_sp + 8]
-                    ; mov rcx, [r_sp + 16]
+                    ; mov rsi, [r_sp + 2 * 8]
+                    ; mov rdx, [r_sp + 3 * 8]
+                    ; mov rcx, [r_sp + 4 * 8]
                     ; call rax
-                    ; add r_sp, 24
                     ; mov r_accu, rax
+                );
+                self.restore_after_c_call();
+                oc_dynasm!(self.ops
+                    ; add r_sp, 24
                 );
             }
             Instruction::CCall5(primno) => {
+                self.setup_for_c_call(offset);
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
@@ -746,22 +777,31 @@ impl CompilerContext {
                     ; mov rcx, [r_sp + 16]
                     ; mov r8, [r_sp + 24]
                     ; call rax
-                    ; add r_sp, BYTE 32
                     ; mov r_accu, rax
+                );
+                self.restore_after_c_call();
+                oc_dynasm!(self.ops
+                    ; add r_sp, BYTE 32
                 );
             }
             Instruction::CCallN(nargs, primno) => {
                 let nargs = *nargs as i32;
                 oc_dynasm!(self.ops
+                    ; sub r_sp, BYTE 8
+                    ; mov [r_sp], r_accu
+                );
+                self.setup_for_c_call(offset);
+                oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
                     ; call rax
-                    ; sub r_sp, BYTE 8
-                    ; mov [r_sp], r_accu
-                    ; mov rdi, r_sp
+                    ; lea rdi, [r_sp + 2 * 8]
                     ; mov rsi, nargs
                     ; call rax
                     ; mov r_accu, rax
+                );
+                self.restore_after_c_call();
+                oc_dynasm!(self.ops
                     ; add r_sp, 8 * nargs
                 );
             }
@@ -959,7 +999,16 @@ impl CompilerContext {
             Instruction::Stop => {
                 // Call the function so that the entrypoint and code that uses it is visually nearby
                 // for easier changes
-                self.emit_stop();
+                oc_dynasm!(self.ops
+                    // Set some global variables
+                    ; mov rax, QWORD jit_support_stop as i64
+                    ; mov rdi, [rsp]
+                    ; mov rsi, r_sp
+                    ; call rax
+                    // Set the return value
+                    ; mov rax, r_accu
+                );
+                self.emit_return();
             }
             /*
             Instruction::Break => {}
@@ -968,6 +1017,29 @@ impl CompilerContext {
         }
 
         Some(())
+    }
+
+    fn setup_for_c_call(&mut self, offset: ParsedRelativeOffset) {
+        // Trashes rax, moves OCaml stack down by 2 words
+        let next_instr = self.get_label(ParsedRelativeOffset(offset.0 + 1));
+        oc_dynasm!(self.ops
+            ; sub r_sp, 16
+            ; mov [r_sp], r_env
+            ; lea rax, [=>next_instr]
+            ; mov [r_sp + 8], rax
+            ; mov rax, QWORD get_extern_sp_addr() as usize as i64
+            ; mov [rax], r_sp
+        );
+    }
+
+    fn restore_after_c_call(&mut self) {
+        // Trashes rax, OCaml stack up by 2 words
+        oc_dynasm!(self.ops
+            ; mov rax, QWORD get_extern_sp_addr() as usize as i64
+            ; mov r_sp, [rax]
+            ; mov r_env, [r_sp]
+            ; add r_sp, 16
+        );
     }
 
     fn unimplemented(&mut self) {

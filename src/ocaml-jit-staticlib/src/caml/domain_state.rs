@@ -83,7 +83,7 @@ pub fn stack_size() -> i64 {
 }
  */
 
-pub fn get_stack_high_addr() -> *const (*const Value) {
+pub fn get_stack_high_addr() -> *const *const Value {
     unsafe { &(*Caml_state).stack_high }
 }
 
@@ -99,12 +99,15 @@ pub fn get_trap_sp() -> u64 {
     unsafe { *get_trap_sp_addr() }
 }
 
-pub fn get_local_roots_addr() -> *const u64 {
-    unsafe { &(*Caml_state).local_roots }
-}
 pub fn get_extern_sp_addr() -> *const u64 {
     unsafe { &(*Caml_state).extern_sp }
+}
+
+/*
+pub fn get_local_roots_addr() -> *const u64 {
+    unsafe { &(*Caml_state).local_roots }
 }
 pub fn get_external_raise_addr() -> *const u64 {
     unsafe { &(*Caml_state).external_raise }
 }
+*/
