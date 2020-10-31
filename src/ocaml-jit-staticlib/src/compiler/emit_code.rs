@@ -4,6 +4,8 @@ use crate::caml::domain_state::get_extern_sp_addr;
 use crate::caml::misc::fatal_error;
 use crate::caml::mlvalues::{BlockValue, LongValue, Tag, Value};
 use crate::caml::{domain_state, mlvalues};
+use crate::compiler::saved_data::LongjmpHandler;
+use crate::compiler::LongjmpEntryPoint;
 use crate::global_data::GlobalData;
 use crate::trace::{print_bytecode_trace, print_instruction_trace};
 use dynasmrt::x64::Assembler;
@@ -94,6 +96,52 @@ macro_rules! oc_pushretaddr {
 
 fn caml_i32_of_int(orig: i64) -> i32 {
     Value::from(LongValue::from_i64(orig)).0 as i32
+}
+
+pub fn emit_longjmp_entrypoint() -> LongjmpHandler {
+    /* For handling exceptions raised by C primitives the existing runtime uses longjmp
+     * The code for the interpreter just jumps to the raise code.
+     *
+     * To replicate this with the jit, we push a function that sets up the C stack in
+     * the same way as emit_entrypoint and also does the things that happens when we call
+     * raise - see jit_support_main_wrapper in the C primitives for how this gets used
+     */
+    let mut ops = Assembler::new().unwrap();
+    let start_offset = ops.offset();
+    oc_dynasm!(ops
+        // Push callee-save registers I use
+        ; push r_accu
+        ; push r_env
+        ; push r_extra_args
+        ; push r_sp
+        // Push the pointer to the initial state struct
+        ; push rdi
+        // Store the initial accu
+        ; mov r_accu, rsi
+        // Get the trapsp address
+        ; mov rsi, QWORD domain_state::get_trap_sp_addr() as usize as i64
+        // Set the sp from it
+        ; mov r_sp, [rsi]
+        // Set the new trap sp to the next one in the link
+        ; mov rax, [r_sp + 8]
+        ; mov [rsi], rax
+        // Restore the env
+        ; mov r_env, [r_sp + 16]
+        // Restore the extra args - un-Val_long it
+        ; mov r_extra_args, [r_sp + 24]
+        ; shr r_extra_args, 1
+        // Save location to jump, increment sp and go to it
+        ; mov rax, [r_sp]
+        ; add r_sp, 32
+        ; jmp rax
+    );
+
+    let buf = ops.finalize().unwrap();
+    let entrypoint: LongjmpEntryPoint = unsafe { std::mem::transmute(buf.ptr(start_offset)) };
+    LongjmpHandler {
+        compiled_code: buf,
+        entrypoint,
+    }
 }
 
 impl CompilerContext {
@@ -836,7 +884,7 @@ impl CompilerContext {
             }
             Instruction::ArithInt(ArithOp::Div) => {
                 oc_dynasm!(self.ops
-                    // Convert from ocaml longs to actual longs, multiply, convert back
+                    // Convert from ocaml longs to actual longs, divide, convert back
                     ; mov rax, [r_sp]
                     ; sar rax, 1
                     ; cmp rax, 0
@@ -854,6 +902,38 @@ impl CompilerContext {
                     ; jmp >next
                     // Raise divide 0
                     ; div0:
+                );
+                self.setup_for_c_call(offset);
+                oc_dynasm!(self.ops
+                    ; mov rax, QWORD caml_raise_zero_divide as i64
+                    ; call rax
+                    ; next:
+                );
+            }
+            Instruction::ArithInt(ArithOp::Mod) => {
+                // As div, but using rdx which has the remainder in it
+                oc_dynasm!(self.ops
+                    // Convert from ocaml longs to actual longs, mod, convert back
+                    ; mov rax, [r_sp]
+                    ; sar rax, 1
+                    ; cmp rax, 0
+                    ; je >div0
+                    ; mov rdx, rax
+                    ; mov rcx, rdx
+                    ; mov rax, r_accu
+                    ; sar rax, 1
+                    ; cqo
+                    ; idiv rcx
+                    ; add rdx, rdx
+                    ; add rdx, 1
+                    ; mov r_accu, rdx
+                    ; add r_sp, BYTE 8
+                    ; jmp >next
+                    // Raise divide 0
+                    ; div0:
+                );
+                self.setup_for_c_call(offset);
+                oc_dynasm!(self.ops
                     ; mov rax, QWORD caml_raise_zero_divide as i64
                     ; call rax
                     ; next:

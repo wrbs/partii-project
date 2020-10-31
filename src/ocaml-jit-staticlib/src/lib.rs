@@ -10,7 +10,7 @@ mod global_data;
 mod trace;
 
 use crate::caml::mlvalues::LongValue;
-use crate::compiler::{compile, get_entrypoint, EntryPoint};
+use crate::compiler::{compile, get_entrypoint, EntryPoint, LongjmpEntryPoint};
 use crate::trace::print_bytecode_trace;
 use caml::mlvalues::Value;
 use global_data::GlobalData;
@@ -36,12 +36,15 @@ pub fn on_bytecode_loaded(code: &[i32]) {
 }
 
 extern "C" {
-    fn jit_support_main_wrapper(entrypoint: EntryPoint) -> Value;
+    fn jit_support_main_wrapper(
+        entrypoint: EntryPoint,
+        longjmp_handler: LongjmpEntryPoint,
+    ) -> Value;
     fn actual_caml_interprete(prog: *const i32, prog_size: usize, print_traces: bool) -> Value;
 }
 
 pub fn interpret_bytecode(code: &[i32]) -> Value {
-    let global_data = GlobalData::get();
+    let mut global_data = GlobalData::get();
     let use_jit = global_data.options.use_jit;
     let print_traces = global_data.options.trace;
 
@@ -54,9 +57,10 @@ pub fn interpret_bytecode(code: &[i32]) -> Value {
         let entrypoint = get_entrypoint(&global_data.compiler_data, code);
         // explicitly release the mutex, as the interpreter sometimes calls into itself recursively
         // and we don't want to be holding it when that happens
+        let longjmp_handler = global_data.compiler_data.get_longjmp_handler();
         std::mem::drop(global_data);
 
-        unsafe { jit_support_main_wrapper(entrypoint) }
+        unsafe { jit_support_main_wrapper(entrypoint, longjmp_handler) }
     } else {
         std::mem::drop(global_data);
 

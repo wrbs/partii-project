@@ -29,15 +29,38 @@
 #define Setup_for_gc
 #define Restore_after_gc
 
-value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*)) {
+value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*), value (*longjmp_handler)(struct initial_state*, value init_accu)) {
+    struct longjmp_buffer raise_buf;
     struct initial_state is;
 
     is.initial_local_roots = Caml_state->local_roots;
-
     is.initial_sp_offset = (char *) Caml_state->stack_high - (char *) Caml_state->extern_sp;
     is.initial_sp = Caml_state->extern_sp;
     is.initial_external_raise = Caml_state->external_raise;
     caml_callback_depth++;
+
+    if (sigsetjmp(raise_buf.buf, 0)) {
+        Caml_state->local_roots = is.initial_local_roots;
+        // Check_trap_barrier;
+        // if (Caml_state->backtrace_active) {
+        //     /* pc has already been pushed on the stack when calling the C
+        //        function that raised the exception. No need to push it again
+        //        here. */
+        //     caml_stash_backtrace(accu, sp, 0);
+        // }
+
+        if ((char *) Caml_state->trapsp
+            >= (char *) Caml_state->stack_high - is.initial_sp_offset) {
+            Caml_state->external_raise = is.initial_external_raise;
+            Caml_state->extern_sp = (value *) ((char *) Caml_state->stack_high
+                                               - is.initial_sp_offset);
+            caml_callback_depth--;
+            return Make_exception_result(Caml_state->exn_bucket);
+        }
+
+        return longjmp_handler(&is, Caml_state->exn_bucket);
+    }
+    Caml_state->external_raise = &raise_buf;
 
     return compiled_function(&is);
 }

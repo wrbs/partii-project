@@ -5,7 +5,7 @@ mod saved_data;
 use ocaml_jit_shared::{
     get_bytecode_references, parse_instructions_from_code_slice, relocate_instructions,
 };
-pub use saved_data::{CompilerData, EntryPoint, Section};
+pub use saved_data::{CompilerData, EntryPoint, LongjmpEntryPoint, LongjmpHandler, Section};
 use std::path::Path;
 
 pub fn compile<P: AsRef<Path>>(

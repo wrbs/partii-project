@@ -37,7 +37,10 @@ struct initial_state {
     struct longjmp_buffer raise_buf;
 };
 
-value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*));
+value jit_support_main_wrapper(
+    value (*compiled_function)(struct initial_state*),
+    value (*longjmp_handler)(struct initial_state*, value init_accu)
+);
 
 /* Callbacks from C to Rust */
 

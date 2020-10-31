@@ -1,5 +1,7 @@
 -include ../Makefile.toolchain
 
+OCAMLC = $(BUILT_DIR_ABS)/bin/ocamlc
+
 TEST_SOURCES_DIR = test_sources
 TEST_COMPILED_DIR = test_bc
 
