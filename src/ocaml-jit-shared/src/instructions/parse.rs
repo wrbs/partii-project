@@ -272,7 +272,7 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::GetVecTItem => Instruction::GetVecTItem,
             Opcode::SetVecTItem => Instruction::SetVecTItem,
 
-            Opcode::GetStringChar => Instruction::GetStringChar,
+            Opcode::GetStringChar => Instruction::GetBytesChar,
             Opcode::GetBytesChar => Instruction::GetBytesChar,
             Opcode::SetBytesChar => Instruction::SetBytesChar,
 

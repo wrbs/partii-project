@@ -18,10 +18,19 @@ extern "C" {
 
     #[link_name = "caml_global_data"]
     static CAML_GLOBAL_DATA: i64;
+
+    #[link_name = "caml_something_to_do"]
+    static CAML_SOMETHING_TO_DO: i64;
 }
 
 #[inline(always)]
 pub fn get_global_data_addr() -> i64 {
     let loc: *const i64 = unsafe { &CAML_GLOBAL_DATA };
+    loc as i64
+}
+
+#[inline(always)]
+pub fn get_something_to_do_addr() -> i64 {
+    let loc: *const i64 = unsafe { &CAML_SOMETHING_TO_DO };
     loc as i64
 }
