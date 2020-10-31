@@ -38,6 +38,9 @@ let pairs_of ns =
         | (x::xs) -> allpairs x ns @ aux xs in
     aux ns
 
-let () =
-    List.iter do_tests (pairs_of nums)
+let do_not x = not x
 
+let () =
+    do_not true |> string_of_bool |> print_endline;
+    do_not false |> string_of_bool |> print_endline;
+    List.iter do_tests (pairs_of nums)

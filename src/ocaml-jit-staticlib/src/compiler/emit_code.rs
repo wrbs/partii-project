@@ -596,7 +596,6 @@ impl CompilerContext {
                     ; pop r_extra_args
                 );
             }
-            // Instruction::MakeFloatBlock(_) => {}
             Instruction::GetField(field_no) => {
                 oc_dynasm!(self.ops
                     ; mov rdi, r_accu
@@ -607,17 +606,6 @@ impl CompilerContext {
                     ; mov r_accu, rax
                 );
             }
-            /*
-            Instruction::SetField(_) => {}
-            Instruction::GetFloatField(_) => {}
-            Instruction::SetFloatField(_) => {}
-            Instruction::VecTLength => {}
-            Instruction::GetVecTItem => {}
-            Instruction::SetVecTItem => {}
-            Instruction::GetStringChar => {}
-            Instruction::GetBytesChar => {}
-            Instruction::SetBytesChar => {}
-            */
             Instruction::Branch(loc) => {
                 let label = self.get_label(*loc);
                 oc_dynasm!(self.ops
@@ -669,9 +657,6 @@ impl CompilerContext {
 
                 self.unreachable();
             }
-            /*
-            Instruction::BoolNot => {}
-            */
             Instruction::PushTrap(loc) => {
                 let label = self.get_label(*loc);
                 let trap_sp = domain_state::get_trap_sp_addr();
@@ -744,9 +729,6 @@ impl CompilerContext {
                 );
                 self.emit_return();
             }
-            /*
-            Instruction::CheckSignals => {}
-            */
             Instruction::CCall1(primno) => {
                 // FIXME Setup_for_c_call
                 // TODO - possible optimisation, could load the static address
@@ -986,6 +968,11 @@ impl CompilerContext {
                     ; add r_sp, BYTE 8
                 );
             }
+            Instruction::BoolNot => {
+                oc_dynasm!(self.ops
+                    ; xor r_accu, BYTE 2
+                );
+            }
             Instruction::IntCmp(cmp) => {
                 oc_dynasm!(self.ops
                     ; mov rax, [r_sp]
@@ -1096,9 +1083,6 @@ impl CompilerContext {
                     ; add r_accu, rax
                 );
             }
-            /*
-            Instruction::OffsetRef(_) => {}
-            */
             Instruction::IsInt => {
                 oc_dynasm!(self.ops
                     ; and r_accu, 1
@@ -1106,11 +1090,6 @@ impl CompilerContext {
                     ; add r_accu, 1
                 );
             }
-            /*
-            Instruction::GetMethod => {}
-            Instruction::GetPubMet(_, _) => {}
-            Instruction::GetDynMet => {}
-            */
             Instruction::Stop => {
                 // Call the function so that the entrypoint and code that uses it is visually nearby
                 // for easier changes
@@ -1125,9 +1104,23 @@ impl CompilerContext {
                 );
                 self.emit_return();
             }
-            /*
-            Instruction::Break => {}
-            Instruction::Event => {}*/
+            // Instruction::MakeFloatBlock(_) => {}
+            // Instruction::SetField(_) => {}
+            // Instruction::GetFloatField(_) => {}
+            // Instruction::SetFloatField(_) => {}
+            // Instruction::VecTLength => {}
+            // Instruction::GetVecTItem => {}
+            // Instruction::SetVecTItem => {}
+            // Instruction::GetStringChar => {}
+            // Instruction::GetBytesChar => {}
+            // Instruction::SetBytesChar => {}
+            // Instruction::CheckSignals => {}
+            // Instruction::OffsetRef(_) => {}
+            // Instruction::GetMethod => {}
+            // Instruction::GetPubMet(_, _) => {}
+            // Instruction::GetDynMet => {}
+            // Instruction::Break => {}
+            // Instruction::Event => {}
             _ => self.unimplemented(),
         }
 
