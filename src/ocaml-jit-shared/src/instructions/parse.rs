@@ -290,7 +290,7 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
                 Instruction::Switch(ints, tags)
             }
 
-            Opcode::NegInt => Instruction::ArithInt(ArithOp::Neg),
+            Opcode::NegInt => Instruction::NegInt,
             Opcode::AddInt => Instruction::ArithInt(ArithOp::Add),
             Opcode::SubInt => Instruction::ArithInt(ArithOp::Sub),
             Opcode::MulInt => Instruction::ArithInt(ArithOp::Mul),

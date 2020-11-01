@@ -8,7 +8,6 @@ pub struct ParsedRelativeOffset(pub usize);
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ArithOp {
-    Neg,
     Add,
     Sub,
     Mul,
@@ -93,6 +92,7 @@ pub enum Instruction<L> {
     CCall5(u32),
     CCallN(u32, u32),
     ArithInt(ArithOp),
+    NegInt,
     IntCmp(Comp),
     BranchCmp(Comp, i32, L),
     OffsetInt(i32),
@@ -166,6 +166,7 @@ impl<L1> Instruction<L1> {
             Instruction::CCall5(x) => Instruction::CCall5(*x),
             Instruction::CCallN(x, y) => Instruction::CCallN(*x, *y),
             Instruction::ArithInt(x) => Instruction::ArithInt(*x),
+            Instruction::NegInt => Instruction::NegInt,
             Instruction::IntCmp(x) => Instruction::IntCmp(*x),
             Instruction::OffsetInt(x) => Instruction::OffsetInt(*x),
             Instruction::OffsetRef(x) => Instruction::OffsetRef(*x),
