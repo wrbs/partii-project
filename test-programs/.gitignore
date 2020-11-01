@@ -1,2 +1,2 @@
-*.cmi
-*.cmo
+out/
+build/
