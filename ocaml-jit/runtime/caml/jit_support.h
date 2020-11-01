@@ -51,8 +51,6 @@ void rust_jit_trace(uint64_t  pc, uint64_t accu, uint64_t env, uint64_t extra_ar
 
 value jit_support_alloc_small(int64_t wosize, uint8_t tag);
 
-void jit_support_set_field(value ptr, int64_t fieldno, value to);
-
 value jit_support_get_float_field(value ptr, int64_t fieldno);
 void jit_support_set_float_field(value ptr, int64_t fieldno, value to);
 

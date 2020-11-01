@@ -553,9 +553,9 @@ impl CompilerContext {
                 oc_dynasm!(self.ops
                     ; mov rax, QWORD get_global_data_addr()
                     ; mov rdi, [rax]
-                    ; mov esi, *field_no as i32
-                    ; mov rdx, r_accu
-                    ; mov rax, QWORD jit_support_set_field as i64
+                    ; add rdi, (*field_no * 8) as _
+                    ; mov rsi, r_accu
+                    ; mov rax, QWORD caml_modify as i64
                     ; call rax
                     ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
                 );
@@ -612,10 +612,9 @@ impl CompilerContext {
             Instruction::SetField(field_no) => {
                 oc_dynasm!(self.ops
                     ; mov rdi, r_accu
-                    ; mov esi, *field_no as i32
-                    ; mov rdx, [r_sp]
-                    // TODO this doesn't need a function
-                    ; mov rax, QWORD jit_support_set_field as i64
+                    ; add rdi, (*field_no * 8) as i32
+                    ; mov rsi, [r_sp]
+                    ; mov rax, QWORD caml_modify as i64
                     ; call rax
                     ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
                     ; add r_sp, 8
@@ -659,11 +658,11 @@ impl CompilerContext {
             }
             Instruction::SetVecTItem => {
                 oc_dynasm!(self.ops
-                    ; mov rdi, r_accu
-                    ; mov esi, [r_sp]
-                    ; shr esi, 1
-                    ; mov rdx, [r_sp + 8]
-                    ; mov rax, QWORD jit_support_set_field as i64
+                    ; mov rax, [r_sp]
+                    ; shr rax, 1
+                    ; lea rdi, [r_accu + rax * 8]
+                    ; mov rsi, [r_sp + 8]
+                    ; mov rax, QWORD caml_modify as i64
                     ; call rax
                     ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
                     ; add r_sp, 2*8

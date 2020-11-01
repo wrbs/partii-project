@@ -71,10 +71,6 @@ value jit_support_alloc_small(int64_t wosize, uint8_t tag) {
     return result;
 }
 
-void jit_support_set_field(value ptr, int64_t fieldno, value to) {
-    caml_modify(&Field(ptr, fieldno), to);
-}
-
 value jit_support_get_float_field(value ptr, int64_t fieldno) {
     value x;
     double d = Double_flat_field(ptr, fieldno);
