@@ -248,12 +248,7 @@ impl CompilerContext {
                 // For now let a function do the work of getting the field
                 let field_no = *n as i64;
                 oc_dynasm!(self.ops
-                    ; mov rdi, r_env
-                    ; mov esi, field_no as i32
-                    // TODO this doesn't need a function
-                    ; mov rax, QWORD jit_support_get_field as i64
-                    ; call rax
-                    ; mov r_accu, rax
+                    ; mov r_accu, [r_env + (field_no * 8) as _]
                 );
             }
             Instruction::Push => {
@@ -551,10 +546,7 @@ impl CompilerContext {
                     // and use it to index all of my accesses? Likewise with function calls.
                     ; mov rax, QWORD get_global_data_addr()
                     ; mov rdi, [rax]
-                    ; mov esi, *field_no as i32
-                    ; mov rax, QWORD jit_support_get_field as i64
-                    ; call rax
-                    ; mov r_accu, rax
+                    ; mov r_accu, [rdi + (*field_no * 8) as _]
                 );
             }
             Instruction::SetGlobal(field_no) => {
@@ -614,12 +606,7 @@ impl CompilerContext {
             }
             Instruction::GetField(field_no) => {
                 oc_dynasm!(self.ops
-                    ; mov rdi, r_accu
-                    ; mov esi, *field_no as i32
-                    // TODO this doesn't need a function
-                    ; mov rax, QWORD jit_support_get_field as i64
-                    ; call rax
-                    ; mov r_accu, rax
+                    ; mov r_accu, [r_accu + (*field_no * 8) as _]
                 );
             }
             Instruction::SetField(field_no) => {
@@ -664,14 +651,10 @@ impl CompilerContext {
             }
             Instruction::GetVecTItem => {
                 oc_dynasm!(self.ops
-                    ; mov rdi, r_accu
                     ; mov esi, [r_sp]
                     ; shr esi, 1
+                    ; mov r_accu, [r_accu + rsi * 8]
                     ; add r_sp, 8
-                    // TODO this doesn't need a function
-                    ; mov rax, QWORD jit_support_get_field as i64
-                    ; call rax
-                    ; mov r_accu, rax
                 );
             }
             Instruction::SetVecTItem => {

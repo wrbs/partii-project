@@ -71,10 +71,6 @@ value jit_support_alloc_small(int64_t wosize, uint8_t tag) {
     return result;
 }
 
-value jit_support_get_field(value ptr, int64_t fieldno) {
-    return Field(ptr, fieldno);
-}
-
 void jit_support_set_field(value ptr, int64_t fieldno, value to) {
     caml_modify(&Field(ptr, fieldno), to);
 }
