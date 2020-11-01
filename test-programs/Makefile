@@ -2,14 +2,14 @@
 
 OCAMLC = $(BUILT_DIR_ABS)/bin/ocamlc
 
-TEST_SOURCES_DIR = test_sources
-TEST_COMPILED_DIR = test_bc
+TEST_SOURCES_DIR = src
+TEST_COMPILED_DIR = out
 
 TEST_SOURCES = $(wildcard $(TEST_SOURCES_DIR)/*.ml)
-TEST_CASES = $(patsubst $(TEST_SOURCES_DIR)/%.ml, $(TEST_COMPILED_DIR)/%.byte, $(TEST_SOURCES))
+TEST_COMPILED = $(patsubst $(TEST_SOURCES_DIR)/%.ml, $(TEST_COMPILED_DIR)/%.byte, $(TEST_SOURCES))
 
 .PHONY: all
-all: $(TEST_CASES)
+all: $(TEST_COMPILED)
 
 .PHONY: clean
 clean:

@@ -10,4 +10,4 @@ PROGRAM=$1
 shift 1
 
 cd src
-cargo run compare-traces "$@" ../vendor/no-aslr/no-aslr ../resources/test_bc/${PROGRAM}.byte
+cargo run compare-traces "$@" ../vendor/no-aslr/no-aslr ../test-programs/out/${PROGRAM}.byte

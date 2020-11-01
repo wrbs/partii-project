@@ -14,7 +14,7 @@ RELEASE_TARGET := $(RUST_DIR)/target/debug
 
 STATIC_LIB_FILE := libocaml_jit_staticlib.a
 
-RESOURCES_DIR := resources
+RESOURCES_DIR := test-programs
 
 NO_ASLR_DIR := vendor/no-aslr
 
