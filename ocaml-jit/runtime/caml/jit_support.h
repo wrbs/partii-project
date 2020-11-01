@@ -57,6 +57,8 @@ void jit_support_set_field(value ptr, int64_t fieldno, value to);
 value jit_support_get_float_field(value ptr, int64_t fieldno);
 void jit_support_set_float_field(value ptr, int64_t fieldno, value to);
 
+value jit_support_vect_length(value ptr);
+
 value *jit_support_check_stacks(value* sp);
 value *jit_support_appterm_stacks(int64_t nargs, int64_t slotsize, value* sp);
 

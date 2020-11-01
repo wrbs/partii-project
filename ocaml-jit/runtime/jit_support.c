@@ -91,6 +91,12 @@ void jit_support_set_float_field(value ptr, int64_t fieldno, value to) {
     Store_double_flat_field(ptr, fieldno, Double_val(to));
 }
 
+value jit_support_vect_length(value ptr) {
+    mlsize_t size = Wosize_val(ptr);
+    if (Tag_val(ptr) == Double_array_tag) size = size / Double_wosize;
+    return Val_long(size);
+}
+
 value *jit_support_check_stacks(value* sp) {
     if (sp < Caml_state->stack_threshold) {
         Caml_state->extern_sp = sp;

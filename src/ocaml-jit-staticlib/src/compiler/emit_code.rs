@@ -654,6 +654,38 @@ impl CompilerContext {
                     ; add r_sp, 8
                 );
             }
+            Instruction::VecTLength => {
+                oc_dynasm!(self.ops
+                    ; mov rdi, r_accu
+                    ; mov rax, QWORD jit_support_vect_length as i64
+                    ; call rax
+                    ; mov r_accu, rax
+                );
+            }
+            Instruction::GetVecTItem => {
+                oc_dynasm!(self.ops
+                    ; mov rdi, r_accu
+                    ; mov esi, [r_sp]
+                    ; shr esi, 1
+                    ; add r_sp, 8
+                    // TODO this doesn't need a function
+                    ; mov rax, QWORD jit_support_get_field as i64
+                    ; call rax
+                    ; mov r_accu, rax
+                );
+            }
+            Instruction::SetVecTItem => {
+                oc_dynasm!(self.ops
+                    ; mov rdi, r_accu
+                    ; mov esi, [r_sp]
+                    ; shr esi, 1
+                    ; mov rdx, [r_sp + 8]
+                    ; mov rax, QWORD jit_support_set_field as i64
+                    ; call rax
+                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; add r_sp, 2*8
+                );
+            }
             Instruction::Branch(loc) => {
                 let label = self.get_label(*loc);
                 oc_dynasm!(self.ops
@@ -1194,9 +1226,6 @@ impl CompilerContext {
                     ; next:
                 );
             }
-            // Instruction::VecTLength => {}
-            // Instruction::GetVecTItem => {}
-            // Instruction::SetVecTItem => {}
             // Instruction::OffsetRef(_) => {}
             // Instruction::GetMethod => {}
             // Instruction::GetPubMet(_, _) => {}

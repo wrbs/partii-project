@@ -5,6 +5,8 @@ extern "C" {
     pub fn jit_support_get_float_field(base: i64, field: i64) -> i64;
     pub fn jit_support_set_float_field(base: i64, field: i64, value: i64);
 
+    pub fn jit_support_vect_length(ptr: i64) -> i64;
+
     pub fn jit_support_check_stacks(sp: i64) -> i64;
     pub fn jit_support_appterm_stacks(nargs: i64, slotsize: i64, sp: i64) -> i64;
     pub fn jit_support_closure(state: i64, nvars: i64, codeval: i64);
