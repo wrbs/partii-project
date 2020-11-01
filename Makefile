@@ -68,6 +68,8 @@ setup: fullclean
 cargo_builds:
 	cd $(RUST_DIR) && cargo build --all
 	cd $(RUST_DIR) && cargo build --all --release
+	mkdir -p $(BUILT_DIR)/bin
+	cp $(RELEASE_TARGET)/ocaml-jit-tools $(BUILT_DIR)/bin/
 
 # Copying built libs into the OCaml compiler's tree
 # =================================================

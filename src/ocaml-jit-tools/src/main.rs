@@ -2,7 +2,7 @@ mod bytecode_files;
 mod commands;
 mod utils;
 
-use commands::{compare_traces, disassembler, hexdump};
+use commands::{compare_traces, disassembler, hexdump, process_disassembly};
 
 #[macro_use]
 extern crate prettytable;
@@ -17,6 +17,7 @@ enum BaseCli {
     Dis(disassembler::Options),
     Hexdump(hexdump::Options),
     CompareTraces(compare_traces::Options),
+    ProcessDisassembly(process_disassembly::Options),
 }
 
 fn main() {
@@ -27,6 +28,7 @@ fn main() {
         BaseCli::Dis(opts) => disassembler::run(opts),
         BaseCli::Hexdump(opts) => hexdump::run(opts),
         BaseCli::CompareTraces(opts) => compare_traces::run(opts),
+        BaseCli::ProcessDisassembly(opts) => process_disassembly::run(opts),
     }
 }
 
