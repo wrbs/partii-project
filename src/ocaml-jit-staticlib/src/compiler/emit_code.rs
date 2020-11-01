@@ -596,6 +596,22 @@ impl CompilerContext {
                     ; pop r_extra_args
                 );
             }
+            Instruction::MakeFloatBlock(size) => {
+                oc_dynasm!(self.ops
+                    ; push r_extra_args
+                    ; push r_sp
+                    ; push r_env
+                    ; push r_accu
+                    ; mov rdi, rsp
+                    ; mov esi, *size as i32
+                    ; mov rax, QWORD jit_support_make_float_block as i64
+                    ; call rax
+                    ; pop r_accu
+                    ; pop r_env
+                    ; pop r_sp
+                    ; pop r_extra_args
+                );
+            }
             Instruction::GetField(field_no) => {
                 oc_dynasm!(self.ops
                     ; mov rdi, r_accu
@@ -613,6 +629,26 @@ impl CompilerContext {
                     ; mov rdx, [r_sp]
                     // TODO this doesn't need a function
                     ; mov rax, QWORD jit_support_set_field as i64
+                    ; call rax
+                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; add r_sp, 8
+                );
+            }
+            Instruction::GetFloatField(i) => {
+                oc_dynasm!(self.ops
+                    ; mov rdi, r_accu
+                    ; mov esi, *i as i32
+                    ; mov rax, QWORD jit_support_get_float_field as i64
+                    ; call rax
+                    ; mov r_accu, rax
+                );
+            }
+            Instruction::SetFloatField(i) => {
+                oc_dynasm!(self.ops
+                    ; mov rdi, r_accu
+                    ; mov esi, *i as i32
+                    ; mov rdx, [r_sp]
+                    ; mov rax, QWORD jit_support_set_float_field as i64
                     ; call rax
                     ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
                     ; add r_sp, 8
@@ -814,10 +850,10 @@ impl CompilerContext {
                     ; mov rax, QWORD jit_support_get_primitive as i64
                     ; call rax
                     ; mov rdi, r_accu
-                    ; mov rsi, [r_sp]
-                    ; mov rdx, [r_sp + 8]
-                    ; mov rcx, [r_sp + 16]
-                    ; mov r8, [r_sp + 24]
+                    ; mov rsi, [r_sp + 2 * 8]
+                    ; mov rdx, [r_sp + 3 * 8]
+                    ; mov rcx, [r_sp + 4 * 8]
+                    ; mov r8, [r_sp + 5 * 8]
                     ; call rax
                     ; mov r_accu, rax
                 );
@@ -1158,9 +1194,6 @@ impl CompilerContext {
                     ; next:
                 );
             }
-            // Instruction::MakeFloatBlock(_) => {}
-            // Instruction::GetFloatField(_) => {}
-            // Instruction::SetFloatField(_) => {}
             // Instruction::VecTLength => {}
             // Instruction::GetVecTItem => {}
             // Instruction::SetVecTItem => {}

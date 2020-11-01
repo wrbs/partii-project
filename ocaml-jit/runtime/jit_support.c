@@ -79,6 +79,18 @@ void jit_support_set_field(value ptr, int64_t fieldno, value to) {
     caml_modify(&Field(ptr, fieldno), to);
 }
 
+value jit_support_get_float_field(value ptr, int64_t fieldno) {
+    value x;
+    double d = Double_flat_field(ptr, fieldno);
+    Alloc_small(x, Double_wosize, Double_tag);
+    Store_double_val(x, d);
+    return x;
+}
+
+void jit_support_set_float_field(value ptr, int64_t fieldno, value to) {
+    Store_double_flat_field(ptr, fieldno, Double_val(to));
+}
+
 value *jit_support_check_stacks(value* sp) {
     if (sp < Caml_state->stack_threshold) {
         Caml_state->extern_sp = sp;
@@ -167,6 +179,22 @@ void jit_support_make_block(struct jit_state* state, int64_t _wosize, int64_t _t
         block = caml_alloc_shr(wosize, tag);
         caml_initialize(&Field(block, 0), state->accu);
         for (i = 1; i < wosize; i++) caml_initialize(&Field(block, i), *state->sp++);
+    }
+    state->accu = block;
+}
+
+void jit_support_make_float_block(struct jit_state* state, int64_t size) {
+    mlsize_t i;
+    value block;
+    if (size <= Max_young_wosize / Double_wosize) {
+        Alloc_small(block, size * Double_wosize, Double_array_tag);
+    } else {
+        block = caml_alloc_shr(size * Double_wosize, Double_array_tag);
+    }
+    Store_double_flat_field(block, 0, Double_val(state->accu));
+    for (i = 1; i < size; i++){
+        Store_double_flat_field(block, i, Double_val(*state->sp));
+        ++state->sp;
     }
     state->accu = block;
 }

@@ -55,11 +55,7 @@ fn run_exn(options: Options) -> Result<()> {
         }
         print!("\n{}", dumpobj_rest);
         match parsed_instructions[0] {
-            Instruction::Apply1
-            | Instruction::Apply2
-            | Instruction::Apply3
-            | Instruction::Apply(_)
-            | Instruction::ApplyTerm(_, _)
+            Instruction::ApplyTerm(_, _)
             | Instruction::Return(_)
             | Instruction::Restart
             | Instruction::Raise(_)
