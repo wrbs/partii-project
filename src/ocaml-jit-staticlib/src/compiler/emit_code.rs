@@ -1170,6 +1170,15 @@ impl CompilerContext {
                     ; add r_accu, rax
                 );
             }
+            Instruction::OffsetRef(n) => {
+                oc_dynasm!(self.ops
+                    ; mov ecx, *n as i32
+                    ; shl ecx, BYTE 1
+                    ; movsxd rax, ecx
+                    ; add [r_accu], rax
+                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                );
+            }
             Instruction::IsInt => {
                 oc_dynasm!(self.ops
                     ; and r_accu, 1
@@ -1226,7 +1235,6 @@ impl CompilerContext {
                     ; next:
                 );
             }
-            // Instruction::OffsetRef(_) => {}
             // Instruction::GetMethod => {}
             // Instruction::GetPubMet(_, _) => {}
             // Instruction::GetDynMet => {}
