@@ -1,6 +1,7 @@
 use crate::utils::die;
 use colored::Colorize;
 use ocaml_jit_shared::{compare_traces, TraceEntry};
+use os_pipe::{pipe, PipeReader};
 use std::error::Error;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader};
@@ -14,11 +15,14 @@ pub struct Options {
     #[structopt(parse(from_os_str))]
     bytecode_file: PathBuf,
 
-    #[structopt(name = "ARGUMENTS")]
-    other_args: Vec<OsString>,
-
     #[structopt(short = "q", long = "quiet")]
     quiet: bool,
+
+    #[structopt(short = "p", long = "ocamlrunparams")]
+    ocaml_run_params: Option<OsString>,
+
+    #[structopt(name = "ARGUMENTS")]
+    other_args: Vec<OsString>,
 }
 
 type Result<O, E = Box<dyn Error>> = std::result::Result<O, E>;
@@ -56,16 +60,33 @@ enum TestResult {
 
 fn execute(options: &Options) -> Result<TestResult> {
     let path = &options.bytecode_file;
-    let mut compiled =
-        RunningProgram::new(path, "-jt --trace-format JSON", options.other_args.iter())?;
-    let mut interpreted =
-        RunningProgram::new(path, "-t --trace-format JSON", options.other_args.iter())?;
+    let ocaml_run_params = options
+        .ocaml_run_params
+        .clone()
+        .unwrap_or_else(OsString::new);
+    dbg!(&ocaml_run_params);
+    let mut compiled = RunningProgram::new(
+        path,
+        "-jt --trace-format JSON",
+        options.other_args.iter(),
+        &ocaml_run_params,
+        false,
+        !options.quiet,
+    )?;
+    let mut interpreted = RunningProgram::new(
+        path,
+        "-t --trace-format JSON",
+        options.other_args.iter(),
+        &ocaml_run_params,
+        true,
+        !options.quiet,
+    )?;
 
     let mut first_line_passed = false;
 
     loop {
-        let interpreted_output = interpreted.get_trace_line_or_exit(!options.quiet)?;
-        let compiled_output = compiled.get_trace_line_or_exit(!options.quiet)?;
+        let interpreted_output = interpreted.get_trace_line_or_exit()?;
+        let compiled_output = compiled.get_trace_line_or_exit()?;
 
         if !options.quiet {
             println!();
@@ -100,9 +121,9 @@ fn execute(options: &Options) -> Result<TestResult> {
                     println!("{}", compiled_output.format());
                 }
             }
-            Output::Exited { exit_code } => {
+            Output::Exited => {
                 if !options.quiet {
-                    println!("{}", format!("Exited: {}", exit_code).green().bold());
+                    println!("{}", "Exited".green().bold());
                 }
                 break;
             }
@@ -115,55 +136,74 @@ fn execute(options: &Options) -> Result<TestResult> {
 #[derive(PartialEq, Debug)]
 enum Output {
     Trace(TraceEntry),
-    Exited { exit_code: i32 },
+    Exited,
 }
 
 impl Output {
     fn format(&self) -> String {
         match self {
             Output::Trace(t) => t.format(),
-            Output::Exited { exit_code } => format!("Exited with code {}", exit_code),
+            Output::Exited => String::from("Exited"),
         }
     }
 }
 
 struct RunningProgram {
-    child: process::Child,
-    stdout: BufReader<process::ChildStdout>,
+    output: BufReader<PipeReader>,
+    is_gold_standard: bool,
+    show_output: bool,
 }
 
 impl RunningProgram {
-    fn new<S: AsRef<OsStr>, S2: AsRef<OsStr>, I: IntoIterator<Item = S2>>(
+    fn new<S: AsRef<OsStr>, S2: AsRef<OsStr>, S3: AsRef<OsStr>, I: IntoIterator<Item = S2>>(
         s: S,
         jit_options: &'static str,
         other_args: I,
+        ocaml_run_params: S3,
+        is_gold_standard: bool,
+        show_output: bool,
     ) -> Result<RunningProgram> {
-        let mut child = process::Command::new(s)
+        let (reader, writer) = pipe()?;
+        let writer_clone = writer.try_clone()?;
+
+        let child = process::Command::new(s)
             .args(other_args)
             .env("JIT_OPTIONS", jit_options)
-            .stdout(process::Stdio::piped())
+            .env("OCAMLRUNPARAM", ocaml_run_params)
+            .stdout(writer)
+            .stderr(writer_clone)
             .spawn()?;
-        let stdout = BufReader::new(child.stdout.take().unwrap());
-        Ok(RunningProgram { child, stdout })
+
+        std::mem::drop(child);
+
+        let output = BufReader::new(reader);
+        Ok(RunningProgram {
+            output,
+            show_output,
+            is_gold_standard,
+        })
     }
 
-    fn get_trace_line_or_exit(&mut self, show_output: bool) -> Result<Output> {
+    fn get_trace_line_or_exit(&mut self) -> Result<Output> {
         let mut line = String::new();
         loop {
-            let read = self.stdout.read_line(&mut line)?;
+            let read = self.output.read_line(&mut line)?;
             if read == 0 {
-                let exit_code = self.child.wait()?.code().unwrap();
-                return Ok(Output::Exited { exit_code });
+                return Ok(Output::Exited);
             } else if line.starts_with("!T!") {
                 let trace: TraceEntry =
                     serde_json::from_str(line.trim_start_matches("!T!")).unwrap();
                 if trace.location.is_bytecode() {
                     return Ok(Output::Trace(trace));
-                } else if show_output {
+                } else if self.show_output {
                     trace.print();
                 }
-            } else if show_output {
-                print!("{}", line);
+            } else if self.show_output {
+                if self.is_gold_standard {
+                    print!("{}", line.yellow().bold());
+                } else {
+                    print!("{}", line);
+                }
             }
             line.clear();
         }
