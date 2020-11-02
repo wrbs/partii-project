@@ -24,9 +24,13 @@ arg_enum! {
 #[derive(Debug, StructOpt)]
 #[structopt(name = PROGRAM_NAME, about = "An experimental JIT compiler for OCaml bytecode")]
 pub struct Options {
-    /// Use the JIT compiler
+    /// Execute using the JIT compiled code
     #[structopt(short = "j", long)]
     pub use_jit: bool,
+
+    /// Run the compiler at startup (--use-jit will automatically set this)
+    #[structopt(short = "c", long)]
+    pub use_compiler: bool,
 
     /// Show a trace of every instruction executed
     #[structopt(short, long)]

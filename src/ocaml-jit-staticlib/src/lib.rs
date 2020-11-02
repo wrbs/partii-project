@@ -24,18 +24,23 @@ pub fn on_bytecode_loaded(code: &[i32]) {
     let mut global_data = GlobalData::get();
 
     let print_traces = global_data.options.trace;
-    let write_code_to = if global_data.options.save_compiled {
-        Some("/tmp/code")
-    } else {
-        None
-    };
+    let should_compile =
+        print_traces | global_data.options.use_jit | global_data.options.use_compiler;
 
-    compile(
-        &mut global_data.compiler_data,
-        code,
-        print_traces,
-        write_code_to,
-    );
+    if should_compile {
+        let write_code_to = if global_data.options.save_compiled {
+            Some("/tmp/code")
+        } else {
+            None
+        };
+
+        compile(
+            &mut global_data.compiler_data,
+            code,
+            print_traces,
+            write_code_to,
+        );
+    }
 }
 
 extern "C" {
