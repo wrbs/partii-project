@@ -24,10 +24,8 @@ pub fn on_bytecode_loaded(code: &[i32]) {
     let mut global_data = GlobalData::get();
 
     let print_traces = global_data.options.trace;
-    let should_compile =
-        print_traces | global_data.options.use_jit | global_data.options.use_compiler;
 
-    if should_compile {
+    if global_data.options.should_compile_code() {
         let write_code_to = if global_data.options.save_compiled {
             Some("/tmp/code")
         } else {
@@ -78,7 +76,9 @@ pub fn interpret_bytecode(code: &[i32]) -> Value {
 
 pub fn on_bytecode_released(code: &[i32]) {
     let mut global_data = GlobalData::get();
-    global_data.compiler_data.release_section(code);
+    if global_data.options.should_compile_code() {
+        global_data.compiler_data.release_section(code);
+    }
 }
 
 pub fn old_interpreter_trace(

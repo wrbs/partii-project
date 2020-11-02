@@ -11,6 +11,7 @@ use structopt::StructOpt;
 
 #[derive(StructOpt)]
 #[structopt(about = "compare traces between the interpreter and the JIT")]
+#[structopt(setting = structopt::clap::AppSettings::TrailingVarArg)]
 pub struct Options {
     #[structopt(parse(from_os_str))]
     bytecode_file: PathBuf,

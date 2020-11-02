@@ -1062,7 +1062,7 @@ impl CompilerContext {
                     }
                     Comp::UGe => {
                         oc_dynasm!(self.ops
-                            ; cmova r_accu, rdi
+                            ; cmovae r_accu, rdi
                         );
                     }
                 }
@@ -1112,7 +1112,7 @@ impl CompilerContext {
                     }
                     Comp::UGe => {
                         oc_dynasm!(self.ops
-                            ; ja =>label
+                            ; jae =>label
                         );
                     }
                 }

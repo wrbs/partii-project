@@ -56,4 +56,8 @@ impl Options {
 
         Options::from_iter(arg_sections.iter())
     }
+
+    pub fn should_compile_code(&self) -> bool {
+        self.use_compiler || self.use_jit || self.trace
+    }
 }
