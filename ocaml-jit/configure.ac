@@ -635,7 +635,6 @@ AS_CASE([$host],
 
 AS_IF([test "x$enable_rust_jit" = "xyes"], [
   use_rust_jit=true
-  AC_DEFINE([USE_RUST_JIT]) 
 ],
   use_rust_jit=false
 )

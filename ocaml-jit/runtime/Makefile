@@ -84,17 +84,6 @@ NATIVE_SHARED_LIBRARIES += libasmrun_shared.$(SO)
 endif
 endif
 
-# Rust JIT
-
-ifdef USE_RUST_JIT
--include $(ROOTDIR)/../Makefile.shared
-
-RUST_JIT_DEBUG_OBJECT_DIR = jit_objects_debug
-RUST_JIT_RELEASE_OBJECT_DIR = jit_objects_release
-BYTECODE_C_SOURCES += jit_support.c
-endif
-
-
 # List of object files for each target
 
 ASM_OBJECTS := $(ASM_SOURCES:.$(ASM_EXT)=.$(O))
@@ -116,6 +105,17 @@ libasmruni_OBJECTS := $(NATIVE_C_SOURCES:.c=_ni.$(O)) $(ASM_OBJECTS)
 
 libasmrunpic_OBJECTS := $(NATIVE_C_SOURCES:.c=_npic.$(O)) \
   $(ASM_OBJECTS:.$(O)=_libasmrunpic.$(O))
+
+# Rust JIT
+
+ifdef USE_RUST_JIT
+-include $(ROOTDIR)/../Makefile.shared
+
+RUST_JIT_RELEASE_OBJECT_DIR = jit_objects_release
+libcamlrun_OBJECTS += jit_support_b.o
+
+RUST_JIT_CPPFLAGS += -DUSE_RUST_JIT
+endif
 
 # General (non target-specific) assembler and compiler flags
 
@@ -218,10 +218,6 @@ clean:
 	rm -f ocamlrun.exe ocamlrund.exe ocamlruni.exe
 	rm -f primitives primitives.new prims.c caml/opnames.h caml/jumptbl.h
 	rm -f caml/version.h domain_state*.inc
-ifeq "$(USE_RUST_JIT)" "true"
-	rm -rf $(RUST_JIT_DEBUG_OBJECT_DIR)
-	rm -rf $(RUST_JIT_RELEASE_OBJECT_DIR)
-endif
 
 .PHONY: distclean
 distclean: clean
@@ -229,13 +225,6 @@ distclean: clean
 # Rust JIT object files
 
 ifdef USE_RUST_JIT
-
-$(RUST_JIT_DEBUG_OBJECT_DIR)/.d: $(RUST_JIT_DEBUG_LIB)
-	rm -rf $(RUST_JIT_DEBUG_OBJECT_DIR)
-	mkdir $(RUST_JIT_DEBUG_OBJECT_DIR)
-	cd $(RUST_JIT_DEBUG_OBJECT_DIR) && ar x ../$(RUST_JIT_DEBUG_LIB)
-	touch $(RUST_JIT_DEBUG_OBJECT_DIR)/.d
-
 $(RUST_JIT_RELEASE_OBJECT_DIR)/.d: $(RUST_JIT_RELEASE_LIB)
 	rm -rf $(RUST_JIT_RELEASE_OBJECT_DIR)
 	mkdir $(RUST_JIT_RELEASE_OBJECT_DIR)
@@ -313,7 +302,6 @@ ocamlrun$(EXE): prims.$(O) libcamlrun.$(A)
 ifeq "$(USE_RUST_JIT)" "true"
 libcamlrun.$(A): $(libcamlrun_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
 	$(call MKLIB,$@, $(libcamlrun_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o)
-
 else
 libcamlrun.$(A): $(libcamlrun_OBJECTS)
 	$(call MKLIB,$@, $^)
@@ -322,40 +310,20 @@ endif
 ocamlrund$(EXE): prims.$(O) libcamlrund.$(A)
 	$(MKEXE) $(MKEXEDEBUGFLAG) -o $@ $^ $(LIBS)
 
-ifeq "$(USE_RUST_JIT)" "true"
-libcamlrund.$(A): $(libcamlrund_OBJECTS) $(RUST_JIT_DEBUG_OBJECT_DIR)/.d
-	$(call MKLIB,$@, $(libcamlrund_OBJECTS) $(RUST_JIT_DEBUG_OBJECT_DIR)/*.o)
-else
 libcamlrund.$(A): $(libcamlrund_OBJECTS)
 	$(call MKLIB,$@, $^)
-endif
 
 ocamlruni$(EXE): prims.$(O) libcamlruni.$(A)
 	$(MKEXE) -o $@ $^ $(LIBS)
 
-ifeq "$(USE_RUST_JIT)" "true"
-libcamlruni.$(A): $(libcamlruni_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
-	$(call MKLIB,$@, $(libcamlruni_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o)
-else
 libcamlruni.$(A): $(libcamlruni_OBJECTS)
 	$(call MKLIB,$@, $^)
-endif
 
-ifeq "$(USE_RUST_JIT)" "true"
-libcamlrun_pic.$(A): $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
-	$(call MKLIB,$@, $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o)
-else
 libcamlrun_pic.$(A): $(libcamlrunpic_OBJECTS)
 	$(call MKLIB,$@, $^)
-endif
 
-ifeq "$(USE_RUST_JIT)" "true"
-libcamlrun_shared.$(SO): $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
-	$(MKDLL) -o $@ $(libcamlrunpic_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o $(BYTECCLIBS)
-else
 libcamlrun_shared.$(SO): $(libcamlrunpic_OBJECTS)
 	$(MKDLL) -o $@ $^ $(BYTECCLIBS)
-endif
 
 libasmrun.$(A): $(libasmrun_OBJECTS)
 	$(call MKLIB,$@, $^)
@@ -373,6 +341,9 @@ libasmrun_shared.$(SO): $(libasmrunpic_OBJECTS)
 	$(MKDLL) -o $@ $^ $(NATIVECCLIBS)
 
 # Target-specific preprocessor and compiler flags
+ifdef USE_RUST_JIT
+%_b.$(O): OC_CPPFLAGS += $(RUST_JIT_CPPFLAGS)
+endif
 
 %_bd.$(O): OC_CPPFLAGS += $(OC_DEBUG_CPPFLAGS)
 

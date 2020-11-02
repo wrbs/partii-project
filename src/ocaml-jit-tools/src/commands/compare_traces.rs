@@ -64,7 +64,6 @@ fn execute(options: &Options) -> Result<TestResult> {
         .ocaml_run_params
         .clone()
         .unwrap_or_else(OsString::new);
-    dbg!(&ocaml_run_params);
     let mut compiled = RunningProgram::new(
         path,
         "-jt --trace-format JSON",

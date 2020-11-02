@@ -1,4 +1,3 @@
 # Shared settings
 
-RUST_JIT_DEBUG_LIB = libocamljit_debug.a
 RUST_JIT_RELEASE_LIB = libocamljit.a

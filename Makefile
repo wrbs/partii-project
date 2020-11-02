@@ -3,9 +3,7 @@
 -include Makefile.shared
 
 OCAML_DIR := ocaml-jit
-DEBUG_COPIED := $(OCAML_DIR)/runtime/$(RUST_JIT_DEBUG_LIB)
 RELEASE_COPIED := $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
-OCAML_STATIC_LIBS := $(DEBUG_COPIED) $(RELEASE_COPIED)
 
 RUST_DIR := src
 
@@ -27,7 +25,7 @@ PREFIX := $(abspath .)/$(BUILT_DIR)
 .PHONY: only_runtime
 runtime_only:
 	$(MAKE) cargo_builds
-	$(MAKE) $(OCAML_STATIC_LIBS)
+	$(MAKE) $(RELEASE_COPIED)
 	$(MAKE) -C $(OCAML_DIR)/runtime
 	$(MAKE) -C $(OCAML_DIR) install
 	$(MAKE) -C $(RESOURCES_DIR) all
@@ -36,7 +34,7 @@ runtime_only:
 .PHONY: all
 all:
 	$(MAKE) cargo_builds
-	$(MAKE) $(OCAML_STATIC_LIBS)
+	$(MAKE) $(RELEASE_COPIED)
 	$(MAKE) -C $(OCAML_DIR)
 	$(MAKE) -C $(OCAML_DIR) install
 	$(MAKE) -C $(RESOURCES_DIR) all
@@ -52,6 +50,7 @@ clean:
 	rm -rf $(BUILT_DIR)
 	cd $(RUST_DIR) && cargo clean
 	$(MAKE) -C $(RESOURCES_DIR) clean
+	rm -f $(RELEASE_COPIED)
 
 .PHONY: fullclean
 fullclean: clean
@@ -73,9 +72,6 @@ cargo_builds:
 
 # Copying built libs into the OCaml compiler's tree
 # =================================================
-
-$(DEBUG_COPIED): $(DEBUG_TARGET)/$(STATIC_LIB_FILE)
-	cp $? $@
 
 $(RELEASE_COPIED): $(RELEASE_TARGET)/$(STATIC_LIB_FILE)
 	cp $? $@

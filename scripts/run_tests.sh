@@ -9,5 +9,5 @@ make
 cd src
 
 for PROGRAM in ${PROGRAMS}; do
-  cargo run compare-traces "$@" ../vendor/no-aslr/no-aslr ../test-programs/out/${PROGRAM}.byte || echo "!!! Failed on ${PROGRAM}, exiting"; exit 1
+  cargo run compare-traces "$@" ../vendor/no-aslr/no-aslr ../test-programs/out/${PROGRAM}.byte || (echo "!!! Failed on ${PROGRAM}, exiting"; exit 1)
 done

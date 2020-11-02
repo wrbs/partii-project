@@ -258,7 +258,6 @@ value caml_interprete(code_t prog, asize_t prog_size)
 
   if (prog == NULL) {           /* Interpreter is initializing */
 #ifdef THREADED_CODE
-      printf("Threaded!\n");
     caml_instr_table = (char **) jumptable;
     caml_instr_base = Jumptbl_base;
 #endif
