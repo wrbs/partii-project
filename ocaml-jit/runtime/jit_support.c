@@ -106,7 +106,7 @@ value *jit_support_appterm_stacks(int64_t nargs, int64_t slotsize, value* sp) {
 
     newsp = sp + slotsize - nargs;
     for(i = nargs - 1; i >= 0; i--) newsp[i] = sp[i];
-    return jit_support_check_stacks(newsp);
+    return newsp;
 }
 
 

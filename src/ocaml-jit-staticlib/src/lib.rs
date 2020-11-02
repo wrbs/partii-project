@@ -2,6 +2,9 @@
 // right thing" or "we're trusting the JIT isn't broken"
 #![allow(clippy::missing_safety_doc)]
 
+// A side-effect of how we emit the JIT code means we have to cast functions to i64s not usizes
+// It's fine here
+#[allow(clippy::fn_to_numeric_cast)]
 mod c_entrypoints;
 mod caml;
 mod compiler;

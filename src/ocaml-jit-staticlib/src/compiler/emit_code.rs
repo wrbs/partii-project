@@ -1,7 +1,6 @@
 use super::c_primitives::*;
 use super::saved_data::EntryPoint;
 use crate::caml::domain_state::get_extern_sp_addr;
-use crate::caml::misc::fatal_error;
 use crate::caml::mlvalues::{BlockValue, LongValue, Tag, Value};
 use crate::caml::{domain_state, mlvalues};
 use crate::compiler::saved_data::LongjmpHandler;
@@ -11,6 +10,8 @@ use crate::trace::{print_bytecode_trace, print_instruction_trace};
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
 use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction, ParsedRelativeOffset};
+use std::ffi::CStr;
+use std::os::raw::c_char;
 
 pub fn compile_instructions(
     section_number: usize,
@@ -40,6 +41,8 @@ pub fn compile_instructions(
         );
     }
 
+    cc.emit_shared_code();
+
     let ops = cc.ops;
     let buf = ops.finalize().unwrap();
 
@@ -53,6 +56,13 @@ struct CompilerContext {
     labels: Vec<Option<DynamicLabel>>,
     print_traces: bool,
     section_number: usize,
+}
+
+// Enums to avoid magic constants
+enum NextInstruction {
+    RestartOrAfter,
+    GoToNext,
+    UseRSI,
 }
 
 // Define aliases for the abstract machine registers
@@ -157,7 +167,6 @@ impl CompilerContext {
         }
     }
 
-    #[allow(clippy::fn_to_numeric_cast)]
     fn emit_entrypoint(&mut self) -> AssemblyOffset {
         let offset = self.ops.offset();
         oc_dynasm!(self.ops
@@ -182,7 +191,6 @@ impl CompilerContext {
         offset
     }
 
-    #[allow(clippy::fn_to_numeric_cast)]
     fn emit_return(&mut self) {
         // Clean up what the initial code did and return to the caller
         oc_dynasm!(self.ops
@@ -197,7 +205,6 @@ impl CompilerContext {
         );
     }
 
-    #[allow(clippy::fn_to_numeric_cast)]
     fn emit_instruction(
         &mut self,
         instruction: &Instruction<ParsedRelativeOffset>,
@@ -297,26 +304,15 @@ impl CompilerContext {
                     ; mov rax, [r_sp]
                     ; sub r_sp, 24
                     ; mov [r_sp], rax
-                    ; lea rcx, [>retloc]
+                    ; lea rcx, [>instr]   // Save return location (next instruction)
                 );
                 // Push the return frame (retaddr, num_args, env)
                 oc_pushretaddr!(self.ops, 8, rcx);
                 oc_dynasm!(self.ops
                     // Set the env and extra_args to the new appropriate values
-                    ; mov r_env, r_accu
                     ; mov r_extra_args, 0
-                    // Check stacks
-                    ; mov rdi, r_sp
-                    ; mov rax, QWORD jit_support_check_stacks as i64
-                    ; call rax
-                    ; mov r_sp, rax
-                    // Done
-                    // Get the code value (new pc) of the current accu in rax
-                    ; mov rax, [r_accu]
-                    ; jmp rax
-                    // Define the label used earlier
-                    ; retloc:
                 );
+                self.perform_apply();
             }
             Instruction::Apply2 => {
                 // Like for Apply(1), but saving two args
@@ -326,22 +322,14 @@ impl CompilerContext {
                     ; sub r_sp, 24
                     ; mov [r_sp], rax
                     ; mov [r_sp + 8], rcx
-                    ; lea rcx, [>retloc]
+                    ; lea rcx, [>instr]
                 );
                 oc_pushretaddr!(self.ops, 16, rcx);
                 oc_dynasm!(self.ops
-                    ; mov r_env, r_accu
                     ; mov r_extra_args, 1
-                    // Check stacks
-                    ; mov rdi, r_sp
-                    ; mov rax, QWORD jit_support_check_stacks as i64
-                    ; call rax
-                    ; mov r_sp, rax
-                    // Done
-                    ; mov rax, [r_accu]
-                    ; jmp rax
-                    ; retloc:
                 );
+
+                self.perform_apply();
             }
             Instruction::Apply3 => {
                 // Like one, but saving two args
@@ -353,40 +341,24 @@ impl CompilerContext {
                     ; mov [r_sp], rax
                     ; mov [r_sp + 8], rcx
                     ; mov [r_sp + 16], rdx
-                    ; lea rcx, [>retloc]
+                    ; lea rcx, [>instr]   // Save return location
                 );
                 oc_pushretaddr!(self.ops, 24, rcx);
                 oc_dynasm!(self.ops
-                    ; mov r_env, r_accu
                     ; mov r_extra_args, 2
-                    // Check stacks
-                    ; mov rdi, r_sp
-                    ; mov rax, QWORD jit_support_check_stacks as i64
-                    ; call rax
-                    ; mov r_sp, rax
-                    // Done
-                    ; mov rax, [r_accu]
-                    ; jmp rax
-                    ; retloc:
                 );
+
+                self.perform_apply();
             }
             Instruction::Apply(n) => {
                 // In any other cases the retaddr is already pushed
                 // So just set extra args, pc and jump to the closure's pc
                 let new_extra_args = (*n - 1) as i32;
                 oc_dynasm!(self.ops
-                    ; mov r_env, r_accu
                     ; mov r_extra_args, new_extra_args
-                    // Check stacks
-                    ; mov rdi, r_sp
-                    ; mov rax, QWORD jit_support_check_stacks as i64
-                    ; call rax
-                    ; mov r_sp, rax
-                    // Done
-                    // Get codeval and jump to it
-                    ; mov rax, [r_accu]
-                    ; jmp rax
                 );
+
+                self.perform_apply();
             }
             Instruction::ApplyTerm(nargs, slotsize) => {
                 let nargs = *nargs as i32;
@@ -396,16 +368,13 @@ impl CompilerContext {
                     ; mov rdi, nargs
                     ; mov rsi, slotsize
                     ; mov rdx, r_sp
+                    ; add r_extra_args, nargs - 1
                     // Also does check_stacks
                     ; mov rax, QWORD jit_support_appterm_stacks as i64
                     ; call rax
                     ; mov r_sp, rax
-                    ; add r_extra_args, nargs - 1
-                    ; mov r_env, r_accu
-                    // Get codeval and jump to it
-                    ; mov rax, [r_accu]
-                    ; jmp rax
                 );
+                self.perform_apply();
             }
             Instruction::Return(to_pop) => {
                 oc_dynasm!(self.ops
@@ -694,7 +663,8 @@ impl CompilerContext {
                 );
             }
             Instruction::Switch(ints, blocks) => {
-                // Really inefficient for now - in the future I'll work out how to do a jump table
+                // Really inefficient for now
+                // TODO investigate how best to emit a jump table
                 for (i, offset) in ints.iter().enumerate() {
                     let label = self.get_label(*offset);
                     oc_dynasm!(self.ops
@@ -718,7 +688,7 @@ impl CompilerContext {
                     );
                 }
 
-                self.unreachable();
+                self.emit_fatal_error(b"Switch - should be unreachable!\0")
             }
             Instruction::PushTrap(loc) => {
                 let label = self.get_label(*loc);
@@ -747,7 +717,9 @@ impl CompilerContext {
             }
             Instruction::PopTrap => {
                 let trap_sp = domain_state::get_trap_sp_addr();
+                self.emit_check_signals(NextInstruction::RestartOrAfter);
                 oc_dynasm!(self.ops
+                    ; after:
                     // Get the trapsp address
                     ; mov rax, QWORD (trap_sp as usize) as i64
                     ; mov rcx, [r_sp + 8]
@@ -1194,7 +1166,6 @@ impl CompilerContext {
                 // Call the function so that the entrypoint and code that uses it is visually nearby
                 // for easier changes
                 oc_dynasm!(self.ops
-                    // Set some global variables
                     ; mov rax, QWORD jit_support_stop as i64
                     ; mov rdi, [rsp]
                     ; mov rsi, r_sp
@@ -1205,28 +1176,113 @@ impl CompilerContext {
                 self.emit_return();
             }
             Instruction::CheckSignals => {
-                oc_dynasm!(self.ops
-                    // Set some global variables
-                    ; mov rax, QWORD get_something_to_do_addr()
-                    ; mov rdi, [rax]
-                    ; test rdi, rdi
-                    ; jz >next
-                );
-                // Todo - fix GC integration, do something here
-                self.unimplemented();
-                oc_dynasm!(self.ops
-                    ; next:
-                );
+                self.emit_check_signals(NextInstruction::GoToNext);
             }
-            // Instruction::GetMethod => {}
-            // Instruction::GetPubMet(_, _) => {}
-            // Instruction::GetDynMet => {}
-            // Instruction::Break => {}
-            // Instruction::Event => {}
-            _ => self.unimplemented(),
+            // Unimplemented ops:
+            Instruction::GetMethod => {
+                self.emit_fatal_error(b"Unimplemented: GetMethod\0");
+            }
+            Instruction::GetPubMet(_, _) => {
+                self.emit_fatal_error(b"Unimplemented: GetPubMet\0");
+            }
+            Instruction::GetDynMet => {
+                self.emit_fatal_error(b"Unimplemented: GetDynMet\0");
+            }
+            Instruction::Break => {
+                self.emit_fatal_error(b"Unimplemented: Break\0");
+            }
+            Instruction::Event => {
+                self.emit_fatal_error(b"Unimplemented: Break\0");
+            }
         }
 
         Some(())
+    }
+
+    fn perform_apply(&mut self) {
+        // Check stacks, checks signals then jumps to the closure stored in the accu
+        oc_dynasm!(self.ops
+            ; mov r_env, r_accu
+            // Check stacks
+            ; mov rdi, r_sp
+            ; mov rax, QWORD jit_support_check_stacks as i64
+            ; call rax
+            ; mov r_sp, rax
+            // Check signals - then jump to the PC saved in the closure
+            ; mov rsi, [r_accu]
+        );
+        self.emit_check_signals(NextInstruction::UseRSI);
+    }
+
+    fn emit_check_signals(&mut self, next_instr: NextInstruction) {
+        oc_dynasm!(self.ops
+            ; mov rax, QWORD get_something_to_do_addr()
+            ; mov rdi, [rax]
+            ; test rdi, rdi
+        );
+
+        match next_instr {
+            NextInstruction::RestartOrAfter => {
+                oc_dynasm!(self.ops
+                    ; jz >after            // go to next if we don't need to
+                    ; lea rsi, [<instr]    // otherwise set up to restart current instr
+                    ; jmp ->process_events
+                );
+            }
+            NextInstruction::GoToNext => {
+                oc_dynasm!(self.ops
+                    ; jz >instr            // jump to next
+                    ; lea rsi, [>instr]    // used in setup for event
+                    ; jmp ->process_events
+                );
+            }
+            NextInstruction::UseRSI => {
+                oc_dynasm!(self.ops
+                    ; jnz ->process_events
+                    ; jmp rsi
+                );
+            }
+        }
+    }
+
+    fn emit_shared_code(&mut self) {
+        /* process_events - calling convention - put return address in rsi */
+        oc_dynasm!(self.ops
+            ; ->process_events:
+            // Setup_for_event
+            ; mov rax, mlvalues::LongValue::UNIT.0 as i32
+            ; sub r_sp, 6 * 8           // Push frame
+            ; mov [r_sp], r_accu        // Accu
+            ; mov [r_sp + 8], rax       // Val_unit
+            ; mov [r_sp + 2 * 8], rax   // Val_unit
+            ; mov [r_sp + 3 * 8], rsi   // Saved pc (from above LEA)
+            ; mov [r_sp + 4 * 8], r_env // Env
+            ; mov rax, r_extra_args
+            ; add rax, rax
+            ; inc rax
+            ; mov [r_sp + 5 * 8], rax   // Val_long(extra_args)
+            ; mov rsi, QWORD get_extern_sp_addr() as usize as i64
+            ; mov [rsi], r_sp           // Save extern sp
+        // BEGIN - temporary test code
+        );
+
+        self.emit_fatal_error(b"Process pending actions!\0");
+
+        oc_dynasm!(self.ops
+        // END
+            // Process the pending actions
+            ; mov rax, QWORD caml_process_pending_actions as i64
+            ; call rax
+
+            // Restore_after_event
+            ; mov r_sp, [rsi]                    // Get extern_sp
+            ; mov r_accu, [r_sp]                 // Restore accu
+            ; mov rax, [r_sp + 3 * 8]            // Save pc for later jumping
+            ; mov r_env, [r_sp + 4 * 8]          // Restore env
+            ; mov r_extra_args, [r_sp + 5 * 8]   // Restore extra_args
+            ; add r_sp, 6 * 8                    // Pop frame
+            ; jmp rax                            // Jump to the next pc
+        );
     }
 
     fn setup_for_c_call(&mut self) {
@@ -1251,27 +1307,22 @@ impl CompilerContext {
         );
     }
 
-    fn unimplemented(&mut self) {
-        oc_dynasm!(self.ops
-            ; mov rax, QWORD unimplemented as i64
-            ; call rax
-        );
-    }
+    // IMPORTANT: remember to add a trailing null byte
+    fn emit_fatal_error(&mut self, message: &'static [u8]) {
+        let message = CStr::from_bytes_with_nul(message).unwrap();
 
-    fn unreachable(&mut self) {
         oc_dynasm!(self.ops
-            ; mov rax, QWORD unreachable as i64
+            ; mov rax, QWORD fatal_message as i64
+            ; mov rdi, QWORD message.as_ptr() as i64
             ; call rax
         );
     }
 }
 
-extern "C" fn unreachable() {
-    // fatal_error("Should be unreachable!");
-}
-
-extern "C" fn unimplemented() {
-    fatal_error("Unimplemented!");
+extern "C" fn fatal_message(message: *const c_char) {
+    unsafe {
+        caml_fatal_error(message);
+    }
 }
 
 extern "C" fn bytecode_trace(

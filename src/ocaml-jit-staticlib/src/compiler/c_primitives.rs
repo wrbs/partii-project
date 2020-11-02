@@ -1,6 +1,12 @@
-extern "C" {
-    pub fn caml_modify(ptr: i64, value: i64);
+use std::os::raw::c_char;
 
+extern "C" {
+    // OCaml existing primitives
+    pub fn caml_modify(ptr: i64, value: i64);
+    pub fn caml_process_pending_actions();
+    pub fn caml_fatal_error(s: *const c_char, ...) -> !;
+
+    // Our new ones
     pub fn jit_support_get_float_field(base: i64, field: i64) -> i64;
     pub fn jit_support_set_float_field(base: i64, field: i64, value: i64);
 
