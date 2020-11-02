@@ -208,6 +208,7 @@ impl CompilerContext {
 
         oc_dynasm!(self.ops
             ; =>label
+            ; instr:
         );
 
         if self.print_traces {
@@ -795,7 +796,7 @@ impl CompilerContext {
                 // FIXME Setup_for_c_call
                 // TODO - possible optimisation, could load the static address
                 // if it's currently in the table
-                self.setup_for_c_call(offset);
+                self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
@@ -807,7 +808,7 @@ impl CompilerContext {
                 self.restore_after_c_call();
             }
             Instruction::CCall2(primno) => {
-                self.setup_for_c_call(offset);
+                self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
@@ -823,7 +824,7 @@ impl CompilerContext {
                 );
             }
             Instruction::CCall3(primno) => {
-                self.setup_for_c_call(offset);
+                self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
@@ -840,7 +841,7 @@ impl CompilerContext {
                 );
             }
             Instruction::CCall4(primno) => {
-                self.setup_for_c_call(offset);
+                self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
@@ -858,7 +859,7 @@ impl CompilerContext {
                 );
             }
             Instruction::CCall5(primno) => {
-                self.setup_for_c_call(offset);
+                self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
@@ -882,7 +883,7 @@ impl CompilerContext {
                     ; sub r_sp, BYTE 8
                     ; mov [r_sp], r_accu
                 );
-                self.setup_for_c_call(offset);
+                self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
                     ; mov rax, QWORD jit_support_get_primitive as i64
@@ -954,7 +955,7 @@ impl CompilerContext {
                     // Raise divide 0
                     ; div0:
                 );
-                self.setup_for_c_call(offset);
+                self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rax, QWORD caml_raise_zero_divide as i64
                     ; call rax
@@ -983,7 +984,7 @@ impl CompilerContext {
                     // Raise divide 0
                     ; div0:
                 );
-                self.setup_for_c_call(offset);
+                self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rax, QWORD caml_raise_zero_divide as i64
                     ; call rax
@@ -1228,13 +1229,12 @@ impl CompilerContext {
         Some(())
     }
 
-    fn setup_for_c_call(&mut self, offset: ParsedRelativeOffset) {
+    fn setup_for_c_call(&mut self) {
         // Trashes rax, moves OCaml stack down by 2 words
-        let next_instr = self.get_label(ParsedRelativeOffset(offset.0 + 1));
         oc_dynasm!(self.ops
             ; sub r_sp, 16
             ; mov [r_sp], r_env
-            ; lea rax, [=>next_instr]
+            ; lea rax, [<instr]
             ; mov [r_sp + 8], rax
             ; mov rax, QWORD get_extern_sp_addr() as usize as i64
             ; mov [rax], r_sp

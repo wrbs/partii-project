@@ -11,7 +11,7 @@ behavior of the program is not consistent across because of memory addresses.
 Perhaps your program writes memory addresses to a log and your logs are full
 of different memory addresses. Perhaps your program uses a special allocator
 that really wants the memory addresses to be the same. Perhaps your program
-uses some sort of *dumping mechanism*, like [the Emacs
+uses some sort of _dumping mechanism_, like [the Emacs
 dumper](https://lwn.net/Articles/707615/), so execution state can be saved
 across program runs. There can be many reasons to want to do so.
 

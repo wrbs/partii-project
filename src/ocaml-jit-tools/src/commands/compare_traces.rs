@@ -28,11 +28,40 @@ pub fn run(options: Options) {
 }
 
 fn run_exn(options: Options) -> Result<()> {
+    let mut retry_attempts = 3;
+
+    while retry_attempts > 0 {
+        match execute(&options)? {
+            TestResult::Pass => {
+                break;
+            }
+            TestResult::Fail => {
+                process::exit(1);
+            }
+            TestResult::FailFirstLine => {
+                println!("{}", format!("Failed after first line, retrying to see if we get a luckier initial memory allocation - {} remaining", retry_attempts).bright_blue().bold());
+                retry_attempts -= 1;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+enum TestResult {
+    Pass,
+    Fail,
+    FailFirstLine,
+}
+
+fn execute(options: &Options) -> Result<TestResult> {
     let path = &options.bytecode_file;
     let mut compiled =
         RunningProgram::new(path, "-jt --trace-format JSON", options.other_args.iter())?;
     let mut interpreted =
         RunningProgram::new(path, "-t --trace-format JSON", options.other_args.iter())?;
+
+    let mut first_line_passed = false;
 
     loop {
         let interpreted_output = interpreted.get_trace_line_or_exit(!options.quiet)?;
@@ -54,8 +83,15 @@ fn run_exn(options: Options) -> Result<()> {
                     println!("{}", "One program exited early!".red().bold());
                 }
             }
-            std::process::exit(1);
+
+            if first_line_passed {
+                return Ok(TestResult::Fail);
+            } else {
+                return Ok(TestResult::FailFirstLine);
+            }
         }
+
+        first_line_passed = true;
 
         match interpreted_output {
             Output::Trace(_) => {
@@ -73,8 +109,9 @@ fn run_exn(options: Options) -> Result<()> {
         }
     }
 
-    Ok(())
+    Ok(TestResult::Pass)
 }
+
 #[derive(PartialEq, Debug)]
 enum Output {
     Trace(TraceEntry),

@@ -1,4 +1,5 @@
 ocaml-jit
 dist
 src/target
+src/*/target
 .vscode
