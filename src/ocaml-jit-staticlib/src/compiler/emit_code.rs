@@ -369,7 +369,6 @@ impl CompilerContext {
                     ; mov rsi, slotsize
                     ; mov rdx, r_sp
                     ; add r_extra_args, nargs - 1
-                    // Also does check_stacks
                     ; mov rax, QWORD jit_support_appterm_stacks as i64
                     ; call rax
                     ; mov r_sp, rax
@@ -592,10 +591,18 @@ impl CompilerContext {
             }
             Instruction::GetFloatField(i) => {
                 oc_dynasm!(self.ops
-                    ; mov rdi, r_accu
+                    ; push r_extra_args
+                    ; push r_sp
+                    ; push r_env
+                    ; push r_accu
+                    ; mov rdi, rsp
                     ; mov esi, *i as i32
                     ; mov rax, QWORD jit_support_get_float_field as i64
                     ; call rax
+                    ; pop r_accu
+                    ; pop r_env
+                    ; pop r_sp
+                    ; pop r_extra_args
                     ; mov r_accu, rax
                 );
             }
@@ -1275,6 +1282,7 @@ impl CompilerContext {
             ; call rax
 
             // Restore_after_event
+            ; mov rsi, QWORD get_extern_sp_addr() as usize as i64
             ; mov r_sp, [rsi]                    // Get extern_sp
             ; mov r_accu, [r_sp]                 // Restore accu
             ; mov rax, [r_sp + 3 * 8]            // Save pc for later jumping

@@ -7,7 +7,7 @@ extern "C" {
     pub fn caml_fatal_error(s: *const c_char, ...) -> !;
 
     // Our new ones
-    pub fn jit_support_get_float_field(base: i64, field: i64) -> i64;
+    pub fn jit_support_get_float_field(state: i64, field: i64) -> i64;
     pub fn jit_support_set_float_field(base: i64, field: i64, value: i64);
 
     pub fn jit_support_vect_length(ptr: i64) -> i64;

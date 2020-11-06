@@ -26,8 +26,12 @@
 // Set up the macros needed
 #undef Alloc_small_origin
 #define Alloc_small_origin CAML_FROM_CAML
-#define Setup_for_gc
-#define Restore_after_gc
+#define Setup_for_gc \
+  { state->sp -= 3; state->sp[0] = state->accu; state->sp[1] = state->env; \
+      Caml_state->extern_sp = state->sp; }
+#define Restore_after_gc \
+  { state->sp = Caml_state->extern_sp; state->accu = state->sp[0]; state->env = state->sp[1]; state->sp += 3; }
+
 
 value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*), value (*longjmp_handler)(struct initial_state*, value init_accu)) {
     struct longjmp_buffer raise_buf;
@@ -65,15 +69,9 @@ value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*)
     return compiled_function(&is);
 }
 
-value jit_support_alloc_small(int64_t wosize, uint8_t tag) {
-    value result;
-    Alloc_small(result, wosize, tag);
-    return result;
-}
-
-value jit_support_get_float_field(value ptr, int64_t fieldno) {
+value jit_support_get_float_field(struct jit_state* state, int64_t fieldno) {
     value x;
-    double d = Double_flat_field(ptr, fieldno);
+    double d = Double_flat_field(state->accu, fieldno);
     Alloc_small(x, Double_wosize, Double_tag);
     Store_double_val(x, d);
     return x;

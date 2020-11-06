@@ -49,9 +49,14 @@ void rust_jit_trace(uint64_t  pc, uint64_t accu, uint64_t env, uint64_t extra_ar
 /* Exposing some of the macro stuff as functions to avoid having to rewrite them in Rust when it's
  * out of scope for the JIT */
 
-value jit_support_alloc_small(int64_t wosize, uint8_t tag);
+struct jit_state {
+    value accu;
+    value env;
+    value* sp;
+    value extra_args;
+};
 
-value jit_support_get_float_field(value ptr, int64_t fieldno);
+value jit_support_get_float_field(struct jit_state* state, int64_t fieldno);
 void jit_support_set_float_field(value ptr, int64_t fieldno, value to);
 
 value jit_support_vect_length(value ptr);
@@ -59,12 +64,6 @@ value jit_support_vect_length(value ptr);
 value *jit_support_check_stacks(value* sp);
 value *jit_support_appterm_stacks(int64_t nargs, int64_t slotsize, value* sp);
 
-struct jit_state {
-    value accu;
-    value env;
-    value* sp;
-    value extra_args;
-};
 
 void jit_support_closure(struct jit_state* state, int64_t nvars, void* codeval);
 void jit_support_closure_rec(struct jit_state* state, int64_t nvars, void** codevals, int64_t nfuncs);
