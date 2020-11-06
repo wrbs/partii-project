@@ -2,7 +2,7 @@
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-PROGRAMS="arrays exceptions factorial float_fields hello offsetref strings_and_bytes vect arith_small"
+PROGRAMS="arrays exceptions factorial float_fields hello includestruct offsetref ppa strings_and_bytes vect arith_small"
 
 make
 
