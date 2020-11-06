@@ -32,6 +32,7 @@ pub fn print_trace(
         TraceType::JSON => println!("!T! {}", serde_json::to_string(&trace).unwrap()),
         TraceType::Debug => println!("{:?}", &trace),
         TraceType::DebugPretty => println!("{:#?}", &trace),
+        TraceType::NoPrint => (),
     }
 }
 

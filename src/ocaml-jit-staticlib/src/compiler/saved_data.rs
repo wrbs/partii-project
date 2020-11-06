@@ -76,7 +76,11 @@ impl CompilerData {
 
     pub fn release_section(&mut self, code: &[i32]) {
         let section_number = self.get_section_for_code(code).unwrap().section_number;
-        self.sections[section_number] = None;
+        if section_number == self.sections.len() - 1 {
+            let _ = self.sections.pop().unwrap();
+        } else {
+            self.sections[section_number] = None;
+        }
     }
 }
 

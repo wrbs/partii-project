@@ -18,6 +18,7 @@ arg_enum! {
         JSON,
         Debug,
         DebugPretty,
+        NoPrint,
     }
 }
 
