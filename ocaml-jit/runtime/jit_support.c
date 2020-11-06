@@ -244,3 +244,14 @@ long jit_support_raise_check(struct initial_state* is) {
         return 0;
     }
 }
+
+value jit_support_get_dyn_met(value tag, value obj) {
+    value meths = Field (obj, 0);
+    int li = 3, hi = Field(meths,0), mi;
+    while (li < hi) {
+        mi = ((li+hi) >> 1) | 1;
+        if (tag < Field(meths,mi)) hi = mi-2;
+        else li = mi;
+    }
+    return Field (meths, li-1);
+}

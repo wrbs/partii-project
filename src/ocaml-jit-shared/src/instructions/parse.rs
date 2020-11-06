@@ -329,7 +329,12 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::OffsetRef => Instruction::OffsetRef(context.i32()?),
 
             Opcode::GetMethod => Instruction::GetMethod,
-            Opcode::GetPubMet => Instruction::GetPubMet(context.i32()?, context.u32()?),
+            Opcode::GetPubMet => {
+                let tag = context.i32()?;
+                let _cache = context.u32()?;
+                result.instructions.push(Instruction::SetupForPubMet(tag));
+                Instruction::GetDynMet
+            }
 
             Opcode::GetDynMet => Instruction::GetDynMet,
 

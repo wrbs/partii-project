@@ -1105,7 +1105,10 @@ value caml_interprete(code_t prog, asize_t prog_size)
       accu = Lookup(sp[0], accu);
       Next;
 
+#ifndef USE_RUST_JIT
 #define CAML_METHOD_CACHE
+#endif
+
 #ifdef CAML_METHOD_CACHE
     Instruct(GETPUBMET): {
       /* accu == object, pc[0] == tag, pc[1] == cache */

@@ -30,6 +30,8 @@ extern "C" {
     pub fn jit_support_stop(initial_state: i64, sp: i64);
     pub fn jit_support_raise_check(initial_state: i64) -> i64;
 
+    pub fn jit_support_get_dyn_met(tag: i64, obj: i64) -> i64;
+
     #[link_name = "caml_global_data"]
     static CAML_GLOBAL_DATA: i64;
 

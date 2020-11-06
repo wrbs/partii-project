@@ -79,6 +79,8 @@ void* jit_support_grab_closure(struct jit_state* state, void* prev_restart);
 void jit_support_stop(struct initial_state* is, value *sp);
 long jit_support_raise_check(struct initial_state* is);
 
+value jit_support_get_dyn_met(value tag, value obj);
+
 #endif /* CAML_INTERNALS */
 
 #endif /* CAML_JIT_SUPPORT */

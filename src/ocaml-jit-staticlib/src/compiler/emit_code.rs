@@ -1189,11 +1189,26 @@ impl CompilerContext {
             Instruction::GetMethod => {
                 self.emit_fatal_error(b"Unimplemented: GetMethod\0");
             }
-            Instruction::GetPubMet(_, _) => {
-                self.emit_fatal_error(b"Unimplemented: GetPubMet\0");
+            Instruction::SetupForPubMet(tag) => {
+                oc_dynasm!(self.ops
+                    // *--sp = accu
+                    ; sub r_sp, 8
+                    ; mov [r_sp], r_accu
+                    // accu = Val_int(*pc);
+                    ; mov rax, *tag
+                    ; add rax, rax
+                    ; inc rax
+                    ; mov r_accu, rax
+                );
             }
             Instruction::GetDynMet => {
-                self.emit_fatal_error(b"Unimplemented: GetDynMet\0");
+                oc_dynasm!(self.ops
+                    ; mov rdi, r_accu
+                    ; mov rsi, [r_sp]
+                    ; mov rax, QWORD jit_support_get_dyn_met as _
+                    ; call rax
+                    ; mov r_accu, rax
+                );
             }
             Instruction::Break => {
                 self.emit_fatal_error(b"Unimplemented: Break\0");
