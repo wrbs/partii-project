@@ -14,7 +14,7 @@ mod trace;
 
 use crate::caml::mlvalues::LongValue;
 use crate::compiler::{compile, get_entrypoint, EntryPoint, LongjmpEntryPoint};
-use crate::trace::print_bytecode_trace;
+use crate::trace::{print_trace, PrintTraceType};
 use caml::mlvalues::Value;
 use global_data::GlobalData;
 
@@ -90,5 +90,12 @@ pub fn old_interpreter_trace(
 ) {
     let global_data = GlobalData::get();
 
-    print_bytecode_trace(&global_data, pc, accu, env, extra_args, sp);
+    print_trace(
+        &global_data,
+        PrintTraceType::BytecodePC(pc),
+        accu,
+        env,
+        extra_args,
+        sp,
+    );
 }

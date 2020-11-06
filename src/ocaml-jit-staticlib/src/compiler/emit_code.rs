@@ -6,7 +6,7 @@ use crate::caml::{domain_state, mlvalues};
 use crate::compiler::saved_data::LongjmpHandler;
 use crate::compiler::LongjmpEntryPoint;
 use crate::global_data::GlobalData;
-use crate::trace::{print_bytecode_trace, print_instruction_trace};
+use crate::trace::{print_trace, PrintTraceType};
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
 use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction, ParsedRelativeOffset};
@@ -1256,6 +1256,24 @@ impl CompilerContext {
         /* process_events - calling convention - put return address in rsi */
         oc_dynasm!(self.ops
             ; ->process_events:
+        );
+
+        if self.print_traces {
+            oc_dynasm!(self.ops
+                ; push rsi
+                ; sub rsp, 8
+                ; mov rdi, r_accu
+                ; mov rsi, r_env
+                ; mov rdx, r_extra_args
+                ; mov rcx, r_sp
+                ; mov rax, QWORD process_events_trace as i64
+                ; call rax
+                ; add rsp, 8
+                ; pop rsi
+            );
+        }
+
+        oc_dynasm!(self.ops
             // Setup_for_event
             ; mov rax, mlvalues::LongValue::UNIT.0 as i32
             ; sub r_sp, 6 * 8           // Push frame
@@ -1270,13 +1288,7 @@ impl CompilerContext {
             ; mov [r_sp + 5 * 8], rax   // Val_long(extra_args)
             ; mov rsi, QWORD get_extern_sp_addr() as usize as i64
             ; mov [rsi], r_sp           // Save extern sp
-        // BEGIN - temporary test code
-        );
 
-        self.emit_fatal_error(b"Process pending actions!\0");
-
-        oc_dynasm!(self.ops
-        // END
             // Process the pending actions
             ; mov rax, QWORD caml_process_pending_actions as i64
             ; call rax
@@ -1288,6 +1300,7 @@ impl CompilerContext {
             ; mov rax, [r_sp + 3 * 8]            // Save pc for later jumping
             ; mov r_env, [r_sp + 4 * 8]          // Restore env
             ; mov r_extra_args, [r_sp + 5 * 8]   // Restore extra_args
+            ; shr r_extra_args, 1                // Long_val(extra_args)
             ; add r_sp, 6 * 8                    // Pop frame
             ; jmp rax                            // Jump to the next pc
         );
@@ -1341,7 +1354,14 @@ extern "C" fn bytecode_trace(
     sp: *const Value,
 ) {
     let global_data = GlobalData::get();
-    print_bytecode_trace(&global_data, pc, accu, env, extra_args, sp);
+    print_trace(
+        &global_data,
+        PrintTraceType::BytecodePC(pc),
+        accu,
+        env,
+        extra_args,
+        sp,
+    );
 }
 
 extern "C" fn instruction_trace(
@@ -1357,5 +1377,23 @@ extern "C" fn instruction_trace(
         .as_ref()
         .expect("Section already released");
     let instruction = &section.instructions[pc as usize];
-    print_instruction_trace(&global_data, instruction, accu, env, extra_args, sp);
+    print_trace(
+        &global_data,
+        PrintTraceType::Instruction(instruction),
+        accu,
+        env,
+        extra_args,
+        sp,
+    );
+}
+extern "C" fn process_events_trace(accu: u64, env: u64, extra_args: u64, sp: *const Value) {
+    let global_data = GlobalData::get();
+    print_trace(
+        &global_data,
+        PrintTraceType::Event("process_events"),
+        accu,
+        env,
+        extra_args,
+        sp,
+    );
 }

@@ -9,80 +9,59 @@ use ocaml_jit_shared::{
 
 const STACK_ELEMENTS_TO_SHOW: usize = 5;
 
-pub fn print_bytecode_trace(
+pub enum PrintTraceType<'a> {
+    BytecodePC(*const i32),
+    Instruction(&'a Instruction<BytecodeRelativeOffset>),
+    Event(&'a str),
+}
+
+pub fn print_trace(
     global_data: &GlobalData,
-    pc: *const i32,
+    trace_type: PrintTraceType,
     accu: u64,
     env: u64,
     extra_args: u64,
     sp: *const Value,
 ) {
-    let trace = get_bytecode_trace(global_data, pc, accu, env, extra_args, sp);
-    print_trace(global_data.options.trace_format, &trace);
-}
+    let trace = get_trace(global_data, trace_type, accu, env, extra_args, sp);
+    let trace_format = global_data.options.trace_format;
 
-pub fn print_instruction_trace(
-    global_data: &GlobalData,
-    instruction: &Instruction<BytecodeRelativeOffset>,
-    accu: u64,
-    env: u64,
-    extra_args: u64,
-    sp: *const Value,
-) {
-    let trace = get_instruction_trace(global_data, instruction, accu, env, extra_args, sp);
-    print_trace(global_data.options.trace_format, &trace);
-}
-
-fn get_bytecode_trace(
-    global_data: &GlobalData,
-    pc: *const i32,
-    accu: u64,
-    env: u64,
-    extra_args: u64,
-    sp: *const Value,
-) -> TraceEntry {
-    let bytecode_loc = global_data
-        .compiler_data
-        .translate_bytecode_address(pc as usize)
-        .expect("Could not find bytecode offset for PC");
-
-    let opcode_val = unsafe { *pc };
-    let opcode = Opcode::from_i32(opcode_val).expect("Invalid opcode");
-
-    let location = TraceLocation::Bytecode {
-        pc: bytecode_loc,
-        opcode,
-    };
-
-    return get_trace(global_data, location, accu, env, extra_args, sp);
-}
-
-pub fn get_instruction_trace(
-    global_data: &GlobalData,
-    instruction: &Instruction<BytecodeRelativeOffset>,
-    accu: u64,
-    env: u64,
-    extra_args: u64,
-    sp: *const Value,
-) -> TraceEntry {
-    get_trace(
-        global_data,
-        TraceLocation::ParsedInstruction(instruction.clone()),
-        accu,
-        env,
-        extra_args,
-        sp,
-    )
+    match trace_format {
+        TraceType::Colorful => trace.print_colored(),
+        TraceType::Plain => trace.print(),
+        TraceType::JSON => println!("!T! {}", serde_json::to_string(&trace).unwrap()),
+        TraceType::Debug => println!("{:?}", &trace),
+        TraceType::DebugPretty => println!("{:#?}", &trace),
+    }
 }
 
 fn get_trace(
     global_data: &GlobalData,
-    location: TraceLocation,
+    trace_type: PrintTraceType,
     accu: u64,
     env: u64,
     extra_args: u64,
     sp: *const Value,
 ) -> TraceEntry {
+    let location = match trace_type {
+        PrintTraceType::BytecodePC(pc) => {
+            let bytecode_loc = global_data
+                .compiler_data
+                .translate_bytecode_address(pc as usize)
+                .expect("Could not find bytecode offset for PC");
+
+            let opcode_val = unsafe { *pc };
+            let opcode = Opcode::from_i32(opcode_val).expect("Invalid opcode");
+
+            TraceLocation::Bytecode {
+                pc: bytecode_loc,
+                opcode,
+            }
+        }
+        PrintTraceType::Instruction(i) => TraceLocation::ParsedInstruction(i.clone()),
+        PrintTraceType::Event(s) => TraceLocation::Event(String::from(s)),
+    };
+
     let compiler_data = &global_data.compiler_data;
 
     let stack_high = get_stack_high();
@@ -99,7 +78,7 @@ fn get_trace(
 
     let trap_sp = get_trap_sp();
 
-    return TraceEntry {
+    TraceEntry {
         location,
         accu: process_value(compiler_data, Value(accu as i64)),
         env,
@@ -108,7 +87,7 @@ fn get_trace(
         trap_sp,
         stack_size,
         top_of_stack,
-    };
+    }
 }
 
 fn process_value(compiler_data: &CompilerData, value: Value) -> ValueOrBytecodeLocation {
@@ -122,14 +101,4 @@ fn process_value(compiler_data: &CompilerData, value: Value) -> ValueOrBytecodeL
     }
 
     ValueOrBytecodeLocation::Value(value.0 as u64)
-}
-
-fn print_trace(trace_format: TraceType, trace: &TraceEntry) {
-    match trace_format {
-        TraceType::Colorful => trace.print_colored(),
-        TraceType::Plain => trace.print(),
-        TraceType::JSON => println!("!T! {}", serde_json::to_string(trace).unwrap()),
-        TraceType::Debug => println!("{:?}", trace),
-        TraceType::DebugPretty => println!("{:#?}", trace),
-    }
 }

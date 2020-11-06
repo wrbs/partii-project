@@ -35,7 +35,9 @@ let bytecode =
     setup_ocamlc_byte_build_env;
     ocamlc_byte;
     check_ocamlc_byte_output;
+    enable_jit;
     run;
+    disable_jit;
     check_program_output;
   ] @ (if Ocamltest_config.arch<>"none" then opt_actions else [])
 }

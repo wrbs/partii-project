@@ -38,6 +38,7 @@ pub enum TraceLocation {
         opcode: Opcode,
     },
     ParsedInstruction(Instruction<BytecodeRelativeOffset>),
+    Event(String),
 }
 
 impl TraceLocation {
@@ -45,6 +46,7 @@ impl TraceLocation {
         match self {
             TraceLocation::Bytecode { pc, opcode } => format!("{} {}", pc, opcode),
             TraceLocation::ParsedInstruction(i) => format!(" - {:?}", i.map_labels(|x| x.0)),
+            TraceLocation::Event(s) => format!(" E {}", s),
         }
     }
 }
@@ -54,6 +56,7 @@ impl TraceLocation {
         match self {
             TraceLocation::Bytecode { .. } => true,
             TraceLocation::ParsedInstruction(_) => false,
+            TraceLocation::Event(_) => false,
         }
     }
 

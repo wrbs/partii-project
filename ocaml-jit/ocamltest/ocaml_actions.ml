@@ -1379,6 +1379,16 @@ let run_ocamldoc =
     (Result.fail_with_reason reason, env)
   end
 
+let enable_jit =
+  Actions.make "enable_jit" @@ fun _log env ->
+  let env' = Environments.add Ocaml_variables.jit_options "-j" env in
+  (Result.pass, env')
+
+let disable_jit =
+  Actions.make "disable_jit" @@ fun _log env ->
+  let env' = Environments.add Ocaml_variables.jit_options "" env in
+  (Result.pass, env')
+
 let _ =
   Environments.register_initializer "find_source_modules" find_source_modules;
   Environments.register_initializer "config_variables" config_variables;
@@ -1427,5 +1437,7 @@ let _ =
     ocamlmklib;
     codegen;
     cc;
-    ocamlobjinfo
+    ocamlobjinfo;
+    enable_jit;
+    disable_jit;
   ]

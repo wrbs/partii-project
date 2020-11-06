@@ -182,6 +182,15 @@ let ocamlrunparam =
     ("ocamlrunparam",
       "Equivalent of OCAMLRUNPARAM")
 
+let export_jit_options value =
+  Printf.sprintf "%s=%s" "JIT_OPTIONS" value
+
+let jit_options =
+  make_with_exporter
+    export_jit_options
+    ("jit_options",
+      "Equivalent of JIT_OPTIONS")
+
 let ocamlsrcdir = make ("ocamlsrcdir",
   "Where OCaml sources are")
 
@@ -288,4 +297,5 @@ let _ = List.iter register_variable
     shared_library_cflags;
     sharedobjext;
     use_runtime;
+    jit_options;
   ]
