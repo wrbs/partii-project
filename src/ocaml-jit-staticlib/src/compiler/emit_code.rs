@@ -215,8 +215,21 @@ impl CompilerContext {
 
         oc_dynasm!(self.ops
             ; =>label
-            ; instr:
         );
+
+        match instruction {
+            Instruction::LabelDef(_) => {
+                oc_dynasm!(self.ops
+                    ; instr:
+                );
+            }
+            Instruction::Restart => {
+                oc_dynasm!(self.ops
+                    ; prev_restart:
+                );
+            }
+            _ => (),
+        }
 
         if self.print_traces {
             if let Some(bytecode_pointer) = bytecode_pointer {
@@ -244,6 +257,7 @@ impl CompilerContext {
         }
 
         match instruction {
+            Instruction::LabelDef(_) => {}
             Instruction::Acc(n) => {
                 // accu = sp[*pc++]
                 let offset = (n * 8) as i32;
@@ -409,7 +423,6 @@ impl CompilerContext {
                 );
             }
             Instruction::Grab(required_arg_count) => {
-                let prev_restart = self.get_label(ParsedRelativeOffset(offset.0 - 1));
                 oc_dynasm!(self.ops
                     ; mov rax, *required_arg_count as i32
                     // If extra_args >= required
@@ -426,7 +439,7 @@ impl CompilerContext {
                     ; push r_env
                     ; push r_accu
                     ; mov rdi, rsp
-                    ; lea rsi, [=>prev_restart]
+                    ; lea rsi, [<prev_restart]
                     ; mov rax, QWORD jit_support_grab_closure as i64
                     ; call rax
                     ; pop r_accu

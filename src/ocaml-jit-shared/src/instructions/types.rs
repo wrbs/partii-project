@@ -44,6 +44,7 @@ pub enum Comp {
 // L: the type of labels
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub enum Instruction<L> {
+    LabelDef(L),
     Acc(u32),
     EnvAcc(u32),
     Push,
@@ -110,6 +111,7 @@ impl<L1> Instruction<L1> {
     pub fn map_labels<L2, F: FnMut(&L1) -> L2>(&self, mut f: F) -> Instruction<L2> {
         match self {
             // Cases with labels
+            Instruction::LabelDef(l) => Instruction::LabelDef(f(l)),
             Instruction::PushRetAddr(l) => Instruction::PushRetAddr(f(l)),
             Instruction::Closure(l, x) => Instruction::Closure(f(l), *x),
             Instruction::ClosureRec(ls, x) => {

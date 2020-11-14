@@ -100,6 +100,12 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
         let start_input_pos = context.position();
         let start_output_pos = result.instructions.len();
 
+        result
+            .instructions
+            .push(Instruction::LabelDef(BytecodeRelativeOffset(
+                start_input_pos,
+            )));
+
         // Every bytecode instruction has at least one simplified instruction pushed so we simplify
         // things in most cases by pushing this at the end
         let to_push = match context.opcode()? {
