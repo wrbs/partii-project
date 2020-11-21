@@ -4,6 +4,7 @@ use std::slice;
 use crate::caml::misc::fatal_error;
 use crate::caml::mlvalues::Value;
 use crate::{interpret_bytecode, old_interpreter_trace, on_bytecode_loaded, on_bytecode_released};
+use std::ffi::c_void;
 
 // We need some way to convince Rust that the OCaml interpreter is single threaded
 // Easiest way is to just use a mutex at each entry point for our global data
@@ -25,10 +26,13 @@ pub unsafe extern "C" fn caml_interprete(prog: *const i32, prog_size: usize) -> 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn caml_prepare_bytecode(prog: *const i32, prog_size: usize) {
+pub unsafe extern "C" fn caml_prepare_bytecode(
+    prog: *const i32,
+    prog_size: usize,
+) -> *const c_void {
     debug_assert!(prog_size % 4 == 0);
     let slice = slice::from_raw_parts(prog, prog_size / 4);
-    on_bytecode_loaded(slice);
+    on_bytecode_loaded(slice)
 }
 
 #[no_mangle]

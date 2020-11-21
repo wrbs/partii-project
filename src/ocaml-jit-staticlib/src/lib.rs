@@ -19,10 +19,11 @@ use crate::compiler::{
 use crate::trace::{print_trace, PrintTraceType};
 use caml::mlvalues::Value;
 use global_data::GlobalData;
+use std::ffi::c_void;
 
 /* These are the hook points from the existing runtime to the JIT */
 
-pub fn on_bytecode_loaded(code: &[i32]) {
+pub fn on_bytecode_loaded(code: &[i32]) -> *const c_void {
     let mut global_data = GlobalData::get();
 
     let print_traces = global_data.options.trace;
@@ -39,7 +40,9 @@ pub fn on_bytecode_loaded(code: &[i32]) {
             code,
             print_traces,
             write_code_to,
-        );
+        )
+    } else {
+        code.as_ptr() as *const c_void
     }
 }
 

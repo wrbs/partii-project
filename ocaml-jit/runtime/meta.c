@@ -94,7 +94,7 @@ CAMLprim value caml_reify_bytecode(value ls_prog,
   CAMLparam3(ls_prog, debuginfo, digest_opt);
   CAMLlocal3(clos, bytecode, retval);
   struct code_fragment * cf = caml_stat_alloc(sizeof(struct code_fragment));
-  code_t prog;
+  code_t prog, prepprog;
   asize_t len;
 
   prog = (code_t)buffer_of_bytes_array(ls_prog, &len);
@@ -118,13 +118,13 @@ CAMLprim value caml_reify_bytecode(value ls_prog,
 #ifdef THREADED_CODE
   caml_thread_code((code_t) prog, len);
 #endif
-  caml_prepare_bytecode((code_t) prog, len);
+  prepprog = caml_prepare_bytecode((code_t) prog, len);
 
   /* Notify debugger after fragment gets added and reified. */
   caml_debugger(CODE_LOADED, Val_long(caml_code_fragments_table.size - 1));
 
   clos = caml_alloc_small (1, Closure_tag);
-  Code_val(clos) = (code_t) prog;
+  Code_val(clos) = (code_t) prepprog;
   bytecode = caml_alloc_small (2, Abstract_tag);
   Bytecode_val(bytecode)->prog = prog;
   Bytecode_val(bytecode)->len = len;

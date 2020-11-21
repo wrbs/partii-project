@@ -1202,13 +1202,15 @@ value caml_interprete(code_t prog, asize_t prog_size)
 }
 
 #ifndef USE_RUST_JIT
-void caml_prepare_bytecode(code_t prog, asize_t prog_size) {
+code_t caml_prepare_bytecode(code_t prog, asize_t prog_size) {
   /* other implementations of the interpreter (such as an hypothetical
      JIT translator) might want to do something with a bytecode before
      running it */
   CAMLassert(prog);
   CAMLassert(prog_size>0);
   /* actually, the threading of the bytecode might be done here */
+
+  return prog;
 }
 
 void caml_release_bytecode(code_t prog, asize_t prog_size) {

@@ -11,7 +11,7 @@ use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
 use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction};
 use std::convert::TryInto;
-use std::ffi::CStr;
+use std::ffi::{c_void, CStr};
 use std::os::raw::c_char;
 
 struct CompilerContext {
@@ -26,7 +26,7 @@ pub fn compile_instructions(
     instructions: &[Instruction<BytecodeRelativeOffset>],
     code: &[i32],
     print_traces: bool,
-) -> (ExecutableBuffer, EntryPoint) {
+) -> (ExecutableBuffer, EntryPoint, *const c_void) {
     let ops = Assembler::new().unwrap();
 
     let labels = vec![None; code.len()];
@@ -38,7 +38,7 @@ pub fn compile_instructions(
         section_number,
     };
 
-    let entrypoint_offset = cc.emit_entrypoint();
+    let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
     let code_base = code.as_ptr();
 
     for (offset, instruction) in instructions.iter().enumerate() {
@@ -51,8 +51,9 @@ pub fn compile_instructions(
     let buf = ops.finalize().unwrap();
 
     let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
+    let first_instr = buf.ptr(first_instr_offset) as *const c_void;
 
-    (buf, entrypoint)
+    (buf, entrypoint, first_instr)
 }
 
 // Define aliases for the abstract machine registers
@@ -131,7 +132,7 @@ pub fn emit_callback_entrypoint(
         section_number,
     };
 
-    let entrypoint_offset = cc.emit_entrypoint();
+    let (entrypoint_offset, _) = cc.emit_entrypoint();
     let code_base = code.as_ptr();
 
     oc_dynasm!(&mut cc.ops
@@ -268,7 +269,7 @@ impl CompilerContext {
         }
     }
 
-    fn emit_entrypoint(&mut self) -> AssemblyOffset {
+    fn emit_entrypoint(&mut self) -> (AssemblyOffset, AssemblyOffset) {
         let offset = self.ops.offset();
         oc_dynasm!(self.ops
             // Push callee-save registers I use
@@ -289,7 +290,8 @@ impl CompilerContext {
             ; mov r_sp, [rax]
         );
 
-        offset
+        let first_instr_offset = self.ops.offset();
+        (offset, first_instr_offset)
     }
 
     fn emit_return(&mut self) {

@@ -4,6 +4,7 @@ mod saved_data;
 
 use ocaml_jit_shared::parse_instructions_from_code_slice;
 pub use saved_data::{CompilerData, EntryPoint, LongjmpEntryPoint, LongjmpHandler, Section};
+use std::ffi::c_void;
 use std::path::Path;
 
 pub fn compile<P: AsRef<Path>>(
@@ -11,13 +12,13 @@ pub fn compile<P: AsRef<Path>>(
     bytecode: &[i32],
     print_traces: bool,
     save_compiled_path: Option<P>,
-) {
+) -> *const c_void {
     let section_number = compiler_data.sections.len();
 
     let parsed_instructions = parse_instructions_from_code_slice(bytecode)
         .unwrap_or_else(|e| panic!("Could not parse code: {}", e));
 
-    let (compiled_code, entrypoint) = emit_code::compile_instructions(
+    let (compiled_code, entrypoint, first_instr) = emit_code::compile_instructions(
         section_number,
         &parsed_instructions,
         bytecode,
@@ -35,6 +36,8 @@ pub fn compile<P: AsRef<Path>>(
         entrypoint,
         parsed_instructions,
     )));
+
+    first_instr
 }
 
 pub fn get_entrypoint(compiler_data: &CompilerData, code: &[i32]) -> EntryPoint {
