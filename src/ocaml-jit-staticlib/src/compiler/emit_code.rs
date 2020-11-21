@@ -29,7 +29,7 @@ pub fn compile_instructions(
 ) -> (ExecutableBuffer, EntryPoint) {
     let ops = Assembler::new().unwrap();
 
-    let labels = vec![None; instructions.len()];
+    let labels = vec![None; code.len()];
 
     let mut cc = CompilerContext {
         ops,
