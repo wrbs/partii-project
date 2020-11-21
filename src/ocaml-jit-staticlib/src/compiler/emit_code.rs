@@ -15,8 +15,7 @@ use std::os::raw::c_char;
 
 pub fn compile_instructions(
     section_number: usize,
-    instructions: &[Instruction<ParsedRelativeOffset>],
-    bytecode_offsets: &[Option<BytecodeRelativeOffset>],
+    instructions: &[Instruction<BytecodeRelativeOffset>],
     code: &[i32],
     print_traces: bool,
 ) -> (ExecutableBuffer, EntryPoint) {
@@ -32,13 +31,10 @@ pub fn compile_instructions(
     };
 
     let entrypoint_offset = cc.emit_entrypoint();
+    let code_base = code.as_ptr();
 
     for (offset, instruction) in instructions.iter().enumerate() {
-        cc.emit_instruction(
-            instruction,
-            ParsedRelativeOffset(offset),
-            bytecode_offsets[offset].map(|x| unsafe { code.as_ptr().offset(x.0 as isize) }),
-        );
+        cc.emit_instruction(instruction, ParsedRelativeOffset(offset), code_base);
     }
 
     cc.emit_shared_code();
@@ -155,7 +151,7 @@ pub fn emit_longjmp_entrypoint() -> LongjmpHandler {
 }
 
 impl CompilerContext {
-    fn get_label(&mut self, offset: ParsedRelativeOffset) -> DynamicLabel {
+    fn get_label(&mut self, offset: &BytecodeRelativeOffset) -> DynamicLabel {
         let label_ref = &mut self.labels[offset.0];
         match label_ref {
             Some(l) => *l,
@@ -207,27 +203,19 @@ impl CompilerContext {
 
     fn emit_instruction(
         &mut self,
-        instruction: &Instruction<ParsedRelativeOffset>,
+        instruction: &Instruction<BytecodeRelativeOffset>,
         offset: ParsedRelativeOffset,
-        bytecode_pointer: Option<*const i32>,
+        code_base: *const i32,
     ) -> Option<()> {
-        let label = self.get_label(offset);
+        if let Instruction::LabelDef(bytecode_offset) = instruction {
+            let label = self.get_label(bytecode_offset);
+            oc_dynasm!(self.ops
+                ; =>label
+                ; instr:
+            );
 
-        oc_dynasm!(self.ops
-            ; =>label
-        );
-
-        match instruction {
-            Instruction::LabelDef(_) => {
-                oc_dynasm!(self.ops
-                    ; instr:
-                );
-            }
-            _ => (),
-        }
-
-        if self.print_traces {
-            if let Some(bytecode_pointer) = bytecode_pointer {
+            if self.print_traces {
+                let bytecode_pointer = unsafe { code_base.offset(bytecode_offset.0 as isize) };
                 oc_dynasm!(self.ops
                     ; mov rdi, QWORD bytecode_pointer as i64
                     ; mov rsi, r_accu
@@ -238,7 +226,9 @@ impl CompilerContext {
                     ; call rax
                 );
             }
+        }
 
+        if self.print_traces {
             oc_dynasm!(self.ops
                 ; mov rdi, QWORD offset.0 as i64
                 ; mov rsi, r_accu
@@ -299,7 +289,7 @@ impl CompilerContext {
                 // sp[0] = (return label)
                 // sp[1] = env
                 // sp[2] = Val_long(extra_args)
-                let return_label = self.get_label(*offset);
+                let return_label = self.get_label(offset);
                 oc_dynasm!(self.ops
                     ; sub r_sp, 24
                     ; lea rcx, [=>return_label]
@@ -418,7 +408,7 @@ impl CompilerContext {
                 );
             }
             Instruction::Grab(l, required_arg_count) => {
-                let prev_restart = self.get_label(*l);
+                let prev_restart = self.get_label(l);
                 oc_dynasm!(self.ops
                     ; mov rax, *required_arg_count as i32
                     // If extra_args >= required
@@ -448,7 +438,7 @@ impl CompilerContext {
             }
             Instruction::Closure(codeval, nargs) => {
                 let nargs = *nargs as i32;
-                let label = self.get_label(*codeval);
+                let label = self.get_label(codeval);
                 oc_dynasm!(self.ops
                     ; push r_extra_args
                     ; push r_sp
@@ -479,7 +469,7 @@ impl CompilerContext {
                 // Push all of the functions also onto the stack and put a pointer in the
                 // argument position
                 for offset in funcs.iter().rev() {
-                    let func = self.get_label(*offset);
+                    let func = self.get_label(offset);
                     oc_dynasm!(self.ops
                         ; lea rax, [=>func]
                         ; push rax
@@ -655,13 +645,13 @@ impl CompilerContext {
                 );
             }
             Instruction::Branch(loc) => {
-                let label = self.get_label(*loc);
+                let label = self.get_label(loc);
                 oc_dynasm!(self.ops
                     ; jmp =>label
                 );
             }
             Instruction::BranchIf(loc) => {
-                let label = self.get_label(*loc);
+                let label = self.get_label(loc);
                 oc_dynasm!(self.ops
                     ; cmp r_accu, BYTE 1 // Which is Val_false
                     ; je >next
@@ -670,7 +660,7 @@ impl CompilerContext {
                 );
             }
             Instruction::BranchIfNot(loc) => {
-                let label = self.get_label(*loc);
+                let label = self.get_label(loc);
                 oc_dynasm!(self.ops
                     ; cmp r_accu, BYTE 1 // Which is Val_false
                     ; jne >next
@@ -682,7 +672,7 @@ impl CompilerContext {
                 // Really inefficient for now
                 // TODO investigate how best to emit a jump table
                 for (i, offset) in ints.iter().enumerate() {
-                    let label = self.get_label(*offset);
+                    let label = self.get_label(offset);
                     oc_dynasm!(self.ops
                         ; mov eax, caml_i32_of_int(i as i64)
                         ; movsx rax, eax
@@ -697,7 +687,7 @@ impl CompilerContext {
                 );
 
                 for (tag, offset) in blocks.iter().enumerate() {
-                    let label = self.get_label(*offset);
+                    let label = self.get_label(offset);
                     oc_dynasm!(self.ops
                         ; cmp al, tag as i8
                         ; je =>label
@@ -707,7 +697,7 @@ impl CompilerContext {
                 self.emit_fatal_error(b"Switch - should be unreachable!\0")
             }
             Instruction::PushTrap(loc) => {
-                let label = self.get_label(*loc);
+                let label = self.get_label(loc);
                 let trap_sp = domain_state::get_trap_sp_addr();
                 oc_dynasm!(self.ops
                     // Get the trapsp address
@@ -1084,7 +1074,7 @@ impl CompilerContext {
                 }
             }
             Instruction::BranchCmp(cmp, i, l) => {
-                let label = self.get_label(*l);
+                let label = self.get_label(l);
                 oc_dynasm!(self.ops
                     ; mov eax, caml_i32_of_int(*i as i64)
                     ; movsxd rcx, eax

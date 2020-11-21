@@ -34,38 +34,49 @@ fn run_exn(options: Options) -> Result<()> {
 
     let _ = lines.next().ok_or("No first line")??;
 
-    for (offset, parsed_instructions) in bcf.instructions {
-        let (dumpobj_offset, dumpobj_output, dumpobj_rest) = get_line(&mut lines)?;
-        if offset.0 != dumpobj_offset {
-            return Err(
-                format!("Invalid offsets: {} != {}", dumpobj_output, dumpobj_output).into(),
-            );
-        }
+    let mut dumpobj_rest = String::new();
+    let mut first = true;
+    let mut extra_newline = false;
+    for instruction in bcf.instructions.iter() {
+        if let Instruction::LabelDef(offset) = instruction {
+            print!("\n{}", dumpobj_rest);
+            if extra_newline {
+                println!();
+            }
+            let (dumpobj_offset, dumpobj_output, r) = get_line(&mut lines)?;
+            dumpobj_rest = r;
+            print!("{:<10} {} -> ", dumpobj_offset, dumpobj_output);
 
-        print!("{:<10} {} -> ", dumpobj_offset, dumpobj_output);
-
-        let mut first = true;
-        for instruction in parsed_instructions.iter().map(|x| x.map_labels(|l| l.0)) {
+            if offset.0 != dumpobj_offset {
+                return Err(
+                    format!("Invalid offsets: {} != {}", dumpobj_output, dumpobj_output).into(),
+                );
+            }
+            first = true;
+            extra_newline = false;
+        } else {
             if first {
                 first = false;
+
+                match instruction {
+                    Instruction::ApplyTerm(_, _)
+                    | Instruction::Return(_)
+                    | Instruction::Restart
+                    | Instruction::Raise(_)
+                    | Instruction::BranchCmp(_, _, _)
+                    | Instruction::Branch(_)
+                    | Instruction::BranchIf(_)
+                    | Instruction::BranchIfNot(_)
+                    | Instruction::Switch(_, _)
+                    | Instruction::Stop => {
+                        extra_newline = true;
+                    }
+                    _ => (),
+                }
             } else {
                 print!(", ");
             }
-            print!("{:?}", instruction);
-        }
-        print!("\n{}", dumpobj_rest);
-        match parsed_instructions[0] {
-            Instruction::ApplyTerm(_, _)
-            | Instruction::Return(_)
-            | Instruction::Restart
-            | Instruction::Raise(_)
-            | Instruction::BranchCmp(_, _, _)
-            | Instruction::Branch(_)
-            | Instruction::BranchIf(_)
-            | Instruction::BranchIfNot(_)
-            | Instruction::Switch(_, _)
-            | Instruction::Stop => println!(),
-            _ => (),
+            print!("{:?}", instruction.map_labels(|x| x.0));
         }
     }
 

@@ -11,10 +11,7 @@ pub use trailer::Trailer;
 pub struct BytecodeFile {
     pub trailer: Trailer,
     pub primitives: Vec<String>,
-    pub instructions: Vec<(
-        BytecodeRelativeOffset,
-        Vec<Instruction<BytecodeRelativeOffset>>,
-    )>,
+    pub instructions: Vec<Instruction<BytecodeRelativeOffset>>,
 }
 
 pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile, ParseFileError> {

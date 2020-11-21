@@ -205,7 +205,7 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
                 let prev_restart = pos - 2;
                 let n = context.u32()?;
                 Instruction::Grab(BytecodeRelativeOffset(prev_restart), n)
-            },
+            }
 
             Opcode::Closure => {
                 let n = context.u32()?;

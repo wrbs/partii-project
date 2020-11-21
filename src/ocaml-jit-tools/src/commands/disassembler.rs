@@ -25,14 +25,24 @@ pub fn run(options: Options) {
 
 fn show_instructions(bcf: &BytecodeFile) {
     println!("{}", "Instructions:".red().bold());
-    for (offset, instructions) in bcf.instructions.iter() {
-        print!("{}\t", offset.0);
-
-        for (count, instruction) in instructions.iter().enumerate() {
-            if count > 0 {
-                print!(", ")
+    let mut instruction_count = None;
+    for instruction in bcf.instructions.iter() {
+        if let Instruction::LabelDef(offset) = instruction {
+            if instruction_count != None {
+                println!();
             }
-            show_instruction(instruction);
+            instruction_count = Some(0);
+
+            print!("{}\t", offset.0);
+        } else {
+            if let Some(v) = instruction_count {
+                if v >= 1 {
+                    print!(", ");
+                }
+
+                instruction_count = Some(v + 1);
+                show_instruction(instruction);
+            }
         }
 
         println!();
