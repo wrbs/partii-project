@@ -10,6 +10,7 @@ use crate::trace::{print_trace, PrintTraceType};
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
 use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction};
+use std::convert::TryInto;
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
@@ -215,7 +216,8 @@ impl CompilerContext {
             );
 
             if self.print_traces {
-                let bytecode_pointer = unsafe { code_base.offset(bytecode_offset.0 as isize) };
+                let bytecode_pointer =
+                    unsafe { code_base.offset((bytecode_offset.0 as usize).try_into().unwrap()) };
                 oc_dynasm!(self.ops
                     ; mov rdi, QWORD bytecode_pointer as i64
                     ; mov rsi, r_accu

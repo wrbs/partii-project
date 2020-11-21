@@ -34,15 +34,13 @@ fn show_instructions(bcf: &BytecodeFile) {
             instruction_count = Some(0);
 
             print!("{}\t", offset.0);
-        } else {
-            if let Some(v) = instruction_count {
-                if v >= 1 {
-                    print!(", ");
-                }
-
-                instruction_count = Some(v + 1);
-                show_instruction(instruction);
+        } else if let Some(v) = instruction_count {
+            if v >= 1 {
+                print!(", ");
             }
+
+            instruction_count = Some(v + 1);
+            show_instruction(instruction);
         }
 
         println!();
