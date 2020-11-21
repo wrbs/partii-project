@@ -26,7 +26,5 @@ pub fn parse_bytecode(
     for _ in 0..(section.length / 4) {
         words.push(section_read.read_i32::<LittleEndian>()?);
     }
-    let parsed = parse_instructions(words.iter().copied(), words.len()).unwrap();
-
-    Ok(parsed.instructions)
+    Ok(parse_instructions(words.iter().copied())?)
 }

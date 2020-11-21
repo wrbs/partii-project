@@ -19,7 +19,7 @@ pub fn compile<P: AsRef<Path>>(
 
     let (compiled_code, entrypoint) = emit_code::compile_instructions(
         section_number,
-        &parsed_instructions.instructions,
+        &parsed_instructions,
         bytecode,
         print_traces,
     );
@@ -33,7 +33,7 @@ pub fn compile<P: AsRef<Path>>(
         bytecode,
         compiled_code,
         entrypoint,
-        parsed_instructions.instructions,
+        parsed_instructions,
     )));
 }
 

@@ -3,31 +3,6 @@ use crate::Opcode;
 use std::iter::Peekable;
 use thiserror::Error;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub struct BytecodeLookupEntry {
-    pub start_offset: ParsedRelativeOffset,
-    pub length: usize,
-}
-
-#[derive(Debug, Clone)]
-pub struct ParsedInstructions {
-    pub instructions: Vec<Instruction<BytecodeRelativeOffset>>,
-    // It's a map of (original location, new location) pairs
-    // This is because each original instruction can have multiple operands
-    // and a new opcode can have multiple parsed instructions
-    // (we turn things like PUSHACC into PUSH then ACC for later simplicity)
-    pub lookup_data: Vec<Option<BytecodeLookupEntry>>, // start, number of instructions
-}
-
-impl ParsedInstructions {
-    pub fn lookup_bytecode_offset(
-        &self,
-        offset: BytecodeRelativeOffset,
-    ) -> Option<BytecodeLookupEntry> {
-        self.lookup_data.get(offset.0).and_then(|x| *x)
-    }
-}
-
 #[derive(Debug, Error)]
 pub enum InstructionParseErrorReason {
     #[error("unexpected end of stream")]
@@ -45,7 +20,7 @@ pub enum InstructionParseErrorReason {
 pub struct InstructionParseError {
     pub reason: InstructionParseErrorReason,
     pub current_position: usize,
-    pub parsed_so_far: ParsedInstructions,
+    pub parsed_so_far: Vec<Instruction<BytecodeRelativeOffset>>,
 }
 
 // default reuslt type in this file
@@ -53,20 +28,15 @@ type Result<T, E = InstructionParseErrorReason> = std::result::Result<T, E>;
 
 pub fn parse_instructions_from_code_slice(
     code: &[i32],
-) -> Result<ParsedInstructions, InstructionParseError> {
-    parse_instructions(code.iter().copied(), code.len())
+) -> Result<Vec<Instruction<BytecodeRelativeOffset>>, InstructionParseError> {
+    parse_instructions(code.iter().copied())
 }
 
 pub fn parse_instructions<I: Iterator<Item = i32>>(
     iterator: I,
-    instruction_count: usize,
-) -> Result<ParsedInstructions, InstructionParseError> {
-    let mut result = ParsedInstructions {
-        instructions: Vec::new(),
-        lookup_data: vec![None; instruction_count],
-    };
-
+) -> Result<Vec<Instruction<BytecodeRelativeOffset>>, InstructionParseError> {
     let mut context = ParseContext::new(iterator);
+    let mut result = Vec::new();
 
     match parse_instructions_body(&mut context, &mut result) {
         Ok(()) => Ok(result),
@@ -80,7 +50,7 @@ pub fn parse_instructions<I: Iterator<Item = i32>>(
 
 fn parse_instructions_body<I: Iterator<Item = i32>>(
     context: &mut ParseContext<I>,
-    result: &mut ParsedInstructions,
+    result: &mut Vec<Instruction<BytecodeRelativeOffset>>,
 ) -> Result<()> {
     while !context.at_end() {
         /*
@@ -97,14 +67,10 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
          *
          * We store the start here and the end after we've worked out the instruction
          */
-        let start_input_pos = context.position();
-        let start_output_pos = result.instructions.len();
 
-        result
-            .instructions
-            .push(Instruction::LabelDef(BytecodeRelativeOffset(
-                start_input_pos,
-            )));
+        result.push(Instruction::LabelDef(BytecodeRelativeOffset(
+            context.position(),
+        )));
 
         // Every bytecode instruction has at least one simplified instruction pushed so we simplify
         // things in most cases by pushing this at the end
@@ -120,39 +86,39 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::Acc => Instruction::Acc(context.u32()?),
 
             Opcode::PushAcc0 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(0)
             }
             Opcode::PushAcc1 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(1)
             }
             Opcode::PushAcc2 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(2)
             }
             Opcode::PushAcc3 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(3)
             }
             Opcode::PushAcc4 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(4)
             }
             Opcode::PushAcc5 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(5)
             }
             Opcode::PushAcc6 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(6)
             }
             Opcode::PushAcc7 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(7)
             }
             Opcode::PushAcc => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Acc(context.u32()?)
             }
 
@@ -163,23 +129,23 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::EnvAcc => Instruction::EnvAcc(context.u32()?),
 
             Opcode::PushEnvAcc1 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::EnvAcc(1)
             }
             Opcode::PushEnvAcc2 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::EnvAcc(2)
             }
             Opcode::PushEnvAcc3 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::EnvAcc(3)
             }
             Opcode::PushEnvAcc4 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::EnvAcc(4)
             }
             Opcode::PushEnvAcc => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::EnvAcc(context.u32()?)
             }
 
@@ -226,38 +192,34 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::OffsetClosure => Instruction::OffsetClosure(context.i32()?),
 
             Opcode::PushOffsetClosure0 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::OffsetClosure(0)
             }
             Opcode::PushOffsetClosure2 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::OffsetClosure(2)
             }
             Opcode::PushOffsetClosureM2 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::OffsetClosure(-2)
             }
             Opcode::PushOffsetClosure => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::OffsetClosure(context.i32()?)
             }
 
             Opcode::GetGlobal => Instruction::GetGlobal(context.u32()?),
             Opcode::PushGetGlobal => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::GetGlobal(context.u32()?)
             }
             Opcode::GetGlobalField => {
-                result
-                    .instructions
-                    .push(Instruction::GetGlobal(context.u32()?));
+                result.push(Instruction::GetGlobal(context.u32()?));
                 Instruction::GetField(context.u32()?)
             }
             Opcode::PushGetGlobalField => {
-                result.instructions.push(Instruction::Push);
-                result
-                    .instructions
-                    .push(Instruction::GetGlobal(context.u32()?));
+                result.push(Instruction::Push);
+                result.push(Instruction::GetGlobal(context.u32()?));
                 Instruction::GetField(context.u32()?)
             }
 
@@ -343,7 +305,7 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::GetPubMet => {
                 let tag = context.i32()?;
                 let _cache = context.u32()?;
-                result.instructions.push(Instruction::SetupForPubMet(tag));
+                result.push(Instruction::SetupForPubMet(tag));
                 Instruction::GetDynMet
             }
 
@@ -369,11 +331,11 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::Atom0 => Instruction::MakeBlock(0, 0),
 
             Opcode::PushAtom0 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::MakeBlock(0, 0)
             }
             Opcode::PushAtom => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::MakeBlock(0, context.u8()?)
             }
 
@@ -390,23 +352,23 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::ConstInt => Instruction::Const(context.i32()?),
 
             Opcode::PushConst0 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Const(0)
             }
             Opcode::PushConst1 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Const(1)
             }
             Opcode::PushConst2 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Const(2)
             }
             Opcode::PushConst3 => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Const(3)
             }
             Opcode::PushConstInt => {
-                result.instructions.push(Instruction::Push);
+                result.push(Instruction::Push);
                 Instruction::Const(context.i32()?)
             }
 
@@ -415,14 +377,7 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
             Opcode::Event => Instruction::Event,
         };
 
-        result.instructions.push(to_push);
-
-        let number_of_instructions = result.instructions.len() - start_output_pos;
-        // Associate the current source byte with the current instruction (both 0-indexed)
-        result.lookup_data[start_input_pos] = Some(BytecodeLookupEntry {
-            start_offset: ParsedRelativeOffset(start_output_pos),
-            length: number_of_instructions,
-        });
+        result.push(to_push);
     }
 
     Ok(())

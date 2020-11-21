@@ -9,7 +9,7 @@ use crate::global_data::GlobalData;
 use crate::trace::{print_trace, PrintTraceType};
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
-use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction, ParsedRelativeOffset};
+use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction};
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
@@ -34,7 +34,7 @@ pub fn compile_instructions(
     let code_base = code.as_ptr();
 
     for (offset, instruction) in instructions.iter().enumerate() {
-        cc.emit_instruction(instruction, ParsedRelativeOffset(offset), code_base);
+        cc.emit_instruction(instruction, offset, code_base);
     }
 
     cc.emit_shared_code();
@@ -204,7 +204,7 @@ impl CompilerContext {
     fn emit_instruction(
         &mut self,
         instruction: &Instruction<BytecodeRelativeOffset>,
-        offset: ParsedRelativeOffset,
+        offset: usize,
         code_base: *const i32,
     ) -> Option<()> {
         if let Instruction::LabelDef(bytecode_offset) = instruction {
@@ -230,7 +230,7 @@ impl CompilerContext {
 
         if self.print_traces {
             oc_dynasm!(self.ops
-                ; mov rdi, QWORD offset.0 as i64
+                ; mov rdi, QWORD offset as i64
                 ; mov rsi, r_accu
                 ; mov rdx, r_env
                 ; mov rcx, r_extra_args

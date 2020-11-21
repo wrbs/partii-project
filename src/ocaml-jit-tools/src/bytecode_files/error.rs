@@ -1,3 +1,4 @@
+use ocaml_jit_shared::InstructionParseError;
 use std::io;
 use thiserror::Error;
 
@@ -18,4 +19,7 @@ pub enum ParseFileError {
 
     #[error("Invalid primitive formatting found")]
     BadPrimitiveFormatting,
+
+    #[error("Error while parsing: {0}")]
+    ParsingError(#[from] InstructionParseError),
 }

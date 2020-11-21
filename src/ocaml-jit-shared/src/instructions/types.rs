@@ -3,8 +3,6 @@ use std::fmt::Debug;
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct BytecodeRelativeOffset(pub usize);
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
-pub struct ParsedRelativeOffset(pub usize);
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ArithOp {
