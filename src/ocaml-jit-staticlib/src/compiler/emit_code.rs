@@ -223,11 +223,6 @@ impl CompilerContext {
                     ; instr:
                 );
             }
-            Instruction::Restart => {
-                oc_dynasm!(self.ops
-                    ; prev_restart:
-                );
-            }
             _ => (),
         }
 
@@ -422,7 +417,8 @@ impl CompilerContext {
                     ; pop r_extra_args
                 );
             }
-            Instruction::Grab(required_arg_count) => {
+            Instruction::Grab(l, required_arg_count) => {
+                let prev_restart = self.get_label(*l);
                 oc_dynasm!(self.ops
                     ; mov rax, *required_arg_count as i32
                     // If extra_args >= required
@@ -439,7 +435,7 @@ impl CompilerContext {
                     ; push r_env
                     ; push r_accu
                     ; mov rdi, rsp
-                    ; lea rsi, [<prev_restart]
+                    ; lea rsi, [=>prev_restart]
                     ; mov rax, QWORD jit_support_grab_closure as i64
                     ; call rax
                     ; pop r_accu

@@ -200,7 +200,12 @@ fn parse_instructions_body<I: Iterator<Item = i32>>(
 
             Opcode::Return => Instruction::Return(context.u32()?),
             Opcode::Restart => Instruction::Restart,
-            Opcode::Grab => Instruction::Grab(context.u32()?),
+            Opcode::Grab => {
+                let pos = context.position();
+                let prev_restart = pos - 2;
+                let n = context.u32()?;
+                Instruction::Grab(BytecodeRelativeOffset(prev_restart), n)
+            },
 
             Opcode::Closure => {
                 let n = context.u32()?;
