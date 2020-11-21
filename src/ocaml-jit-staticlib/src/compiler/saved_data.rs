@@ -18,6 +18,7 @@ pub struct LongjmpHandler {
 pub struct CompilerData {
     pub sections: Vec<Option<Section>>,
     pub longjmp_handler: Option<LongjmpHandler>,
+    pub callback_compiled: bool,
 }
 
 pub struct Section {
@@ -34,6 +35,7 @@ impl CompilerData {
         CompilerData {
             sections: Vec::new(),
             longjmp_handler: None,
+            callback_compiled: false,
         }
     }
 

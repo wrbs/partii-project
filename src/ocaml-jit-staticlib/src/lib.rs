@@ -13,7 +13,9 @@ mod global_data;
 mod trace;
 
 use crate::caml::mlvalues::LongValue;
-use crate::compiler::{compile, get_entrypoint, EntryPoint, LongjmpEntryPoint};
+use crate::compiler::{
+    compile, compile_callback_if_needed, get_entrypoint, EntryPoint, LongjmpEntryPoint,
+};
 use crate::trace::{print_trace, PrintTraceType};
 use caml::mlvalues::Value;
 use global_data::GlobalData;
@@ -46,13 +48,20 @@ extern "C" {
         entrypoint: EntryPoint,
         longjmp_handler: LongjmpEntryPoint,
     ) -> Value;
+
     fn actual_caml_interprete(prog: *const i32, prog_size: usize, print_traces: bool) -> Value;
+
+    static caml_callback_code: [i32; 7];
 }
 
 pub fn interpret_bytecode(code: &[i32]) -> Value {
     let mut global_data = GlobalData::get();
     let use_jit = global_data.options.use_jit;
     let print_traces = global_data.options.trace;
+
+    if (use_jit || print_traces) && code.as_ptr() == unsafe { caml_callback_code.as_ptr() } {
+        compile_callback_if_needed(&mut global_data.compiler_data, code, print_traces);
+    }
 
     if use_jit {
         if code.is_empty() {

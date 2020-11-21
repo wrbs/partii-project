@@ -56,4 +56,8 @@ CAMLextern int caml_callback_depth;
 }
 #endif
 
+#ifdef CAML_INTERNALS
+extern opcode_t caml_callback_code[7];
+#endif
+
 #endif

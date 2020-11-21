@@ -43,3 +43,29 @@ pub fn get_entrypoint(compiler_data: &CompilerData, code: &[i32]) -> EntryPoint 
         .expect("Section not compiled!")
         .entrypoint
 }
+
+pub fn compile_callback_if_needed(
+    compiler_data: &mut CompilerData,
+    code: &[i32],
+    print_traces: bool,
+) {
+    if compiler_data.callback_compiled {
+        return;
+    }
+
+    let section_number = compiler_data.sections.len();
+    // It's not actually used
+    let parsed_instructions = vec![];
+    let (compiled_code, entrypoint) =
+        emit_code::emit_callback_entrypoint(section_number, print_traces, code);
+
+    compiler_data.sections.push(Some(Section::new(
+        section_number,
+        code,
+        compiled_code,
+        entrypoint,
+        parsed_instructions,
+    )));
+
+    compiler_data.callback_compiled = true;
+}

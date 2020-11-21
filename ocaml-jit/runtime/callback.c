@@ -33,15 +33,9 @@
 #include "caml/fix_code.h"
 #include "caml/stacks.h"
 
-#ifdef USE_RUST_JIT
-#define LOCAL_CALLBACK_BYTECODE
-#endif
-
 CAMLexport int caml_callback_depth = 0;
 
-#ifndef LOCAL_CALLBACK_BYTECODE
-static opcode_t callback_code[] = { ACC, 0, APPLY, 0, POP, 1, STOP };
-#endif
+opcode_t caml_callback_code[] = { ACC, 0, APPLY, 0, POP, 1, STOP };
 
 #ifdef THREADED_CODE
 
@@ -49,7 +43,7 @@ static int callback_code_threaded = 0;
 
 static void thread_callback(void)
 {
-  caml_thread_code(callback_code, sizeof(callback_code));
+  caml_thread_code(caml_callback_code, sizeof(caml_callback_code));
   callback_code_threaded = 1;
 }
 
@@ -69,53 +63,19 @@ CAMLexport value caml_callbackN_exn(value closure, int narg, value args[])
   /* some alternate bytecode implementations (e.g. a JIT translator)
      might require that the bytecode is kept in a local variable on
      the C stack */
-#ifdef LOCAL_CALLBACK_BYTECODE
-  opcode_t local_callback_code[14];
-#endif
 
   CAMLassert(narg + 4 <= 256);
 
   Caml_state->extern_sp -= narg + 4;
   for (i = 0; i < narg; i++) Caml_state->extern_sp[i] = args[i]; /* arguments */
-#ifndef LOCAL_CALLBACK_BYTECODE
-  Caml_state->extern_sp[narg] = (value)(callback_code + 4); /* return address */
+  Caml_state->extern_sp[narg] = (value)(caml_callback_code + 4); /* return address */
   Caml_state->extern_sp[narg + 1] = Val_unit;    /* environment */
   Caml_state->extern_sp[narg + 2] = Val_long(0); /* extra args */
   Caml_state->extern_sp[narg + 3] = closure;
   Init_callback();
-  callback_code[1] = narg + 3;
-  callback_code[3] = narg;
-  res = caml_interprete(callback_code, sizeof(callback_code));
-#else /*have LOCAL_CALLBACK_BYTECODE*/
-  /* Caml_state->extern_sp[narg] will contiain the return addr */
-  Caml_state->extern_sp[narg + 1] = Val_unit;    /* environment */
-  Caml_state->extern_sp[narg + 2] = Val_long(0); /* extra args */
-  Caml_state->extern_sp[narg + 3] = closure;
-  /* Get the return address of the POP at position 11 and move into to the return frame we just pushed */
-  local_callback_code[0] = PUSH_RETADDR;
-  local_callback_code[1] = 10;
-  local_callback_code[2] = ACC0;
-  local_callback_code[3] = ASSIGN;
-  local_callback_code[4] = narg + 3;
-  local_callback_code[5] = POP;
-  local_callback_code[6] = 3;
-
-  /* Get the closure value and apply it */
-  local_callback_code[7] = ACC;
-  local_callback_code[8] = narg + 3;
-  local_callback_code[9] = APPLY;
-  local_callback_code[10] = narg;
-  local_callback_code[11] = POP;
-  local_callback_code[12] =  1;
-  local_callback_code[13] = STOP;
-  caml_prepare_bytecode(local_callback_code, sizeof(local_callback_code));
-
-#ifdef THREADED_CODE
-  caml_thread_code(local_callback_code, sizeof(local_callback_code));
-#endif /*THREADED_CODE*/
-  res = caml_interprete(local_callback_code, sizeof(local_callback_code));
-  caml_release_bytecode(local_callback_code, sizeof(local_callback_code));
-#endif /*LOCAL_CALLBACK_BYTECODE*/
+  caml_callback_code[1] = narg + 3;
+  caml_callback_code[3] = narg;
+  res = caml_interprete(caml_callback_code, sizeof(caml_callback_code));
   if (Is_exception_result(res)) Caml_state->extern_sp += narg + 4; /* PR#3419 */
   return res;
 }

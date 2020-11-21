@@ -14,6 +14,13 @@ use std::convert::TryInto;
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
+struct CompilerContext {
+    ops: Assembler,
+    labels: Vec<Option<DynamicLabel>>,
+    print_traces: bool,
+    section_number: usize,
+}
+
 pub fn compile_instructions(
     section_number: usize,
     instructions: &[Instruction<BytecodeRelativeOffset>],
@@ -46,20 +53,6 @@ pub fn compile_instructions(
     let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
 
     (buf, entrypoint)
-}
-
-struct CompilerContext {
-    ops: Assembler,
-    labels: Vec<Option<DynamicLabel>>,
-    print_traces: bool,
-    section_number: usize,
-}
-
-// Enums to avoid magic constants
-enum NextInstruction {
-    RestartOrAfter,
-    GoToNext,
-    UseRSI,
 }
 
 // Define aliases for the abstract machine registers
@@ -99,6 +92,117 @@ macro_rules! oc_pushretaddr {
             ; mov [r_sp + 16 + $offset], rax
        )
     }
+}
+
+/*
+ * Callbacks are very strange and slightly annoying
+ *
+ * The base callback code is
+ * opcode_t caml_callback_code[] = { ACC, 0, APPLY, 0, POP, 1, STOP };
+ * in C.
+ *
+ * When a callback runs it sets up the stack as follows:
+ *
+ * Caml_state->extern_sp -= narg + 4;
+ * for (i = 0; i < narg; i++) Caml_state->extern_sp[i] = args[i]; /* arguments */
+ * Caml_state->extern_sp[narg] = (value)(caml_callback_code + 4); /* return address */
+ * Caml_state->extern_sp[narg + 1] = Val_unit;    /* environment */
+ * Caml_state->extern_sp[narg + 2] = Val_long(0); /* extra args */
+ * Caml_state->extern_sp[narg + 3] = closure;
+ * Init_callback();
+ * caml_callback_code[1] = narg + 3;
+ * caml_callback_code[3] = narg;
+ *
+ * - i.e. the return address is bytecode-relative and the argument to ACC and apply is changed
+ * This of course won't do for the JIT - but we can do something with similar-ish semantics
+ */
+pub fn emit_callback_entrypoint(
+    section_number: usize,
+    print_traces: bool,
+    code: &[i32],
+) -> (ExecutableBuffer, EntryPoint) {
+    // We don't actually use the labels, but we need it for a context
+    let labels = vec![None; 0];
+    let ops = Assembler::new().unwrap();
+    let mut cc = CompilerContext {
+        ops,
+        labels,
+        print_traces,
+        section_number,
+    };
+
+    let entrypoint_offset = cc.emit_entrypoint();
+    let code_base = code.as_ptr();
+
+    oc_dynasm!(&mut cc.ops
+        // Get narg from caml_callback_code[3] and store in rbx
+        ; mov rsi, QWORD ((code_base as usize) + (3 * 4)) as i64
+        ; mov ebx, [rsi]
+        // Fix the location of the return address on the stack
+        ; lea rdi, [>return_after_callback]
+        ; mov [r_sp + rbx * 8], rdi
+    );
+
+    // Emit a trace for the ACC - rbx won't be trashed
+    if print_traces {
+        cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(0));
+    }
+    // Actually perform the acc - it's nargs + 3
+    oc_dynasm!(&mut cc.ops
+        ; mov rax, rbx
+        ; add rax, 3
+        ; mov r_accu, [r_sp + rax * 8]
+    );
+
+    // Emit a trace for the apply
+    if print_traces {
+        cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(2));
+    }
+    // Perform the apply - it's nargs - 1 for the new extra_args
+    oc_dynasm!(&mut cc.ops
+        ; mov r_extra_args, rbx
+        ; dec r_extra_args
+    );
+    cc.perform_apply();
+
+    // Return - POP 1, STOP
+    oc_dynasm!(&mut cc.ops
+        ; return_after_callback:
+    );
+    // Emit a trace for the POP
+    if print_traces {
+        cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(4));
+    }
+    oc_dynasm!(&mut cc.ops
+        ; add r_sp, 8
+    );
+    // Emit a trace for the STOP
+    if print_traces {
+        cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(6));
+    }
+    // Emit the actual stop
+    oc_dynasm!(&mut cc.ops
+        ; mov rax, QWORD jit_support_stop as i64
+        ; mov rdi, [rsp]
+        ; mov rsi, r_sp
+        ; call rax
+        // Set the return value
+        ; mov rax, r_accu
+    );
+    cc.emit_return();
+    cc.emit_shared_code();
+
+    let ops = cc.ops;
+    let buf = ops.finalize().unwrap();
+    let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
+    (buf, entrypoint)
+}
+
+// Enums to avoid magic constants
+enum NextInstruction {
+    RestartOrAfter,
+    GoToNext,
+    UseRSI,
 }
 
 fn caml_i32_of_int(orig: i64) -> i32 {
@@ -202,6 +306,24 @@ impl CompilerContext {
         );
     }
 
+    fn emit_bytecode_trace(
+        &mut self,
+        code_base: *const i32,
+        bytecode_offset: &BytecodeRelativeOffset,
+    ) {
+        let bytecode_pointer =
+            unsafe { code_base.offset((bytecode_offset.0 as usize).try_into().unwrap()) };
+        oc_dynasm!(self.ops
+            ; mov rdi, QWORD bytecode_pointer as i64
+            ; mov rsi, r_accu
+            ; mov rdx, r_env
+            ; mov rcx, r_extra_args
+            ; mov r8, r_sp
+            ; mov rax, QWORD bytecode_trace as i64
+            ; call rax
+        );
+    }
+
     fn emit_instruction(
         &mut self,
         instruction: &Instruction<BytecodeRelativeOffset>,
@@ -216,17 +338,7 @@ impl CompilerContext {
             );
 
             if self.print_traces {
-                let bytecode_pointer =
-                    unsafe { code_base.offset((bytecode_offset.0 as usize).try_into().unwrap()) };
-                oc_dynasm!(self.ops
-                    ; mov rdi, QWORD bytecode_pointer as i64
-                    ; mov rsi, r_accu
-                    ; mov rdx, r_env
-                    ; mov rcx, r_extra_args
-                    ; mov r8, r_sp
-                    ; mov rax, QWORD bytecode_trace as i64
-                    ; call rax
-                );
+                self.emit_bytecode_trace(code_base, bytecode_offset);
             }
         }
 
