@@ -1298,9 +1298,13 @@ impl CompilerContext {
             Instruction::CheckSignals => {
                 self.emit_check_signals(NextInstruction::GoToNext);
             }
-            // Unimplemented ops:
             Instruction::GetMethod => {
-                self.emit_fatal_error(b"Unimplemented: GetMethod\0");
+                oc_dynasm!(self.ops
+                    ; mov rax, [r_sp]
+                    ; mov rax, [rax]
+                    ; shr r_accu, 1
+                    ; mov r_accu, [rax + r_accu * 8]
+                );
             }
             Instruction::SetupForPubMet(tag) => {
                 oc_dynasm!(self.ops
@@ -1323,6 +1327,7 @@ impl CompilerContext {
                     ; mov r_accu, rax
                 );
             }
+            // Unimplemented ops:
             Instruction::Break => {
                 self.emit_fatal_error(b"Unimplemented: Break\0");
             }
