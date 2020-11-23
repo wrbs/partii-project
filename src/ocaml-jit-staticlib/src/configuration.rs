@@ -5,6 +5,7 @@
 
 use clap::arg_enum;
 use std::env;
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
 const PROGRAM_NAME: &str = "ocaml-jit";
@@ -29,7 +30,7 @@ pub struct Options {
     #[structopt(short = "j", long)]
     pub use_jit: bool,
 
-    /// Run the compiler at startup (--use-jit will automatically set this)
+    /// Run the compiler at startup
     #[structopt(short = "c", long)]
     pub use_compiler: bool,
 
@@ -41,8 +42,15 @@ pub struct Options {
     #[structopt(long, default_value = "Colorful", possible_values = &TraceType::variants(), case_insensitive = true)]
     pub trace_format: TraceType,
 
-    #[structopt(long)]
+    /// The base directory to store artifacts from the execution
+    #[structopt(short, long, parse(from_os_str))]
+    pub output_dir: Option<PathBuf>,
+
+    #[structopt(long, requires = "output-dir")]
     pub save_compiled: bool,
+
+    #[structopt(long, requires_all = &["output-dir", "trace"])]
+    pub save_instruction_counts: bool,
 }
 
 impl Options {
@@ -55,10 +63,22 @@ impl Options {
         });
         arg_sections.insert(0, String::from(PROGRAM_NAME));
 
-        Options::from_iter(arg_sections.iter())
+        let mut opts = Options::from_iter(arg_sections.iter());
+        opts.set_defaults();
+        opts
     }
 
-    pub fn should_compile_code(&self) -> bool {
-        self.use_compiler || self.use_jit || self.trace
+    fn set_defaults(&mut self) {
+        if self.trace || self.use_jit {
+            self.use_compiler = true
+        }
+    }
+
+    pub fn output_path<P: AsRef<Path>>(&self, name: P) -> PathBuf {
+        let base = self
+            .output_dir
+            .as_ref()
+            .expect("No output directory specified!");
+        base.join(name)
     }
 }

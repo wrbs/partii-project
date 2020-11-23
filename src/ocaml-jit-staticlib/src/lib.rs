@@ -14,35 +14,51 @@ mod trace;
 
 use crate::caml::mlvalues::LongValue;
 use crate::compiler::{
-    compile, compile_callback_if_needed, get_entrypoint, EntryPoint, LongjmpEntryPoint,
+    compile, compile_callback_if_needed, get_entrypoint, EntryPoint, LongjmpEntryPoint, Section,
 };
 use crate::trace::{print_trace, PrintTraceType};
 use caml::mlvalues::Value;
 use global_data::GlobalData;
 use std::ffi::c_void;
+use std::fs;
+use std::io::Write;
 
 /* These are the hook points from the existing runtime to the JIT */
+
+pub fn on_startup() -> GlobalData {
+    let global_data = GlobalData::new();
+
+    if let Some(output_dir) = global_data.options.output_dir.as_ref() {
+        fs::create_dir_all(output_dir).unwrap();
+    }
+
+    global_data
+}
 
 pub fn on_bytecode_loaded(code: &[i32]) -> *const c_void {
     let mut global_data = GlobalData::get();
 
     let print_traces = global_data.options.trace;
 
-    if global_data.options.should_compile_code() {
-        let write_code_to = if global_data.options.save_compiled {
-            Some("/tmp/code")
-        } else {
-            None
-        };
+    if global_data.options.use_compiler {
+        let section_number = compile(&mut global_data.compiler_data, code, print_traces);
+        let section = global_data.compiler_data.sections[section_number]
+            .as_ref()
+            .unwrap();
+        on_section_compiled(&global_data, section);
 
-        compile(
-            &mut global_data.compiler_data,
-            code,
-            print_traces,
-            write_code_to,
-        )
+        section.first_instruction_location as *const c_void
     } else {
         code.as_ptr() as *const c_void
+    }
+}
+
+fn on_section_compiled(global_data: &GlobalData, section: &Section) {
+    if global_data.options.save_compiled {
+        let path = global_data
+            .options
+            .output_path(format!("section{}.bin", section.section_number));
+        fs::write(path, &*section.compiled_code).unwrap();
     }
 }
 
@@ -63,7 +79,14 @@ pub fn interpret_bytecode(code: &[i32]) -> Value {
     let print_traces = global_data.options.trace;
 
     if (use_jit || print_traces) && code.as_ptr() == unsafe { caml_callback_code.as_ptr() } {
-        compile_callback_if_needed(&mut global_data.compiler_data, code, print_traces);
+        let maybe_section =
+            compile_callback_if_needed(&mut global_data.compiler_data, code, print_traces);
+        if let Some(section_number) = maybe_section {
+            let section = global_data.compiler_data.sections[section_number]
+                .as_ref()
+                .unwrap();
+            on_section_compiled(&global_data, section);
+        }
     }
 
     if use_jit {
@@ -88,7 +111,7 @@ pub fn interpret_bytecode(code: &[i32]) -> Value {
 
 pub fn on_bytecode_released(code: &[i32]) {
     let mut global_data = GlobalData::get();
-    if global_data.options.should_compile_code() {
+    if global_data.options.use_compiler {
         global_data.compiler_data.release_section(code);
     }
 }
@@ -100,14 +123,44 @@ pub fn old_interpreter_trace(
     extra_args: u64,
     sp: *const Value,
 ) {
-    let global_data = GlobalData::get();
+    let mut global_data = GlobalData::get();
 
     print_trace(
-        &global_data,
+        &mut global_data,
         PrintTraceType::BytecodePC(pc),
         accu,
         env,
         extra_args,
         sp,
     );
+}
+
+pub fn on_shutdown() {
+    let global_data = GlobalData::get();
+    if global_data.options.save_instruction_counts {
+        let instruction_counts = global_data.instruction_counts.as_ref().unwrap();
+
+        let json_path = global_data.options.output_path("instruction_counts.json");
+        let json = serde_json::to_string_pretty(instruction_counts).unwrap();
+        fs::write(json_path, json).unwrap();
+
+        let total_instrs = instruction_counts.values().sum::<usize>() as f32;
+        let mut counts: Vec<_> = instruction_counts.into_iter().collect();
+        counts.sort_by_key(|(_, c)| **c);
+        counts.reverse();
+
+        let path = global_data.options.output_path("instruction_counts");
+        let mut f = fs::File::create(path).unwrap();
+
+        for (opcode, count) in counts {
+            writeln!(
+                f,
+                "{:?}: {:.2}% ({})",
+                opcode,
+                (*count as f32) / total_instrs * 100.0,
+                count
+            )
+            .unwrap();
+        }
+    }
 }

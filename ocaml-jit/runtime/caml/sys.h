@@ -46,6 +46,10 @@ CAMLextern value caml_sys_get_argv(value unit);
 
 extern char_os * caml_exe_name;
 
+#ifdef USE_RUST_JIT
+extern void rust_jit_at_shutdown();
+#endif
+
 #ifdef __cplusplus
 }
 #endif

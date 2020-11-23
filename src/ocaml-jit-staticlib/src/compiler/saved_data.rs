@@ -25,9 +25,10 @@ pub struct Section {
     pub section_number: usize,
     pub base_address: usize,
     pub length: usize,
-    pub entrypoint: EntryPoint,
     pub instructions: Vec<Instruction<BytecodeRelativeOffset>>,
     pub compiled_code: ExecutableBuffer,
+    pub entrypoint: EntryPoint,
+    pub first_instruction_location: usize,
 }
 
 impl CompilerData {
@@ -93,6 +94,7 @@ impl Section {
         compiled_code: ExecutableBuffer,
         entrypoint: EntryPoint,
         instructions: Vec<Instruction<BytecodeRelativeOffset>>,
+        first_instruction_location: usize,
     ) -> Section {
         Section {
             section_number,
@@ -101,6 +103,7 @@ impl Section {
             entrypoint,
             instructions,
             compiled_code,
+            first_instruction_location,
         }
     }
 }

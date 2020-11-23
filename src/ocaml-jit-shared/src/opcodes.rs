@@ -4,7 +4,7 @@ use std::fmt;
 pub const NUM_OPERATIONS: usize = 149;
 
 // All opcodes
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum Opcode {
     Acc0 = 0,
     Acc1 = 1,

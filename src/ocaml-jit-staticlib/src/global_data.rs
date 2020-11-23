@@ -1,20 +1,33 @@
 use crate::compiler::CompilerData;
 use crate::configuration::Options;
+use crate::on_startup;
+use ocaml_jit_shared::Opcode;
 use once_cell::sync::Lazy;
+use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard};
 
 pub struct GlobalData {
     pub options: Options,
     pub compiler_data: CompilerData,
+    pub instruction_counts: Option<HashMap<Opcode, usize>>,
 }
 
-static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(GlobalData::new()));
+static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(on_startup()));
 
 impl GlobalData {
-    fn new() -> GlobalData {
+    pub fn new() -> GlobalData {
+        let options = Options::get_from_env();
+
+        let instruction_counts = if options.save_instruction_counts {
+            Some(HashMap::new())
+        } else {
+            None
+        };
+
         GlobalData {
-            options: Options::get_from_env(),
+            options,
             compiler_data: CompilerData::initialise(),
+            instruction_counts,
         }
     }
 

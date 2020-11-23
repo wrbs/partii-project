@@ -16,15 +16,30 @@ pub enum PrintTraceType<'a> {
 }
 
 pub fn print_trace(
-    global_data: &GlobalData,
+    global_data: &mut GlobalData,
     trace_type: PrintTraceType,
     accu: u64,
     env: u64,
     extra_args: u64,
     sp: *const Value,
 ) {
-    let trace = get_trace(global_data, trace_type, accu, env, extra_args, sp);
+    if global_data.options.save_instruction_counts {
+        if let PrintTraceType::BytecodePC(pc) = trace_type {
+            let opcode_val = unsafe { *pc };
+            let opcode = Opcode::from_i32(opcode_val).expect("Invalid opcode");
+
+            let instruction_counts = global_data.instruction_counts.as_mut().unwrap();
+            let count = instruction_counts.entry(opcode).or_insert(0);
+            *count += 1;
+        }
+    }
+
     let trace_format = global_data.options.trace_format;
+    if trace_format == TraceType::NoPrint {
+        return;
+    }
+
+    let trace = get_trace(global_data, trace_type, accu, env, extra_args, sp);
 
     match trace_format {
         TraceType::Colorful => trace.print_colored(),
@@ -32,7 +47,7 @@ pub fn print_trace(
         TraceType::JSON => println!("!T! {}", serde_json::to_string(&trace).unwrap()),
         TraceType::Debug => println!("{:?}", &trace),
         TraceType::DebugPretty => println!("{:#?}", &trace),
-        TraceType::NoPrint => (),
+        TraceType::NoPrint => unreachable!(),
     }
 }
 

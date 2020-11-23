@@ -121,7 +121,7 @@ pub fn emit_callback_entrypoint(
     section_number: usize,
     print_traces: bool,
     code: &[i32],
-) -> (ExecutableBuffer, EntryPoint) {
+) -> (ExecutableBuffer, EntryPoint, *const c_void) {
     // We don't actually use the labels, but we need it for a context
     let labels = vec![None; 0];
     let ops = Assembler::new().unwrap();
@@ -132,7 +132,7 @@ pub fn emit_callback_entrypoint(
         section_number,
     };
 
-    let (entrypoint_offset, _) = cc.emit_entrypoint();
+    let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
     let code_base = code.as_ptr();
 
     oc_dynasm!(&mut cc.ops
@@ -196,7 +196,9 @@ pub fn emit_callback_entrypoint(
     let ops = cc.ops;
     let buf = ops.finalize().unwrap();
     let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
-    (buf, entrypoint)
+    let first_instr = buf.ptr(first_instr_offset) as *const c_void;
+
+    (buf, entrypoint, first_instr)
 }
 
 // Enums to avoid magic constants
@@ -1488,9 +1490,9 @@ extern "C" fn bytecode_trace(
     extra_args: u64,
     sp: *const Value,
 ) {
-    let global_data = GlobalData::get();
+    let mut global_data = GlobalData::get();
     print_trace(
-        &global_data,
+        &mut global_data,
         PrintTraceType::BytecodePC(pc),
         accu,
         env,
@@ -1507,13 +1509,13 @@ extern "C" fn instruction_trace(
     sp: *const Value,
     section_number: u64,
 ) {
-    let global_data = GlobalData::get();
+    let mut global_data = GlobalData::get();
     let section = global_data.compiler_data.sections[section_number as usize]
         .as_ref()
         .expect("Section already released");
-    let instruction = &section.instructions[pc as usize];
+    let instruction = &section.instructions[pc as usize].clone();
     print_trace(
-        &global_data,
+        &mut global_data,
         PrintTraceType::Instruction(instruction),
         accu,
         env,
@@ -1522,9 +1524,9 @@ extern "C" fn instruction_trace(
     );
 }
 extern "C" fn process_events_trace(accu: u64, env: u64, extra_args: u64, sp: *const Value) {
-    let global_data = GlobalData::get();
+    let mut global_data = GlobalData::get();
     print_trace(
-        &global_data,
+        &mut global_data,
         PrintTraceType::Event("process_events"),
         accu,
         env,

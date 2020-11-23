@@ -3,7 +3,10 @@ use std::slice;
 
 use crate::caml::misc::fatal_error;
 use crate::caml::mlvalues::Value;
-use crate::{interpret_bytecode, old_interpreter_trace, on_bytecode_loaded, on_bytecode_released};
+use crate::{
+    interpret_bytecode, old_interpreter_trace, on_bytecode_loaded, on_bytecode_released,
+    on_shutdown,
+};
 use std::ffi::c_void;
 
 // We need some way to convince Rust that the OCaml interpreter is single threaded
@@ -51,4 +54,9 @@ pub unsafe extern "C" fn rust_jit_trace(
     sp: *const Value,
 ) {
     old_interpreter_trace(pc, accu, env, extra_args, sp);
+}
+
+#[no_mangle]
+pub extern "C" fn rust_jit_at_shutdown() {
+    on_shutdown();
 }

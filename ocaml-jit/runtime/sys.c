@@ -148,6 +148,10 @@ CAMLprim value caml_sys_exit(value retcode_v)
                     cpct);
   }
 
+#ifdef USE_RUST_JIT
+    rust_jit_at_shutdown();
+#endif
+
 #ifndef NATIVE_CODE
   caml_debugger(PROGRAM_EXIT, Val_unit);
 #endif
