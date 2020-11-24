@@ -47,6 +47,13 @@ helps a lot.
 However, in most development iterations you can probably get away with only
 rebuilding the runtime.
 
+## Using OPAM
+
+To create a switch with the JIT version of the compiler run
+
+    opam switch create .
+    opam install .
+
 ## Project overview
 
 The project is developed primarily in Rust and C. The aim is to use some form

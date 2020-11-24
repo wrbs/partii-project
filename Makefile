@@ -19,6 +19,8 @@ NO_ASLR_DIR := vendor/no-aslr
 BUILT_DIR := dist
 PREFIX := $(abspath .)/$(BUILT_DIR)
 
+OPAM_PREFIX :=
+
 # Main targets
 # ============
 
@@ -60,7 +62,7 @@ fullclean: clean
 setup: fullclean
 	@echo $(PREFIX)
 	cd $(OCAML_DIR) && ./configure --enable-rust-jit --prefix=$(PREFIX)
-	echo "BUILT_DIR_ABS=$(abspath .)/$(BUILT_DIR)" > Makefile.toolchain
+	echo "BUILT_DIR_ABS=$(PREFIX)" > Makefile.toolchain
 
 
 .PHONY: cargo_builds
@@ -69,6 +71,18 @@ cargo_builds:
 	cd $(RUST_DIR) && cargo build --all --release
 	mkdir -p $(BUILT_DIR)/bin
 	cp $(RELEASE_TARGET)/ocaml-jit-tools $(BUILT_DIR)/bin/
+
+.PHONY: opam_build
+opam_build:
+	$(MAKE) fullclean
+	cd $(OCAML_DIR) && ./configure --enable-rust-jit --prefix=$(OPAM_PREFIX)
+	$(MAKE) cargo_builds
+	$(MAKE) $(RELEASE_COPIED)
+	$(MAKE) -C $(OCAML_DIR)
+
+.PHONY: opam_install
+opam_install:
+	$(MAKE) -C $(OCAML_DIR) install
 
 # Copying built libs into the OCaml compiler's tree
 # =================================================
