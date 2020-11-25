@@ -1,0 +1,112 @@
+(executable
+ (name mandelbrot6_multicore)
+ (modules mandelbrot6_multicore)
+ (libraries domainslib))
+
+(executable
+ (name mandelbrot6_multiprocess)
+ (modules mandelbrot6_multiprocess)
+ (libraries unix))
+
+(executable
+ (name spectralnorm2_multicore)
+ (modules spectralnorm2_multicore)
+ (libraries domainslib))
+
+(executable
+ (name quicksort)
+ (modules quicksort))
+
+(executable
+ (name quicksort_multicore)
+ (modules quicksort_multicore)
+ (libraries domainslib))
+
+(executable
+ (name binarytrees5_multicore)
+ (modules binarytrees5_multicore)
+ (libraries domainslib))
+
+(executable
+ (name game_of_life)
+ (modules game_of_life))
+
+(executable
+ (name game_of_life_multicore)
+ (modules game_of_life_multicore)
+ (libraries domainslib))
+
+(executable
+ (name matrix_multiplication)
+ (modules matrix_multiplication))
+
+(executable
+ (name matrix_multiplication_multicore)
+ (modules matrix_multiplication_multicore)
+ (libraries domainslib))
+
+(executable
+ (name LU_decomposition_multicore)
+ (modules LU_decomposition_multicore)
+ (libraries domainslib))
+
+(executable
+ (name LU_decomposition)
+ (modules LU_decomposition))
+
+(executable
+ (name floyd_warshall_multicore)
+ (modules floyd_warshall_multicore)
+ (libraries domainslib))
+
+(executable
+ (name floyd_warshall)
+ (modules floyd_warshall))
+
+(executable
+ (name matrix_multiplication_tiling_multicore)
+ (modules matrix_multiplication_tiling_multicore)
+ (libraries domainslib))
+
+(executable
+ (name nbody)
+ (modules nbody))
+
+(executable
+ (name nbody_multicore)
+ (modules nbody_multicore)
+ (libraries domainslib))
+
+(executable
+ (name mergesort_multicore)
+ (modules mergesort_multicore)
+ (libraries domainslib))
+
+(executable
+ (name mergesort)
+ (modules mergesort))
+
+(executable
+ (name evolutionary_algorithm)
+ (modules evolutionary_algorithm))
+
+(executable
+ (name evolutionary_algorithm_multicore)
+ (modules evolutionary_algorithm_multicore)
+ (libraries domainslib))
+
+(alias (name multibench_parallel)
+			 (deps mandelbrot6_multicore.exe spectralnorm2_multicore.exe quicksort.exe
+						 quicksort_multicore.exe binarytrees5_multicore.exe
+						 game_of_life.exe game_of_life_multicore.exe
+						 matrix_multiplication.exe matrix_multiplication_multicore.exe
+						 matrix_multiplication_tiling_multicore.exe nbody.exe
+						 nbody_multicore.exe mergesort.exe mergesort_multicore.exe
+						 floyd_warshall.exe floyd_warshall_multicore.exe
+						 LU_decomposition.exe LU_decomposition_multicore.exe
+             evolutionary_algorithm_multicore.exe evolutionary_algorithm.exe))
+
+(alias (name buildbench)
+       (deps game_of_life.exe matrix_multiplication.exe quicksort.exe
+			       mergesort.exe floyd_warshall.exe LU_decomposition.exe
+             evolutionary_algorithm.exe))
