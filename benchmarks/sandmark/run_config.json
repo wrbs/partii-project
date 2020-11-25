@@ -474,7 +474,8 @@
       "name": "bdd",
       "tags": [
         "1s_10s",
-        "macro_bench"
+        "macro_bench",
+        "bytecode"
       ],
       "runs": [
         {
