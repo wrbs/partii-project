@@ -1,6 +1,9 @@
 ;; Adapted from OCamlPro's ocamlbench-repo
 ;; See https://github.com/OCamlPro/ocamlbench-repo
 (executable
- (name almabench))
+ (name almabench)
+ (modes byte exe))
 
 (alias (name buildbench) (deps almabench.exe))
+
+(alias (name buildbench_byte) (deps almabench.bc))

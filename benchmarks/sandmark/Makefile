@@ -47,7 +47,7 @@ PIP_DEPENDENCIES = intervaltree
 .SECONDARY:
 export OPAMROOT=$(CURDIR)/_opam
 
-.PHONY: bash list depend clean
+.PHONY: bash list clean
 
 # HACK: we are using the system installed dune to avoid breakages with
 # multicore and 4.09/trunk
@@ -98,15 +98,11 @@ _opam/%: _opam/opam-init/init.sh ocaml-versions/%.json setup_sys_dune
 .PHONY: .FORCE
 .FORCE:
 
-# the file sandmark_git_hash.txt contains the current git hash for this version of sandmark
-log_sandmark_hash:
-	-git log -n 1
-
 .PHONY: blah
 blah:
 	@echo ${PACKAGES}
 
-ocaml-versions/%.bench: check_url depend log_sandmark_hash ocaml-versions/%.json _opam/% .FORCE
+ocaml-versions/%.bench: check_url ocaml-versions/%.json _opam/% .FORCE
 	$(eval ENVIRONMENT = $(shell jq -r '.wrappers[] | select(.name=="$(WRAPPER)") | .environment // empty' "$(RUN_CONFIG_JSON)" ))
 	@opam update
 	opam install --switch=$* --keep-build-dir --yes rungen orun
@@ -123,6 +119,7 @@ ocaml-versions/%.bench: check_url depend log_sandmark_hash ocaml-versions/%.json
 	echo "  RUN_CONFIG_JSON=${RUN_CONFIG_JSON}"; \
 	echo "  RUN_BENCH_TARGET=${RUN_BENCH_TARGET}  (WRAPPER=${WRAPPER})"; \
 	echo "  PRE_BENCH_EXEC=${PRE_BENCH_EXEC}"; \
+	echo "Running $(PRE_BENCH_EXEC) $(ENVIRONMENT) opam exec --switch $* -- dune build -j 1 --profile=release --workspace=ocaml-versions/.workspace.$* @$(RUN_BENCH_TARGET);"; \
 		$(PRE_BENCH_EXEC) $(ENVIRONMENT) opam exec --switch $* -- dune build -j 1 --profile=release				\
 		  --workspace=ocaml-versions/.workspace.$* @$(RUN_BENCH_TARGET); ex=$$?;						\
 		for f in `find _build/$*_* -name '*.$(WRAPPER).bench'`; do 								\
@@ -135,11 +132,6 @@ ocaml-versions/%.bench: check_url depend log_sandmark_hash ocaml-versions/%.json
 		exit 0; 														\
 	   fi };
 
-define check_dependency
-	$(if $(filter $(shell $(2) | grep $(1) | wc -l), 0),
-		@echo "$(1) is not installed. $(3)")
-endef
-
 check_url:
 	@{ for f in `find ocaml-versions/*.json`; do	\
 	      URL=`jq -r '.url' $$f`;			\
@@ -149,10 +141,6 @@ check_url:
 	   done;					\
 	};
 
-depend:
-	$(foreach d, $(DEPENDENCIES),      $(call check_dependency, $(d), dpkg -l,   Install on Ubuntu using apt.))
-	$(foreach d, $(PIP_DEPENDENCIES),  $(call check_dependency, $(d), pip3 list --format=columns, Install using pip3 install.))
-
 clean:
 	rm -rf dependencies/packages/ocaml/*
 	rm -rf dependencies/packages/ocaml-base-compiler/*
@@ -161,7 +149,7 @@ clean:
 	rm -rf _build
 	rm -rf _opam
 	rm -rf _results
-	rm -rf *_macro*.json *ci.json
+	rm -rf *_macro*.json *ci.json *_bytecode_and_native.json *_bytecode.json
 	rm -rf *~
 
 list:
@@ -179,3 +167,10 @@ bash:
 
 %_ci.json: %.json
 	jq '{wrappers : .wrappers, benchmarks: [.benchmarks | .[] | select(.tags | index("run_in_ci") != null)]}' < $< > $@
+
+%_bytecode_and_native.json: %.json
+	jq '{wrappers : .wrappers, benchmarks: [.benchmarks | .[] | select(.tags | index("bytecode") != null) | [., { executable: .executable | sub("exe"; "bc"), name: (.name + "_bytecode"), tags, runs}]] | flatten}' < $< > $@
+
+%_bytecode.json: %.json
+	jq '{wrappers : .wrappers, benchmarks: [.benchmarks | .[] | select(.tags | index("bytecode") != null) | { executable: .executable | sub("exe"; "bc"), name: (.name + "_bytecode"), tags, runs}]}' < $< > $@
+

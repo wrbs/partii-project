@@ -24,6 +24,17 @@ let paramwrapper_regexp = Str.regexp "%{paramwrapper}"
 let replace_spaces_with_underscores str = Str.global_replace space_regexp "_" str
 let replace_periods_with_underscores str = Str.global_replace period_regexp "_" str
 
+let buildbench_both = let open Sexp in
+  List
+    [ Atom "alias"
+    ; List [Atom "name"; Atom "buildbench_both"]
+    ; List
+      [ Atom "deps"
+      ; List [Atom "alias_rec"; Atom "buildbench"]
+      ; List [Atom "alias_rec"; Atom "buildbench_byte"]
+      ]
+    ]
+
 let parse_json build_dir =
   let open Yojson.Basic.Util in
   let to_run json =
@@ -100,7 +111,7 @@ let parse_json build_dir =
                    benchmarks )
                wrappers)))
   in
-  run_sexps
+  buildbench_both :: run_sexps
   @ List.map
       (fun (wrapper : wrapper) ->
         Sexp.List

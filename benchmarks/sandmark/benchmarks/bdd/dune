@@ -1,6 +1,8 @@
 ;; Adapted from OCamlPro's ocamlbench-repo
 ;; See https://github.com/OCamlPro/ocamlbench-repo
 (executable
- (name bdd))
+ (name bdd)
+ (modes byte exe))
 
 (alias (name buildbench) (deps bdd.exe))
+(alias (name buildbench_byte) (deps bdd.bc))

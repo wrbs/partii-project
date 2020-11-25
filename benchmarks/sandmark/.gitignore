@@ -8,3 +8,5 @@ runs_dune.inc
 *_macro.json
 *_parallel.json
 .ipynb_checkpoints
+*_bytecode_and_native.json
+*_bytecode.json

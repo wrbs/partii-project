@@ -1,5 +1,12 @@
 [![Build Status](http://cloud.drone.io/api/badges/ocaml-bench/sandmark/status.svg?branch=master)](http://cloud.drone.io/ocaml-bench/sandmark)
 
+# JIT modifications
+
+This seems to be the most up-to-date collection of benchmarks and tooling we can use to evaluate
+benchmarks.
+
+I'm going to modify it so it compares the OCaml versions I'm interested in testing against
+
 # Sandmark
 
 A benchmark suite for OCaml.
