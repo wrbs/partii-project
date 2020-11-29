@@ -15,7 +15,8 @@
 
 (executable
  (name quicksort)
- (modules quicksort))
+ (modules quicksort)
+ (modes byte exe))
 
 (executable
  (name quicksort_multicore)
@@ -29,7 +30,8 @@
 
 (executable
  (name game_of_life)
- (modules game_of_life))
+ (modules game_of_life)
+ (modes byte exe))
 
 (executable
  (name game_of_life_multicore)
@@ -38,7 +40,8 @@
 
 (executable
  (name matrix_multiplication)
- (modules matrix_multiplication))
+ (modules matrix_multiplication)
+ (modes byte exe))
 
 (executable
  (name matrix_multiplication_multicore)
@@ -52,7 +55,8 @@
 
 (executable
  (name LU_decomposition)
- (modules LU_decomposition))
+ (modules LU_decomposition)
+ (modes byte exe))
 
 (executable
  (name floyd_warshall_multicore)
@@ -61,7 +65,8 @@
 
 (executable
  (name floyd_warshall)
- (modules floyd_warshall))
+ (modules floyd_warshall)
+ (modes byte exe))
 
 (executable
  (name matrix_multiplication_tiling_multicore)
@@ -80,15 +85,18 @@
 (executable
  (name mergesort_multicore)
  (modules mergesort_multicore)
- (libraries domainslib))
+ (libraries domainslib)
+ (modes byte exe))
 
 (executable
  (name mergesort)
- (modules mergesort))
+ (modules mergesort)
+ (modes byte exe))
 
 (executable
  (name evolutionary_algorithm)
- (modules evolutionary_algorithm))
+ (modules evolutionary_algorithm)
+ (modes byte exe))
 
 (executable
  (name evolutionary_algorithm_multicore)
@@ -110,3 +118,7 @@
        (deps game_of_life.exe matrix_multiplication.exe quicksort.exe
 			       mergesort.exe floyd_warshall.exe LU_decomposition.exe
              evolutionary_algorithm.exe))
+(alias (name buildbench_byte)
+       (deps game_of_life.bc matrix_multiplication.bc quicksort.bc
+			       mergesort.bc floyd_warshall.bc LU_decomposition.bc
+             evolutionary_algorithm.bc))

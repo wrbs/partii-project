@@ -1,7 +1,8 @@
 (executables (names binarytrees5 fannkuchredux fannkuchredux2 fasta3 fasta6
                     knucleotide knucleotide3 mandelbrot6 nbody pidigits5
                     regexredux2 revcomp2 spectralnorm2)
-              (libraries unix str zarith))
+              (libraries unix str zarith)
+ (modes byte exe))
 
 (rule
      (targets input25000000.txt)
@@ -21,3 +22,9 @@
 
 (alias (name multibench_parallel)
        (deps binarytrees5.exe mandelbrot6.exe spectralnorm2.exe))
+
+(alias (name buildbench_byte)
+       (deps binarytrees5.bc fannkuchredux.bc fannkuchredux2.bc fasta3.bc
+             fasta6.bc knucleotide.bc knucleotide3.bc mandelbrot6.bc
+             nbody.bc pidigits5.bc regexredux2.bc revcomp2.bc
+             spectralnorm2.bc input25000000.txt input5000000.txt))

@@ -119,8 +119,8 @@ ocaml-versions/%.bench: check_url ocaml-versions/%.json _opam/% .FORCE
 	echo "  RUN_CONFIG_JSON=${RUN_CONFIG_JSON}"; \
 	echo "  RUN_BENCH_TARGET=${RUN_BENCH_TARGET}  (WRAPPER=${WRAPPER})"; \
 	echo "  PRE_BENCH_EXEC=${PRE_BENCH_EXEC}"; \
-	echo "Running $(PRE_BENCH_EXEC) $(ENVIRONMENT) opam exec --switch $* -- dune build -j 1 --profile=release --workspace=ocaml-versions/.workspace.$* @$(RUN_BENCH_TARGET);"; \
-		$(PRE_BENCH_EXEC) $(ENVIRONMENT) opam exec --switch $* -- dune build -j 1 --profile=release				\
+	echo "Running $(PRE_BENCH_EXEC) $(ENVIRONMENT) opam exec --switch $* -- dune build --verbose -j 1 --profile=release --workspace=ocaml-versions/.workspace.$* @$(RUN_BENCH_TARGET);"; \
+		$(PRE_BENCH_EXEC) $(ENVIRONMENT) opam exec --switch $* -- dune build --verbose -j 1 --profile=release				\
 		  --workspace=ocaml-versions/.workspace.$* @$(RUN_BENCH_TARGET); ex=$$?;						\
 		for f in `find _build/$*_* -name '*.$(WRAPPER).bench'`; do 								\
 		   d=`basename $$f | cut -d '.' -f 1,2`; 										\

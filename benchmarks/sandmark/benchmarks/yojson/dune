@@ -3,6 +3,8 @@
 
 (executable
  (name ydump)
- (libraries yojson))
+ (libraries yojson)
+ (modes byte exe))
 
 (alias (name buildbench) (deps ydump.exe sample.json))
+(alias (name buildbench_byte) (deps ydump.bc sample.json))

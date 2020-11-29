@@ -1,7 +1,8 @@
 (executable
  (name test_decompress)
   (modules test_decompress)
-  (libraries bigstringaf checkseum.ocaml decompress.zl))
+  (libraries bigstringaf checkseum.ocaml decompress.zl)
+  (modes byte exe))
 
 (executable
  (name test_decompress_multicore)
@@ -10,5 +11,6 @@
 
 (alias (name buildbench)
        (deps test_decompress.exe))
+(alias (name buildbench_byte) (deps test_decompress.bc))
 (alias (name multibench_parallel)
        (deps test_decompress.exe test_decompress_multicore.exe))
