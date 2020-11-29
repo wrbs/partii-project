@@ -2,6 +2,7 @@
 ;; See https://github.com/OCamlPro/ocamlbench-repo
 (executable
  (name contrast)
- (libraries camlimages.all_formats))
+ (libraries camlimages.all_formats)
+ (modes byte exe))
 
 (alias (name bench) (deps contrast.exe))

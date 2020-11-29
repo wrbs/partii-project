@@ -2,6 +2,8 @@
 ;; See https://github.com/OCamlPro/ocamlbench-repo
 (executables
  (names thread_ring_lwt_mvar thread_ring_lwt_stream)
- (libraries lwt lwt.unix))
+ (libraries lwt lwt.unix)
+ (modes byte exe))
 
 (alias (name buildbench) (deps thread_ring_lwt_mvar.exe thread_ring_lwt_stream.exe))
+(alias (name buildbench_byte) (deps thread_ring_lwt_mvar.bc thread_ring_lwt_stream.bc))

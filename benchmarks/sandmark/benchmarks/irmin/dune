@@ -1,5 +1,7 @@
 (executable
 	(name irmin_mem_rw)
-	(libraries irmin irmin-mem lwt.unix))
+	(libraries irmin irmin-mem lwt.unix)
+    (modes byte exe))
 
 (alias (name buildbench) (deps irmin_mem_rw.exe))
+(alias (name buildbench_byte) (deps irmin_mem_rw.bc))

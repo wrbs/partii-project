@@ -7,7 +7,8 @@
 (include finalise-dune.inc)
 
 (executables
- (names alloc) (modules alloc))
+ (names alloc) (modules alloc)
+ (modes byte exe))
 
 (executables
  (names alloc_multicore) (modules alloc_multicore))
@@ -15,7 +16,8 @@
 (executables
  (names pingpong_multicore) (libraries domainslib) (modules pingpong_multicore))
 
-(executables (names morestacks) (modules morestacks))
+(executables (names morestacks) (modules morestacks) (modes byte exe))
 
 (alias (name buildbench) (deps alloc.exe morestacks.exe))
+(alias (name buildbench_byte) (deps alloc.bc morestacks.bc))
 (alias (name multibench_parallel) (deps alloc_multicore.exe pingpong_multicore.exe))

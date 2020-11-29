@@ -1,4 +1,6 @@
 (executables
-	(names  kernel2	kernel3))
+ (names kernel2 kernel3)
+ (modes byte exe))
 
 (alias (name buildbench) (deps kernel2.exe kernel3.exe))
+(alias (name buildbench_byte) (deps kernel2.bc kernel3.bc))

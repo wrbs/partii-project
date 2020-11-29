@@ -2,6 +2,8 @@
 ;; See https://github.com/OCamlPro/ocamlbench-repo
 (executable
  (name chameneos_redux_lwt)
- (libraries lwt.unix))
+ (libraries lwt.unix)
+ (modes byte exe))
 
 (alias (name buildbench) (deps chameneos_redux_lwt.exe))
+(alias (name buildbench_byte) (deps chameneos_redux_lwt.bc))
