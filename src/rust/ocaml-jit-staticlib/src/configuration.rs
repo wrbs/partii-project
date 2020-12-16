@@ -4,12 +4,15 @@
  * is parsed to avoid impacting the runtime and OCaml program\*/
 
 use clap::arg_enum;
+use default_env::default_env;
 use std::env;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
 const PROGRAM_NAME: &str = "ocaml-jit";
 const ENV_VAR_KEY: &str = "JIT_OPTIONS";
+
+const DEFAULT_JIT_OPTIONS: &str = default_env!("DEFAULT_JIT_OPTIONS", "");
 
 arg_enum! {
     #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -55,7 +58,7 @@ pub struct Options {
 
 impl Options {
     pub fn get_from_env() -> Options {
-        let args = env::var(ENV_VAR_KEY).unwrap_or_else(|_| String::from(""));
+        let args = env::var(ENV_VAR_KEY).unwrap_or_else(|_| String::from(DEFAULT_JIT_OPTIONS));
         let mut arg_sections = shell_words::split(&args).unwrap_or_else(|e| {
             eprintln!("Could not parse {} options!", ENV_VAR_KEY);
             eprintln!("Error: {:?}", e);
