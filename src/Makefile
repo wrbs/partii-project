@@ -1,6 +1,8 @@
 # Need to supply this when doing make setup
 PREFIX :=
 
+DEFAULT_JIT_OPTIONS :=
+
 OCAML_DIR := ocaml
 
 RUST_DIR := rust

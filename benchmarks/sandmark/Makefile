@@ -83,10 +83,17 @@ _opam/%: _opam/opam-init/init.sh ocaml-versions/%.json setup_sys_dune
 	mkdir -p dependencies/packages/ocaml/ocaml.$*
 	cp -R dependencies/template/ocaml/* dependencies/packages/ocaml/ocaml.$*/
 	mkdir -p dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*
-	cp -R dependencies/template/ocaml-base-compiler/* \
-	  dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/
-	{ url="$$(jq -r '.url // empty' ocaml-versions/$*.json)"; echo "url { src: \"$$url\" }"; echo "setenv: [ [ ORUN_CONFIG_ocaml_url = \"$$url\" ] ]"; } \
-	  >> dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/opam
+	if [ "$$(jq -r '.jit != null' ocaml-versions/$*.json)" = "true" ]; then \
+		cp -R dependencies/template/jit-ocaml-base-compiler/* \
+		  dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/; \
+		{ url="$$(jq -r '.url // empty' ocaml-versions/$*.json)"; djo="$$(jq -r '.jit' ocaml-versions/$*.json)"; echo "url { src: \"$$url\" }"; echo "setenv: [ [ ORUN_CONFIG_ocaml_url = \"$$url\" ] [ DEFAULT_JIT_OPTIONS = \"$$djo\" ] ]"; } \
+		  >> dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/opam; \
+	else \
+		cp -R dependencies/template/ocaml-base-compiler/* \
+		  dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/; \
+		{ url="$$(jq -r '.url // empty' ocaml-versions/$*.json)"; echo "url { src: \"$$url\" }"; echo "setenv: [ [ ORUN_CONFIG_ocaml_url = \"$$url\" ] ]"; } \
+	  >> dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/opam; \
+	fi
 	$(eval OCAML_CONFIG_OPTION = $(shell jq -r '.configure // empty' ocaml-versions/$*.json))
 	$(eval OCAML_RUN_PARAM     = $(shell jq -r '.runparams // empty' ocaml-versions/$*.json))
 	opam update
