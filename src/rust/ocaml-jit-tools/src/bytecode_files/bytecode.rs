@@ -1,6 +1,6 @@
 use crate::bytecode_files::{ParseFileError, Trailer};
 use byteorder::{LittleEndian, ReadBytesExt};
-use ocaml_jit_shared::{parse_instructions, BytecodeRelativeOffset, Instruction};
+use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction, InstructionIterator};
 use std::fs::File;
 use std::io::BufReader;
 
@@ -26,5 +26,6 @@ pub fn parse_bytecode(
     for _ in 0..(section.length / 4) {
         words.push(section_read.read_i32::<LittleEndian>()?);
     }
-    Ok(parse_instructions(words.iter().copied())?)
+    let instrs: Result<Vec<_>, _> = InstructionIterator::new(words.iter().copied()).collect();
+    Ok(instrs?)
 }

@@ -33,7 +33,7 @@ install:
 	$(MAKE) -C $(OCAML_DIR) install
 
 .PHONY: only_runtime
-runtime_only:
+only_runtime:
 	$(MAKE) cargo_builds
 	$(MAKE) $(RELEASE_COPIED)
 	$(MAKE) -C $(OCAML_DIR)/runtime
