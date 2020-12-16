@@ -97,10 +97,6 @@ impl<I: Iterator<Item = i32>> InstructionIterator<I> {
     }
 
     fn get_next_instr(&mut self) -> Result<Option<Instruction<BytecodeRelativeOffset>>> {
-        if self.at_end() {
-            return Ok(None);
-        }
-
         /*
          * The thing that makes this complicated is that we simplify the bytecode format as we load
          * things. Specifically one original bytecode instruction can correspond to multiple
@@ -118,6 +114,10 @@ impl<I: Iterator<Item = i32>> InstructionIterator<I> {
 
         if let Some(i) = self.next_queued.pop_front() {
             return Ok(Some(i));
+        }
+
+        if self.at_end() {
+            return Ok(None);
         }
 
         let label_def = Instruction::LabelDef(BytecodeRelativeOffset(self.current_position()));
