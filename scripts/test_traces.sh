@@ -4,11 +4,13 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 set -euxo pipefail
 
+source ./toolchain.env
+
 make
 
 PROGRAM=$1
 shift 1
 
-cd src
+cd ${RUST_DIR}
 
-cargo run compare-traces "$@" ../vendor/no-aslr/no-aslr ../test-programs/out/${PROGRAM}.byte
+cargo run compare-traces "$@" ${NO_ASLR_DIR}/no-aslr ${TEST_PROGRAMS_DIR}/out/${PROGRAM}.byte

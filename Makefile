@@ -2,24 +2,27 @@
 
 -include Makefile.shared
 
-OCAML_DIR := ocaml-jit
+OCAML_DIR := src/ocaml
 RELEASE_COPIED := $(OCAML_DIR)/runtime/$(RUST_JIT_RELEASE_LIB)
 
-RUST_DIR := src
+RUST_DIR := src/rust
 
 DEBUG_TARGET := $(RUST_DIR)/target/debug
 RELEASE_TARGET := $(RUST_DIR)/target/debug
 
 STATIC_LIB_FILE := libocaml_jit_staticlib.a
 
-RESOURCES_DIR := test-programs
+TEST_PROGRAMS_DIR := test-programs
 
 NO_ASLR_DIR := vendor/no-aslr
 
 BUILT_DIR := dist
-PREFIX := $(abspath .)/$(BUILT_DIR)
+ROOT_DIR_ABS := $(abspath .)
+PREFIX := $(ROOT_DIR_ABS)/$(BUILT_DIR)
 
 OPAM_PREFIX :=
+
+TOOLCHAIN_FILE := toolchain.env
 
 # Main targets
 # ============
@@ -30,7 +33,7 @@ runtime_only:
 	$(MAKE) $(RELEASE_COPIED)
 	$(MAKE) -C $(OCAML_DIR)/runtime
 	$(MAKE) -C $(OCAML_DIR) install
-	$(MAKE) -C $(RESOURCES_DIR) all
+	$(MAKE) -C $(TEST_PROGRAMS_DIR) all
 	$(MAKE) -C $(NO_ASLR_DIR)
 
 .PHONY: all
@@ -39,7 +42,7 @@ all:
 	$(MAKE) $(RELEASE_COPIED)
 	$(MAKE) -C $(OCAML_DIR)
 	$(MAKE) -C $(OCAML_DIR) install
-	$(MAKE) -C $(RESOURCES_DIR) all
+	$(MAKE) -C $(TEST_PROGRAMS_DIR) all
 	$(MAKE) -C $(NO_ASLR_DIR)
 
 .PHONY: ocamltests
@@ -51,19 +54,26 @@ clean:
 	$(MAKE) -C $(OCAML_DIR) clean
 	rm -rf $(BUILT_DIR)
 	cd $(RUST_DIR) && cargo clean
-	$(MAKE) -C $(RESOURCES_DIR) clean
+	$(MAKE) -C $(TEST_PROGRAMS_DIR) clean
 	rm -f $(RELEASE_COPIED)
 
 .PHONY: fullclean
 fullclean: clean
 	$(MAKE) -C $(OCAML_DIR) distclean
+	rm -f $(TOOLCHAIN_FILE)
 
 .PHONY: setup
-setup: fullclean
+setup: fullclean $(TOOLCHAIN_FILE)
 	@echo $(PREFIX)
 	cd $(OCAML_DIR) && ./configure --enable-rust-jit --prefix=$(PREFIX)
-	echo "BUILT_DIR_ABS=$(PREFIX)" > Makefile.toolchain
 
+.PHONY: $(TOOLCHAIN_FILE)
+$(TOOLCHAIN_FILE):
+	echo "BUILT_DIR=$(PREFIX)" > $(TOOLCHAIN_FILE)
+	echo "RUST_DIR=$(ROOT_DIR_ABS)/$(RUST_DIR)" >> $(TOOLCHAIN_FILE)
+	echo "OCAML_DIR=$(ROOT_DIR_ABS)/$(OCAML_DIR)" >> $(TOOLCHAIN_FILE)
+	echo "TEST_PROGRAMS_DIR=$(ROOT_DIR_ABS)/$(TEST_PROGRAMS_DIR)" >> $(TOOLCHAIN_FILE)
+	echo "NO_ASLR_DIR=$(ROOT_DIR_ABS)/$(NO_ASLR_DIR)" >> $(TOOLCHAIN_FILE)
 
 .PHONY: cargo_builds
 cargo_builds:

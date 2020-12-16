@@ -1,7 +1,7 @@
--include ../Makefile.toolchain
+-include ../toolchain.env
 
-OCAMLC = $(BUILT_DIR_ABS)/bin/ocamlc
-OCAML_JIT_TOOLS = $(BUILT_DIR_ABS)/bin/ocaml-jit-tools
+OCAMLC = $(BUILT_DIR)/bin/ocamlc
+OCAML_JIT_TOOLS = $(BUILT_DIR)/bin/ocaml-jit-tools
 
 SRC_DIR = src
 OUT_DIR = out
@@ -34,7 +34,7 @@ $(OUT_DIR)/%.byte: $(BUILD_DIR)/%.byte | dirs
 	cp $< $@
 
 $(BUILD_DIR)/%.dumpobj: $(OUT_DIR)/%.byte
-	../ocaml-jit/tools/dumpobj $< > $@
+	$(OCAML_DIR)/tools/dumpobj $< > $@
 
 $(OUT_DIR)/%.dis: $(BUILD_DIR)/%.byte $(BUILD_DIR)/%.dumpobj
 	$(OCAML_JIT_TOOLS) process-disassembly --bytecode-file $< --dumpobj-output $(word 2,$^) > $@

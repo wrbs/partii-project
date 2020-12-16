@@ -4,12 +4,14 @@ set -euxo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+source ./toolchain.env
+
 PROGRAMS="arrays exceptions factorial float_fields hello includestruct offsetref ppa strings_and_bytes vect arith_small"
 
 make
 
-cd src
+cd ${RUST_DIR}
 
 for PROGRAM in ${PROGRAMS}; do
-  cargo run compare-traces "$@" ../vendor/no-aslr/no-aslr ../test-programs/out/${PROGRAM}.byte || (echo "!!! Failed on ${PROGRAM}, exiting"; exit 1)
+  cargo run compare-traces "$@" ${NO_ASLR_DIR}/no-aslr ${TEST_PROGRAMS_DIR}/out/${PROGRAM}.byte || (echo "!!! Failed on ${PROGRAM}, exiting"; exit 1)
 done
