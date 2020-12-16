@@ -2,14 +2,16 @@ mod c_primitives;
 mod emit_code;
 mod saved_data;
 
-use ocaml_jit_shared::parse_instructions_from_code_slice;
+use ocaml_jit_shared::InstructionIterator;
 pub use saved_data::{CompilerData, EntryPoint, LongjmpEntryPoint, LongjmpHandler, Section};
 
 pub fn compile(compiler_data: &mut CompilerData, bytecode: &[i32], print_traces: bool) -> usize {
     let section_number = compiler_data.sections.len();
 
-    let parsed_instructions = parse_instructions_from_code_slice(bytecode)
-        .unwrap_or_else(|e| panic!("Could not parse code: {}", e));
+    let parsed_instructions_r: Result<Vec<_>, _> =
+        InstructionIterator::new(bytecode.iter().copied()).collect();
+    let parsed_instructions =
+        parsed_instructions_r.unwrap_or_else(|e| panic!("Could not parse code: {}", e));
 
     let (compiled_code, entrypoint, first_instr) = emit_code::compile_instructions(
         section_number,
