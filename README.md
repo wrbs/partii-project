@@ -44,13 +44,17 @@ multicore processor using
 
 helps a lot.
 
-However, in most development iterations you can probably get away with only
-rebuilding the runtime.
+## During development
+
+After making changes to only the JIT you can rebuild only the runtime componenet of OCaml by running:
+
+    make
 
 ## Using OPAM
 
 To create a switch with the JIT version of the compiler run
 
+    cd src
     opam switch create .
     opam install .
 
@@ -61,19 +65,19 @@ of JIT compilation to replace the OCaml bytecode interpreter.
 
 ### Directory contents
 
-- `ocmal-jit`: a fork of the OCaml compiler's source tree. The bits of
+- `src/ocaml`: a fork of the OCaml compiler's source tree. The bits of
   interest for this project are in:
-  - `ocaml-jit/runtime` - the runtime C library
-- `src`: main Rust source for the project. There are a few different Rust
+  - `src/ocaml/runtime` - the runtime C library
+- `src/rust`: main Rust source for the project. There are a few different Rust
   crates included:
-  - `src/ocaml-jit-shared`: the core crate with the logic, but no interfacing
+  - `src/rust/ocaml-jit-shared`: the core crate with the logic, but no interfacing
     with either the CLI or OCaml runtime
-  - `src/ocaml-jit-staticlib`: the static library that links into the OCaml
+  - `src/rust/ocaml-jit-staticlib`: the static library that links into the OCaml
     runtime providing the JIT
-  - `src/ocaml-jit-tools`: standalone tools for testing and debugging the
+  - `src/rust/ocaml-jit-tools`: standalone tools for testing and debugging the
     core without having to go through the OCaml runtime
 - `docs`: dissertation LaTeX source
-- `resources`: test files
+- `test_programs`: test files
 - `dist`: once you run the setup, this is used as the prefix for OCaml's
   `make install`. You, using `export PATH="$PWD/dist/bin:$PATH` (or absolute
   paths to binaries) and our Makefiles can then use our custom compiler

@@ -11,9 +11,10 @@ conflict-class: "ocaml-core-compiler"
 flags: compiler
 setenv: CAML_LD_LIBRARY_PATH = "%{lib}%/stublibs"
 build: [
-  [make "-j%{jobs}%" "OPAM_PREFIX=%{prefix}%" "opam_build"]
+  [make "PREFIX=%{prefix}%" "setup"]
+  [make "-j%{jobs}%" "all"]
 ]
-install: [make "opam_install"]
+install: [make "install"]
 maintainer: "caml-list@inria.fr"
 homepage: "https://github.com/ocaml/ocaml/"
 bug-reports: "https://github.com/ocaml/ocaml/issues"

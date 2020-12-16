@@ -109,8 +109,7 @@ libasmrunpic_OBJECTS := $(NATIVE_C_SOURCES:.c=_npic.$(O)) \
 # Rust JIT
 
 ifdef USE_RUST_JIT
--include $(ROOTDIR)/../Makefile.shared
-
+RUST_JIT_RELEASE_LIB = libocamljit.a
 RUST_JIT_RELEASE_OBJECT_DIR = jit_objects_release
 libcamlrun_OBJECTS += jit_support_b.o
 
@@ -221,6 +220,7 @@ clean:
 
 .PHONY: distclean
 distclean: clean
+	rm -f $(RUST_JIT_RELEASE_LIB)
 
 # Rust JIT object files
 

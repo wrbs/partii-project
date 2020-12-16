@@ -1,3 +1,0 @@
-# Shared settings
-
-RUST_JIT_RELEASE_LIB = libocamljit.a

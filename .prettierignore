@@ -1,5 +1,6 @@
-ocaml-jit
+src/ocaml
 dist
-src/target
 src/*/target
 .vscode
+_opam
+benchmarks
