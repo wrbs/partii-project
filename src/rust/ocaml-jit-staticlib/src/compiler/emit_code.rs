@@ -9,7 +9,7 @@ use crate::global_data::GlobalData;
 use crate::trace::{print_trace, PrintTraceType};
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
-use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction};
+use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction, InstructionIterator};
 use std::convert::TryInto;
 use std::ffi::{c_void, CStr};
 use std::os::raw::c_char;
@@ -23,13 +23,19 @@ struct CompilerContext {
 
 pub fn compile_instructions(
     section_number: usize,
-    instructions: &[Instruction<BytecodeRelativeOffset>],
     code: &[i32],
     print_traces: bool,
-) -> (ExecutableBuffer, EntryPoint, *const c_void) {
+) -> (
+    ExecutableBuffer,
+    EntryPoint,
+    *const c_void,
+    Option<Vec<Instruction<BytecodeRelativeOffset>>>,
+) {
     let ops = Assembler::new().unwrap();
 
     let labels = vec![None; code.len()];
+
+    let mut instrs = if print_traces { Some(Vec::new()) } else { None };
 
     let mut cc = CompilerContext {
         ops,
@@ -41,8 +47,15 @@ pub fn compile_instructions(
     let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
     let code_base = code.as_ptr();
 
-    for (offset, instruction) in instructions.iter().enumerate() {
-        cc.emit_instruction(instruction, offset, code_base);
+    for (offset, instruction) in InstructionIterator::new(code.iter().copied()).enumerate() {
+        let instruction = instruction.unwrap();
+
+        cc.emit_instruction(&instruction, offset, code_base);
+
+        match &mut instrs {
+            Some(v) => v.push(instruction),
+            None => (),
+        }
     }
 
     cc.emit_shared_code();
@@ -53,7 +66,7 @@ pub fn compile_instructions(
     let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
     let first_instr = buf.ptr(first_instr_offset) as *const c_void;
 
-    (buf, entrypoint, first_instr)
+    (buf, entrypoint, first_instr, instrs)
 }
 
 // Define aliases for the abstract machine registers
@@ -1396,18 +1409,7 @@ impl CompilerContext {
         );
 
         if self.print_traces {
-            oc_dynasm!(self.ops
-                ; push rsi
-                ; sub rsp, 8
-                ; mov rdi, r_accu
-                ; mov rsi, r_env
-                ; mov rdx, r_extra_args
-                ; mov rcx, r_sp
-                ; mov rax, QWORD process_events_trace as i64
-                ; call rax
-                ; add rsp, 8
-                ; pop rsi
-            );
+            self.emit_event(b"process_events\0");
         }
 
         oc_dynasm!(self.ops
@@ -1475,12 +1477,50 @@ impl CompilerContext {
             ; call rax
         );
     }
+
+    fn emit_event(&mut self, message: &'static [u8]) {
+        let message = CStr::from_bytes_with_nul(message).unwrap();
+
+        oc_dynasm!(self.ops
+            ; push rsi
+            ; sub rsp, 8
+            ; mov rdi, QWORD message.as_ptr() as i64
+            ; mov rsi, r_accu
+            ; mov rdx, r_env
+            ; mov rcx, r_extra_args
+            ; mov r8, r_sp
+            ; mov rax, QWORD event_trace as i64
+            ; call rax
+            ; add rsp, 8
+            ; pop rsi
+        );
+    }
 }
 
 extern "C" fn fatal_message(message: *const c_char) {
     unsafe {
         caml_fatal_error(message);
     }
+}
+
+extern "C" fn event_trace(
+    message: *const c_char,
+    accu: u64,
+    env: u64,
+    extra_args: u64,
+    sp: *const Value,
+) {
+    let s = unsafe { CStr::from_ptr(message).to_string_lossy() };
+
+    let mut global_data = GlobalData::get();
+    print_trace(
+        &mut global_data,
+        PrintTraceType::Event(&s),
+        accu,
+        env,
+        extra_args,
+        sp,
+    );
 }
 
 extern "C" fn bytecode_trace(
@@ -1513,21 +1553,10 @@ extern "C" fn instruction_trace(
     let section = global_data.compiler_data.sections[section_number as usize]
         .as_ref()
         .expect("Section already released");
-    let instruction = &section.instructions[pc as usize].clone();
+    let instruction = &section.instructions.as_ref().unwrap()[pc as usize].clone();
     print_trace(
         &mut global_data,
         PrintTraceType::Instruction(instruction),
-        accu,
-        env,
-        extra_args,
-        sp,
-    );
-}
-extern "C" fn process_events_trace(accu: u64, env: u64, extra_args: u64, sp: *const Value) {
-    let mut global_data = GlobalData::get();
-    print_trace(
-        &mut global_data,
-        PrintTraceType::Event("process_events"),
         accu,
         env,
         extra_args,

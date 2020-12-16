@@ -25,7 +25,8 @@ pub struct Section {
     pub section_number: usize,
     pub base_address: usize,
     pub length: usize,
-    pub instructions: Vec<Instruction<BytecodeRelativeOffset>>,
+    // This is only filled when it is needed for traces to avoid wasting space
+    pub instructions: Option<Vec<Instruction<BytecodeRelativeOffset>>>,
     pub compiled_code: ExecutableBuffer,
     pub entrypoint: EntryPoint,
     pub first_instruction_location: usize,
@@ -93,7 +94,7 @@ impl Section {
         bytecode: &[i32],
         compiled_code: ExecutableBuffer,
         entrypoint: EntryPoint,
-        instructions: Vec<Instruction<BytecodeRelativeOffset>>,
+        instructions: Option<Vec<Instruction<BytecodeRelativeOffset>>>,
         first_instruction_location: usize,
     ) -> Section {
         Section {
