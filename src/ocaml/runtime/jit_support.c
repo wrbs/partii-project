@@ -27,7 +27,7 @@
 #undef Alloc_small_origin
 #define Alloc_small_origin CAML_FROM_CAML
 #define Setup_for_gc \
-  { state->sp -= 3; state->sp[0] = state->accu; state->sp[1] = state->env; \
+  { state->sp -= 3; state->sp[0] = state->accu; state->sp[1] = state->env; state->sp[2] = Val_unit; \
       Caml_state->extern_sp = state->sp; }
 #define Restore_after_gc \
   { state->sp = Caml_state->extern_sp; state->accu = state->sp[0]; state->env = state->sp[1]; state->sp += 3; }
