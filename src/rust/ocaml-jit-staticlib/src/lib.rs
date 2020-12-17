@@ -47,7 +47,11 @@ pub fn on_bytecode_loaded(code: &[i32]) -> *const c_void {
             .unwrap();
         on_section_compiled(&global_data, section);
 
-        section.first_instruction_location as *const c_void
+        if global_data.options.use_jit {
+            section.first_instruction_location as *const c_void
+        } else {
+            code.as_ptr() as *const c_void
+        }
     } else {
         code.as_ptr() as *const c_void
     }

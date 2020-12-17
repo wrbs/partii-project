@@ -10,3 +10,4 @@ runs_dune.inc
 .ipynb_checkpoints
 *_bytecode_and_native.json
 *_bytecode.json
+*_ci.json

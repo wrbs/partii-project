@@ -29,15 +29,16 @@ CONTINUE_ON_OPAM_INSTALL_ERROR ?= true
 WRAPPER = $(patsubst run_%,%,$(RUN_BENCH_TARGET))
 
 PACKAGES = \
-	cpdf conf-pkg-config conf-zlib bigstringaf decompress camlzip menhirLib \
-	menhir minilight base stdio dune-private-libs dune-configurator camlimages \
-	yojson lwt zarith integers uuidm react ocplib-endian nbcodec checkseum \
-	sexplib0 irmin-mem cubicle conf-findutils
+ 	cpdf conf-pkg-config conf-zlib bigstringaf decompress camlzip menhirLib \
+ 	menhir minilight base stdio dune-private-libs dune-configurator camlimages \
+ 	yojson lwt zarith integers uuidm react ocplib-endian nbcodec checkseum \
+ 	sexplib0 irmin-mem cubicle conf-findutils
 
 ifeq ($(findstring multibench,$(BUILD_BENCH_TARGET)),multibench)
 	PACKAGES += lockfree kcas domainslib ctypes.0.14.0+multicore
 else
-	PACKAGES += ctypes.0.14.0+stock frama-c coq fraplib alt-ergo js_of_ocaml-compiler
+	PACKAGES += ctypes.0.14.0+stock # frama-c coq fraplib alt-ergo js_of_ocaml-compiler
+	# PACKAGES += ctypes.0.14.0+stock frama-c coq fraplib alt-ergo js_of_ocaml-compiler
 endif
 
 DEPENDENCIES = libgmp-dev libdw-dev jq python3-pip pkg-config m4 # Ubuntu
@@ -86,8 +87,13 @@ _opam/%: _opam/opam-init/init.sh ocaml-versions/%.json setup_sys_dune
 	if [ "$$(jq -r '.jit != null' ocaml-versions/$*.json)" = "true" ]; then \
 		cp -R dependencies/template/jit-ocaml-base-compiler/* \
 		  dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/; \
-		{ url="$$(jq -r '.url // empty' ocaml-versions/$*.json)"; djo="$$(jq -r '.jit' ocaml-versions/$*.json)"; echo "url { src: \"$$url\" }"; echo "setenv: [ [ ORUN_CONFIG_ocaml_url = \"$$url\" ] [ DEFAULT_JIT_OPTIONS = \"$$djo\" ] ]"; } \
-		  >> dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/opam; \
+		{ \
+		  url="$$(jq -r '.url // empty' ocaml-versions/$*.json)"; \
+  		  djo="$$(jq -r '.jit' ocaml-versions/$*.json)"; \
+  		  echo "url { src: \"$$url\" }"; \
+  		  echo "setenv: [ [ ORUN_CONFIG_ocaml_url = \"$$url\" ] ]"; \
+  		  echo "build-env: [ [ DEFAULT_JIT_OPTIONS = \"$$djo\" ] ]"; \
+  		} >> dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/opam; \
 	else \
 		cp -R dependencies/template/ocaml-base-compiler/* \
 		  dependencies/packages/ocaml-base-compiler/ocaml-base-compiler.$*/; \
@@ -118,7 +124,7 @@ ocaml-versions/%.bench: check_url ocaml-versions/%.json _opam/% .FORCE
 	   for i in `seq 1 $(ITER)`; do \
 	     echo "(context (opam (switch $*) (name $*_$$i)))"; \
 	   done } > ocaml-versions/.workspace.$*
-	opam exec --switch $* -- cp pausetimes/* $$(opam config var bin)
+	opam exec --switch $* -- cp pausetimes/* $$(opam config --switch $* var bin)
 	opam exec --switch $* -- rungen _build/$*_1 $(RUN_CONFIG_JSON) > runs_dune.inc;
 	opam exec --switch $* -- dune build --profile=release --workspace=ocaml-versions/.workspace.$* @$(BUILD_BENCH_TARGET);
 	@{ if [ "$(BUILD_ONLY)" -eq 0 ]; then												\
