@@ -6,7 +6,7 @@ OCAML_DIR := ocaml
 RUST_DIR := rust
 
 DEBUG_TARGET := $(RUST_DIR)/target/debug
-RELEASE_TARGET := $(RUST_DIR)/target/debug
+RELEASE_TARGET := $(RUST_DIR)/target/release
 
 STATIC_LIB_FILE := libocaml_jit_staticlib.a
 RELEASE_COPIED := $(OCAML_DIR)/runtime/libocamljit.a
@@ -42,7 +42,6 @@ tests:
 
 .PHONY: cargo_builds
 cargo_builds:
-	cd $(RUST_DIR) && cargo build --all
 	cd $(RUST_DIR) && cargo build --all --release
 
 $(RELEASE_COPIED): $(RELEASE_TARGET)/$(STATIC_LIB_FILE)

@@ -59,7 +59,6 @@ pub struct Options {
 impl Options {
     pub fn get_from_env() -> Options {
         let args = env::var(ENV_VAR_KEY).unwrap_or_else(|_| String::from(DEFAULT_JIT_OPTIONS));
-        println!("{}", DEFAULT_JIT_OPTIONS);
         let mut arg_sections = shell_words::split(&args).unwrap_or_else(|e| {
             eprintln!("Could not parse {} options!", ENV_VAR_KEY);
             eprintln!("Error: {:?}", e);
