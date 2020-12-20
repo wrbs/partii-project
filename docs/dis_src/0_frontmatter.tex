@@ -1,17 +1,27 @@
+% !TeX root = ../dissertation.tex
 % Title page
 
-\newcommand{\thedate}{1 January 2020}
+\newcommand{\thedate}{14 May 2021}
 
-\title{Dissertation Title}
-\subtitle{Computer Science Tripos Part II Project}
-\author{William Robson, Selwyn College}
-\date{\thedate}
+\begin{titlepage}
 
-\maketitle
+    \rightline{\LARGE \textbf{William Robson}}
 
-\cleardoublepage
+    \vspace*{60mm}
 
-\setcounter{page}{1}
+    \begin{center}
+        \Huge
+        \textbf{A JIT compiler for OCaml bytecode} \\[5mm]
+        \Large
+        Computer Science Tripos - Part II \\[5mm]
+        Selwyn College \\[5mm]
+        \thedate
+    \end{center}
+
+    \cleardoublepage
+
+\end{titlepage}
+
 \pagenumbering{roman}
 
 \section*{Proforma}
@@ -21,11 +31,11 @@
 \begin{tabular}{ll}
     Name: & \textbf{William Robson} \\
     College: & \textbf{Selwyn College} \\
-    Title: & \textbf{This is the title} \\
+    Title: & \textbf{A JIT compiler for OCAml bytecode} \\
     Examination: & \textbf{Computer Science Tripos Part II, 2021} \\
-    Word Count: & \textbf{1234} \\
-    Project Originator: & \textbf{A Person} \\
-    Project Supervisor: & \textbf{A Person} \\
+    Word Count: & \textbf{TODO} \\
+    Project Originator: & \textbf{William Robson \& Timothy Jones} \\
+    Project Supervisor: & \textbf{Timothy Jones} \\
 \end{tabular}
 }
 
@@ -47,8 +57,6 @@ This was difficult
 
 I, William Robson of Selwyn College, being a candidate for Part II of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial extent for a comparable purpose. 
 
-\vspace{1cm}
-
 Signed William Robson
 
 Date \thedate 
@@ -67,5 +75,3 @@ Something else
 \cleardoublepage
 \setcounter{page}{1}
 \pagenumbering{arabic}
-
-\chapter{Introduction}
