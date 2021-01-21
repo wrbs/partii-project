@@ -1,14 +1,18 @@
 use std::fs::File;
-use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};
-use io::{Read, Seek};
+use std::io::{Read, Seek, SeekFrom};
 
 use crate::bytecode_files::ParseFileError;
 
 pub const EXEC_MAGIC: &[u8] = b"Caml1999X028";
 pub const EXEC_MAGIC_LENGTH: usize = EXEC_MAGIC.len();
 pub const TRAILER_LENGTH: usize = 4 + EXEC_MAGIC_LENGTH;
+
+pub const CODE_SECTION: &str = "CODE";
+pub const PRIM_SECTION: &str = "PRIM";
+pub const DATA_SECTION: &str = "DATA";
+pub const SYMB_SECTION: &str = "SYMB";
 
 #[derive(Debug, Copy, Clone, Default)]
 pub struct SectionEntry {
@@ -23,7 +27,7 @@ pub struct Trailer {
 }
 
 pub fn parse_trailer(f: &mut File) -> Result<Trailer, ParseFileError> {
-    f.seek(io::SeekFrom::End(-(TRAILER_LENGTH as i64)))?;
+    f.seek(SeekFrom::End(-(TRAILER_LENGTH as i64)))?;
     let num_sections = f.read_u32::<BigEndian>()? as usize;
 
     // Check magic bytes at end
@@ -37,7 +41,7 @@ pub fn parse_trailer(f: &mut File) -> Result<Trailer, ParseFileError> {
 
     // Read in the section header
     let toc_size = num_sections as usize * 8;
-    f.seek(io::SeekFrom::End(-((TRAILER_LENGTH + toc_size) as i64)))?;
+    f.seek(SeekFrom::End(-((TRAILER_LENGTH + toc_size) as i64)))?;
 
     let mut sections = Vec::with_capacity(num_sections);
 
@@ -92,7 +96,7 @@ impl Trailer {
 
 impl SectionEntry {
     pub fn seek_to(&self, f: &mut File) -> Result<(), ParseFileError> {
-        f.seek(io::SeekFrom::End(-(self.offset_from_end as i64)))?;
+        f.seek(SeekFrom::End(-(self.offset_from_end as i64)))?;
 
         Ok(())
     }
@@ -104,6 +108,13 @@ impl SectionEntry {
         self.seek_to(f)?;
 
         Ok(ReadAtMost::new(f, self.length))
+    }
+
+    pub fn read_section_vec(&self, f: &mut File) -> Result<Vec<u8>, ParseFileError> {
+        let mut result = Vec::new();
+        self.read_section(f)?.read_to_end(&mut result)?;
+
+        Ok(result)
     }
 }
 
@@ -122,7 +133,7 @@ impl<R: Read> ReadAtMost<R> {
 }
 
 impl<R: Read> Read for ReadAtMost<R> {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         let to_read = std::cmp::min(buf.len(), self.to_read);
         let bytes_read = self.source.read(&mut buf[..to_read])?;
 

@@ -1,8 +1,7 @@
-use crate::utils::die;
+use anyhow::{Context, Result};
 use colored::Colorize;
 use ocaml_jit_shared::{compare_traces, TraceEntry};
 use os_pipe::{pipe, PipeReader};
-use std::error::Error;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -26,13 +25,7 @@ pub struct Options {
     other_args: Vec<OsString>,
 }
 
-type Result<O, E = Box<dyn Error>> = std::result::Result<O, E>;
-
-pub fn run(options: Options) {
-    let () = run_exn(options).unwrap_or_else(die);
-}
-
-fn run_exn(options: Options) -> Result<()> {
+pub fn run(options: Options) -> Result<()> {
     let mut retry_attempts = 3;
 
     while retry_attempts > 0 {
@@ -72,7 +65,8 @@ fn execute(options: &Options) -> Result<TestResult> {
         &ocaml_run_params,
         false,
         !options.quiet,
-    )?;
+    )
+    .context("Problem starting jit program")?;
     let mut interpreted = RunningProgram::new(
         path,
         "-t --trace-format JSON",
@@ -80,7 +74,8 @@ fn execute(options: &Options) -> Result<TestResult> {
         &ocaml_run_params,
         true,
         !options.quiet,
-    )?;
+    )
+    .context("Problem starting non-jit program")?;
 
     let mut first_line_passed = false;
 

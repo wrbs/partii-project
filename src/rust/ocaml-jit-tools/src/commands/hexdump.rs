@@ -1,15 +1,13 @@
 use crate::bytecode_files::trailer::{parse_trailer, TRAILER_LENGTH};
-use crate::utils::die;
+use anyhow::{bail, Context, Result};
 use colored::Colorize;
 use pretty_hex::PrettyHex;
 use prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE;
 use prettytable::Table;
-use std::error::Error;
 use std::fs::File;
 use std::io;
 use std::io::{Read, Seek};
 use std::path::PathBuf;
-use std::process::exit;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -17,10 +15,6 @@ use structopt::StructOpt;
 pub struct Options {
     #[structopt(parse(from_os_str))]
     input: PathBuf,
-}
-
-pub fn run(options: Options) {
-    let () = run_exn(options).unwrap_or_else(die);
 }
 
 struct ParsedSection {
@@ -37,10 +31,10 @@ impl ParsedSection {
     }
 }
 
-fn run_exn(options: Options) -> Result<(), Box<dyn Error>> {
+pub fn run(options: Options) -> Result<()> {
     let mut f = File::open(&options.input)?;
     let file_size = options.input.metadata()?.len() as usize;
-    let trailer = parse_trailer(&mut f).unwrap_or_else(die);
+    let trailer = parse_trailer(&mut f).context("Problem parsing trailer")?;
 
     // Check that the size adds up
     let sum_of_lengths: usize = trailer.sections.iter().map(|entry| entry.length).sum();
@@ -49,12 +43,11 @@ fn run_exn(options: Options) -> Result<(), Box<dyn Error>> {
     let content_size = sum_of_lengths + toc_size + TRAILER_LENGTH;
 
     if content_size > file_size {
-        eprintln!(
+        bail!(
             "File too small: expected at least {} from the trailer but the file is only {}",
-            content_size, file_size
+            content_size,
+            file_size
         );
-
-        exit(1);
     }
 
     let pre_content_size = file_size - content_size;

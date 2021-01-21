@@ -1,3 +1,4 @@
+pub mod clever_dis;
 pub mod compare_traces;
 pub mod disassembler;
 pub mod hexdump;
