@@ -1,8 +1,9 @@
-use crate::utils::die;
 use colored::Colorize;
 
-use crate::bytecode_files::{parse_bytecode_file, BytecodeFile};
+use crate::bytecode_files::{parse_bytecode_file, BytecodeFile, MLValue};
+use anyhow::{Context, Result};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 use structopt::clap::arg_enum;
@@ -13,7 +14,9 @@ arg_enum! {
     enum ShowSections {
         All,
         Instructions,
-        Primitives
+        Primitives,
+        GlobalData,
+        SymbolTable,
     }
 }
 
@@ -33,24 +36,37 @@ pub struct Options {
     input: PathBuf,
 }
 
-pub fn run(options: Options) {
-    let mut f = File::open(options.input).unwrap_or_else(die);
+pub fn run(options: Options) -> Result<()> {
+    let mut f = File::open(options.input).context("Problem opening input file")?;
 
-    let bcf = parse_bytecode_file(&mut f).unwrap_or_else(die);
+    let bcf = parse_bytecode_file(&mut f).context("Problem parsing bytecode file")?;
 
     if options.show.should_show(&ShowSections::Instructions) {
-        show_instructions(&bcf);
+        show_instructions(&bcf)?;
     }
 
     if options.show.should_show(&ShowSections::Primitives) {
         show_primitives(&bcf.primitives);
+        println!();
     }
+
+    if options.show.should_show(&ShowSections::GlobalData) {
+        show_global_data(&bcf.global_data);
+        println!();
+    }
+
+    if options.show.should_show(&ShowSections::SymbolTable) {
+        show_symbol_table(&bcf.symbol_table);
+    }
+
+    Ok(())
 }
 
-fn show_instructions(bcf: &BytecodeFile) {
+fn show_instructions(bcf: &BytecodeFile) -> Result<()> {
     println!("{}", "Instructions:".red().bold());
     let mut instruction_count = None;
-    for instruction in bcf.instructions.iter() {
+
+    for instruction in bcf.parse_instructions()?.iter() {
         if let Instruction::LabelDef(offset) = instruction {
             if instruction_count != None {
                 println!();
@@ -67,6 +83,10 @@ fn show_instructions(bcf: &BytecodeFile) {
             show_instruction(instruction);
         }
     }
+
+    println!();
+
+    Ok(())
 }
 
 fn show_instruction(instruction: &Instruction<BytecodeRelativeOffset>) {
@@ -75,8 +95,44 @@ fn show_instruction(instruction: &Instruction<BytecodeRelativeOffset>) {
 
 fn show_primitives(primitives: &[String]) {
     println!("{}", "Primitives:".red().bold());
-    for primitive in primitives {
-        println!("{}", primitive)
+    let n = primitives.len();
+    let width = (n as f32).log10() as usize;
+
+    for (index, primitive) in primitives.iter().enumerate() {
+        println!("{:width$} {}", index, primitive, width = width);
     }
-    println!("{}", format!("count: {}", primitives.len()).bright_black());
+    println!("{}", format!("count: {}", n).bright_black());
+}
+
+fn show_global_data(global_data: &MLValue) {
+    println!("{}", "Global data:".red().bold());
+    match global_data {
+        MLValue::Block { tag, items } => {
+            println!("Tag: {}", tag);
+            let n = items.len();
+            let width = (n as f32).log10() as usize;
+
+            for (index, value) in items.iter().enumerate() {
+                println!("{:width$} {}", index, value, width = width);
+            }
+
+            println!("{}", format!("count: {}", n).bright_black());
+        }
+        _ => println!("Not a block as expected - instead {}", global_data),
+    }
+}
+
+fn show_symbol_table(symbol_table: &HashMap<usize, String>) {
+    println!("{}", "Symbol table:".red().bold());
+    let mut entries: Vec<(usize, &str)> =
+        symbol_table.iter().map(|(n, s)| (*n, s.as_str())).collect();
+    entries.sort();
+
+    let n = entries.len();
+    let width = (n as f32).log10() as usize;
+
+    for (index, mapping) in entries {
+        println!("{:width$} {}", index, mapping, width = width);
+    }
+    println!("{}", format!("count: {}", n).bright_black());
 }

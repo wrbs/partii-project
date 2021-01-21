@@ -1,7 +1,6 @@
 use crate::bytecode_files::parse_bytecode_file;
-use crate::utils::die;
+use anyhow::{anyhow, bail, Result};
 use ocaml_jit_shared::Instruction;
-use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use std::iter::Peekable;
@@ -18,13 +17,7 @@ pub struct Options {
     dumpobj_output: PathBuf,
 }
 
-type Result<O, E = Box<dyn Error>> = std::result::Result<O, E>;
-
-pub fn run(options: Options) {
-    let () = run_exn(options).unwrap_or_else(die);
-}
-
-fn run_exn(options: Options) -> Result<()> {
+pub fn run(options: Options) -> Result<()> {
     let mut bcf_f = File::open(&options.bytecode_file)?;
     let bcf = parse_bytecode_file(&mut bcf_f)?;
 
@@ -32,12 +25,12 @@ fn run_exn(options: Options) -> Result<()> {
     // Ignore the first line
     let mut lines = dumpobj_f.lines().peekable();
 
-    let _ = lines.next().ok_or("No first line")??;
+    lines.next().ok_or(anyhow!("No first line"))??;
 
     let mut dumpobj_rest = String::new();
     let mut first = true;
     let mut extra_newline = false;
-    for instruction in bcf.instructions.iter() {
+    for instruction in bcf.parse_instructions()?.iter() {
         if let Instruction::LabelDef(offset) = instruction {
             print!("\n{}", dumpobj_rest);
             if extra_newline {
@@ -48,9 +41,7 @@ fn run_exn(options: Options) -> Result<()> {
             print!("{:<10} {} -> ", dumpobj_offset, dumpobj_output);
 
             if offset.0 != dumpobj_offset {
-                return Err(
-                    format!("Invalid offsets: {} != {}", dumpobj_output, dumpobj_output).into(),
-                );
+                bail!("Invalid offsets: {} != {}", dumpobj_output, dumpobj_output);
             }
             first = true;
             extra_newline = false;
@@ -84,13 +75,13 @@ fn run_exn(options: Options) -> Result<()> {
 }
 
 fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>) -> Result<(usize, String, String)> {
-    let line = lines.next().ok_or("No first line")??;
+    let line = lines.next().ok_or(anyhow!("No first line"))??;
 
     let trimmed = line.trim();
     let mut sections = trimmed.splitn(2, ' ');
-    let offset = sections.next().ok_or("No offset for line")?;
+    let offset = sections.next().ok_or(anyhow!("No offset for line"))?;
     let offset: usize = offset.parse()?;
-    let dumpobj_output = String::from(sections.next().ok_or("No rest for line")?.trim());
+    let dumpobj_output = String::from(sections.next().ok_or(anyhow!("No rest for line"))?.trim());
 
     let mut rest = String::new();
     if dumpobj_output.starts_with("SWITCH") {
@@ -103,7 +94,9 @@ fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>) -> Result<(usize, String
             };
             if problem {
                 // Parse the error we found
-                lines.next().unwrap()?;
+                lines
+                    .next()
+                    .ok_or(anyhow!("Cannot get next line for problem"))??;
             }
 
             if let Some(l) = lines.peek() {

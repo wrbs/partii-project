@@ -1,8 +1,8 @@
 mod bytecode_files;
 mod commands;
-mod utils;
 
-use commands::{compare_traces, disassembler, hexdump, process_disassembly};
+use anyhow::{Context, Result};
+use commands::{clever_dis, compare_traces, disassembler, hexdump, process_disassembly};
 
 #[macro_use]
 extern crate prettytable;
@@ -18,10 +18,11 @@ enum BaseCli {
     Hexdump(hexdump::Options),
     CompareTraces(compare_traces::Options),
     ProcessDisassembly(process_disassembly::Options),
+    CleverDis(clever_dis::Options),
 }
 
-fn main() {
-    setup_pipes();
+fn main() -> Result<()> {
+    setup_pipes()?;
 
     let subcommand = BaseCli::from_args();
     match subcommand {
@@ -29,19 +30,21 @@ fn main() {
         BaseCli::Hexdump(opts) => hexdump::run(opts),
         BaseCli::CompareTraces(opts) => compare_traces::run(opts),
         BaseCli::ProcessDisassembly(opts) => process_disassembly::run(opts),
+        BaseCli::CleverDis(opts) => clever_dis::run(opts),
     }
 }
 
 // stop broken pipe errors for these tools
-fn setup_pipes() {
+fn setup_pipes() -> Result<()> {
     #[cfg(target_family = "unix")]
     {
         use nix::sys::signal;
 
         unsafe {
-            if let Err(e) = signal::signal(signal::SIGPIPE, signal::SigHandler::SigDfl) {
-                eprintln!("Error setting up sigpipe handler: {}", e.to_string());
-            }
+            signal::signal(signal::SIGPIPE, signal::SigHandler::SigDfl)
+                .context("Failed to set up broken pipe handler")?;
         }
     }
+
+    Ok(())
 }
