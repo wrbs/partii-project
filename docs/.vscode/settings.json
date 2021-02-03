@@ -23,5 +23,18 @@
             ],
             "env": {}
         },
+    ],
+    "cSpell.language": "en-GB",
+    "cSpell.words": [
+        "Sandmark",
+        "aslr",
+        "bytecode",
+        "caml",
+        "krishnaswami",
+        "neel",
+        "o",
+        "speedup",
+        "speedups",
+        "toplevel"
     ]
 }
