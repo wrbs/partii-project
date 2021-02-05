@@ -13,6 +13,7 @@ pub const CODE_SECTION: &str = "CODE";
 pub const PRIM_SECTION: &str = "PRIM";
 pub const DATA_SECTION: &str = "DATA";
 pub const SYMB_SECTION: &str = "SYMB";
+pub const DBUG_SECTION: &str = "DBUG";
 
 #[derive(Debug, Copy, Clone, Default)]
 pub struct SectionEntry {

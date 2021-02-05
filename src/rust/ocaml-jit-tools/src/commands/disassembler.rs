@@ -1,6 +1,6 @@
 use colored::Colorize;
 
-use crate::bytecode_files::{parse_bytecode_file, BytecodeFile, MLValue};
+use crate::bytecode_files::{parse_bytecode_file, BytecodeFile, DebugInfo, MLValue};
 use anyhow::{Context, Result};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 use std::collections::HashMap;
@@ -17,6 +17,7 @@ arg_enum! {
         Primitives,
         GlobalData,
         SymbolTable,
+        DebugEvents,
     }
 }
 
@@ -57,6 +58,12 @@ pub fn run(options: Options) -> Result<()> {
 
     if options.show.should_show(&ShowSections::SymbolTable) {
         show_symbol_table(&bcf.symbol_table);
+        println!();
+    }
+
+    if options.show.should_show(&ShowSections::DebugEvents) {
+        show_debug_events(&bcf.debug_events);
+        println!();
     }
 
     Ok(())
@@ -135,4 +142,30 @@ fn show_symbol_table(symbol_table: &HashMap<usize, String>) {
         println!("{:width$} {}", index, mapping, width = width);
     }
     println!("{}", format!("count: {}", n).bright_black());
+}
+
+fn show_debug_events(debug_events: &Option<DebugInfo>) {
+    println!("{}", "Symbol table:".red().bold());
+    let events = match debug_events {
+        Some(e) => e,
+        None => {
+            println!("{}", "No debug events included in bytecode".bright_black());
+            return;
+        }
+    };
+
+    for el in &events.event_lists {
+        println!("Orig: {}", el.orig);
+        println!("Entries:");
+        for entry in &el.entries {
+            println!("- {}", entry);
+        }
+        println!("Absolute dirs: {}", el.absolute_dirs);
+        println!();
+    }
+
+    println!(
+        "{}",
+        format!("count: {}", events.event_lists.len()).bright_black()
+    );
 }

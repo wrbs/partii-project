@@ -1356,7 +1356,8 @@ impl CompilerContext {
                 self.emit_fatal_error(b"Unimplemented: Break\0");
             }
             Instruction::Event => {
-                self.emit_fatal_error(b"Unimplemented: Break\0");
+                // Events shouldn't ever be emitted in the current compiler version
+                // but in any case it's a no-op
             }
         }
 

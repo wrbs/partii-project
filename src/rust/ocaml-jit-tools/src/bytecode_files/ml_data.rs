@@ -87,10 +87,21 @@ const CODE_CUSTOM_FIXED: u8 = 0x19;
 
 const OBJECT_TAG: u8 = 248;
 
+struct Header {
+    data_len: usize,
+    num_objects: usize,
+    whsize: usize,
+}
+
 pub fn input_value<R: Read>(f: &mut R) -> Result<MLValue> {
+    let _ = parse_header(f)?;
+    read_value(f)
+}
+
+fn parse_header<R: Read>(f: &mut R) -> Result<Header> {
     let magic = f.read_u32::<BigEndian>()?;
 
-    let (_data_len, _num_objects, _whsize) = match magic {
+    let (data_len, num_objects, whsize) = match magic {
         INTEXT_MAGIC_NUMBER_BIG => {
             f.read_u32::<BigEndian>()?;
             let data_len = f.read_u64::<BigEndian>()? as usize;
@@ -112,7 +123,40 @@ pub fn input_value<R: Read>(f: &mut R) -> Result<MLValue> {
         }
     };
 
-    read_value(f)
+    Ok(Header {
+        data_len,
+        num_objects,
+        whsize,
+    })
+}
+
+// The recursive solution below stack-overflows on large lists
+// To fix this hackily, I've special cased lists
+// If I need to do something more complicated I should probably come back and make
+// this more similar to the C code (with unrolled recursion and an explicit stack, and using
+// Rc wrappers for heap allocation
+pub fn input_list<R: Read>(f: &mut R) -> Result<Vec<MLValue>> {
+    let _ = parse_header(f)?;
+    let mut result = vec![];
+
+    loop {
+        let code = f.read_u8()?;
+        match code {
+            // Small block, tag = 0, length = 2
+            0xa0 => {
+                result.push(read_value(f)?);
+            }
+            // Small int value = 0 (represents [])
+            0x40 => {
+                break;
+            }
+            _ => {
+                bail!("Unexpected code for list: {}", code);
+            }
+        }
+    }
+
+    Ok(result)
 }
 
 fn read_value<R: Read>(f: &mut R) -> Result<MLValue> {
