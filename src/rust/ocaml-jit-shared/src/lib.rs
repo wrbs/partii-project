@@ -1,5 +1,6 @@
 mod instructions;
 mod opcodes;
+mod primitives;
 mod trace;
 
 pub use instructions::*;

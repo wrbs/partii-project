@@ -291,6 +291,8 @@ version = "0.1.0"
 dependencies = [
  "colored",
  "serde",
+ "strum",
+ "strum_macros",
  "thiserror",
 ]
 
@@ -527,6 +529,24 @@ checksum = "5e2513111825077552a6751dfad9e11ce0fba07d7276a3943a037d7e93e64c5f"
 dependencies = [
  "heck",
  "proc-macro-error",
+ "proc-macro2 1.0.19",
+ "quote 1.0.7",
+ "syn 1.0.40",
+]
+
+[[package]]
+name = "strum"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7318c509b5ba57f18533982607f24070a55d353e90d4cae30c467cdb2ad5ac5c"
+
+[[package]]
+name = "strum_macros"
+version = "0.20.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee8bc6b87a5112aeeab1f4a9f7ab634fe6cbefc4850006df31267f4cfb9e3149"
+dependencies = [
+ "heck",
  "proc-macro2 1.0.19",
  "quote 1.0.7",
  "syn 1.0.40",

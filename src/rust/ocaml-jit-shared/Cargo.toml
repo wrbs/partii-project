@@ -10,3 +10,5 @@ edition = "2018"
 thiserror = "1.0"
 serde = {version = "1.0", features = ["derive"]}
 colored = "2"
+strum = "0.20"
+strum_macros = "0.20"
