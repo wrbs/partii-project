@@ -16,8 +16,8 @@ pub struct BytecodeFile {
 
 pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile, ParseFileError> {
     let trailer = trailer::parse_trailer(f)?;
-    let instructions = bytecode::parse_bytecode(f, &trailer)?;
     let primitives = primitives::parse_primitives(f, &trailer)?;
+    let instructions = bytecode::parse_bytecode(f, &trailer, &primitives)?;
 
     Ok(BytecodeFile {
         trailer,

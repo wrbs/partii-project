@@ -5,6 +5,7 @@ mod trace;
 
 pub use instructions::*;
 pub use opcodes::*;
+pub use primitives::*;
 pub use trace::*;
 
 use serde::{Deserialize, Serialize};

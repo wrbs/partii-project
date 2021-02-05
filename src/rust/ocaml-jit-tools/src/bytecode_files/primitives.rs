@@ -6,7 +6,7 @@ const PRIM_SECTION: &str = "PRIM";
 
 pub fn parse_primitives(f: &mut File, trailer: &Trailer) -> Result<Vec<String>, ParseFileError> {
     let section = match trailer.find_section(PRIM_SECTION) {
-        None => return Ok(Vec::new()),
+        None => return Ok(vec![]),
         Some(s) => s,
     };
 

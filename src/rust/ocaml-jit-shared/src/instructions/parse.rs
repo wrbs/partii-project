@@ -6,13 +6,13 @@ use std::iter::Peekable;
 use thiserror::Error;
 
 pub trait PrimitiveLookup {
-    fn get_primitive(&self, primitive_id: usize) -> Option<Primitive>;
+    fn get_primitive(&self, primitive_id: u32) -> Option<Primitive>;
 }
 
 pub struct EmptyPrimitiveLookup();
 
 impl PrimitiveLookup for EmptyPrimitiveLookup {
-    fn get_primitive(&self, primitive_id: usize) -> Option<Primitive> {
+    fn get_primitive(&self, _primitive_id: u32) -> Option<Primitive> {
         None
     }
 }
@@ -116,6 +116,27 @@ impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
         }
 
         Ok(result)
+    }
+
+    fn get_primitive(
+        &self,
+        primitive_id: u32,
+        arity: usize,
+    ) -> Result<Option<Instruction<BytecodeRelativeOffset>>> {
+        match self.primitives.get_primitive(primitive_id) {
+            None => Ok(None),
+            Some(primitive) => {
+                if primitive.arity() == arity {
+                    Ok(Some(Instruction::Primitive(primitive)))
+                } else {
+                    Err(InstructionParseError::WrongArity {
+                        primitive,
+                        expected: primitive.arity(),
+                        actual: arity,
+                    })
+                }
+            }
+        }
     }
 
     fn get_next_instr(&mut self) -> Result<Option<Instruction<BytecodeRelativeOffset>>> {
@@ -384,12 +405,37 @@ impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
 
             Opcode::GetDynMet => Instruction::GetDynMet,
 
-            Opcode::CCall1 => Instruction::CCall1(self.u32()?),
-            Opcode::CCall2 => Instruction::CCall2(self.u32()?),
-            Opcode::CCall3 => Instruction::CCall3(self.u32()?),
-            Opcode::CCall4 => Instruction::CCall4(self.u32()?),
-            Opcode::CCall5 => Instruction::CCall5(self.u32()?),
-            Opcode::CCallN => Instruction::CCallN(self.u32()?, self.u32()?),
+            Opcode::CCall1 => {
+                let primitive_id = self.u32()?;
+                self.get_primitive(primitive_id, 1)?
+                    .unwrap_or_else(|| Instruction::CCall1(primitive_id))
+            }
+            Opcode::CCall2 => {
+                let primitive_id = self.u32()?;
+                self.get_primitive(primitive_id, 2)?
+                    .unwrap_or_else(|| Instruction::CCall2(primitive_id))
+            }
+            Opcode::CCall3 => {
+                let primitive_id = self.u32()?;
+                self.get_primitive(primitive_id, 3)?
+                    .unwrap_or_else(|| Instruction::CCall3(primitive_id))
+            }
+            Opcode::CCall4 => {
+                let primitive_id = self.u32()?;
+                self.get_primitive(primitive_id, 4)?
+                    .unwrap_or_else(|| Instruction::CCall4(primitive_id))
+            }
+            Opcode::CCall5 => {
+                let primitive_id = self.u32()?;
+                self.get_primitive(primitive_id, 5)?
+                    .unwrap_or_else(|| Instruction::CCall4(primitive_id))
+            }
+            Opcode::CCallN => {
+                let primitive_id = self.u32()?;
+                let nargs = self.u32()?;
+                self.get_primitive(primitive_id, nargs as usize)?
+                    .unwrap_or_else(|| Instruction::CCallN(primitive_id, nargs))
+            }
 
             Opcode::Raise => Instruction::Raise(RaiseKind::Regular),
             Opcode::ReRaise => Instruction::Raise(RaiseKind::ReRaise),

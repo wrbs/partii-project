@@ -26,7 +26,7 @@ impl ShowSections {
 #[derive(StructOpt)]
 #[structopt(about = "disassemble bytecode files")]
 pub struct Options {
-    #[structopt(long, possible_values = &ShowSections::variants(), case_insensitive = true)]
+    #[structopt(long, possible_values = &ShowSections::variants(), case_insensitive = true, default_value="All")]
     show: ShowSections,
 
     #[structopt(parse(from_os_str))]
@@ -66,8 +66,6 @@ fn show_instructions(bcf: &BytecodeFile) {
             instruction_count = Some(v + 1);
             show_instruction(instruction);
         }
-
-        println!();
     }
 }
 
