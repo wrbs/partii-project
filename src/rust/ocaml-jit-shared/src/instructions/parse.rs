@@ -1,8 +1,21 @@
 use super::types::*;
+use crate::primitives::Primitive;
 use crate::Opcode;
 use std::collections::VecDeque;
 use std::iter::Peekable;
 use thiserror::Error;
+
+pub trait PrimitiveLookup {
+    fn get_primitive(&self, primitive_id: usize) -> Option<Primitive>;
+}
+
+pub struct EmptyPrimitiveLookup();
+
+impl PrimitiveLookup for EmptyPrimitiveLookup {
+    fn get_primitive(&self, primitive_id: usize) -> Option<Primitive> {
+        None
+    }
+}
 
 #[derive(Debug, Error)]
 pub enum InstructionParseError {
@@ -14,25 +27,34 @@ pub enum InstructionParseError {
 
     #[error("unknown opcode: {0}")]
     BadOpcode(i32),
+
+    #[error("Wrong primitive arity for {primitive}: Expected {expected} but got {actual}")]
+    WrongArity {
+        primitive: Primitive,
+        expected: usize,
+        actual: usize,
+    },
 }
 
 // default result type in this file
 type Result<T, E = InstructionParseError> = std::result::Result<T, E>;
 
-pub struct InstructionIterator<I: Iterator<Item = i32>> {
+pub struct InstructionIterator<I: Iterator<Item = i32>, L: PrimitiveLookup> {
     iter: Peekable<I>,
     position: usize,
     next_queued: VecDeque<Instruction<BytecodeRelativeOffset>>,
     error: bool,
+    primitives: L,
 }
 
-impl<I: Iterator<Item = i32>> InstructionIterator<I> {
-    pub fn new(iterator: I) -> InstructionIterator<I> {
+impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
+    pub fn new(iterator: I, primitives: L) -> InstructionIterator<I, L> {
         InstructionIterator {
             iter: iterator.peekable(),
             position: 0,
             next_queued: VecDeque::new(),
             error: false,
+            primitives,
         }
     }
 
@@ -434,7 +456,7 @@ impl<I: Iterator<Item = i32>> InstructionIterator<I> {
     }
 }
 
-impl<I: Iterator<Item = i32>> Iterator for InstructionIterator<I> {
+impl<I: Iterator<Item = i32>, L: PrimitiveLookup> Iterator for InstructionIterator<I, L> {
     type Item = Result<Instruction<BytecodeRelativeOffset>>;
 
     fn next(&mut self) -> Option<Self::Item> {

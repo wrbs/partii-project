@@ -9,7 +9,9 @@ use crate::global_data::GlobalData;
 use crate::trace::{print_trace, PrintTraceType};
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
-use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction, InstructionIterator};
+use ocaml_jit_shared::{
+    ArithOp, BytecodeRelativeOffset, Comp, EmptyPrimitiveLookup, Instruction, InstructionIterator,
+};
 use std::convert::TryInto;
 use std::ffi::{c_void, CStr};
 use std::os::raw::c_char;
@@ -47,7 +49,9 @@ pub fn compile_instructions(
     let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
     let code_base = code.as_ptr();
 
-    for (offset, instruction) in InstructionIterator::new(code.iter().copied()).enumerate() {
+    for (offset, instruction) in
+        InstructionIterator::new(code.iter().copied(), EmptyPrimitiveLookup()).enumerate()
+    {
         let instruction = instruction.unwrap();
 
         cc.emit_instruction(&instruction, offset, code_base);
