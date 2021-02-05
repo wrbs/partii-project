@@ -33,7 +33,7 @@ pub enum Primitive {
 }
 
 impl Primitive {
-    fn arity(&self) -> usize {
+    pub fn arity(&self) -> usize {
         self.get_str("Arity").unwrap().parse().unwrap()
     }
 }
@@ -41,6 +41,7 @@ impl Primitive {
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::str::FromStr;
     use strum::IntoEnumIterator;
 
     #[test]
@@ -50,6 +51,14 @@ mod test {
             let arity = primitive.arity();
             assert!(arity >= 1);
         }
+    }
+
+    #[test]
+    fn check_primitives_lookup() {
+        assert_eq!(
+            Primitive::from_str("caml_add_float").unwrap(),
+            Primitive::AddFloat
+        );
     }
 }
 

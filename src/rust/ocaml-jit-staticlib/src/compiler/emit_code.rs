@@ -905,6 +905,9 @@ impl CompilerContext {
                 );
                 self.emit_return();
             }
+            Instruction::Primitive(_) => {
+                unreachable!("No primitive special-casing is done in the JIT compiler")
+            }
             Instruction::CCall1(primno) => {
                 // FIXME Setup_for_c_call
                 // TODO - possible optimisation, could load the static address
