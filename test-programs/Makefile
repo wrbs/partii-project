@@ -28,7 +28,7 @@ $(BUILD_DIR)/%.ml: $(SRC_DIR)/%.ml | dirs
 	cp $< $@
 
 $(BUILD_DIR)/%.byte: $(BUILD_DIR)/%.ml
-	$(OCAMLC) -o $@ $<
+	$(OCAMLC) -g -o $@ $<
 
 $(OUT_DIR)/%.byte: $(BUILD_DIR)/%.byte | dirs
 	cp $< $@
