@@ -31,51 +31,70 @@ pub fn run(options: Options) -> Result<()> {
     let mut first = true;
     let mut extra_newline = false;
     for instruction in bcf.parse_instructions()?.iter() {
-        if let Instruction::LabelDef(offset) = instruction {
-            print!("\n{}", dumpobj_rest);
-            if extra_newline {
-                println!();
-            }
-            let (dumpobj_offset, dumpobj_output, r) = get_line(&mut lines)?;
-            dumpobj_rest = r;
-            print!("{:<10} {} -> ", dumpobj_offset, dumpobj_output);
-
-            if offset.0 != dumpobj_offset {
-                bail!("Invalid offsets: {} != {}", dumpobj_output, dumpobj_output);
-            }
-            first = true;
-            extra_newline = false;
-        } else {
-            if first {
-                first = false;
-
-                match instruction {
-                    Instruction::ApplyTerm(_, _)
-                    | Instruction::Return(_)
-                    | Instruction::Restart
-                    | Instruction::Raise(_)
-                    | Instruction::BranchCmp(_, _, _)
-                    | Instruction::Branch(_)
-                    | Instruction::BranchIf(_)
-                    | Instruction::BranchIfNot(_)
-                    | Instruction::Switch(_, _)
-                    | Instruction::Stop => {
-                        extra_newline = true;
-                    }
-                    _ => (),
+        match instruction {
+            Instruction::LabelDef(offset) => {
+                print!("\n{}", dumpobj_rest);
+                if extra_newline {
+                    println!();
                 }
-            } else {
-                print!(", ");
+                let Line {
+                    offset: dumpobj_offset,
+                    dumpobj_output,
+                    rest,
+                } = get_line(&mut lines)?;
+
+                dumpobj_rest = rest;
+                print!("{:<10} {} -> ", dumpobj_offset, dumpobj_output);
+
+                if offset.0 != dumpobj_offset {
+                    bail!("Invalid offsets: {} != {}", dumpobj_output, dumpobj_output);
+                }
+                first = true;
+                extra_newline = false;
             }
-            print!("{:?}", instruction.map_labels(|x| x.0));
+            _ => {
+                if first {
+                    first = false;
+
+                    match instruction {
+                        Instruction::ApplyTerm(_, _)
+                        | Instruction::Return(_)
+                        | Instruction::Restart
+                        | Instruction::Raise(_)
+                        | Instruction::BranchCmp(_, _, _)
+                        | Instruction::Branch(_)
+                        | Instruction::BranchIf(_)
+                        | Instruction::BranchIfNot(_)
+                        | Instruction::Switch(_, _)
+                        | Instruction::Stop => {
+                            extra_newline = true;
+                        }
+                        _ => (),
+                    }
+                } else {
+                    print!(", ");
+                }
+                print!("{:?}", instruction.map_labels(|x| x.0));
+            }
         }
     }
 
     Ok(())
 }
 
-fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>) -> Result<(usize, String, String)> {
-    let line = lines.next().ok_or(anyhow!("No first line"))??;
+struct Line {
+    offset: usize,
+    dumpobj_output: String,
+    rest: String,
+}
+
+fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>) -> Result<Line> {
+    let mut line = lines.next().ok_or(anyhow!("No first line"))??;
+
+    while line.starts_with("File") {
+        println!("{}", line);
+        line = lines.next().ok_or(anyhow!("No first line"))??;
+    }
 
     let trimmed = line.trim();
     let mut sections = trimmed.splitn(2, ' ');
@@ -113,5 +132,9 @@ fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>) -> Result<(usize, String
         }
     }
 
-    Ok((offset, dumpobj_output, rest))
+    Ok(Line {
+        offset,
+        dumpobj_output,
+        rest,
+    })
 }
