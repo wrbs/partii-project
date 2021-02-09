@@ -32,13 +32,14 @@ pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile> {
 
     let code = trailer
         .find_required_section(CODE_SECTION)?
-        .read_section_vec(f)?;
+        .read_section_vec(f)
+        .context("Problem reading code section")?;
 
     let global_data = {
         let mut data_section = trailer
             .find_required_section(DATA_SECTION)?
             .read_section(f)?;
-        ml_data::input_value(&mut data_section)?
+        ml_data::input_value(&mut data_section).context("Problem parsing global data")?
     };
 
     let symbol_table =

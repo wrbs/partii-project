@@ -2,7 +2,7 @@
 // This is used for serialization in OCaml - specifically especially to store metadata inside of
 // bytecode files
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{bail, ensure, Context, Result};
 use byteorder::{BigEndian, ReadBytesExt};
 use std::fmt::{Display, Formatter};
 use std::io::Read;
@@ -130,165 +130,206 @@ fn parse_header<R: Read>(f: &mut R) -> Result<Header> {
     })
 }
 
-// The recursive solution below stack-overflows on large lists
-// To fix this hackily, I've special cased lists
-// If I need to do something more complicated I should probably come back and make
-// this more similar to the C code (with unrolled recursion and an explicit stack, and using
-// Rc wrappers for heap allocation
-pub fn input_list<R: Read>(f: &mut R) -> Result<Vec<MLValue>> {
-    let _ = parse_header(f)?;
-    let mut result = vec![];
-
-    loop {
-        let code = f.read_u8()?;
-        match code {
-            // Small block, tag = 0, length = 2
-            0xa0 => {
-                result.push(read_value(f)?);
-            }
-            // Small int value = 0 (represents [])
-            0x40 => {
-                break;
-            }
-            _ => {
-                bail!("Unexpected code for list: {}", code);
-            }
-        }
-    }
-
-    Ok(result)
+enum StackItem {
+    Return,
+    MakeBlock {
+        tag: u8,
+        items: Vec<MLValue>,
+        remaining: usize,
+    },
 }
 
 fn read_value<R: Read>(f: &mut R) -> Result<MLValue> {
-    let code = f.read_u8()?;
+    // This is an iterative version of the initial obvious recursive algorithm using a stack and
+    // state. It's done using the handy method from 1B compilers for deriving a machine from a
+    // recursive definition
 
-    let v = match code {
-        PREFIX_SMALL_BLOCK..=PREFIX_SMALL_BLOCK_END => {
-            let tag = code & 0xF;
-            let size = ((code as usize) >> 4) & 0x7;
+    struct PendingBlock {
+        tag: u8,
+        items: Vec<MLValue>,
+        remaining: usize,
+    }
 
-            read_block(f, tag, size)?
-        }
+    enum State {
+        ReadItem,
+        ProcessItem(MLValue),
+        ReadBlock(PendingBlock),
+        ReadString(usize),
+    }
 
-        PREFIX_SMALL_INT..=PREFIX_SMALL_INT_END => MLValue::Int((code as i64) & 0x3f),
+    use State::*;
 
-        PREFIX_SMALL_STRING..=PREFIX_SMALL_STRING_END => {
-            let length = (code as usize) & 0x1F;
-            read_string(f, length)?
-        }
+    let mut pending_block_stack = Vec::new();
+    let mut state = ReadItem;
 
-        CODE_INT8 => MLValue::Int(f.read_i8()? as i64),
-        CODE_INT16 => MLValue::Int(f.read_i16::<BigEndian>()? as i64),
-        CODE_INT32 => MLValue::Int(f.read_i32::<BigEndian>()? as i64),
-        CODE_INT64 => MLValue::Int(f.read_i32::<BigEndian>()? as i64),
+    loop {
+        state = match state {
+            State::ReadItem => {
+                let code = f.read_u8().context("Could not read next code")?;
 
-        CODE_SHARED8 => MLValue::Shared(f.read_u8()? as usize),
-        CODE_SHARED16 => MLValue::Shared(f.read_u16::<BigEndian>()? as usize),
-        CODE_SHARED32 => MLValue::Shared(f.read_u32::<BigEndian>()? as usize),
-        CODE_SHARED64 => MLValue::Shared(f.read_u64::<BigEndian>()? as usize),
+                match code {
+                    PREFIX_SMALL_BLOCK..=PREFIX_SMALL_BLOCK_END => {
+                        let tag = code & 0xF;
+                        let size = ((code as usize) >> 4) & 0x7;
 
-        CODE_BLOCK32 => {
-            let header = f.read_u32::<BigEndian>()?;
-            let size = header as usize >> 10;
-            let tag = (header & 0xFF) as u8;
+                        ReadBlock(PendingBlock {
+                            tag,
+                            remaining: size,
+                            items: vec![],
+                        })
+                    }
 
-            return read_block(f, tag, size);
-        }
+                    PREFIX_SMALL_INT..=PREFIX_SMALL_INT_END => {
+                        ProcessItem(MLValue::Int((code as i64) & 0x3f))
+                    }
 
-        CODE_BLOCK64 => {
-            let header = f.read_u64::<BigEndian>()?;
-            let size = header as usize >> 10;
-            let tag = (header & 0xFF) as u8;
+                    PREFIX_SMALL_STRING..=PREFIX_SMALL_STRING_END => {
+                        let length = (code as usize) & 0x1F;
+                        ReadString(length)
+                    }
 
-            return read_block(f, tag, size);
-        }
+                    CODE_INT8 => ProcessItem(MLValue::Int(f.read_i8()? as i64)),
+                    CODE_INT16 => ProcessItem(MLValue::Int(f.read_i16::<BigEndian>()? as i64)),
+                    CODE_INT32 => ProcessItem(MLValue::Int(f.read_i32::<BigEndian>()? as i64)),
+                    CODE_INT64 => ProcessItem(MLValue::Int(f.read_i32::<BigEndian>()? as i64)),
 
-        CODE_STRING8 => {
-            let size = f.read_u8()? as usize;
+                    CODE_SHARED8 => ProcessItem(MLValue::Shared(f.read_u8()? as usize)),
+                    CODE_SHARED16 => {
+                        ProcessItem(MLValue::Shared(f.read_u16::<BigEndian>()? as usize))
+                    }
+                    CODE_SHARED32 => {
+                        ProcessItem(MLValue::Shared(f.read_u32::<BigEndian>()? as usize))
+                    }
+                    CODE_SHARED64 => {
+                        ProcessItem(MLValue::Shared(f.read_u64::<BigEndian>()? as usize))
+                    }
 
-            return read_string(f, size);
-        }
+                    CODE_BLOCK32 => {
+                        let header = f.read_u32::<BigEndian>()?;
+                        let size = header as usize >> 10;
+                        let tag = (header & 0xFF) as u8;
 
-        CODE_STRING32 => {
-            let size = f.read_u32::<BigEndian>()? as usize;
+                        ReadBlock(PendingBlock {
+                            tag,
+                            remaining: size,
+                            items: Vec::new(),
+                        })
+                    }
 
-            return read_string(f, size);
-        }
+                    CODE_BLOCK64 => {
+                        let header = f.read_u64::<BigEndian>()?;
+                        let size = header as usize >> 10;
+                        let tag = (header & 0xFF) as u8;
 
-        CODE_STRING64 => {
-            let size = f.read_u64::<BigEndian>()? as usize;
+                        ReadBlock(PendingBlock {
+                            tag,
+                            remaining: size,
+                            items: Vec::new(),
+                        })
+                    }
 
-            return read_string(f, size);
-        }
+                    CODE_STRING8 => {
+                        let size = f.read_u8()? as usize;
 
-        CODE_DOUBLE_LITTLE | CODE_DOUBLE_BIG => MLValue::Double(f.read_f64::<BigEndian>()?),
+                        ReadString(size)
+                    }
 
-        CODE_DOUBLE_ARRAY8_LITTLE | CODE_DOUBLE_ARRAY8_BIG => {
-            bail!("Unimplemented: CODE_DOUBLE_ARRAY8_[LITTLE/BIG]");
-        }
+                    CODE_STRING32 => {
+                        let size = f.read_u32::<BigEndian>()? as usize;
 
-        CODE_DOUBLE_ARRAY32_LITTLE | CODE_DOUBLE_ARRAY32_BIG => {
-            bail!("Unimplemented: CODE_DOUBLE_ARRAY32_[LITTLE/BIG]");
-        }
+                        ReadString(size)
+                    }
 
-        CODE_DOUBLE_ARRAY64_LITTLE | CODE_DOUBLE_ARRAY64_BIG => {
-            bail!("Unimplemented: CODE_DOUBLE_ARRAY64_[LITTLE/BIG]");
-        }
+                    CODE_STRING64 => {
+                        let size = f.read_u64::<BigEndian>()? as usize;
 
-        CODE_CODEPOINTER => {
-            bail!("Unimplemented: CODE_POINTER");
-        }
+                        ReadString(size)
+                    }
 
-        CODE_INFIXPOINTER => {
-            bail!("Unimplemented: INFIX_POINTER");
-        }
+                    CODE_DOUBLE_LITTLE | CODE_DOUBLE_BIG => {
+                        ProcessItem(MLValue::Double(f.read_f64::<BigEndian>()?))
+                    }
 
-        CODE_CUSTOM | CODE_CUSTOM_FIXED | CODE_CUSTOM_LEN => {
-            let identifier = read_c_string(f)?;
+                    CODE_DOUBLE_ARRAY8_LITTLE | CODE_DOUBLE_ARRAY8_BIG => {
+                        bail!("Unimplemented: CODE_DOUBLE_ARRAY8_[LITTLE/BIG]");
+                    }
 
-            match identifier.as_str() {
-                "_i" => MLValue::Int32(f.read_i32::<BigEndian>()?),
-                "_j" => MLValue::Int64(f.read_i64::<BigEndian>()?),
-                "_n" => MLValue::Int64(f.read_i64::<BigEndian>()?),
-                _ => {
-                    bail!("Unimplemented: CODE_CUSTOM* for {}", identifier);
+                    CODE_DOUBLE_ARRAY32_LITTLE | CODE_DOUBLE_ARRAY32_BIG => {
+                        bail!("Unimplemented: CODE_DOUBLE_ARRAY32_[LITTLE/BIG]");
+                    }
+
+                    CODE_DOUBLE_ARRAY64_LITTLE | CODE_DOUBLE_ARRAY64_BIG => {
+                        bail!("Unimplemented: CODE_DOUBLE_ARRAY64_[LITTLE/BIG]");
+                    }
+
+                    CODE_CODEPOINTER => {
+                        bail!("Unimplemented: CODE_POINTER");
+                    }
+
+                    CODE_INFIXPOINTER => {
+                        bail!("Unimplemented: INFIX_POINTER");
+                    }
+
+                    CODE_CUSTOM | CODE_CUSTOM_FIXED | CODE_CUSTOM_LEN => {
+                        let identifier = read_c_string(f)?;
+
+                        match identifier.as_str() {
+                            "_i" => ProcessItem(MLValue::Int32(f.read_i32::<BigEndian>()?)),
+                            "_j" => ProcessItem(MLValue::Int64(f.read_i64::<BigEndian>()?)),
+                            "_n" => ProcessItem(MLValue::Int64(f.read_i64::<BigEndian>()?)),
+                            _ => {
+                                bail!("Unimplemented: CODE_CUSTOM* for {}", identifier);
+                            }
+                        }
+                    }
+
+                    i => bail!("Unimplemented: code = {}", i),
+                }
+            }
+
+            ReadBlock(pending_block) => {
+                if pending_block.remaining == 0 {
+                    ProcessItem(MLValue::Block {
+                        tag: pending_block.tag,
+                        items: pending_block.items,
+                    })
+                } else {
+                    pending_block_stack.push(pending_block);
+                    ReadItem
+                }
+            }
+
+            ProcessItem(value) => match pending_block_stack.pop() {
+                None => return Ok(value),
+                Some(mut pending_block) => {
+                    ensure!(pending_block.remaining > 0);
+                    pending_block.items.push(value);
+                    pending_block.remaining -= 1;
+                    ReadBlock(pending_block)
+                }
+            },
+
+            ReadString(length) => {
+                let mut buf = vec![0; length];
+                f.read_exact(&mut buf)?;
+                match String::from_utf8(buf.clone()) {
+                    Ok(s) => ProcessItem(MLValue::StringUtf8(s)),
+                    Err(_) => ProcessItem(MLValue::StringBytes(buf)),
                 }
             }
         }
-
-        i => bail!("Unimplemented: code = {}", i),
-    };
-
-    Ok(v)
+    }
 }
 
 fn read_block<R: Read>(f: &mut R, tag: u8, size: usize) -> Result<MLValue> {
     let mut items = Vec::new();
 
-    if tag == OBJECT_TAG {
-        ensure!(size >= 2, "Object size less than 2");
-        for _ in 0..(size - 2) {
-            items.push(read_value(f)?);
-        }
-
-        items.insert(0, read_value(f)?);
-        items.insert(1, read_value(f)?);
-    } else {
-        for _ in 0..size {
-            items.push(read_value(f)?);
-        }
+    // TODO: objects should have a reordering operation after they are done
+    for _ in 0..size {
+        items.push(read_value(f)?);
     }
 
     Ok(MLValue::Block { tag, items })
-}
-
-fn read_string<R: Read>(f: &mut R, length: usize) -> Result<MLValue> {
-    let mut buf = vec![0; length];
-    f.read_exact(&mut buf)?;
-    Ok(match String::from_utf8(buf.clone()) {
-        Ok(s) => MLValue::StringUtf8(s),
-        Err(_) => MLValue::StringBytes(buf),
-    })
 }
 
 fn read_c_string<R: Read>(f: &mut R) -> Result<String> {
