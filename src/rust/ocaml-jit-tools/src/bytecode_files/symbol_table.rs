@@ -1,6 +1,6 @@
 use super::ml_data::input_value;
 use super::trailer::{Trailer, SYMB_SECTION};
-use crate::bytecode_files::{MLValue, MLValueBlock, MLValueBlocks};
+use crate::bytecode_files::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
 use anyhow::{bail, Result};
 use std::collections::HashMap;
 use std::fs::File;
@@ -59,8 +59,13 @@ fn find_rec(
                         MLValue::Block(block_id) => {
                             let MLValueBlock { tag: _, items } = &blocks.blocks[*block_id];
                             match items.get(0) {
-                                Some(MLValue::StringUtf8(s)) => {
-                                    entries.insert(*index as usize, s.clone());
+                                Some(MLValue::String(string_id)) => {
+                                    match blocks.strings.get(*string_id) {
+                                        Some(MLValueString::UTF8(s)) => {
+                                            entries.insert(*index as usize, s.clone());
+                                        }
+                                        _ => bail!("Unexpected symbol table format - Ident"),
+                                    }
                                 }
                                 _ => bail!("Unexpected symbol table format - Ident"),
                             }
