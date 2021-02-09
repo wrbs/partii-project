@@ -58,6 +58,7 @@ pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
 
     Ok(Program {
         closures,
+        global_data_blocks: bcf.global_data_blocks.clone(),
         globals,
         primitives: bcf.primitives.clone(),
     })
