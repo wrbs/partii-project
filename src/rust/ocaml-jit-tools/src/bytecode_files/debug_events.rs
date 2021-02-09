@@ -1,7 +1,7 @@
 use super::ml_data::input_value;
 use super::trailer::{Trailer, DBUG_SECTION};
-use crate::bytecode_files::{MLValue, MLValueBlocks};
-use anyhow::{bail, Context, Result};
+use crate::bytecode_files::{MLValue, MLValueBlock, MLValueBlocks};
+use anyhow::{anyhow, bail, Context, Result};
 use byteorder::{BigEndian, ReadBytesExt};
 use std::collections::HashMap;
 use std::fs::File;
@@ -49,7 +49,7 @@ pub fn parse_debug_events(f: &mut File, trailer: &Trailer) -> Result<Option<Debu
     Ok(Some(DebugInfo { event_lists }))
 }
 
-fn parse_event_list(_blocks: &MLValueBlocks, list: &MLValue) -> Result<Vec<MLValue>> {
+fn parse_event_list(blocks: &MLValueBlocks, list: &MLValue) -> Result<Vec<MLValue>> {
     let mut events = vec![];
     let mut current_value = list;
 
@@ -58,13 +58,20 @@ fn parse_event_list(_blocks: &MLValueBlocks, list: &MLValue) -> Result<Vec<MLVal
             MLValue::Int(0) => {
                 return Ok(events);
             }
-            MLValue::Block { tag: 0, items } => match &items[..] {
-                [a, b] => {
-                    events.push(a.clone());
-                    current_value = b;
+            MLValue::Block(block_id) => {
+                let MLValueBlock { tag, items } = match blocks.blocks.get(*block_id) {
+                    Some(b) => b,
+                    None => bail!("Could not find referenced block in event list"),
+                };
+
+                match (tag, &items[..]) {
+                    (0, [a, b]) => {
+                        events.push(a.clone());
+                        current_value = b;
+                    }
+                    _ => bail!("Unexpected block in event in list"),
                 }
-                _ => bail!("Unexpected block in event in list"),
-            },
+            }
 
             _ => bail!("Unexpected value in event list"),
         }

@@ -8,12 +8,20 @@ use std::fmt::{Display, Formatter};
 use std::io::Read;
 
 #[derive(Debug, Clone)]
-pub struct MLValueBlocks {}
+pub struct MLValueBlocks {
+    pub blocks: Vec<MLValueBlock>,
+}
+
+#[derive(Debug, Clone)]
+pub struct MLValueBlock {
+    pub tag: u8,
+    pub items: Vec<MLValue>,
+}
 
 #[derive(Debug, Clone)]
 pub enum MLValue {
     Int(i64),
-    Block { tag: u8, items: Vec<MLValue> },
+    Block(usize),
     StringUtf8(String),
     StringBytes(Vec<u8>),
     Int32(i32),
@@ -23,13 +31,16 @@ pub enum MLValue {
 }
 
 pub struct FormattableValue<'a, 'b> {
-    store: &'a MLValueBlocks,
+    blocks: &'a MLValueBlocks,
     value: &'b MLValue,
 }
 
 impl MLValueBlocks {
     pub fn format_value<'a, 'b>(&'a self, value: &'b MLValue) -> FormattableValue<'a, 'b> {
-        FormattableValue { store: self, value }
+        FormattableValue {
+            blocks: self,
+            value,
+        }
     }
 }
 
@@ -41,16 +52,21 @@ impl<'a, 'b> Display for FormattableValue<'a, 'b> {
             MLValue::StringBytes(vec) => write!(f, "StringBytes({:?})", vec),
             MLValue::Int32(i) => write!(f, "{}", i),
             MLValue::Int64(i) => write!(f, "{}", i),
-            MLValue::Block { tag, items } => {
-                write!(f, "{{{}:[", tag)?;
-                let mut first = true;
-                for item in items {
-                    if first {
-                        first = false;
-                    } else {
-                        write!(f, ", ")?;
+            MLValue::Block(block_id) => {
+                match self.blocks.blocks.get(*block_id) {
+                    None => write!(f, "<unknown block {}>", block_id)?,
+                    Some(MLValueBlock { tag, items }) => {
+                        write!(f, "{{{}:[", tag)?;
+                        let mut first = true;
+                        for item in items {
+                            if first {
+                                first = false;
+                            } else {
+                                write!(f, ", ")?;
+                            }
+                            write!(f, "{}", self.blocks.format_value(item))?;
+                        }
                     }
-                    write!(f, "{}", self.store.format_value(item))?;
                 }
 
                 write!(f, "]}}")?;
@@ -109,8 +125,8 @@ struct Header {
 
 pub fn input_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
     let _ = parse_header(f)?;
-    let v = read_value(f)?;
-    Ok((MLValueBlocks {}, v))
+    let (blocks, v) = read_value(f)?;
+    Ok((blocks, v))
 }
 
 fn parse_header<R: Read>(f: &mut R) -> Result<Header> {
@@ -145,7 +161,7 @@ fn parse_header<R: Read>(f: &mut R) -> Result<Header> {
     })
 }
 
-fn read_value<R: Read>(f: &mut R) -> Result<MLValue> {
+fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
     // This is an iterative version of the initial obvious recursive algorithm using a stack and
     // state. It's done using the handy method from 1B compilers for deriving a machine from a
     // recursive definition
@@ -165,6 +181,7 @@ fn read_value<R: Read>(f: &mut R) -> Result<MLValue> {
 
     use State::*;
 
+    let mut blocks = Vec::new();
     let mut pending_block_stack = Vec::new();
     let mut state = ReadItem;
 
@@ -295,10 +312,12 @@ fn read_value<R: Read>(f: &mut R) -> Result<MLValue> {
 
             ReadBlock(pending_block) => {
                 if pending_block.remaining == 0 {
-                    ProcessItem(MLValue::Block {
+                    let block_id = blocks.len();
+                    blocks.push(MLValueBlock {
                         tag: pending_block.tag,
                         items: pending_block.items,
-                    })
+                    });
+                    ProcessItem(MLValue::Block(block_id))
                 } else {
                     pending_block_stack.push(pending_block);
                     ReadItem
@@ -306,7 +325,11 @@ fn read_value<R: Read>(f: &mut R) -> Result<MLValue> {
             }
 
             ProcessItem(value) => match pending_block_stack.pop() {
-                None => return Ok(value),
+                None => {
+                    // Finish up
+                    let ml_blocks = MLValueBlocks { blocks };
+                    return Ok((ml_blocks, value));
+                }
                 Some(mut pending_block) => {
                     ensure!(pending_block.remaining > 0);
                     pending_block.items.push(value);
@@ -325,17 +348,6 @@ fn read_value<R: Read>(f: &mut R) -> Result<MLValue> {
             }
         }
     }
-}
-
-fn read_block<R: Read>(f: &mut R, tag: u8, size: usize) -> Result<MLValue> {
-    let mut items = Vec::new();
-
-    // TODO: objects should have a reordering operation after they are done
-    for _ in 0..size {
-        items.push(read_value(f)?);
-    }
-
-    Ok(MLValue::Block { tag, items })
 }
 
 fn read_c_string<R: Read>(f: &mut R) -> Result<String> {

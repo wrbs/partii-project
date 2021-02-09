@@ -1,6 +1,8 @@
 use colored::Colorize;
 
-use crate::bytecode_files::{parse_bytecode_file, BytecodeFile, DebugInfo, MLValue, MLValueBlocks};
+use crate::bytecode_files::{
+    parse_bytecode_file, BytecodeFile, DebugInfo, MLValue, MLValueBlock, MLValueBlocks,
+};
 use anyhow::{Context, Result};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 use std::collections::HashMap;
@@ -114,7 +116,8 @@ fn show_primitives(primitives: &[String]) {
 fn show_global_data(global_data_blocks: &MLValueBlocks, global_data: &MLValue) {
     println!("{}", "Global data:".red().bold());
     match global_data {
-        MLValue::Block { tag, items } => {
+        MLValue::Block(block_id) => {
+            let MLValueBlock { tag, items } = &global_data_blocks.blocks[*block_id];
             println!("Tag: {}", tag);
             let n = items.len();
             let width = (n as f32).log10() as usize;
