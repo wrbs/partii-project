@@ -10,7 +10,7 @@ pub fn parse_symbol_table(f: &mut File, trailer: &Trailer) -> Result<HashMap<usi
         .find_required_section(SYMB_SECTION)?
         .read_section(f)?;
 
-    let val = input_value(&mut section)?;
+    let (blocks, val) = input_value(&mut section)?;
 
     let mut entries = HashMap::new();
     match &val {

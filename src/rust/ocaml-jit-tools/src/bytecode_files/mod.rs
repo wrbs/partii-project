@@ -9,7 +9,7 @@ pub mod trailer;
 use anyhow::{Context, Result};
 pub use debug_events::DebugInfo;
 pub use error::ParseFileError;
-pub use ml_data::MLValue;
+pub use ml_data::{MLValue, MLValueBlocks};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 use std::collections::HashMap;
 use std::fs::File;
@@ -20,6 +20,7 @@ pub struct BytecodeFile {
     pub trailer: Trailer,
     pub primitives: Vec<String>,
     pub code: Vec<u8>,
+    pub global_data_blocks: MLValueBlocks,
     pub global_data: MLValue,
     pub symbol_table: HashMap<usize, String>,
     pub debug_events: Option<DebugInfo>,
@@ -35,7 +36,7 @@ pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile> {
         .read_section_vec(f)
         .context("Problem reading code section")?;
 
-    let global_data = {
+    let (global_data_blocks, global_data) = {
         let mut data_section = trailer
             .find_required_section(DATA_SECTION)?
             .read_section(f)?;
@@ -52,6 +53,7 @@ pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile> {
         trailer,
         primitives,
         code,
+        global_data_blocks,
         global_data,
         symbol_table,
         debug_events,

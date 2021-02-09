@@ -268,7 +268,9 @@ impl<'a> VisContext<'a> {
     fn format_global(&self, id: &u32) -> String {
         match self.program.globals.get(*id as usize) {
             Some(GlobalTableEntry::Global(g)) => g.clone(),
-            Some(GlobalTableEntry::Constant(g)) => format!("{}", g),
+            Some(GlobalTableEntry::Constant(g)) => {
+                format!("{}", self.program.global_data_blocks.format_value(g))
+            }
             None => format!("<empty>"),
         }
     }

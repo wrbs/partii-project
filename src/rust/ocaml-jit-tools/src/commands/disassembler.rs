@@ -1,6 +1,6 @@
 use colored::Colorize;
 
-use crate::bytecode_files::{parse_bytecode_file, BytecodeFile, DebugInfo, MLValue};
+use crate::bytecode_files::{parse_bytecode_file, BytecodeFile, DebugInfo, MLValue, MLValueBlocks};
 use anyhow::{Context, Result};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 use std::collections::HashMap;
@@ -52,7 +52,7 @@ pub fn run(options: Options) -> Result<()> {
     }
 
     if options.show.should_show(&ShowSections::GlobalData) {
-        show_global_data(&bcf.global_data);
+        show_global_data(&bcf.global_data_blocks, &bcf.global_data);
         println!();
     }
 
@@ -111,7 +111,7 @@ fn show_primitives(primitives: &[String]) {
     println!("{}", format!("count: {}", n).bright_black());
 }
 
-fn show_global_data(global_data: &MLValue) {
+fn show_global_data(global_data_blocks: &MLValueBlocks, global_data: &MLValue) {
     println!("{}", "Global data:".red().bold());
     match global_data {
         MLValue::Block { tag, items } => {
@@ -120,12 +120,20 @@ fn show_global_data(global_data: &MLValue) {
             let width = (n as f32).log10() as usize;
 
             for (index, value) in items.iter().enumerate() {
-                println!("{:width$} {}", index, value, width = width);
+                println!(
+                    "{:width$} {}",
+                    index,
+                    global_data_blocks.format_value(value),
+                    width = width
+                );
             }
 
             println!("{}", format!("count: {}", n).bright_black());
         }
-        _ => println!("Not a block as expected - instead {}", global_data),
+        _ => println!(
+            "Not a block as expected - instead {}",
+            global_data_blocks.format_value(global_data)
+        ),
     }
 }
 
@@ -158,9 +166,12 @@ fn show_debug_events(debug_events: &Option<DebugInfo>) {
         println!("Orig: {}", el.orig);
         println!("Entries:");
         for entry in &el.entries {
-            println!("- {}", entry);
+            println!("- {}", el.entries_blocks.format_value(entry));
         }
-        println!("Absolute dirs: {}", el.absolute_dirs);
+        println!(
+            "Absolute dirs: {}",
+            el.absolute_dirs_blocks.format_value(&el.absolute_dirs)
+        );
         println!();
     }
 

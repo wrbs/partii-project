@@ -8,6 +8,9 @@ use std::fmt::{Display, Formatter};
 use std::io::Read;
 
 #[derive(Debug, Clone)]
+pub struct MLValueBlocks {}
+
+#[derive(Debug, Clone)]
 pub enum MLValue {
     Int(i64),
     Block { tag: u8, items: Vec<MLValue> },
@@ -19,9 +22,20 @@ pub enum MLValue {
     Double(f64),
 }
 
-impl Display for MLValue {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
+pub struct FormattableValue<'a, 'b> {
+    store: &'a MLValueBlocks,
+    value: &'b MLValue,
+}
+
+impl MLValueBlocks {
+    pub fn format_value<'a, 'b>(&'a self, value: &'b MLValue) -> FormattableValue<'a, 'b> {
+        FormattableValue { store: self, value }
+    }
+}
+
+impl<'a, 'b> Display for FormattableValue<'a, 'b> {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        match self.value {
             MLValue::Int(i) => write!(f, "{}", i),
             MLValue::StringUtf8(s) => write!(f, "{:?}", s),
             MLValue::StringBytes(vec) => write!(f, "StringBytes({:?})", vec),
@@ -36,7 +50,7 @@ impl Display for MLValue {
                     } else {
                         write!(f, ", ")?;
                     }
-                    write!(f, "{}", item)?;
+                    write!(f, "{}", self.store.format_value(item))?;
                 }
 
                 write!(f, "]}}")?;
@@ -93,9 +107,10 @@ struct Header {
     whsize: usize,
 }
 
-pub fn input_value<R: Read>(f: &mut R) -> Result<MLValue> {
+pub fn input_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
     let _ = parse_header(f)?;
-    read_value(f)
+    let v = read_value(f)?;
+    Ok((MLValueBlocks {}, v))
 }
 
 fn parse_header<R: Read>(f: &mut R) -> Result<Header> {
@@ -128,15 +143,6 @@ fn parse_header<R: Read>(f: &mut R) -> Result<Header> {
         num_objects,
         whsize,
     })
-}
-
-enum StackItem {
-    Return,
-    MakeBlock {
-        tag: u8,
-        items: Vec<MLValue>,
-        remaining: usize,
-    },
 }
 
 fn read_value<R: Read>(f: &mut R) -> Result<MLValue> {

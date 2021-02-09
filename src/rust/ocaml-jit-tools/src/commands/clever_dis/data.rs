@@ -1,11 +1,12 @@
 // Data model for parsed instructions
 
-use crate::bytecode_files::MLValue;
+use crate::bytecode_files::{MLValue, MLValueBlocks};
 use ocaml_jit_shared::Instruction;
 
 #[derive(Debug)]
 pub struct Program {
     pub closures: Vec<Closure>,
+    pub global_data_blocks: MLValueBlocks,
     pub globals: Vec<GlobalTableEntry>,
     pub primitives: Vec<String>,
 }

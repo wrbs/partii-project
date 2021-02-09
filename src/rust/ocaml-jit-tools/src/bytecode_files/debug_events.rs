@@ -1,6 +1,6 @@
 use super::ml_data::input_value;
 use super::trailer::{Trailer, DBUG_SECTION};
-use crate::bytecode_files::MLValue;
+use crate::bytecode_files::{MLValue, MLValueBlocks};
 use anyhow::{bail, Context, Result};
 use byteorder::{BigEndian, ReadBytesExt};
 use std::collections::HashMap;
@@ -8,7 +8,9 @@ use std::fs::File;
 
 pub struct DebugEventList {
     pub orig: u32,
+    pub entries_blocks: MLValueBlocks,
     pub entries: Vec<MLValue>,
+    pub absolute_dirs_blocks: MLValueBlocks,
     pub absolute_dirs: MLValue,
 }
 
@@ -28,15 +30,18 @@ pub fn parse_debug_events(f: &mut File, trailer: &Trailer) -> Result<Option<Debu
 
     for _ in (0..num_eventlists) {
         let orig = section.read_u32::<BigEndian>()?;
-        let list_value = input_value(&mut section).context("Problem reading debug events")?;
-        let entries =
-            parse_event_list(&list_value).context("Problem parsing events from the MLValue")?;
-        let absolute_dirs =
+        let (list_blocks, list_value) =
+            input_value(&mut section).context("Problem reading debug events")?;
+        let entries = parse_event_list(&list_blocks, &list_value)
+            .context("Problem parsing events from the MLValue")?;
+        let (absolute_dirs_blocks, absolute_dirs) =
             input_value(&mut section).context("Problem reading debug event value")?;
 
         event_lists.push(DebugEventList {
             orig,
+            entries_blocks: list_blocks,
             entries,
+            absolute_dirs_blocks,
             absolute_dirs,
         });
     }
@@ -44,7 +49,7 @@ pub fn parse_debug_events(f: &mut File, trailer: &Trailer) -> Result<Option<Debu
     Ok(Some(DebugInfo { event_lists }))
 }
 
-fn parse_event_list(list: &MLValue) -> Result<Vec<MLValue>> {
+fn parse_event_list(_blocks: &MLValueBlocks, list: &MLValue) -> Result<Vec<MLValue>> {
     let mut events = vec![];
     let mut current_value = list;
 
