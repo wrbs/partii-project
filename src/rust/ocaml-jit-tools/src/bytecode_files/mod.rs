@@ -23,7 +23,7 @@ pub struct BytecodeFile {
     pub global_data_blocks: MLValueBlocks,
     pub global_data: MLValue,
     pub symbol_table: HashMap<usize, String>,
-    pub debug_events: Option<DebugInfo>,
+    pub debug_info: Option<DebugInfo>,
 }
 
 pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile> {
@@ -56,7 +56,7 @@ pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile> {
         global_data_blocks,
         global_data,
         symbol_table,
-        debug_events,
+        debug_info: debug_events,
     })
 }
 

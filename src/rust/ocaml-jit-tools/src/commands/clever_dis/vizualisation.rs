@@ -63,7 +63,7 @@ pub fn write_dot_graphs(program: &Program, options: Options) -> Result<()> {
             )
         })?;
 
-        ctx.output_closure_dot(closure, &mut dot_file)
+        ctx.output_closure_dot(closure_id, closure, &mut dot_file)
             .with_context(|| format!("Problem writing closure file for closure {}", closure_id))?;
 
         let args = &[
@@ -121,8 +121,62 @@ impl<'a> VisContext<'a> {
         }
     }
 
-    pub fn output_closure_dot<W: Write>(&self, closure: &Closure, f: &mut W) -> Result<()> {
+    pub fn output_closure_dot<W: Write>(
+        &self,
+        closure_no: usize,
+        closure: &Closure,
+        f: &mut W,
+    ) -> Result<()> {
         writeln!(f, "digraph G {{")?;
+
+        // Write basic metadata
+        writeln!(
+            f,
+            r#"info [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left">"#
+        )?;
+        writeln!(
+            f,
+            r#"<TR><TD BORDER="1"><B>Closure {}</B></TD></TR>"#,
+            closure_no
+        )?;
+
+        if let Some(PositionInfo {
+            module,
+            def_name,
+            span,
+        }) = &closure.position
+        {
+            writeln!(
+                f,
+                "{}\n",
+                self.format_simple_instruction(&format!("Module: {}", module))
+            )?;
+            writeln!(
+                f,
+                "{}\n",
+                self.format_simple_instruction(&format!("Def name: {}", def_name))
+            )?;
+            writeln!(
+                f,
+                "{}\n",
+                self.format_simple_instruction(&format!(
+                    "Start: {}:{}:{}",
+                    span.start.filename, span.start.line, span.start.column
+                ))
+            )?;
+            writeln!(
+                f,
+                "{}\n",
+                self.format_simple_instruction(&format!(
+                    "End: {}:{}:{}",
+                    span.end.filename, span.end.line, span.end.column
+                ))
+            )?;
+        }
+
+        writeln!(f, "</TABLE>>];")?;
+
+        writeln!(f, "info -> n0;")?;
 
         let mut emit_return = false;
         let mut emit_stop = false;
@@ -139,6 +193,7 @@ impl<'a> VisContext<'a> {
                 r#"<TR><TD BORDER="1"><B>Block {}</B></TD></TR>"#,
                 block_no
             )?;
+
             for instr in &block.instructions {
                 writeln!(f, "{}", self.format_instruction(instr))?;
             }

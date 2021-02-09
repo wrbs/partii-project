@@ -32,15 +32,15 @@ pub struct DebugEvent {
 
 #[derive(Debug, Clone)]
 pub struct DebugPosition {
-    filename: Rc<String>,
-    line: usize,
-    column: usize,
+    pub filename: Rc<String>,
+    pub line: usize,
+    pub column: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct DebugSpan {
-    start: DebugPosition,
-    end: DebugPosition,
+    pub start: DebugPosition,
+    pub end: DebugPosition,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -66,6 +66,7 @@ pub enum DebugEventRepr {
 
 pub struct DebugInfo {
     pub event_lists: Vec<DebugEventList>,
+    pub events: HashMap<usize, DebugEvent>,
 }
 
 pub fn parse_debug_events(f: &mut File, trailer: &Trailer) -> Result<Option<DebugInfo>> {
@@ -82,7 +83,7 @@ pub fn parse_debug_events(f: &mut File, trailer: &Trailer) -> Result<Option<Debu
         let orig = section.read_u32::<BigEndian>()?;
         let (list_blocks, list_value) =
             input_value(&mut section).context("Problem reading debug events")?;
-        let entries = parse_event_list(&list_blocks, &list_value)
+        let entries = parse_event_list(&list_blocks, &list_value, orig as usize)
             .context("Problem parsing events from the MLValue")?;
         let (absolute_dirs_blocks, absolute_dirs) =
             input_value(&mut section).context("Problem reading debug event value")?;
@@ -95,7 +96,25 @@ pub fn parse_debug_events(f: &mut File, trailer: &Trailer) -> Result<Option<Debu
         });
     }
 
-    Ok(Some(DebugInfo { event_lists }))
+    let mut events = HashMap::new();
+
+    for event_list in &event_lists {
+        for event in &event_list.entries {
+            events.insert(event.position, event.clone());
+            // let prev = events.insert(event.position, event.clone());
+            // if let Some(other) = prev {
+            //     eprintln!(
+            //         "Duplicate events at same position:\n{:#?}\n{:#?}",
+            //         other, event
+            //     );
+            // }
+        }
+    }
+
+    Ok(Some(DebugInfo {
+        event_lists,
+        events,
+    }))
 }
 
 struct Strings<'a> {
@@ -136,7 +155,11 @@ impl<'a> Strings<'a> {
     }
 }
 
-fn parse_event_list(blocks: &MLValueBlocks, list: &MLValue) -> Result<Vec<DebugEvent>> {
+fn parse_event_list(
+    blocks: &MLValueBlocks,
+    list: &MLValue,
+    relocation_offset: usize,
+) -> Result<Vec<DebugEvent>> {
     let mut events = vec![];
     let mut strings = Strings::new(blocks);
     let mut current_value = list;
@@ -148,7 +171,12 @@ fn parse_event_list(blocks: &MLValueBlocks, list: &MLValue) -> Result<Vec<DebugE
             }
             MLValue::Block(block_id) => match blocks.get_block(block_id) {
                 Some((0, [a, b])) => {
-                    events.push(parse_debug_event(blocks, &mut strings, a)?);
+                    events.push(parse_debug_event(
+                        blocks,
+                        &mut strings,
+                        a,
+                        relocation_offset,
+                    )?);
                     current_value = b;
                 }
                 _ => bail!("Unexpected value in event list"),
@@ -163,6 +191,7 @@ fn parse_debug_event(
     blocks: &MLValueBlocks,
     strings: &mut Strings,
     event: &MLValue,
+    relocation_offset: usize,
 ) -> Result<DebugEvent> {
     let block_id = match event {
         MLValue::Block(block_id) => *block_id,
@@ -179,7 +208,7 @@ fn parse_debug_event(
     let position = match items[0] {
         MLValue::Int(i) => i as usize,
         _ => bail!("Invalid position value"),
-    };
+    } + relocation_offset;
 
     let module = strings.get_from_value(&items[1])?;
 
