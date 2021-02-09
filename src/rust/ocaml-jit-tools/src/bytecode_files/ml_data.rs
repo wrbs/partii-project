@@ -10,6 +10,7 @@ use std::io::Read;
 #[derive(Debug, Clone)]
 pub struct MLValueBlocks {
     pub blocks: Vec<MLValueBlock>,
+    pub strings: Vec<MLValueString>,
 }
 
 #[derive(Debug, Clone)]
@@ -19,11 +20,16 @@ pub struct MLValueBlock {
 }
 
 #[derive(Debug, Clone)]
+pub enum MLValueString {
+    UTF8(String),
+    Bytes(Vec<u8>),
+}
+
+#[derive(Debug, Clone)]
 pub enum MLValue {
     Int(i64),
     Block(usize),
-    StringUtf8(String),
-    StringBytes(Vec<u8>),
+    String(usize),
     Int32(i32),
     Int64(i64),
     Shared(usize),
@@ -48,8 +54,11 @@ impl<'a, 'b> Display for FormattableValue<'a, 'b> {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self.value {
             MLValue::Int(i) => write!(f, "{}", i),
-            MLValue::StringUtf8(s) => write!(f, "{:?}", s),
-            MLValue::StringBytes(vec) => write!(f, "StringBytes({:?})", vec),
+            MLValue::String(string_id) => match self.blocks.strings.get(*string_id) {
+                None => write!(f, "<unknown string {}>", string_id),
+                Some(MLValueString::UTF8(s)) => write!(f, "{:?}", s),
+                Some(MLValueString::Bytes(vec)) => write!(f, "StringBytes({:?})", vec),
+            },
             MLValue::Int32(i) => write!(f, "{}", i),
             MLValue::Int64(i) => write!(f, "{}", i),
             MLValue::Block(block_id) => {
@@ -182,6 +191,7 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
     use State::*;
 
     let mut blocks = Vec::new();
+    let mut strings = Vec::new();
     let mut pending_block_stack = Vec::new();
     let mut state = ReadItem;
 
@@ -327,7 +337,7 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
             ProcessItem(value) => match pending_block_stack.pop() {
                 None => {
                     // Finish up
-                    let ml_blocks = MLValueBlocks { blocks };
+                    let ml_blocks = MLValueBlocks { blocks, strings };
                     return Ok((ml_blocks, value));
                 }
                 Some(mut pending_block) => {
@@ -341,10 +351,13 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
             ReadString(length) => {
                 let mut buf = vec![0; length];
                 f.read_exact(&mut buf)?;
-                match String::from_utf8(buf.clone()) {
-                    Ok(s) => ProcessItem(MLValue::StringUtf8(s)),
-                    Err(_) => ProcessItem(MLValue::StringBytes(buf)),
-                }
+                let to_add = match String::from_utf8(buf.clone()) {
+                    Ok(s) => MLValueString::UTF8(s),
+                    Err(_) => MLValueString::Bytes(buf),
+                };
+                let string_id = strings.len();
+                strings.push(to_add);
+                ProcessItem(MLValue::String(string_id))
             }
         }
     }
