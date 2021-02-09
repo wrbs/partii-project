@@ -1,7 +1,9 @@
 // Data model for parsed instructions
 
+use crate::bytecode_files::debug_events::DebugSpan;
 use crate::bytecode_files::{MLValue, MLValueBlocks};
 use ocaml_jit_shared::Instruction;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct Program {
@@ -12,8 +14,17 @@ pub struct Program {
 }
 
 #[derive(Debug)]
+pub struct PositionInfo {
+    pub module: Rc<String>,
+    pub def_name: Rc<String>,
+    pub span: DebugSpan,
+}
+// debug position info goes here
+
+#[derive(Debug)]
 pub struct Closure {
     pub blocks: Vec<Block>,
+    pub position: Option<PositionInfo>,
 }
 
 #[derive(Debug)]

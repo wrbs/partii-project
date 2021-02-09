@@ -64,7 +64,7 @@ pub fn run(options: Options) -> Result<()> {
     }
 
     if options.show.should_show(&ShowSections::DebugEvents) {
-        show_debug_events(&bcf.debug_events);
+        show_debug_events(&bcf.debug_info);
         println!();
     }
 

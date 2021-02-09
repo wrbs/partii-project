@@ -1,8 +1,10 @@
 use super::data::*;
 
-use crate::bytecode_files::{BytecodeFile, MLValue};
+use crate::bytecode_files::debug_events::DebugEvent;
+use crate::bytecode_files::{BytecodeFile, DebugInfo, MLValue};
 use anyhow::{anyhow, bail, Result};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
+use std::collections::hash_map::RandomState;
 use std::collections::{HashMap, HashSet, VecDeque};
 
 pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
@@ -33,6 +35,7 @@ pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
             referenced_labels,
             closures_todo,
             closure_nums,
+            debug_events: bcf.debug_info.map(|di| di.events.clone()),
             parent_closures: HashMap::new(),
         }
     };
@@ -75,6 +78,7 @@ struct GlobalCtx {
     closures_todo: VecDeque<usize>,
     closure_nums: HashMap<usize, usize>,
     parent_closures: HashMap<usize, usize>,
+    debug_events: Option<HashMap<usize, DebugEvent>>,
 }
 
 impl GlobalCtx {
@@ -95,6 +99,12 @@ impl GlobalCtx {
             Some(index) => Ok(*index),
             None => bail!("Could not find label {} defined", label),
         }
+    }
+
+    fn lookup_debug_info(&self, bytecode_offset: usize) -> Option<&DebugEvent> {
+        self.debug_events
+            .as_ref()
+            .and_then(|e| e.get(&bytecode_offset))
     }
 
     fn is_block_start(&self, label: usize) -> bool {
@@ -146,7 +156,22 @@ fn process_closure(global_ctx: &mut GlobalCtx, entrypoint: usize) -> Result<Clos
         )?);
     }
 
-    Ok(Closure { blocks })
+    let position = global_ctx
+        .lookup_debug_info(entrypoint)
+        .map(|e| PositionInfo {
+            module: e.module.clone(),
+            def_name: e.def_name.clone(),
+            span: e.span.clone(),
+        });
+
+    if position.is_some() {
+        println!(
+            "Closure has position info: {}",
+            closure_ctx.current_closure_id
+        );
+    }
+
+    Ok(Closure { blocks, position })
 }
 
 #[derive(Debug)]
