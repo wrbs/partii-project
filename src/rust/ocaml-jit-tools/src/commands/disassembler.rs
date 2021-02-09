@@ -117,7 +117,7 @@ fn show_global_data(global_data_blocks: &MLValueBlocks, global_data: &MLValue) {
     println!("{}", "Global data:".red().bold());
     match global_data {
         MLValue::Block(block_id) => {
-            let MLValueBlock { tag, items } = &global_data_blocks.blocks[*block_id];
+            let (tag, items) = global_data_blocks.get_block(block_id).unwrap();
             println!("Tag: {}", tag);
             let n = items.len();
             let width = (n as f32).log10() as usize;
@@ -169,7 +169,7 @@ fn show_debug_events(debug_events: &Option<DebugInfo>) {
         println!("Orig: {}", el.orig);
         println!("Entries:");
         for entry in &el.entries {
-            println!("- {}", el.entries_blocks.format_value(entry));
+            println!("{:#?}", entry);
         }
         println!(
             "Absolute dirs: {}",

@@ -4,13 +4,22 @@
 
 use anyhow::{bail, ensure, Context, Result};
 use byteorder::{BigEndian, ReadBytesExt};
+use std::borrow::Borrow;
 use std::fmt::{Display, Formatter};
 use std::io::Read;
 
 #[derive(Debug, Clone)]
 pub struct MLValueBlocks {
-    pub blocks: Vec<MLValueBlock>,
+    blocks: Vec<MLValueBlock>,
     pub strings: Vec<MLValueString>,
+}
+
+impl MLValueBlocks {
+    pub fn get_block<I: Borrow<usize>>(&self, id: I) -> Option<(u8, &[MLValue])> {
+        let id = *id.borrow();
+        let MLValueBlock { tag, items } = self.blocks.get(id)?;
+        Some((*tag, &items))
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -25,7 +34,7 @@ pub enum MLValueString {
     Bytes(Vec<u8>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MLValue {
     Int(i64),
     Block(usize),
@@ -133,8 +142,8 @@ struct Header {
 }
 
 pub fn input_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
-    let _ = parse_header(f)?;
-    let (blocks, v) = read_value(f)?;
+    let header = parse_header(f)?;
+    let (blocks, v) = read_value(f, header.num_objects)?;
     Ok((blocks, v))
 }
 
@@ -170,26 +179,33 @@ fn parse_header<R: Read>(f: &mut R) -> Result<Header> {
     })
 }
 
-fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
+fn read_value<R: Read>(f: &mut R, num_objects: usize) -> Result<(MLValueBlocks, MLValue)> {
     // This is an iterative version of the initial obvious recursive algorithm using a stack and
     // state. It's done using the handy method from 1B compilers for deriving a machine from a
     // recursive definition
 
     struct PendingBlock {
-        tag: u8,
-        items: Vec<MLValue>,
-        remaining: usize,
+        block_id: usize,
+        additional_fields: usize,
     }
 
     enum State {
         ReadItem,
         ProcessItem(MLValue),
-        ReadBlock(PendingBlock),
+        ReadBlock { tag: u8, size: usize },
         ReadString(usize),
+        ReadShared(usize),
+    }
+
+    enum PrevObject {
+        Block(usize),
+        String(usize),
+        Double(f64),
     }
 
     use State::*;
 
+    let mut prev_objects = Vec::with_capacity(num_objects);
     let mut blocks = Vec::new();
     let mut strings = Vec::new();
     let mut pending_block_stack = Vec::new();
@@ -205,11 +221,7 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
                         let tag = code & 0xF;
                         let size = ((code as usize) >> 4) & 0x7;
 
-                        ReadBlock(PendingBlock {
-                            tag,
-                            remaining: size,
-                            items: vec![],
-                        })
+                        ReadBlock { tag, size }
                     }
 
                     PREFIX_SMALL_INT..=PREFIX_SMALL_INT_END => {
@@ -226,27 +238,17 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
                     CODE_INT32 => ProcessItem(MLValue::Int(f.read_i32::<BigEndian>()? as i64)),
                     CODE_INT64 => ProcessItem(MLValue::Int(f.read_i32::<BigEndian>()? as i64)),
 
-                    CODE_SHARED8 => ProcessItem(MLValue::Shared(f.read_u8()? as usize)),
-                    CODE_SHARED16 => {
-                        ProcessItem(MLValue::Shared(f.read_u16::<BigEndian>()? as usize))
-                    }
-                    CODE_SHARED32 => {
-                        ProcessItem(MLValue::Shared(f.read_u32::<BigEndian>()? as usize))
-                    }
-                    CODE_SHARED64 => {
-                        ProcessItem(MLValue::Shared(f.read_u64::<BigEndian>()? as usize))
-                    }
+                    CODE_SHARED8 => ReadShared(f.read_u8()? as usize),
+                    CODE_SHARED16 => ReadShared(f.read_u16::<BigEndian>()? as usize),
+                    CODE_SHARED32 => ReadShared(f.read_u32::<BigEndian>()? as usize),
+                    CODE_SHARED64 => ReadShared(f.read_u64::<BigEndian>()? as usize),
 
                     CODE_BLOCK32 => {
                         let header = f.read_u32::<BigEndian>()?;
                         let size = header as usize >> 10;
                         let tag = (header & 0xFF) as u8;
 
-                        ReadBlock(PendingBlock {
-                            tag,
-                            remaining: size,
-                            items: Vec::new(),
-                        })
+                        ReadBlock { tag, size }
                     }
 
                     CODE_BLOCK64 => {
@@ -254,11 +256,7 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
                         let size = header as usize >> 10;
                         let tag = (header & 0xFF) as u8;
 
-                        ReadBlock(PendingBlock {
-                            tag,
-                            remaining: size,
-                            items: Vec::new(),
-                        })
+                        ReadBlock { tag, size }
                     }
 
                     CODE_STRING8 => {
@@ -280,7 +278,9 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
                     }
 
                     CODE_DOUBLE_LITTLE | CODE_DOUBLE_BIG => {
-                        ProcessItem(MLValue::Double(f.read_f64::<BigEndian>()?))
+                        let d = f.read_f64::<BigEndian>()?;
+                        prev_objects.push(PrevObject::Double(d));
+                        ProcessItem(MLValue::Double(d))
                     }
 
                     CODE_DOUBLE_ARRAY8_LITTLE | CODE_DOUBLE_ARRAY8_BIG => {
@@ -320,16 +320,19 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
                 }
             }
 
-            ReadBlock(pending_block) => {
-                if pending_block.remaining == 0 {
-                    let block_id = blocks.len();
-                    blocks.push(MLValueBlock {
-                        tag: pending_block.tag,
-                        items: pending_block.items,
-                    });
+            ReadBlock { tag, size } => {
+                let block_id = blocks.len();
+                blocks.push(MLValueBlock { tag, items: vec![] });
+                prev_objects.push(PrevObject::Block(block_id));
+
+                if size == 0 {
                     ProcessItem(MLValue::Block(block_id))
                 } else {
-                    pending_block_stack.push(pending_block);
+                    pending_block_stack.push(PendingBlock {
+                        block_id,
+                        additional_fields: size - 1,
+                    });
+
                     ReadItem
                 }
             }
@@ -341,10 +344,15 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
                     return Ok((ml_blocks, value));
                 }
                 Some(mut pending_block) => {
-                    ensure!(pending_block.remaining > 0);
-                    pending_block.items.push(value);
-                    pending_block.remaining -= 1;
-                    ReadBlock(pending_block)
+                    blocks[pending_block.block_id].items.push(value);
+
+                    if pending_block.additional_fields > 0 {
+                        pending_block.additional_fields -= 1;
+                        pending_block_stack.push(pending_block);
+                        ReadItem
+                    } else {
+                        ProcessItem(MLValue::Block(pending_block.block_id))
+                    }
                 }
             },
 
@@ -357,7 +365,19 @@ fn read_value<R: Read>(f: &mut R) -> Result<(MLValueBlocks, MLValue)> {
                 };
                 let string_id = strings.len();
                 strings.push(to_add);
+                prev_objects.push(PrevObject::String(string_id));
                 ProcessItem(MLValue::String(string_id))
+            }
+
+            ReadShared(offset) => {
+                ensure!(offset > 0);
+                ensure!(offset <= prev_objects.len());
+
+                match prev_objects[prev_objects.len() - offset] {
+                    PrevObject::Block(id) => ProcessItem(MLValue::Block(id)),
+                    PrevObject::String(id) => ProcessItem(MLValue::String(id)),
+                    PrevObject::Double(d) => ProcessItem(MLValue::Double(d)),
+                }
             }
         }
     }

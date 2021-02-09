@@ -44,12 +44,14 @@ pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
     }
 
     let mut globals: Vec<GlobalTableEntry> = match bcf.global_data {
-        MLValue::Block(block_id) => bcf.global_data_blocks.blocks[block_id]
-            .items
-            .iter()
-            .cloned()
-            .map(|v| GlobalTableEntry::Constant(v))
-            .collect(),
+        MLValue::Block(block_id) => match bcf.global_data_blocks.get_block(block_id) {
+            Some((_, items)) => items
+                .iter()
+                .cloned()
+                .map(|v| GlobalTableEntry::Constant(v))
+                .collect(),
+            _ => bail!("Invalid global data format"),
+        },
         _ => bail!("Invalid global data format"),
     };
 
