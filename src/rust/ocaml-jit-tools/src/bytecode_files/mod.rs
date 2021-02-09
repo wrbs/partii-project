@@ -9,7 +9,7 @@ pub mod trailer;
 use anyhow::{Context, Result};
 pub use debug_events::DebugInfo;
 pub use error::ParseFileError;
-pub use ml_data::{MLValue, MLValueBlocks};
+pub use ml_data::{MLValue, MLValueBlock, MLValueBlocks};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 use std::collections::HashMap;
 use std::fs::File;
