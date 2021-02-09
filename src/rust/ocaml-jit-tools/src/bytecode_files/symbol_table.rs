@@ -14,15 +14,12 @@ pub fn parse_symbol_table(f: &mut File, trailer: &Trailer) -> Result<HashMap<usi
 
     let mut entries = HashMap::new();
     match &val {
-        MLValue::Block(block_id) => {
-            let MLValueBlock { tag, items } = &blocks.blocks[*block_id];
-            match items.as_slice() {
-                [MLValue::Int(_next_item), map] => {
-                    find_rec(&blocks, map, &mut entries)?;
-                }
-                _ => bail!("Unexpected symbol table format - Num_tbl.t"),
+        MLValue::Block(block_id) => match blocks.get_block(block_id) {
+            Some((_, [MLValue::Int(_), map])) => {
+                find_rec(&blocks, map, &mut entries)?;
             }
-        }
+            _ => bail!("Unexpected symbol table format - Num_tbl.t"),
+        },
         _ => bail!("Unexpected symbol table format - Num_tbl.t"),
     }
 
@@ -50,33 +47,30 @@ fn find_rec(
     entries: &mut HashMap<usize, String>,
 ) -> Result<()> {
     match val {
-        MLValue::Block(block_id) => {
-            let MLValueBlock { tag, items } = &blocks.blocks[*block_id];
-            match items.as_slice() {
-                [l, v, MLValue::Int(index), r, _] => {
-                    find_rec(blocks, l, entries)?;
-                    match v {
-                        MLValue::Block(block_id) => {
-                            let MLValueBlock { tag: _, items } = &blocks.blocks[*block_id];
-                            match items.get(0) {
-                                Some(MLValue::String(string_id)) => {
-                                    match blocks.strings.get(*string_id) {
-                                        Some(MLValueString::UTF8(s)) => {
-                                            entries.insert(*index as usize, s.clone());
-                                        }
-                                        _ => bail!("Unexpected symbol table format - Ident"),
+        MLValue::Block(block_id) => match blocks.get_block(block_id) {
+            Some((_, [l, v, MLValue::Int(index), r, _])) => {
+                find_rec(blocks, l, entries)?;
+                match v {
+                    MLValue::Block(block_id) => match blocks.get_block(block_id) {
+                        Some((_, items)) => match items.get(0) {
+                            Some(MLValue::String(string_id)) => {
+                                match blocks.strings.get(*string_id) {
+                                    Some(MLValueString::UTF8(s)) => {
+                                        entries.insert(*index as usize, s.clone());
                                     }
+                                    _ => bail!("Unexpected symbol table format - Ident"),
                                 }
-                                _ => bail!("Unexpected symbol table format - Ident"),
                             }
-                        }
+                            _ => bail!("Unexpected symbol table format - Ident"),
+                        },
                         _ => bail!("Unexpected symbol table format - Map.Make Node"),
-                    }
-                    find_rec(blocks, r, entries)?;
+                    },
+                    _ => bail!("Unexpected symbol table format - Map.Make Node"),
                 }
-                _ => bail!("Unexpected symbol table format - Map.Make t"),
+                find_rec(blocks, r, entries)?;
             }
-        }
+            _ => bail!("Unexpected symbol table format - Map.Make t"),
+        },
         _ => (),
     }
 
