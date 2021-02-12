@@ -37,20 +37,29 @@ pub fn run(options: Options) -> Result<()> {
                 if extra_newline {
                     println!();
                 }
-                let Line {
-                    offset: dumpobj_offset,
-                    dumpobj_output,
-                    rest,
-                } = get_line(&mut lines)?;
-
-                dumpobj_rest = rest;
-                print!("{:<10} {} -> ", dumpobj_offset, dumpobj_output);
-
-                if offset.0 != dumpobj_offset {
-                    bail!("Invalid offsets: {} != {}", dumpobj_output, dumpobj_output);
+                if let Some(e) = bcf
+                    .debug_info
+                    .as_ref()
+                    .and_then(|di| di.events.get(&offset.0))
+                {
+                    println!("{:#?}", e);
                 }
-                first = true;
-                extra_newline = false;
+                match get_line(&mut lines)? {
+                    Line::Instruction {
+                        offset: dumpobj_offset,
+                        dumpobj_output,
+                        rest,
+                    } => {
+                        dumpobj_rest = rest;
+                        print!("{:<10} {} -> ", dumpobj_offset, dumpobj_output);
+
+                        if offset.0 != dumpobj_offset {
+                            bail!("Invalid offsets: {} != {}", dumpobj_output, dumpobj_output);
+                        }
+                        first = true;
+                        extra_newline = false;
+                    }
+                }
             }
             _ => {
                 if first {
@@ -82,10 +91,12 @@ pub fn run(options: Options) -> Result<()> {
     Ok(())
 }
 
-struct Line {
-    offset: usize,
-    dumpobj_output: String,
-    rest: String,
+enum Line {
+    Instruction {
+        offset: usize,
+        dumpobj_output: String,
+        rest: String,
+    },
 }
 
 fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>) -> Result<Line> {
@@ -132,7 +143,7 @@ fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>) -> Result<Line> {
         }
     }
 
-    Ok(Line {
+    Ok(Line::Instruction {
         offset,
         dumpobj_output,
         rest,

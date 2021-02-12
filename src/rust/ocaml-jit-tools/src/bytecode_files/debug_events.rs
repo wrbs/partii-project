@@ -205,10 +205,12 @@ fn parse_debug_event(
     ensure!(tag == 0);
     ensure!(items.len() == 11);
 
-    let position = match items[0] {
+    let ev_pos = match items[0] {
         MLValue::Int(i) => i as usize,
         _ => bail!("Invalid position value"),
-    } + relocation_offset;
+    };
+
+    let position = (ev_pos + relocation_offset) / 4;
 
     let module = strings.get_from_value(&items[1])?;
 
