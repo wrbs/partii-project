@@ -143,7 +143,7 @@ impl<'a> VisContext<'a> {
         if let Some(PositionInfo {
             module,
             def_name,
-            span,
+            filename,
         }) = &closure.position
         {
             writeln!(
@@ -159,18 +159,7 @@ impl<'a> VisContext<'a> {
             writeln!(
                 f,
                 "{}\n",
-                self.format_simple_instruction(&format!(
-                    "Start: {}:{}:{}",
-                    span.start.filename, span.start.line, span.start.column
-                ))
-            )?;
-            writeln!(
-                f,
-                "{}\n",
-                self.format_simple_instruction(&format!(
-                    "End: {}:{}:{}",
-                    span.end.filename, span.end.line, span.end.column
-                ))
+                self.format_simple_instruction(&format!("File: {}", filename))
             )?;
         }
 
@@ -252,10 +241,21 @@ impl<'a> VisContext<'a> {
         Ok(())
     }
 
+    fn format_closure_name(&self, closure_id: usize) -> String {
+        match &self.program.closures[closure_id].position {
+            Some(PositionInfo { def_name, .. }) => {
+                format!(" # {}", def_name)
+            }
+            None => {
+                format!("")
+            }
+        }
+    }
+
     fn format_instruction(&self, instruction: &Instruction<usize>) -> String {
         match instruction {
             Instruction::Closure(to, _) => self.format_linked_instruction(
-                format!("{:?}", instruction).as_str(),
+                format!("{:?}{}", instruction, self.format_closure_name(*to)).as_str(),
                 format!("./{}", self.closure_filename(*to, Extension::SVG)).as_str(),
             ),
             Instruction::ClosureRec(funcs, nvars) => {
@@ -268,7 +268,7 @@ impl<'a> VisContext<'a> {
                     out.push_str(&format!(
                         "{}\n",
                         self.format_linked_instruction(
-                            &format!("    {}", func),
+                            &format!("    {},{}", func, self.format_closure_name(*func)),
                             &format!("./{}", self.closure_filename(*func, Extension::SVG)),
                         )
                     ));

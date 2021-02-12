@@ -144,6 +144,7 @@ fn process_closure(global_ctx: &mut GlobalCtx, entrypoint: usize) -> Result<Clos
             todo,
             block_nums,
             current_closure_id,
+            position: None,
         }
     };
 
@@ -156,22 +157,10 @@ fn process_closure(global_ctx: &mut GlobalCtx, entrypoint: usize) -> Result<Clos
         )?);
     }
 
-    let position = global_ctx
-        .lookup_debug_info(entrypoint)
-        .map(|e| PositionInfo {
-            module: e.module.clone(),
-            def_name: e.def_name.clone(),
-            span: e.span.clone(),
-        });
-
-    if position.is_some() {
-        println!(
-            "Closure has position info: {}",
-            closure_ctx.current_closure_id
-        );
-    }
-
-    Ok(Closure { blocks, position })
+    Ok(Closure {
+        blocks,
+        position: closure_ctx.position,
+    })
 }
 
 #[derive(Debug)]
@@ -179,6 +168,7 @@ struct ClosureCtx {
     todo: VecDeque<usize>,
     block_nums: HashMap<usize, usize>,
     current_closure_id: usize,
+    position: Option<PositionInfo>,
 }
 
 impl ClosureCtx {
@@ -211,9 +201,21 @@ fn process_block(
     while end.is_none() {
         let current_instruction = &global_ctx.instructions[current_index].clone();
         match current_instruction {
-            // If this is a block boundary determined earlier, emit as an unconditional jump
             Instruction::LabelDef(l) => {
                 let current_label = l.0;
+
+                // Try to find position info
+                if closure_ctx.position.is_none() {
+                    if let Some(e) = global_ctx.lookup_debug_info(current_label) {
+                        closure_ctx.position = Some(PositionInfo {
+                            module: e.module.clone(),
+                            def_name: e.def_name.clone(),
+                            filename: e.span.start.filename.clone(),
+                        });
+                    }
+                }
+
+                // If this is a block boundary determined earlier, emit as an unconditional jump
                 if current_index != start_index && global_ctx.is_block_start(current_label) {
                     let next_block = closure_ctx.get_block(l.0);
                     end = Some(BlockExit::UnconditionalJump(next_block));
@@ -221,7 +223,7 @@ fn process_block(
                 }
             }
 
-            // Otherwise, parse the instruction and map labels to
+            // Otherwise, parse the instruction and map labels:
 
             // Closures are done with a global (non-block specific counter)
             Instruction::Closure(_, _) | Instruction::ClosureRec(_, _) => {

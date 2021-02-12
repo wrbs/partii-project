@@ -17,7 +17,7 @@ pub struct Program {
 pub struct PositionInfo {
     pub module: Rc<String>,
     pub def_name: Rc<String>,
-    pub span: DebugSpan,
+    pub filename: Rc<String>,
 }
 // debug position info goes here
 
