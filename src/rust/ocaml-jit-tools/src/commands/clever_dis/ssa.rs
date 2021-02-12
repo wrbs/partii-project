@@ -84,6 +84,10 @@ pub enum SSAExpr {
         codes: Vec<usize>,
         vars: Vec<SSAVar>,
     },
+    CCall {
+        primitive_id: usize,
+        vars: Vec<SSAVar>,
+    },
 }
 
 impl Display for SSAExpr {
@@ -115,6 +119,10 @@ impl Display for SSAExpr {
                 write!(f, "make rec closure codes:")?;
                 display_array_single_line(f, codes)?;
                 write!(f, " vars:")?;
+                display_array_single_line(f, vars)?;
+            }
+            SSAExpr::CCall { primitive_id, vars } => {
+                write!(f, "ccall {} ", primitive_id)?;
                 display_array_single_line(f, vars)?;
             }
         }
@@ -156,7 +164,7 @@ pub enum SSAExit {
     TempIDK,
     Stop,
     Jump(usize),
-    Return,
+    Return(SSAVar),
 }
 
 impl Display for SSAExit {
@@ -171,8 +179,8 @@ impl Display for SSAExit {
             SSAExit::Jump(block) => {
                 write!(f, "jump {}", block)?;
             }
-            SSAExit::Return => {
-                write!(f, "return")?;
+            SSAExit::Return(v) => {
+                write!(f, "return {}", v)?;
             }
         }
 
@@ -429,12 +437,12 @@ fn translate_block(block: &Block) -> (SSABlock, State) {
                 vars.add_statement(SSAStatement::CheckSignals);
             }
             Instruction::Primitive(_) => {}
-            Instruction::CCall1(_) => {}
-            Instruction::CCall2(_) => {}
-            Instruction::CCall3(_) => {}
-            Instruction::CCall4(_) => {}
-            Instruction::CCall5(_) => {}
-            Instruction::CCallN(_, _) => {}
+            Instruction::CCall1(id) => c_call(&mut state, &mut vars, 1, id),
+            Instruction::CCall2(id) => c_call(&mut state, &mut vars, 2, id),
+            Instruction::CCall3(id) => c_call(&mut state, &mut vars, 3, id),
+            Instruction::CCall4(id) => c_call(&mut state, &mut vars, 4, id),
+            Instruction::CCall5(id) => c_call(&mut state, &mut vars, 5, id),
+            Instruction::CCallN(nargs, id) => c_call(&mut state, &mut vars, *nargs as usize, id),
             Instruction::ArithInt(_) => {}
             Instruction::NegInt => {}
             Instruction::IntCmp(_) => {}
@@ -462,7 +470,7 @@ fn translate_block(block: &Block) -> (SSABlock, State) {
         }
         (BlockExit::Return, Instruction::Return(count)) => {
             state.pop(*count as usize);
-            SSAExit::Return
+            SSAExit::Return(state.acc)
         }
 
         _ => SSAExit::TempIDK,
@@ -477,12 +485,25 @@ fn translate_block(block: &Block) -> (SSABlock, State) {
     )
 }
 
+// Shared utilities for parser
+
+fn c_call(state: &mut State, vars: &mut Vars, count: usize, primitive_id: &u32) {
+    state.push(state.acc);
+
+    state.acc = vars.add_assignment(SSAExpr::CCall {
+        primitive_id: *primitive_id as usize,
+        vars: (0..count).map(|i| state.pick(i)).collect(),
+    });
+    state.pop(count);
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::commands::clever_dis::data::BlockExit;
     use expect_test::{expect, Expect};
 
+    use ocaml_jit_shared::Primitive;
     use std::fmt::Debug;
     use Instruction::*;
 
@@ -716,7 +737,7 @@ mod test {
                 v0 = a1[0]
                 v1 = apply oc<0> [v0]
                 v2 = make block tag:2 vars:[v1]
-                Exit: return
+                Exit: return v2
 
                 TOS: a3, a4, ..
                 Stack: [
@@ -754,6 +775,44 @@ mod test {
                 Stack: [
                 ]
                 Final acc: ()
+            "#]],
+        );
+
+        check(
+            vec![
+                Acc(0),
+                GetField(1),
+                Push,
+                Acc(1),
+                GetField(0),
+                Push,
+                Acc(1),
+                Push,
+                Acc(2),
+                Instruction::Primitive(Primitive::MulFloat),
+                Push,
+                Acc(1),
+                Push,
+                Acc(2),
+                Instruction::Primitive(Primitive::MulFloat),
+                Instruction::Primitive(Primitive::AddFloat),
+                Instruction::Primitive(Primitive::SqrtFloat),
+                Return(3),
+            ],
+            BlockExit::Return,
+            expect![[r#"
+                Block:
+                v0 = a1[1]
+                v1 = a1[0]
+                v2 = ccall 280 [v0, v0]
+                v3 = ccall 3 [v2, v0]
+                v4 = ccall 347 [v3]
+                Exit: return v4
+
+                TOS: a1, a2, ..
+                Stack: [
+                ]
+                Final acc: v4
             "#]],
         );
 
