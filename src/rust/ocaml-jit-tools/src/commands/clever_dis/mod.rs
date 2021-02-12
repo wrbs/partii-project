@@ -1,7 +1,7 @@
 mod data;
 mod parsing;
 mod ssa;
-mod vizualisation;
+mod visualisation;
 
 use crate::bytecode_files::parse_bytecode_file;
 use anyhow::{Context, Result};
@@ -47,9 +47,9 @@ pub fn run(options: Options) -> Result<()> {
     }
 
     if let Some(dot) = &options.dot {
-        vizualisation::write_dot_graphs(
+        visualisation::write_dot_graphs(
             &program,
-            vizualisation::Options {
+            visualisation::Options {
                 use_links: true,
                 verbose: options.verbose,
                 output_path: dot.clone(),
