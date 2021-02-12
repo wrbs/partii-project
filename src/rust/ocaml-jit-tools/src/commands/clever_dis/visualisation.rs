@@ -144,6 +144,8 @@ impl<'a> VisContext<'a> {
             module,
             def_name,
             filename,
+            heap_env,
+            rec_env,
         }) = &closure.position
         {
             writeln!(
@@ -161,6 +163,22 @@ impl<'a> VisContext<'a> {
                 "{}\n",
                 self.format_simple_instruction(&format!("File: {}", filename))
             )?;
+
+            for (id, ident) in heap_env {
+                writeln!(
+                    f,
+                    "{}\n",
+                    self.format_simple_instruction(&format!("Heap {}: {:?}", id, ident))
+                )?;
+            }
+
+            for (id, ident) in rec_env {
+                writeln!(
+                    f,
+                    "{}\n",
+                    self.format_simple_instruction(&format!("Rec {}: {:?}", id, ident))
+                )?;
+            }
         }
 
         writeln!(f, "</TABLE>>];")?;
@@ -184,7 +202,7 @@ impl<'a> VisContext<'a> {
             )?;
 
             for instr in &block.instructions {
-                writeln!(f, "{}", self.format_instruction(instr))?;
+                writeln!(f, "{}", self.format_instruction(closure, instr))?;
             }
             writeln!(f, "</TABLE>>];")?;
 
@@ -252,7 +270,7 @@ impl<'a> VisContext<'a> {
         }
     }
 
-    fn format_instruction(&self, instruction: &Instruction<usize>) -> String {
+    fn format_instruction(&self, closure: &Closure, instruction: &Instruction<usize>) -> String {
         match instruction {
             Instruction::Closure(to, _) => self.format_linked_instruction(
                 format!("{:?}{}", instruction, self.format_closure_name(*to)).as_str(),
@@ -280,6 +298,19 @@ impl<'a> VisContext<'a> {
 
                 out
             }
+            Instruction::EnvAcc(id) => {
+                self.format_simple_instruction(&match closure.lookup_heap_ident(*id as usize) {
+                    Some(ident) => format!("EnvAcc({}) # {}", id, ident),
+                    None => format!("EnvAcc({})", id),
+                })
+            }
+            Instruction::OffsetClosure(offset) => self.format_simple_instruction(&match closure
+                .lookup_closure_ident(*offset as i64)
+            {
+                Some(ident) => format!("OffsetClosure({}) # {}", offset, ident),
+                None => format!("OffsetClosure({})", offset),
+            }),
+
             Instruction::GetGlobal(id) => self.format_simple_instruction(
                 format!("GetGlobal({}) # {}", id, self.format_global(id)).as_str(),
             ),
