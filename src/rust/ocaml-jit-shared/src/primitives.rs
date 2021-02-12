@@ -30,6 +30,9 @@ pub enum Primitive {
 
     #[strum(to_string = "caml_div_float", props(Arity = "2"))]
     DivFloat,
+
+    #[strum(to_string = "caml_sqrt_float", props(Arity = "1"))]
+    SqrtFloat,
 }
 
 impl Primitive {
