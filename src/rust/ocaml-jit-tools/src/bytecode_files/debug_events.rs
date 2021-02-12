@@ -5,6 +5,7 @@ use anyhow::{anyhow, bail, ensure, Context, Result};
 use byteorder::{BigEndian, ReadBytesExt};
 use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::fmt;
 use std::fs::File;
 use std::rc::Rc;
 
@@ -26,8 +27,47 @@ pub struct DebugEvent {
     // pub type_env: usize,
     // pub type_subst: usize,
     // pub comp_env: usize,
+    pub heap_env: Vec<(i64, Ident)>,
+    pub rec_env: Vec<(i64, Ident)>,
     pub stack_size: usize,
     pub repr: DebugEventRepr,
+}
+
+#[derive(Debug, Clone)]
+pub enum Ident {
+    Local {
+        name: Rc<String>,
+        stamp: i64,
+    },
+    Scoped {
+        name: Rc<String>,
+        stamp: i64,
+        scope: i64,
+    },
+    Global {
+        name: Rc<String>,
+    },
+    Predef {
+        name: Rc<String>,
+        stamp: i64,
+    },
+}
+
+impl Ident {
+    fn name(&self) -> &Rc<String> {
+        match self {
+            Ident::Local { name, .. } => name,
+            Ident::Scoped { name, .. } => name,
+            Ident::Global { name, .. } => name,
+            Ident::Predef { name, .. } => name,
+        }
+    }
+}
+
+impl fmt::Display for Ident {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name())
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -79,7 +119,7 @@ pub fn parse_debug_events(f: &mut File, trailer: &Trailer) -> Result<Option<Debu
 
     let mut event_lists = Vec::with_capacity(num_eventlists as usize);
 
-    for _ in (0..num_eventlists) {
+    for _ in 0..num_eventlists {
         let orig = section.read_u32::<BigEndian>()?;
         let (list_blocks, list_value) =
             input_value(&mut section).context("Problem reading debug events")?;
@@ -235,6 +275,17 @@ fn parse_debug_event(
         o => bail!("Invalid info value, {}", blocks.format_value(o)),
     };
 
+    let (heap_env, rec_env) = match &items[8] {
+        MLValue::Block(b) => match blocks.get_block(b) {
+            Some((0, [_ce_stack, ce_heap, ce_rec])) => (
+                parse_env_table(blocks, strings, ce_heap)?,
+                parse_env_table(blocks, strings, ce_rec)?,
+            ),
+            _ => bail!("Invalid compenv"),
+        },
+        _ => bail!("Invalid compenv"),
+    };
+
     let stack_size = match &items[9] {
         MLValue::Int(i) => *i as usize,
         _ => bail!("Invalid stack size"),
@@ -257,6 +308,8 @@ fn parse_debug_event(
         kind,
         def_name,
         info,
+        heap_env,
+        rec_env,
         stack_size,
         repr,
     })
@@ -293,5 +346,68 @@ fn parse_position(
             _ => bail!("Invalid position"),
         },
         _ => bail!("Invalid position"),
+    }
+}
+
+fn parse_env_table(
+    blocks: &MLValueBlocks,
+    strings: &mut Strings,
+    value: &MLValue,
+) -> Result<Vec<(i64, Ident)>> {
+    let mut stack = Vec::new();
+    let mut found = Vec::new();
+    stack.push(value);
+
+    while let Some(b) = stack.pop() {
+        match b {
+            MLValue::Int(0) => continue,
+            MLValue::Block(b) => match blocks.get_block(b) {
+                Some((0, [l, MLValue::Block(data_block), r, MLValue::Int(_)])) => {
+                    stack.push(l);
+                    stack.push(r);
+
+                    match blocks.get_block(data_block) {
+                        Some((0, [ident_value, MLValue::Int(data), _])) => {
+                            let ident = parse_ident(blocks, strings, ident_value)?;
+                            found.push((*data, ident));
+                        }
+                        _ => bail!("Invalid env table"),
+                    }
+                }
+                _ => bail!("Invalid env table"),
+            },
+            _ => bail!("Invalid env table"),
+        }
+    }
+
+    found.sort_by_key(|(i, _)| *i);
+
+    Ok(found)
+}
+
+fn parse_ident(blocks: &MLValueBlocks, strings: &mut Strings, value: &MLValue) -> Result<Ident> {
+    match value {
+        MLValue::Block(b) => match blocks.get_block(b) {
+            Some((0, [MLValue::String(name_s), MLValue::Int(stamp)])) => Ok(Ident::Local {
+                name: strings.get(name_s)?,
+                stamp: *stamp,
+            }),
+            Some((1, [MLValue::String(name_s), MLValue::Int(stamp), MLValue::Int(scope)])) => {
+                Ok(Ident::Scoped {
+                    name: strings.get(name_s)?,
+                    stamp: *stamp,
+                    scope: *scope,
+                })
+            }
+            Some((2, [MLValue::String(name_s)])) => Ok(Ident::Global {
+                name: strings.get(name_s)?,
+            }),
+            Some((3, [MLValue::String(name_s), MLValue::Int(stamp)])) => Ok(Ident::Predef {
+                name: strings.get(name_s)?,
+                stamp: *stamp,
+            }),
+            _ => bail!("Invalid ident"),
+        },
+        _ => bail!("Invalid ident"),
     }
 }

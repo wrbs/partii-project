@@ -211,6 +211,8 @@ fn process_block(
                             module: e.module.clone(),
                             def_name: e.def_name.clone(),
                             filename: e.span.start.filename.clone(),
+                            heap_env: e.heap_env.clone(),
+                            rec_env: e.rec_env.clone(),
                         });
                     }
                 }
