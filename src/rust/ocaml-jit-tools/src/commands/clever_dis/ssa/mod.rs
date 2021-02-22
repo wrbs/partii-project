@@ -112,7 +112,9 @@ pub enum SSAExpr {
     GetGlobal(usize),
     GetField(SSAVar, usize),
     GetFloatField(SSAVar, usize),
-    OffsetInt(SSAVar, i32),
+    ArithInt(ArithOp, SSAVar, SSAVar),
+    NegInt(SSAVar),
+    IntCmp(Comp, SSAVar, SSAVar),
     UnaryFloat(UnaryFloatOp, SSAVar),
     BinaryFloat(BinaryFloatOp, SSAVar, SSAVar),
     MakeBlock {
@@ -151,9 +153,30 @@ impl Display for SSAExpr {
             SSAExpr::GetFloatField(v, i) => {
                 write!(f, "float {}[{}]", v, i)?;
             }
-            SSAExpr::OffsetInt(v, i) => {
-                write!(f, "{} + {}", v, i)?;
-            }
+            SSAExpr::ArithInt(op, a, b) => match op {
+                ArithOp::Add => write!(f, "{} + {}", a, b)?,
+                ArithOp::Sub => write!(f, "{} - {}", a, b)?,
+                ArithOp::Mul => write!(f, "{} * {}", a, b)?,
+                ArithOp::Div => write!(f, "{} / {}", a, b)?,
+                ArithOp::Mod => write!(f, "{} % {}", a, b)?,
+                ArithOp::And => write!(f, "{} & {}", a, b)?,
+                ArithOp::Or => write!(f, "{} | {}", a, b)?,
+                ArithOp::Xor => write!(f, "{} ^ {}", a, b)?,
+                ArithOp::Lsl => write!(f, "{} << {}", a, b)?,
+                ArithOp::Lsr => write!(f, "{} l>> {}", a, b)?,
+                ArithOp::Asr => write!(f, "{} a>> {}", a, b)?,
+            },
+            SSAExpr::NegInt(var) => write!(f, "- {}", var)?,
+            SSAExpr::IntCmp(comp, a, b) => match comp {
+                Comp::Eq => write!(f, "{} == {}", a, b)?,
+                Comp::Ne => write!(f, "{} != {}", a, b)?,
+                Comp::Lt => write!(f, "{} < {}", a, b)?,
+                Comp::Le => write!(f, "{} <= {}", a, b)?,
+                Comp::Gt => write!(f, "{} > {}", a, b)?,
+                Comp::Ge => write!(f, "{} >= {}", a, b)?,
+                Comp::ULt => write!(f, "{} u< {}", a, b)?,
+                Comp::UGe => write!(f, "{} u>= {}", a, b)?,
+            },
             SSAExpr::BinaryFloat(op, a, b) => {
                 write!(f, "{} {} {}", op, a, b)?;
             }
@@ -419,6 +442,7 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
         | Instruction::Branch(_)
         | Instruction::BranchIf(_)
         | Instruction::BranchIfNot(_)
+        | Instruction::BranchCmp(_, _, _)
         | Instruction::Raise(_)
         | Instruction::Switch(_, _)
         | Instruction::Stop => {
@@ -578,12 +602,21 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
         Instruction::CCall4(id) => c_call(state, vars, 4, id),
         Instruction::CCall5(id) => c_call(state, vars, 5, id),
         Instruction::CCallN(nargs, id) => c_call(state, vars, *nargs as usize, id),
-        // Instruction::ArithInt(_) => {}
-        // Instruction::NegInt => {}
-        // Instruction::IntCmp(_) => {}
-        // Instruction::BranchCmp(_, _, _) => {}
+        Instruction::ArithInt(op) => {
+            state.acc = vars.add_assignment(SSAExpr::ArithInt(*op, state.acc, state.pick(0)));
+            state.pop(1);
+        }
+        Instruction::NegInt => state.acc = vars.add_assignment(SSAExpr::NegInt(state.acc)),
+        Instruction::IntCmp(comp) => {
+            state.acc = vars.add_assignment(SSAExpr::IntCmp(*comp, state.acc, state.pick(0)));
+            state.pop(1);
+        }
         Instruction::OffsetInt(n) => {
-            state.acc = vars.add_assignment(SSAExpr::OffsetInt(state.acc, *n))
+            state.acc = vars.add_assignment(SSAExpr::ArithInt(
+                ArithOp::Add,
+                state.acc,
+                SSAVar::Const(*n),
+            ));
         }
         // Instruction::OffsetRef(_) => {}
         // Instruction::IsInt => {}
@@ -628,7 +661,15 @@ fn process_final_instruction(
                 if_false: *iff,
             }
         }
-
+        (Instruction::BranchCmp(comp, compare, ift1), BlockExit::ConditionalJump(ift2, iff)) => {
+            assert_eq!(ift1, ift2);
+            let v = vars.add_assignment(SSAExpr::IntCmp(*comp, SSAVar::Const(*compare), state.acc));
+            SSAExit::JumpIf {
+                var: v,
+                if_true: *ift1,
+                if_false: *iff,
+            }
+        }
         (Instruction::Raise(kind), BlockExit::Raise) => SSAExit::Raise(*kind, state.acc),
         (Instruction::Apply(nvars), BlockExit::UnconditionalJump(retloc1)) => {
             let nvars = *nvars as usize;
@@ -663,14 +704,8 @@ fn process_final_instruction(
         }
 
         /*
-        | Instruction::Return(_)
         | Instruction::Restart
-        | Instruction::Branch(_)
-        | Instruction::BranchIf(_)
-        | Instruction::BranchIfNot(_)
-        | Instruction::Raise(_)
         | Instruction::Switch(_, _)
-        | Instruction::Stop => {
          */
         _ => SSAExit::Unimplemented(instr.clone(), exit.clone()),
     }
