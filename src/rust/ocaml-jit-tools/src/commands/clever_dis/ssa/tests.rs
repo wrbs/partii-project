@@ -93,7 +93,9 @@ fn test_state() {
         state.pop(2);
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(0), Computed(1)], acc: PrevAcc, stack_start: 0 }"#]],
+            expect![[
+                r#"State { stack: [Computed(0), Computed(1)], acc: PrevAcc, stack_start: 0 }"#
+            ]],
         );
 
         state.pop(3);
@@ -130,7 +132,9 @@ fn test_state() {
         state.assign(1, SSAVar::Computed(24));
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(24), Computed(23)], acc: PrevAcc, stack_start: 1 }"#]],
+            expect![[
+                r#"State { stack: [Computed(24), Computed(23)], acc: PrevAcc, stack_start: 1 }"#
+            ]],
         );
 
         state.assign(5, SSAVar::Computed(25));
@@ -176,7 +180,7 @@ fn test_block_translation() {
         };
 
         let (ssa_block, final_state) = translate_block(&block);
-        let actual = format!("Block:\n{}\n{}", ssa_block, final_state);
+        let actual = format!("{}\n{}", ssa_block, final_state);
         expected.assert_eq(&actual);
     }
 
@@ -196,7 +200,6 @@ fn test_block_translation() {
         ],
         BlockExit::UnconditionalJump(1),
         expect![[r#"
-            Block:
             check signals
             v0 = g310
             v1 = g308
@@ -205,10 +208,8 @@ fn test_block_translation() {
             v4 = <prev:0> + 1
             Exit: jump 1
 
-            TOS: <prev:1>, <prev:2>, ..
-            Stack: [
-                v4
-            ]
+            Stack delta: -1/+1
+            End stack: ..., <prev:1> | v4
             Final acc: v4
         "#]],
     );
@@ -225,15 +226,13 @@ fn test_block_translation() {
         ],
         BlockExit::Return,
         expect![[r#"
-            Block:
             v0 = <prev:0>[0]
             v1 = apply oc[0] [v0]
             v2 = make block tag:2 vars:[v1]
             Exit: return v2
 
-            TOS: <prev:2>, <prev:3>, ..
-            Stack: [
-            ]
+            Stack delta: -2/+0
+            End stack: ..., <prev:2> | 
             Final acc: v2
         "#]],
     );
@@ -255,7 +254,6 @@ fn test_block_translation() {
         ],
         BlockExit::UnconditionalJump(2),
         expect![[r#"
-            Block:
             v0 = make rec closure codes:[1] vars:[]
             v1 = make rec closure codes:[2] vars:[]
             v2 = make rec closure codes:[3] vars:[]
@@ -263,9 +261,8 @@ fn test_block_translation() {
             set g12 = v3
             Exit: jump 2
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-            ]
+            Stack delta: -0/+0
+            End stack: ..., <prev:0> | 
             Final acc: ()
         "#]],
     );
@@ -293,7 +290,6 @@ fn test_block_translation() {
         ],
         BlockExit::Return,
         expect![[r#"
-            Block:
             v0 = <prev:0>[1]
             v1 = <prev:0>[0]
             v2 = mul.f v0 v0
@@ -302,9 +298,8 @@ fn test_block_translation() {
             v5 = sqrt.f v4
             Exit: return v5
 
-            TOS: <prev:1>, <prev:2>, ..
-            Stack: [
-            ]
+            Stack delta: -1/+0
+            End stack: ..., <prev:1> | 
             Final acc: v5
         "#]],
     );
@@ -332,7 +327,6 @@ fn test_block_translation() {
         ],
         BlockExit::ConditionalJump(5, 6),
         expect![[r#"
-            Block:
             v0 = g49
             v1 = g50
             v2 = make float block [v1, v0]
@@ -343,12 +337,8 @@ fn test_block_translation() {
             v6 = ccall 304 [v5, v4]
             Exit: jump_if v6 t:6 f:5
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-                <prev:acc>
-                v2
-                ()
-            ]
+            Stack delta: -0/+3
+            End stack: ..., <prev:0> | <prev:acc>, v2, ()
             Final acc: v6
         "#]],
     );
@@ -364,14 +354,12 @@ fn test_block_translation() {
         ],
         BlockExit::Raise,
         expect![[r#"
-            Block:
             v0 = g2
             v1 = make block tag:0 vars:[v0, <prev:0>]
             Exit: raise v1
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-            ]
+            Stack delta: -0/+0
+            End stack: ..., <prev:0> | 
             Final acc: v1
         "#]],
     );
@@ -400,16 +388,14 @@ fn test_block_translation() {
         ],
         BlockExit::TailCall,
         expect![[r#"
-            Block:
             v0 = <prev:1>[1]
             v1 = <prev:1>[0]
             v2 = apply e1 [v1]
             v3 = make block tag:0 vars:[v2, <prev:0>]
             Exit: tail_apply oc[0] [v3, v0]
 
-            TOS: <prev:2>, <prev:3>, ..
-            Stack: [
-            ]
+            Stack delta: -2/+0
+            End stack: ..., <prev:2> | 
             Final acc: oc[0]
         "#]],
     );
@@ -419,13 +405,11 @@ fn test_block_translation() {
         vec![Acc(0), BranchCmp(Comp::Ge, 2, 1)],
         BlockExit::ConditionalJump(1, 2),
         expect![[r#"
-            Block:
             v0 = 2 >= <prev:0>
             Exit: jump_if v0 t:1 f:2
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-            ]
+            Stack delta: -0/+0
+            End stack: ..., <prev:0> | 
             Final acc: <prev:0>
         "#]],
     );
@@ -496,7 +480,6 @@ fn test_block_translation() {
         ],
         BlockExit::Stop,
         expect![[r#"
-            Block:
             v0 = g89
             v1 = g89
             v2 = v1[32]
@@ -525,9 +508,8 @@ fn test_block_translation() {
             set g312 = <atom:0>
             Exit: stop
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-            ]
+            Stack delta: -0/+0
+            End stack: ..., <prev:0> | 
             Final acc: ()
         "#]],
     );
@@ -575,7 +557,6 @@ fn test_block_translation() {
         ],
         BlockExit::Stop,
         expect![[r#"
-            Block:
             v0 = make closure code:405 vars:[]
             v1 = g301
             v2 = make block tag:0 vars:[v1, 71]
@@ -592,9 +573,8 @@ fn test_block_translation() {
             set g304 = <atom:0>
             Exit: stop
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-            ]
+            Stack delta: -0/+0
+            End stack: ..., <prev:0> | 
             Final acc: ()
         "#]],
     );
@@ -644,7 +624,6 @@ fn test_block_translation() {
         ],
         BlockExit::UnconditionalJump(4),
         expect![[r#"
-            Block:
             v0 = make closure code:88 vars:[]
             v1 = make closure code:89 vars:[]
             v2 = make closure code:90 vars:[]
@@ -656,14 +635,8 @@ fn test_block_translation() {
             v8 = apply v3 [0, 1, 2, 3]
             Exit: jump 4
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-                v0
-                v1
-                v2
-                v3
-                v4
-            ]
+            Stack delta: -0/+5
+            End stack: ..., <prev:0> | v0, v1, v2, v3, v4
             Final acc: v8
         "#]],
     );
@@ -685,13 +658,11 @@ fn test_block_translation() {
         ],
         BlockExit::UnconditionalJump(5),
         expect![[r#"
-            Block:
             v0 = apply <prev:0> [0, 1, 2, 3, 4]
             Exit: jump 5
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-            ]
+            Stack delta: -0/+0
+            End stack: ..., <prev:0> | 
             Final acc: v0
         "#]],
     );
@@ -721,7 +692,6 @@ fn test_block_translation() {
         ],
         BlockExit::Stop,
         expect![[r#"
-            Block:
             v0 = make block tag:0 vars:[<prev:4>, <prev:3>, <prev:2>, <prev:1>, <prev:0>]
             set g46 = v0
             v1 = g45
@@ -730,9 +700,8 @@ fn test_block_translation() {
             set g47 = <atom:0>
             Exit: stop
 
-            TOS: <prev:5>, <prev:6>, ..
-            Stack: [
-            ]
+            Stack delta: -5/+0
+            End stack: ..., <prev:5> | 
             Final acc: ()
         "#]],
     );
@@ -814,7 +783,6 @@ fn test_block_translation() {
         ],
         BlockExit::UnconditionalJump(3),
         expect![[r#"
-            Block:
             v0 = 1 * 2
             v1 = 1 / 2
             v2 = 1 % 2
@@ -835,10 +803,8 @@ fn test_block_translation() {
             v17 = - 1
             Exit: jump 3
 
-            TOS: <prev:0>, <prev:1>, ..
-            Stack: [
-                1
-            ]
+            Stack delta: -0/+1
+            End stack: ..., <prev:0> | 1
             Final acc: v17
         "#]],
     );
