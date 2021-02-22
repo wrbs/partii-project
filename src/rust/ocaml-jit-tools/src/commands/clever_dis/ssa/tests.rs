@@ -208,9 +208,9 @@ fn test_block_translation() {
             v4 = <prev:0> + 1
             Exit: jump 1
 
-            Stack delta: -1/+1
-            End stack: ..., <prev:1> | v4
             Final acc: v4
+            End stack: ..., <prev:1> | v4
+            Stack delta: -1/+1
         "#]],
     );
 
@@ -231,9 +231,9 @@ fn test_block_translation() {
             v2 = make block tag:2 vars:[v1]
             Exit: return v2
 
-            Stack delta: -2/+0
-            End stack: ..., <prev:2> | 
             Final acc: v2
+            End stack: ..., <prev:2> | 
+            Stack delta: -2/+0
         "#]],
     );
 
@@ -261,9 +261,9 @@ fn test_block_translation() {
             set g12 = v3
             Exit: jump 2
 
-            Stack delta: -0/+0
-            End stack: ..., <prev:0> | 
             Final acc: ()
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
         "#]],
     );
 
@@ -298,9 +298,9 @@ fn test_block_translation() {
             v5 = sqrt.f v4
             Exit: return v5
 
-            Stack delta: -1/+0
-            End stack: ..., <prev:1> | 
             Final acc: v5
+            End stack: ..., <prev:1> | 
+            Stack delta: -1/+0
         "#]],
     );
 
@@ -337,9 +337,9 @@ fn test_block_translation() {
             v6 = ccall 304 [v5, v4]
             Exit: jump_if v6 t:6 f:5
 
-            Stack delta: -0/+3
-            End stack: ..., <prev:0> | <prev:acc>, v2, ()
             Final acc: v6
+            End stack: ..., <prev:0> | <prev:acc>, v2, ()
+            Stack delta: -0/+3
         "#]],
     );
 
@@ -358,9 +358,9 @@ fn test_block_translation() {
             v1 = make block tag:0 vars:[v0, <prev:0>]
             Exit: raise v1
 
-            Stack delta: -0/+0
-            End stack: ..., <prev:0> | 
             Final acc: v1
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
         "#]],
     );
 
@@ -394,9 +394,9 @@ fn test_block_translation() {
             v3 = make block tag:0 vars:[v2, <prev:0>]
             Exit: tail_apply oc[0] [v3, v0]
 
-            Stack delta: -2/+0
-            End stack: ..., <prev:2> | 
             Final acc: oc[0]
+            End stack: ..., <prev:2> | 
+            Stack delta: -2/+0
         "#]],
     );
 
@@ -408,9 +408,9 @@ fn test_block_translation() {
             v0 = 2 >= <prev:0>
             Exit: jump_if v0 t:1 f:2
 
-            Stack delta: -0/+0
-            End stack: ..., <prev:0> | 
             Final acc: <prev:0>
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
         "#]],
     );
 
@@ -508,9 +508,9 @@ fn test_block_translation() {
             set g312 = <atom:0>
             Exit: stop
 
-            Stack delta: -0/+0
-            End stack: ..., <prev:0> | 
             Final acc: ()
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
         "#]],
     );
 
@@ -573,9 +573,9 @@ fn test_block_translation() {
             set g304 = <atom:0>
             Exit: stop
 
-            Stack delta: -0/+0
-            End stack: ..., <prev:0> | 
             Final acc: ()
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
         "#]],
     );
 
@@ -635,9 +635,9 @@ fn test_block_translation() {
             v8 = apply v3 [0, 1, 2, 3]
             Exit: jump 4
 
-            Stack delta: -0/+5
-            End stack: ..., <prev:0> | v0, v1, v2, v3, v4
             Final acc: v8
+            End stack: ..., <prev:0> | v0, v1, v2, v3, v4
+            Stack delta: -0/+5
         "#]],
     );
     check(
@@ -661,9 +661,9 @@ fn test_block_translation() {
             v0 = apply <prev:0> [0, 1, 2, 3, 4]
             Exit: jump 5
 
-            Stack delta: -0/+0
-            End stack: ..., <prev:0> | 
             Final acc: v0
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
         "#]],
     );
     check(
@@ -700,9 +700,9 @@ fn test_block_translation() {
             set g47 = <atom:0>
             Exit: stop
 
-            Stack delta: -5/+0
-            End stack: ..., <prev:5> | 
             Final acc: ()
+            End stack: ..., <prev:5> | 
+            Stack delta: -5/+0
         "#]],
     );
 
@@ -803,9 +803,9 @@ fn test_block_translation() {
             v17 = - 1
             Exit: jump 3
 
-            Stack delta: -0/+1
-            End stack: ..., <prev:0> | 1
             Final acc: v17
+            End stack: ..., <prev:0> | 1
+            Stack delta: -0/+1
         "#]],
     );
 }

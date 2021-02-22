@@ -1,7 +1,9 @@
 use super::data::*;
 
+use crate::commands::clever_dis::ssa::translate_block;
 use anyhow::{bail, Context, Result};
 use indicatif::{ProgressBar, ProgressStyle};
+use itertools::{EitherOrBoth, Itertools};
 use ocaml_jit_shared::Instruction;
 use std::ffi::OsString;
 use std::fs::{create_dir_all, File};
@@ -150,24 +152,24 @@ impl<'a> VisContext<'a> {
         {
             writeln!(
                 f,
-                "{}\n",
+                "<TR>{}</TR>\n",
                 self.format_simple_instruction(&format!("Module: {}", module))
             )?;
             writeln!(
                 f,
-                "{}\n",
+                "<TR>{}</TR>\n",
                 self.format_simple_instruction(&format!("Def name: {}", def_name))
             )?;
             writeln!(
                 f,
-                "{}\n",
+                "<TR>{}</TR>\n",
                 self.format_simple_instruction(&format!("File: {}", filename))
             )?;
 
             for (id, ident) in heap_env {
                 writeln!(
                     f,
-                    "{}\n",
+                    "<TR>{}</TR>\n",
                     self.format_simple_instruction(&format!("Heap {}: {:?}", id, ident))
                 )?;
             }
@@ -175,7 +177,7 @@ impl<'a> VisContext<'a> {
             for (id, ident) in rec_env {
                 writeln!(
                     f,
-                    "{}\n",
+                    "<TR>{}</TR>\n",
                     self.format_simple_instruction(&format!("Rec {}: {:?}", id, ident))
                 )?;
             }
@@ -192,18 +194,60 @@ impl<'a> VisContext<'a> {
         for (block_no, block) in closure.blocks.iter().enumerate() {
             writeln!(
                 f,
-                r#"n{} [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left">"#,
+                r#"n{} [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">"#,
                 block_no
             )?;
             writeln!(
                 f,
-                r#"<TR><TD BORDER="1"><B>Block {}</B></TD></TR>"#,
+                r#"<TR><TD BORDER="1" COLSPAN="2"><B>Block {}</B></TD></TR>"#,
                 block_no
             )?;
 
+            let mut bytecode_instrs = vec![];
             for instr in &block.instructions {
-                writeln!(f, "{}", self.format_instruction(closure, instr))?;
+                bytecode_instrs.append(&mut self.format_instruction(closure, instr));
             }
+
+            let (ssa_block, ssa_state) = translate_block(block);
+
+            let mut ssa_instrs: Vec<_> = format!("{}", ssa_block)
+                .lines()
+                .map(|l| {
+                    let s = l
+                        .replace("&", "&amp;")
+                        .replace("<", "&lt;")
+                        .replace(">", "&gt;");
+                    format!(r#"<TD ALIGN="left">{}   </TD>"#, s)
+                })
+                .collect();
+
+            ssa_instrs.extend(format!("{}", ssa_state).lines().map(|l| {
+                let s = l
+                    .replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;");
+                let sections: Vec<_> = s.split(":").collect();
+                format!(
+                    r#"<TD ALIGN="left"><B>{:>13}:</B>{}   </TD>"#,
+                    sections[0],
+                    &sections[1..sections.len()].join(":")
+                )
+            }));
+
+            for i in bytecode_instrs.iter().zip_longest(ssa_instrs) {
+                match i {
+                    EitherOrBoth::Both(a, b) => {
+                        writeln!(f, "<TR>{}{}</TR>", a, b)?;
+                    }
+                    EitherOrBoth::Left(a) => {
+                        writeln!(f, r#"<TR>{}<TD style="invis"></TD></TR>"#, a)?;
+                    }
+                    EitherOrBoth::Right(b) => {
+                        writeln!(f, r#"<TR><TD style="invis"></TD>{}</TR>"#, b)?;
+                    }
+                }
+            }
+
             writeln!(f, "</TABLE>>];")?;
 
             match &block.exit {
@@ -270,20 +314,22 @@ impl<'a> VisContext<'a> {
         }
     }
 
-    fn format_instruction(&self, closure: &Closure, instruction: &Instruction<usize>) -> String {
-        match instruction {
+    fn format_instruction(
+        &self,
+        closure: &Closure,
+        instruction: &Instruction<usize>,
+    ) -> Vec<String> {
+        let mut extra = Vec::new();
+        let first = match instruction {
             Instruction::Closure(to, _) => self.format_linked_instruction(
                 format!("{:?}{}", instruction, self.format_closure_name(*to)).as_str(),
                 format!("./{}", self.closure_filename(*to, Extension::SVG)).as_str(),
             ),
             Instruction::ClosureRec(funcs, nvars) => {
-                let mut out = String::new();
-                out.push_str(&format!(
-                    "{}\n",
-                    &self.format_simple_instruction("ClosureRec([")
-                ));
+                let first = format!("{}", &self.format_simple_instruction("ClosureRec(["));
+
                 for func in funcs {
-                    out.push_str(&format!(
+                    extra.push(format!(
                         "{}\n",
                         self.format_linked_instruction(
                             &format!("    {},{}", func, self.format_closure_name(*func)),
@@ -291,12 +337,12 @@ impl<'a> VisContext<'a> {
                         )
                     ));
                 }
-                out.push_str(&format!(
+                extra.push(format!(
                     "{}\n",
                     self.format_simple_instruction(&format!("], {})", nvars))
                 ));
 
-                out
+                first
             }
             Instruction::EnvAcc(id) => {
                 self.format_simple_instruction(&match closure.lookup_heap_ident(*id as usize) {
@@ -324,21 +370,26 @@ impl<'a> VisContext<'a> {
             Instruction::CCall5(id) => self.c_call(id, 5),
             Instruction::CCallN(id, nargs) => self.c_call(id, *nargs),
             _ => self.format_simple_instruction(format!("{:?}", instruction).as_str()),
-        }
+        };
+
+        let mut instructions = vec![first];
+        instructions.append(&mut extra);
+
+        instructions
     }
 
     fn format_simple_instruction(&self, contents: &str) -> String {
-        format!(r#"<TR><TD ALIGN="left">{}</TD></TR>"#, contents)
+        format!(r#"<TD ALIGN="left">{}  </TD>"#, contents)
     }
 
     fn format_linked_instruction(&self, contents: &str, href: &str) -> String {
         if self.options.use_links {
             format!(
-                r#"<TR><TD ALIGN="left" HREF="{}"><U>{}</U></TD></TR>"#,
+                r#"<TD ALIGN="left" HREF="{}"><U>{}</U>   </TD>"#,
                 href, contents
             )
         } else {
-            format!(r#"<TR><TD ALIGN="left">{}</TD></TR>"#, contents)
+            format!(r#"<TD ALIGN="left">{}   </TD>"#, contents)
         }
     }
 

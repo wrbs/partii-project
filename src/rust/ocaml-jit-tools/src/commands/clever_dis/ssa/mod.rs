@@ -8,19 +8,34 @@ use std::env::args;
 use std::fmt::{Binary, Display, Formatter};
 use std::process::exit;
 
-fn display_array_single_line<T: Display>(f: &mut Formatter, array: &[T]) -> std::fmt::Result {
-    let mut first = true;
-    write!(f, "[")?;
-    for v in array {
-        if first {
-            first = false;
-        } else {
-            write!(f, ", ")?;
+fn display_array<T: Display>(f: &mut Formatter, array: &[T]) -> std::fmt::Result {
+    const MAX_ON_LINE: usize = 8;
+
+    if array.len() > MAX_ON_LINE {
+        write!(f, "[")?;
+        let mut count = 0;
+        for (count, v) in array.iter().enumerate() {
+            if count % MAX_ON_LINE == 0 {
+                write!(f, "\n   ")?;
+            }
+            write!(f, " {},", v)?;
         }
 
-        write!(f, "{}", v)?;
+        write!(f, "\n]")?;
+    } else {
+        let mut first = true;
+        write!(f, "[")?;
+        for v in array {
+            if first {
+                first = false;
+            } else {
+                write!(f, ", ")?;
+            }
+
+            write!(f, "{}", v)?;
+        }
+        write!(f, "]")?;
     }
-    write!(f, "]")?;
 
     Ok(())
 }
@@ -144,7 +159,7 @@ impl Display for SSAExpr {
             SSAExpr::Apply(closure, args) => {
                 write!(f, "apply {} ", closure)?;
 
-                display_array_single_line(f, args)?;
+                display_array(f, args)?;
             }
             SSAExpr::GetGlobal(n) => {
                 write!(f, "g{}", n)?;
@@ -187,25 +202,25 @@ impl Display for SSAExpr {
             }
             SSAExpr::MakeBlock { tag, vars } => {
                 write!(f, "make block tag:{} vars:", tag)?;
-                display_array_single_line(f, vars)?;
+                display_array(f, vars)?;
             }
             SSAExpr::MakeFloatBlock(vars) => {
                 write!(f, "make float block ")?;
-                display_array_single_line(f, vars)?;
+                display_array(f, vars)?;
             }
             SSAExpr::Closure { code, vars } => {
                 write!(f, "make closure code:{} vars:", code)?;
-                display_array_single_line(f, vars)?;
+                display_array(f, vars)?;
             }
             SSAExpr::ClosureRec { codes, vars } => {
                 write!(f, "make rec closure codes:")?;
-                display_array_single_line(f, codes)?;
+                display_array(f, codes)?;
                 write!(f, " vars:")?;
-                display_array_single_line(f, vars)?;
+                display_array(f, vars)?;
             }
             SSAExpr::CCall { primitive_id, vars } => {
                 write!(f, "ccall {} ", primitive_id)?;
-                display_array_single_line(f, vars)?;
+                display_array(f, vars)?;
             }
         }
         Ok(())
@@ -290,7 +305,7 @@ impl Display for SSAExit {
             SSAExit::TailApply(closure, args) => {
                 write!(f, "tail_apply {} ", closure)?;
 
-                display_array_single_line(f, args)?;
+                display_array(f, args)?;
             }
             SSAExit::Raise(RaiseKind::Regular, v) => {
                 write!(f, "raise {}", v)?;
@@ -311,10 +326,10 @@ impl Display for SSAExit {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-struct State {
-    stack: Vec<SSAVar>,
-    acc: SSAVar,
-    stack_start: usize,
+pub struct State {
+    pub stack: Vec<SSAVar>,
+    pub acc: SSAVar,
+    pub stack_start: usize,
 }
 
 impl State {
@@ -360,12 +375,7 @@ impl State {
 
 impl Display for State {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        writeln!(
-            f,
-            "Stack delta: -{}/+{}",
-            self.stack_start,
-            self.stack.len()
-        )?;
+        writeln!(f, "Final acc: {}", self.acc)?;
 
         write!(f, "End stack: ..., <prev:{}> | ", self.stack_start)?;
 
@@ -381,7 +391,12 @@ impl Display for State {
         }
         writeln!(f)?;
 
-        writeln!(f, "Final acc: {}", self.acc)?;
+        writeln!(
+            f,
+            "Stack delta: -{}/+{}",
+            self.stack_start,
+            self.stack.len()
+        )?;
 
         Ok(())
     }
@@ -413,7 +428,7 @@ impl Vars {
     }
 }
 
-fn translate_block(block: &Block) -> (SSABlock, State) {
+pub fn translate_block(block: &Block) -> (SSABlock, State) {
     assert!(block.instructions.len() > 0);
     let last_instr_idx = block.instructions.len() - 1;
 
@@ -448,7 +463,7 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
         Instruction::ApplyTerm(_, _)
         | Instruction::Apply(_)
         | Instruction::Return(_)
-        | Instruction::Restart
+        // | Instruction::Restart
         | Instruction::Branch(_)
         | Instruction::BranchIf(_)
         | Instruction::BranchIfNot(_)
