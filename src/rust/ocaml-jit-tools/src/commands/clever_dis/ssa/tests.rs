@@ -18,8 +18,8 @@ fn check_debug_pretty<T: Debug>(thing: &T, expected: Expect) {
 fn test_state() {
     let start_state = State {
         stack: vec![],
-        acc: SSAVar::Arg(0),
-        stack_start: 1,
+        acc: SSAVar::PrevAcc,
+        stack_start: 0,
     };
 
     // Basic pick behaviour
@@ -28,16 +28,16 @@ fn test_state() {
 
         // Make sure picking has the correct behaviour
         check_debug(&state.stack, expect![[r#"[]"#]]);
-        check_debug(&state.pick(0), expect![[r#"Arg(1)"#]]);
-        check_debug(&state.pick(1), expect![[r#"Arg(2)"#]]);
-        check_debug(&state.pick(2), expect![[r#"Arg(3)"#]]);
+        check_debug(&state.pick(0), expect![[r#"PrevStack(0)"#]]);
+        check_debug(&state.pick(1), expect![[r#"PrevStack(1)"#]]);
+        check_debug(&state.pick(2), expect![[r#"PrevStack(2)"#]]);
 
         // Push something
         state.push(SSAVar::Computed(0));
         check_debug(&state.stack, expect![[r#"[Computed(0)]"#]]);
         check_debug(&state.pick(0), expect![[r#"Computed(0)"#]]);
-        check_debug(&state.pick(1), expect![[r#"Arg(1)"#]]);
-        check_debug(&state.pick(2), expect![[r#"Arg(2)"#]]);
+        check_debug(&state.pick(1), expect![[r#"PrevStack(0)"#]]);
+        check_debug(&state.pick(2), expect![[r#"PrevStack(1)"#]]);
     }
 
     // Popping with a completely empty stack
@@ -46,17 +46,17 @@ fn test_state() {
 
         check_debug(
             &state,
-            expect![[r#"State { stack: [], acc: Arg(0), stack_start: 1 }"#]],
+            expect![[r#"State { stack: [], acc: PrevAcc, stack_start: 0 }"#]],
         );
 
         state.pop(3);
         check_debug(
             &state,
-            expect![[r#"State { stack: [], acc: Arg(0), stack_start: 4 }"#]],
+            expect![[r#"State { stack: [], acc: PrevAcc, stack_start: 3 }"#]],
         );
-        check_debug(&state.pick(0), expect![[r#"Arg(4)"#]]);
-        check_debug(&state.pick(1), expect![[r#"Arg(5)"#]]);
-        check_debug(&state.pick(2), expect![[r#"Arg(6)"#]]);
+        check_debug(&state.pick(0), expect![[r#"PrevStack(3)"#]]);
+        check_debug(&state.pick(1), expect![[r#"PrevStack(4)"#]]);
+        check_debug(&state.pick(2), expect![[r#"PrevStack(5)"#]]);
     }
 
     // Push a few before popping from the pushed things
@@ -70,40 +70,36 @@ fn test_state() {
         check_debug_pretty(
             &state,
             expect![[r#"
-                    State {
-                        stack: [
-                            Computed(
-                                0,
-                            ),
-                            Computed(
-                                1,
-                            ),
-                            Computed(
-                                2,
-                            ),
-                            Computed(
-                                3,
-                            ),
-                        ],
-                        acc: Arg(
+                State {
+                    stack: [
+                        Computed(
                             0,
                         ),
-                        stack_start: 1,
-                    }"#]],
+                        Computed(
+                            1,
+                        ),
+                        Computed(
+                            2,
+                        ),
+                        Computed(
+                            3,
+                        ),
+                    ],
+                    acc: PrevAcc,
+                    stack_start: 0,
+                }"#]],
         );
 
         state.pop(2);
         check_debug(
             &state,
-            expect![[
-                r#"State { stack: [Computed(0), Computed(1)], acc: Arg(0), stack_start: 1 }"#
-            ]],
+            expect![[r#"State { stack: [Computed(0), Computed(1)], acc: PrevAcc, stack_start: 0 }"#]],
         );
 
         state.pop(3);
         check_debug(
             &state,
-            expect![[r#"State { stack: [], acc: Arg(0), stack_start: 2 }"#]],
+            expect![[r#"State { stack: [], acc: PrevAcc, stack_start: 1 }"#]],
         );
     }
     // Assignments 1
@@ -112,7 +108,7 @@ fn test_state() {
         state.assign(0, SSAVar::Computed(12));
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(12)], acc: Arg(0), stack_start: 2 }"#]],
+            expect![[r#"State { stack: [Computed(12)], acc: PrevAcc, stack_start: 1 }"#]],
         );
     }
 
@@ -122,53 +118,49 @@ fn test_state() {
         state.push(SSAVar::Computed(12));
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(12)], acc: Arg(0), stack_start: 1 }"#]],
+            expect![[r#"State { stack: [Computed(12)], acc: PrevAcc, stack_start: 0 }"#]],
         );
 
         state.assign(0, SSAVar::Computed(23));
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(23)], acc: Arg(0), stack_start: 1 }"#]],
+            expect![[r#"State { stack: [Computed(23)], acc: PrevAcc, stack_start: 0 }"#]],
         );
 
         state.assign(1, SSAVar::Computed(24));
         check_debug(
             &state,
-            expect![[
-                r#"State { stack: [Computed(24), Computed(23)], acc: Arg(0), stack_start: 2 }"#
-            ]],
+            expect![[r#"State { stack: [Computed(24), Computed(23)], acc: PrevAcc, stack_start: 1 }"#]],
         );
 
         state.assign(5, SSAVar::Computed(25));
         check_debug_pretty(
             &state,
             expect![[r#"
-                    State {
-                        stack: [
-                            Computed(
-                                25,
-                            ),
-                            Arg(
-                                3,
-                            ),
-                            Arg(
-                                2,
-                            ),
-                            Arg(
-                                1,
-                            ),
-                            Computed(
-                                24,
-                            ),
-                            Computed(
-                                23,
-                            ),
-                        ],
-                        acc: Arg(
-                            0,
+                State {
+                    stack: [
+                        Computed(
+                            25,
                         ),
-                        stack_start: 6,
-                    }"#]],
+                        PrevStack(
+                            4,
+                        ),
+                        PrevStack(
+                            3,
+                        ),
+                        PrevStack(
+                            2,
+                        ),
+                        Computed(
+                            24,
+                        ),
+                        Computed(
+                            23,
+                        ),
+                    ],
+                    acc: PrevAcc,
+                    stack_start: 5,
+                }"#]],
         );
     }
 }
@@ -209,11 +201,11 @@ fn test_block_translation() {
             v0 = g310
             v1 = g308
             v2 = v1[1]
-            v3 = apply v2 [v0, a1]
-            v4 = a1 + 1
+            v3 = apply v2 [v0, <prev:0>]
+            v4 = <prev:0> + 1
             Exit: jump 1
 
-            TOS: a2, a3, ..
+            TOS: <prev:1>, <prev:2>, ..
             Stack: [
                 v4
             ]
@@ -234,12 +226,12 @@ fn test_block_translation() {
         BlockExit::Return,
         expect![[r#"
             Block:
-            v0 = a1[0]
+            v0 = <prev:0>[0]
             v1 = apply oc[0] [v0]
             v2 = make block tag:2 vars:[v1]
             Exit: return v2
 
-            TOS: a3, a4, ..
+            TOS: <prev:2>, <prev:3>, ..
             Stack: [
             ]
             Final acc: v2
@@ -263,19 +255,19 @@ fn test_block_translation() {
         ],
         BlockExit::UnconditionalJump(2),
         expect![[r#"
-                Block:
-                v0 = make rec closure codes:[1] vars:[]
-                v1 = make rec closure codes:[2] vars:[]
-                v2 = make rec closure codes:[3] vars:[]
-                v3 = make block tag:0 vars:[v1, v0, v2]
-                set g12 = v3
-                Exit: jump 2
+            Block:
+            v0 = make rec closure codes:[1] vars:[]
+            v1 = make rec closure codes:[2] vars:[]
+            v2 = make rec closure codes:[3] vars:[]
+            v3 = make block tag:0 vars:[v1, v0, v2]
+            set g12 = v3
+            Exit: jump 2
 
-                TOS: a1, a2, ..
-                Stack: [
-                ]
-                Final acc: ()
-            "#]],
+            TOS: <prev:0>, <prev:1>, ..
+            Stack: [
+            ]
+            Final acc: ()
+        "#]],
     );
 
     check(
@@ -301,20 +293,20 @@ fn test_block_translation() {
         ],
         BlockExit::Return,
         expect![[r#"
-                Block:
-                v0 = a1[1]
-                v1 = a1[0]
-                v2 = mul.f v0 v0
-                v3 = mul.f v1 v1
-                v4 = add.f v3 v2
-                v5 = sqrt.f v4
-                Exit: return v5
+            Block:
+            v0 = <prev:0>[1]
+            v1 = <prev:0>[0]
+            v2 = mul.f v0 v0
+            v3 = mul.f v1 v1
+            v4 = add.f v3 v2
+            v5 = sqrt.f v4
+            Exit: return v5
 
-                TOS: a2, a3, ..
-                Stack: [
-                ]
-                Final acc: v5
-            "#]],
+            TOS: <prev:1>, <prev:2>, ..
+            Stack: [
+            ]
+            Final acc: v5
+        "#]],
     );
 
     // Float blocks
@@ -351,9 +343,9 @@ fn test_block_translation() {
             v6 = ccall 304 [v5, v4]
             Exit: jump_if v6 t:6 f:5
 
-            TOS: a1, a2, ..
+            TOS: <prev:0>, <prev:1>, ..
             Stack: [
-                a0
+                <prev:acc>
                 v2
                 ()
             ]
@@ -374,10 +366,10 @@ fn test_block_translation() {
         expect![[r#"
             Block:
             v0 = g2
-            v1 = make block tag:0 vars:[v0, a1]
+            v1 = make block tag:0 vars:[v0, <prev:0>]
             Exit: raise v1
 
-            TOS: a1, a2, ..
+            TOS: <prev:0>, <prev:1>, ..
             Stack: [
             ]
             Final acc: v1
@@ -409,13 +401,13 @@ fn test_block_translation() {
         BlockExit::TailCall,
         expect![[r#"
             Block:
-            v0 = a2[1]
-            v1 = a2[0]
+            v0 = <prev:1>[1]
+            v1 = <prev:1>[0]
             v2 = apply e1 [v1]
-            v3 = make block tag:0 vars:[v2, a1]
+            v3 = make block tag:0 vars:[v2, <prev:0>]
             Exit: tail_apply oc[0] [v3, v0]
 
-            TOS: a3, a4, ..
+            TOS: <prev:2>, <prev:3>, ..
             Stack: [
             ]
             Final acc: oc[0]
@@ -428,13 +420,13 @@ fn test_block_translation() {
         BlockExit::ConditionalJump(1, 2),
         expect![[r#"
             Block:
-            v0 = 2 >= a1
+            v0 = 2 >= <prev:0>
             Exit: jump_if v0 t:1 f:2
 
-            TOS: a1, a2, ..
+            TOS: <prev:0>, <prev:1>, ..
             Stack: [
             ]
-            Final acc: a1
+            Final acc: <prev:0>
         "#]],
     );
 
@@ -533,7 +525,7 @@ fn test_block_translation() {
             set g312 = <atom:0>
             Exit: stop
 
-            TOS: a1, a2, ..
+            TOS: <prev:0>, <prev:1>, ..
             Stack: [
             ]
             Final acc: ()
@@ -600,7 +592,7 @@ fn test_block_translation() {
             set g304 = <atom:0>
             Exit: stop
 
-            TOS: a1, a2, ..
+            TOS: <prev:0>, <prev:1>, ..
             Stack: [
             ]
             Final acc: ()
@@ -664,7 +656,7 @@ fn test_block_translation() {
             v8 = apply v3 [0, 1, 2, 3]
             Exit: jump 4
 
-            TOS: a1, a2, ..
+            TOS: <prev:0>, <prev:1>, ..
             Stack: [
                 v0
                 v1
@@ -694,10 +686,10 @@ fn test_block_translation() {
         BlockExit::UnconditionalJump(5),
         expect![[r#"
             Block:
-            v0 = apply a1 [0, 1, 2, 3, 4]
+            v0 = apply <prev:0> [0, 1, 2, 3, 4]
             Exit: jump 5
 
-            TOS: a1, a2, ..
+            TOS: <prev:0>, <prev:1>, ..
             Stack: [
             ]
             Final acc: v0
@@ -730,7 +722,7 @@ fn test_block_translation() {
         BlockExit::Stop,
         expect![[r#"
             Block:
-            v0 = make block tag:0 vars:[a5, a4, a3, a2, a1]
+            v0 = make block tag:0 vars:[<prev:4>, <prev:3>, <prev:2>, <prev:1>, <prev:0>]
             set g46 = v0
             v1 = g45
             v2 = v1[102]
@@ -738,7 +730,7 @@ fn test_block_translation() {
             set g47 = <atom:0>
             Exit: stop
 
-            TOS: a6, a7, ..
+            TOS: <prev:5>, <prev:6>, ..
             Stack: [
             ]
             Final acc: ()
@@ -843,7 +835,7 @@ fn test_block_translation() {
             v17 = - 1
             Exit: jump 3
 
-            TOS: a1, a2, ..
+            TOS: <prev:0>, <prev:1>, ..
             Stack: [
                 1
             ]

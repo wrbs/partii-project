@@ -27,8 +27,8 @@ fn display_array_single_line<T: Display>(f: &mut Formatter, array: &[T]) -> std:
 
 #[derive(Debug)]
 pub struct SSABlock {
-    statements: Vec<SSAStatement>,
-    exit: SSAExit,
+    pub statements: Vec<SSAStatement>,
+    pub exit: SSAExit,
 }
 
 impl Display for SSABlock {
@@ -43,7 +43,8 @@ impl Display for SSABlock {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum SSAVar {
-    Arg(usize),
+    PrevStack(usize),
+    PrevAcc,
     Env(usize),
     Computed(usize),
     OffsetClosure(isize),
@@ -58,7 +59,8 @@ pub enum SSAVar {
 impl Display for SSAVar {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
-            SSAVar::Arg(i) => write!(f, "a{}", i),
+            SSAVar::PrevStack(i) => write!(f, "<prev:{}>", i),
+            SSAVar::PrevAcc => write!(f, "<prev:acc>"),
             SSAVar::Env(i) => write!(f, "e{}", i),
             SSAVar::Computed(i) => write!(f, "v{}", i),
             SSAVar::OffsetClosure(i) => write!(f, "oc[{}]", i),
@@ -321,7 +323,7 @@ impl State {
             self.stack[self.stack.len() - 1 - n]
         } else {
             let arg_offset = n - self.stack.len();
-            return SSAVar::Arg(self.stack_start + arg_offset);
+            return SSAVar::PrevStack(self.stack_start + arg_offset);
         }
     }
 
@@ -343,8 +345,8 @@ impl State {
             let todo = index - self.stack.len() + 1;
             self.stack_start += todo;
             let mut tmp_stack = vec![];
-            for i in 1..=todo {
-                tmp_stack.push(SSAVar::Arg(self.stack_start - i - 1));
+            for i in 0..todo {
+                tmp_stack.push(SSAVar::PrevStack(self.stack_start - i));
             }
 
             std::mem::swap(&mut self.stack, &mut tmp_stack);
@@ -360,7 +362,7 @@ impl Display for State {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         writeln!(
             f,
-            "TOS: a{}, a{}, ..",
+            "TOS: <prev:{}>, <prev:{}>, ..",
             self.stack_start,
             self.stack_start + 1
         )?;
@@ -410,8 +412,8 @@ fn translate_block(block: &Block) -> (SSABlock, State) {
     let mut vars_d = Vars::new();
     let mut state_d = State {
         stack: vec![],
-        acc: SSAVar::Arg(0),
-        stack_start: 1,
+        acc: SSAVar::PrevAcc,
+        stack_start: 0,
     };
 
     let vars = &mut vars_d;
