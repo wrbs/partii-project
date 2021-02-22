@@ -10,6 +10,9 @@ use structopt::StructOpt;
 #[derive(StructOpt)]
 #[structopt(about = "compare traces between the interpreter and the JIT")]
 pub struct Options {
+    #[structopt(long)]
+    show_debug: bool,
+
     #[structopt(parse(from_os_str), long)]
     bytecode_file: PathBuf,
 
@@ -37,14 +40,16 @@ pub fn run(options: Options) -> Result<()> {
                 if extra_newline {
                     println!();
                 }
-                if let Some(e) = bcf
-                    .debug_info
-                    .as_ref()
-                    .and_then(|di| di.events.get(&offset.0))
-                {
-                    println!("{:#?}", e);
+                if options.show_debug {
+                    if let Some(e) = bcf
+                        .debug_info
+                        .as_ref()
+                        .and_then(|di| di.events.get(&offset.0))
+                    {
+                        println!("{:#?}", e);
+                    }
                 }
-                match get_line(&mut lines)? {
+                match get_line(&mut lines, options.show_debug)? {
                     Line::Instruction {
                         offset: dumpobj_offset,
                         dumpobj_output,
@@ -99,11 +104,13 @@ enum Line {
     },
 }
 
-fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>) -> Result<Line> {
+fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>, show_debug: bool) -> Result<Line> {
     let mut line = lines.next().ok_or(anyhow!("No first line"))??;
 
     while line.starts_with("File") {
-        println!("{}", line);
+        if show_debug {
+            println!("{}", line);
+        }
         line = lines.next().ok_or(anyhow!("No first line"))??;
     }
 
