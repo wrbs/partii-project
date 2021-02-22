@@ -16,9 +16,14 @@ use strum_macros;
     strum_macros::EnumProperty,
 )]
 pub enum Primitive {
+    // Unary floating point
     #[strum(to_string = "caml_neg_float", props(Arity = "1"))]
     NegFloat,
 
+    #[strum(to_string = "caml_sqrt_float", props(Arity = "1"))]
+    SqrtFloat,
+
+    // Binary floating point
     #[strum(to_string = "caml_add_float", props(Arity = "2"))]
     AddFloat,
 
@@ -30,9 +35,6 @@ pub enum Primitive {
 
     #[strum(to_string = "caml_div_float", props(Arity = "2"))]
     DivFloat,
-
-    #[strum(to_string = "caml_sqrt_float", props(Arity = "1"))]
-    SqrtFloat,
 }
 
 impl Primitive {

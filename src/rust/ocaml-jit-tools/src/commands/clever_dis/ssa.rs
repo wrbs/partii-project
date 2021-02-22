@@ -1,8 +1,8 @@
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure, Program};
-use ocaml_jit_shared::{ArithOp, Comp, Instruction, RaiseKind};
+use ocaml_jit_shared::{ArithOp, Comp, Instruction, Primitive, RaiseKind};
 use std::cmp::max;
 use std::env::args;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Binary, Display, Formatter};
 
 fn display_array_single_line<T: Display>(f: &mut Formatter, array: &[T]) -> std::fmt::Result {
     let mut first = true;
@@ -66,12 +66,48 @@ impl Display for SSAVar {
     }
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum UnaryFloatOp {
+    Neg,
+    Sqrt,
+}
+
+impl Display for UnaryFloatOp {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        match self {
+            UnaryFloatOp::Neg => write!(f, "neg.f"),
+            UnaryFloatOp::Sqrt => write!(f, "sqrt.f"),
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum BinaryFloatOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+}
+
+impl Display for BinaryFloatOp {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        match self {
+            BinaryFloatOp::Add => write!(f, "add.f"),
+            BinaryFloatOp::Sub => write!(f, "sub.f"),
+            BinaryFloatOp::Mul => write!(f, "mul.f"),
+            BinaryFloatOp::Div => write!(f, "div.f"),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum SSAExpr {
     Apply(SSAVar, Vec<SSAVar>),
     GetGlobal(usize),
     GetField(SSAVar, usize),
     OffsetInt(SSAVar, i32),
+    UnaryFloat(UnaryFloatOp, SSAVar),
+    BinaryFloat(BinaryFloatOp, SSAVar, SSAVar),
     MakeBlock {
         tag: u8,
         vars: Vec<SSAVar>,
@@ -106,6 +142,12 @@ impl Display for SSAExpr {
             }
             SSAExpr::OffsetInt(v, i) => {
                 write!(f, "{} + {}", v, i)?;
+            }
+            SSAExpr::BinaryFloat(op, a, b) => {
+                write!(f, "{} {} {}", op, a, b)?;
+            }
+            SSAExpr::UnaryFloat(op, x) => {
+                write!(f, "{} {}", op, x)?;
             }
             SSAExpr::MakeBlock { tag, vars } => {
                 write!(f, "make block tag:{} vars:", tag)?;
@@ -287,12 +329,15 @@ fn translate_block(block: &Block) -> (SSABlock, State) {
     assert!(block.instructions.len() > 0);
     let last_instr_idx = block.instructions.len() - 1;
 
-    let mut vars = Vars::new();
-    let mut state = State {
+    let mut vars_d = Vars::new();
+    let mut state_d = State {
         stack: vec![],
         acc: SSAVar::Arg(0),
         stack_start: 1,
     };
+
+    let vars = &mut vars_d;
+    let state = &mut state_d;
 
     for instr in &block.instructions[0..last_instr_idx] {
         match instr {
@@ -436,13 +481,20 @@ fn translate_block(block: &Block) -> (SSABlock, State) {
             Instruction::CheckSignals => {
                 vars.add_statement(SSAStatement::CheckSignals);
             }
-            Instruction::Primitive(_) => {}
-            Instruction::CCall1(id) => c_call(&mut state, &mut vars, 1, id),
-            Instruction::CCall2(id) => c_call(&mut state, &mut vars, 2, id),
-            Instruction::CCall3(id) => c_call(&mut state, &mut vars, 3, id),
-            Instruction::CCall4(id) => c_call(&mut state, &mut vars, 4, id),
-            Instruction::CCall5(id) => c_call(&mut state, &mut vars, 5, id),
-            Instruction::CCallN(nargs, id) => c_call(&mut state, &mut vars, *nargs as usize, id),
+            Instruction::Prim(p) => match p {
+                Primitive::NegFloat => unary_float(state, vars, UnaryFloatOp::Neg),
+                Primitive::SqrtFloat => unary_float(state, vars, UnaryFloatOp::Sqrt),
+                Primitive::AddFloat => binary_float(state, vars, BinaryFloatOp::Add),
+                Primitive::SubFloat => binary_float(state, vars, BinaryFloatOp::Sub),
+                Primitive::MulFloat => binary_float(state, vars, BinaryFloatOp::Mul),
+                Primitive::DivFloat => binary_float(state, vars, BinaryFloatOp::Div),
+            },
+            Instruction::CCall1(id) => c_call(state, vars, 1, id),
+            Instruction::CCall2(id) => c_call(state, vars, 2, id),
+            Instruction::CCall3(id) => c_call(state, vars, 3, id),
+            Instruction::CCall4(id) => c_call(state, vars, 4, id),
+            Instruction::CCall5(id) => c_call(state, vars, 5, id),
+            Instruction::CCallN(nargs, id) => c_call(state, vars, *nargs as usize, id),
             Instruction::ArithInt(_) => {}
             Instruction::NegInt => {}
             Instruction::IntCmp(_) => {}
@@ -478,10 +530,10 @@ fn translate_block(block: &Block) -> (SSABlock, State) {
 
     (
         SSABlock {
-            statements: vars.statements,
+            statements: vars_d.statements,
             exit,
         },
-        state,
+        state_d,
     )
 }
 
@@ -495,6 +547,15 @@ fn c_call(state: &mut State, vars: &mut Vars, count: usize, primitive_id: &u32) 
         vars: (0..count).map(|i| state.pick(i)).collect(),
     });
     state.pop(count);
+}
+
+fn unary_float(state: &mut State, vars: &mut Vars, op: UnaryFloatOp) {
+    state.acc = vars.add_assignment(SSAExpr::UnaryFloat(op, state.acc));
+}
+
+fn binary_float(state: &mut State, vars: &mut Vars, op: BinaryFloatOp) {
+    state.acc = vars.add_assignment(SSAExpr::BinaryFloat(op, state.acc, state.pick(0)));
+    state.pop(1);
 }
 
 #[cfg(test)]
@@ -789,14 +850,14 @@ mod test {
                 Acc(1),
                 Push,
                 Acc(2),
-                Instruction::Primitive(Primitive::MulFloat),
+                Prim(Primitive::MulFloat),
                 Push,
                 Acc(1),
                 Push,
                 Acc(2),
-                Instruction::Primitive(Primitive::MulFloat),
-                Instruction::Primitive(Primitive::AddFloat),
-                Instruction::Primitive(Primitive::SqrtFloat),
+                Prim(Primitive::MulFloat),
+                Prim(Primitive::AddFloat),
+                Prim(Primitive::SqrtFloat),
                 Return(3),
             ],
             BlockExit::Return,
@@ -804,15 +865,16 @@ mod test {
                 Block:
                 v0 = a1[1]
                 v1 = a1[0]
-                v2 = ccall 280 [v0, v0]
-                v3 = ccall 3 [v2, v0]
-                v4 = ccall 347 [v3]
-                Exit: return v4
+                v2 = mul.f v0 v0
+                v3 = mul.f v1 v1
+                v4 = add.f v3 v2
+                v5 = sqrt.f v4
+                Exit: return v5
 
-                TOS: a1, a2, ..
+                TOS: a2, a3, ..
                 Stack: [
                 ]
-                Final acc: v4
+                Final acc: v5
             "#]],
         );
 

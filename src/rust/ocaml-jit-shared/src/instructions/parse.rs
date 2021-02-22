@@ -127,7 +127,7 @@ impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
             None => Ok(None),
             Some(primitive) => {
                 if primitive.arity() == arity {
-                    Ok(Some(Instruction::Primitive(primitive)))
+                    Ok(Some(Instruction::Prim(primitive)))
                 } else {
                     Err(InstructionParseError::WrongArity {
                         primitive,
