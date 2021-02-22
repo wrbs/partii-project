@@ -6,7 +6,7 @@ use ocaml_jit_shared::Instruction;
 use std::process::id;
 use std::rc::Rc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Program {
     pub closures: Vec<Closure>,
     pub global_data_blocks: MLValueBlocks,
@@ -14,7 +14,7 @@ pub struct Program {
     pub primitives: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PositionInfo {
     pub module: Rc<String>,
     pub def_name: Rc<String>,
@@ -24,7 +24,7 @@ pub struct PositionInfo {
 }
 // debug position info goes here
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Closure {
     pub blocks: Vec<Block>,
     pub position: Option<PositionInfo>,
@@ -56,7 +56,7 @@ impl Closure {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Block {
     pub instructions: Vec<Instruction<usize>>,
     pub closures: Vec<usize>,
@@ -64,7 +64,7 @@ pub struct Block {
     pub exit: BlockExit,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum BlockExit {
     UnconditionalJump(usize),
     ConditionalJump(usize, usize),
@@ -75,7 +75,7 @@ pub enum BlockExit {
     Stop,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GlobalTableEntry {
     Constant(MLValue),
     Global(String),
