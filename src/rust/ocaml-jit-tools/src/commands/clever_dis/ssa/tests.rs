@@ -422,6 +422,22 @@ fn test_block_translation() {
         "#]],
     );
 
+    // Test BranchCmp
+    check(
+        vec![Acc(0), BranchCmp(Comp::Ge, 2, 1)],
+        BlockExit::ConditionalJump(1, 2),
+        expect![[r#"
+            Block:
+            v0 = 2 >= a1
+            Exit: jump_if v0 t:1 f:2
+
+            TOS: a1, a2, ..
+            Stack: [
+            ]
+            Final acc: a1
+        "#]],
+    );
+
     // Monster case - pervasives
     check(
         vec![
@@ -726,6 +742,112 @@ fn test_block_translation() {
             Stack: [
             ]
             Final acc: ()
+        "#]],
+    );
+
+    // Integer ops
+    check(
+        vec![
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::Mul),
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::Div),
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::Mod),
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::Or),
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::And),
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::Xor),
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::Lsl),
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::Lsr),
+            Const(2),
+            Push,
+            Const(1),
+            ArithInt(ArithOp::Asr),
+            Const(1),
+            Push,
+            Const(1),
+            IntCmp(Comp::Eq),
+            Const(2),
+            Push,
+            Const(1),
+            IntCmp(Comp::Ne),
+            Const(2),
+            Push,
+            Const(1),
+            IntCmp(Comp::Lt),
+            Const(2),
+            Push,
+            Const(1),
+            IntCmp(Comp::Gt),
+            Const(2),
+            Push,
+            Const(1),
+            IntCmp(Comp::Le),
+            Const(1),
+            Push,
+            Const(2),
+            IntCmp(Comp::Ge),
+            Const(1),
+            Push,
+            Const(2),
+            IntCmp(Comp::ULt),
+            Push,
+            Const(1),
+            IntCmp(Comp::UGe),
+            Const(1),
+            Push,
+            Acc(0),
+            NegInt,
+        ],
+        BlockExit::UnconditionalJump(3),
+        expect![[r#"
+            Block:
+            v0 = 1 * 2
+            v1 = 1 / 2
+            v2 = 1 % 2
+            v3 = 1 | 2
+            v4 = 1 & 2
+            v5 = 1 ^ 2
+            v6 = 1 << 2
+            v7 = 1 l>> 2
+            v8 = 1 a>> 2
+            v9 = 1 == 1
+            v10 = 1 != 2
+            v11 = 1 < 2
+            v12 = 1 > 2
+            v13 = 1 <= 2
+            v14 = 2 >= 1
+            v15 = 2 u< 1
+            v16 = 1 u>= v15
+            v17 = - 1
+            Exit: jump 3
+
+            TOS: a1, a2, ..
+            Stack: [
+                1
+            ]
+            Final acc: v17
         "#]],
     );
 }
