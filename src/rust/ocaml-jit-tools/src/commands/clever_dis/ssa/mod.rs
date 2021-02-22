@@ -362,16 +362,24 @@ impl Display for State {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         writeln!(
             f,
-            "TOS: <prev:{}>, <prev:{}>, ..",
+            "Stack delta: -{}/+{}",
             self.stack_start,
-            self.stack_start + 1
+            self.stack.len()
         )?;
-        writeln!(f, "Stack: [")?;
+
+        write!(f, "End stack: ..., <prev:{}> | ", self.stack_start)?;
+
+        let mut first = true;
 
         for entry in &self.stack {
-            writeln!(f, "    {}", entry)?;
+            if first {
+                first = false
+            } else {
+                write!(f, ", ")?;
+            }
+            write!(f, "{}", entry)?;
         }
-        writeln!(f, "]")?;
+        writeln!(f)?;
 
         writeln!(f, "Final acc: {}", self.acc)?;
 
