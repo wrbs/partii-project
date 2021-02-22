@@ -905,7 +905,7 @@ impl CompilerContext {
                 );
                 self.emit_return();
             }
-            Instruction::Primitive(_) => {
+            Instruction::Prim(_) => {
                 unreachable!("No primitive special-casing is done in the JIT compiler")
             }
             Instruction::CCall1(primno) => {
