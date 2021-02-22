@@ -91,7 +91,7 @@ impl<'a, 'b> Display for FormattableValue<'a, 'b> {
                 Ok(())
             }
             MLValue::Shared(offset) => write!(f, "Shared({})", offset),
-            MLValue::Double(d) => write!(f, "{}", d),
+            MLValue::Double(d) => write!(f, "{:.8}", d),
         }
     }
 }
