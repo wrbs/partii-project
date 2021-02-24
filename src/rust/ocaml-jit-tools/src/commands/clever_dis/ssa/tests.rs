@@ -847,4 +847,25 @@ fn test_block_translation() {
             Stack delta: -0/+1
         "#]],
     );
+
+    // Switches - start of CamlinternalFormatBasics.concat_fmtty
+    check_advanced(
+        vec![Grab(1), Acc(0), Switch(vec![1], (2..=16).collect())],
+        true,
+        BlockExit::Switch {
+            ints: vec![1],
+            blocks: (2..=16).collect(),
+        },
+        expect![[r#"
+            grab 1
+            Exit: switch a0 ints:[1] blocks:[
+                2, 3, 4, 5, 6, 7, 8, 9,
+                10, 11, 12, 13, 14, 15, 16,
+            ]
+
+            Final acc: a0
+            End stack: ..., <prev:0> | a1, a0
+            Stack delta: -0/+2
+        "#]],
+    );
 }

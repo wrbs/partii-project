@@ -68,7 +68,10 @@ pub struct Block {
 pub enum BlockExit {
     UnconditionalJump(usize),
     ConditionalJump(usize, usize),
-    Switch(Vec<usize>),
+    Switch {
+        ints: Vec<usize>,
+        blocks: Vec<usize>,
+    },
     TailCall,
     Return,
     Raise,

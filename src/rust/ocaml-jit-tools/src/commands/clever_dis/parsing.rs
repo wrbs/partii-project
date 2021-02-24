@@ -323,18 +323,17 @@ fn process_block(
                     closure_ctx.get_block(next_label),
                 ));
             }
-            Instruction::Switch(a_instrs, b_instrs) => {
-                let mut dest_blocks = Vec::new();
-
-                for dest in a_instrs {
-                    dest_blocks.push(closure_ctx.get_block(dest.0));
-                }
-
-                for dest in b_instrs {
-                    dest_blocks.push(closure_ctx.get_block(dest.0));
-                }
-
-                end = Some(BlockExit::Switch(dest_blocks));
+            Instruction::Switch(ints, blocks) => {
+                end = Some(BlockExit::Switch {
+                    ints: ints
+                        .iter()
+                        .map(|dest| closure_ctx.get_block(dest.0))
+                        .collect(),
+                    blocks: blocks
+                        .iter()
+                        .map(|dest| closure_ctx.get_block(dest.0))
+                        .collect(),
+                });
             }
             Instruction::Break | Instruction::Event => {
                 unreachable!();
