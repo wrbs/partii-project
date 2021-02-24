@@ -208,7 +208,9 @@ impl<'a> VisContext<'a> {
                 bytecode_instrs.append(&mut self.format_instruction(closure, instr));
             }
 
-            let (ssa_block, ssa_state) = translate_block(block);
+            let is_entry_block = closure_no != 0 && block_no == 0;
+
+            let (ssa_block, ssa_state) = translate_block(block, is_entry_block);
 
             let mut ssa_instrs: Vec<_> = format!("{}", ssa_block)
                 .lines()

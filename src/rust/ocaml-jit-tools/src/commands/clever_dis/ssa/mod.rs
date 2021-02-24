@@ -60,6 +60,7 @@ impl Display for SSABlock {
 pub enum SSAVar {
     PrevStack(usize),
     PrevAcc,
+    Arg(usize),
     Env(usize),
     Computed(usize),
     OffsetClosure(isize),
@@ -76,11 +77,12 @@ impl Display for SSAVar {
         match self {
             SSAVar::PrevStack(i) => write!(f, "<prev:{}>", i),
             SSAVar::PrevAcc => write!(f, "<prev:acc>"),
-            SSAVar::Env(i) => write!(f, "e{}", i),
+            SSAVar::Arg(i) => write!(f, "a{}", i),
+            SSAVar::Env(i) => write!(f, "<env:{}>", i),
             SSAVar::Computed(i) => write!(f, "v{}", i),
-            SSAVar::OffsetClosure(i) => write!(f, "oc[{}]", i),
+            SSAVar::OffsetClosure(i) => write!(f, "<closure:{}>", i),
             SSAVar::Const(i) => write!(f, "{}", i),
-            SSAVar::Unit => write!(f, "()"),
+            SSAVar::Unit => write!(f, "<unit>"),
             SSAVar::Atom(tag) => write!(f, "<atom:{}>", tag),
             SSAVar::RetExtraArgs => write!(f, "<ret_extra_args>"),
             SSAVar::RetEnv => write!(f, "<ret_env>"),
@@ -232,6 +234,7 @@ pub enum SSAStatement {
     Assign(usize, SSAExpr),
     PopTrap,
     CheckSignals,
+    Grab(usize),
     SetGlobal(usize, SSAVar),
     SetField(SSAVar, usize, SSAVar),
     SetFloatField(SSAVar, usize, SSAVar),
@@ -249,6 +252,9 @@ impl Display for SSAStatement {
             }
             SSAStatement::CheckSignals => {
                 write!(f, "check signals")?;
+            }
+            SSAStatement::Grab(i) => {
+                write!(f, "grab {}", i)?;
             }
             SSAStatement::SetGlobal(n, v) => {
                 write!(f, "set g{} = {}", n, v)?;
@@ -428,7 +434,7 @@ impl Vars {
     }
 }
 
-pub fn translate_block(block: &Block) -> (SSABlock, State) {
+pub fn translate_block(block: &Block, is_entry_block: bool) -> (SSABlock, State) {
     assert!(block.instructions.len() > 0);
     let last_instr_idx = block.instructions.len() - 1;
 
@@ -438,11 +444,29 @@ pub fn translate_block(block: &Block) -> (SSABlock, State) {
         acc: SSAVar::PrevAcc,
         stack_start: 0,
     };
-
     let vars = &mut vars_d;
     let state = &mut state_d;
 
-    for instr in &block.instructions[0..last_instr_idx] {
+    let has_grab = if is_entry_block {
+        if let Instruction::Grab(nargs) = &block.instructions[0] {
+            let nargs = *nargs as usize;
+            for arg in (0..=nargs).rev() {
+                state.push(SSAVar::Arg(arg));
+            }
+
+            vars.add_statement(SSAStatement::Grab(nargs));
+
+            true
+        } else {
+            state.push(SSAVar::Arg(0));
+            false
+        }
+    } else {
+        false
+    };
+    let first_instr_idx = if has_grab { 1 } else { 0 };
+
+    for instr in &block.instructions[first_instr_idx..last_instr_idx] {
         process_body_instruction(state, vars, instr);
     }
 
@@ -514,7 +538,7 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
             ));
             state.pop(3);
         }
-        // Instruction::Grab(_, _) => {}
+        Instruction::Grab(_) => unreachable!("Grabs should not appear in the body of blocks"),
         Instruction::Closure(loc, nvars) => {
             let nvars = *nvars as usize;
             if nvars > 0 {
