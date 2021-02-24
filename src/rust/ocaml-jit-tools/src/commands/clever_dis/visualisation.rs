@@ -260,9 +260,20 @@ impl<'a> VisContext<'a> {
                     writeln!(f, "n{} -> n{};", block_no, a)?;
                     writeln!(f, "n{} -> n{};", block_no, b)?;
                 }
-                BlockExit::Switch(others) => {
-                    for other in others {
-                        writeln!(f, "n{} -> n{};", block_no, other)?;
+                BlockExit::Switch { ints, blocks } => {
+                    for (i, other) in ints.iter().enumerate() {
+                        writeln!(
+                            f,
+                            r#"n{} -> n{} [headlabel=" int {}"];"#,
+                            block_no, other, i
+                        )?;
+                    }
+                    for (tag, other) in blocks.iter().enumerate() {
+                        writeln!(
+                            f,
+                            r#"n{} -> n{} [headlabel=" tag {}"];"#,
+                            block_no, other, tag
+                        )?;
                     }
                 }
                 BlockExit::TailCall => {

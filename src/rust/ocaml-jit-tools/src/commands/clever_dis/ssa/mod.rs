@@ -284,6 +284,11 @@ pub enum SSAExit {
         if_true: usize,
         if_false: usize,
     },
+    Switch {
+        var: SSAVar,
+        ints: Vec<usize>,
+        blocks: Vec<usize>,
+    },
     TailApply(SSAVar, Vec<SSAVar>),
     Raise(RaiseKind, SSAVar),
     Return(SSAVar),
@@ -307,6 +312,12 @@ impl Display for SSAExit {
                 if_false,
             } => {
                 write!(f, "jump_if {} t:{} f:{}", var, if_true, if_false)?;
+            }
+            SSAExit::Switch { var, ints, blocks } => {
+                write!(f, "switch {} ints:", var)?;
+                display_array(f, ints)?;
+                write!(f, " blocks:")?;
+                display_array(f, blocks)?;
             }
             SSAExit::TailApply(closure, args) => {
                 write!(f, "tail_apply {} ", closure)?;
@@ -749,15 +760,26 @@ fn process_final_instruction(
             state.pop(slotsize);
             SSAExit::TailApply(state.acc, vars)
         }
+        (
+            Instruction::Switch(ints1, blocks1),
+            BlockExit::Switch {
+                ints: ints2,
+                blocks: blocks2,
+            },
+        ) => {
+            assert_eq!(ints1, ints2);
+            assert_eq!(blocks1, blocks2);
+            SSAExit::Switch {
+                var: state.acc,
+                ints: ints1.clone(),
+                blocks: blocks1.clone(),
+            }
+        }
         (i, BlockExit::UnconditionalJump(to)) => {
             process_body_instruction(state, vars, i);
             SSAExit::Jump(*to)
         }
 
-        /*
-        | Instruction::Restart
-        | Instruction::Switch(_, _)
-         */
         _ => SSAExit::Unimplemented(instr.clone(), exit.clone()),
     }
 }
