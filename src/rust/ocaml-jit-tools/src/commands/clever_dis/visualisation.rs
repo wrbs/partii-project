@@ -1,4 +1,5 @@
 use super::data::*;
+use super::DotShow;
 
 use crate::commands::clever_dis::ssa::translate_block;
 use anyhow::{bail, Context, Result};
@@ -16,6 +17,7 @@ pub struct Options {
     pub use_links: bool,
     pub verbose: bool,
     pub output_path: PathBuf,
+    pub show: DotShow,
 }
 
 #[derive(Debug)]
@@ -98,6 +100,12 @@ pub fn write_dot_graphs(program: &Program, options: Options) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn html_escape(s: &str) -> String {
+    s.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
 }
 
 enum Extension {
@@ -199,53 +207,91 @@ impl<'a> VisContext<'a> {
             )?;
             writeln!(
                 f,
-                r#"<TR><TD BORDER="1" COLSPAN="2"><B>Block {}</B></TD></TR>"#,
+                r#"<TR><TD BORDER="1"{}><B>Block {}</B></TD></TR>"#,
+                if self.options.show == DotShow::Both {
+                    r#" COLSPAN="2""#
+                } else {
+                    ""
+                },
                 block_no
             )?;
 
-            let mut bytecode_instrs = vec![];
-            for instr in &block.instructions {
-                bytecode_instrs.append(&mut self.format_instruction(closure, instr));
-            }
+            let bytecode_instrs = if self.options.show.show_bytecode() {
+                let mut bytecode_instrs = vec![];
+                for instr in &block.instructions {
+                    bytecode_instrs.append(&mut self.format_instruction(closure, instr));
+                }
+                Some(bytecode_instrs)
+            } else {
+                None
+            };
 
-            let is_entry_block = closure_no != 0 && block_no == 0;
+            let ssa_instrs = if self.options.show.show_ssa() {
+                let is_entry_block = closure_no != 0 && block_no == 0;
+                match translate_block(block, is_entry_block) {
+                    Ok((ssa_block, ssa_state)) => {
+                        let mut ssa_instrs: Vec<_> = format!("{}", ssa_block)
+                            .lines()
+                            .map(|l| format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(l)))
+                            .collect();
 
-            let (ssa_block, ssa_state) = translate_block(block, is_entry_block);
+                        ssa_instrs.extend(format!("{}", ssa_state).lines().map(|l| {
+                            let s = html_escape(l);
+                            let sections: Vec<_> = s.split(":").collect();
+                            format!(
+                                r#"<TD ALIGN="left"><B>{:>13}:</B>{}   </TD>"#,
+                                sections[0],
+                                &sections[1..sections.len()].join(":")
+                            )
+                        }));
 
-            let mut ssa_instrs: Vec<_> = format!("{}", ssa_block)
-                .lines()
-                .map(|l| {
-                    let s = l
-                        .replace("&", "&amp;")
-                        .replace("<", "&lt;")
-                        .replace(">", "&gt;");
-                    format!(r#"<TD ALIGN="left">{}   </TD>"#, s)
-                })
-                .collect();
-
-            ssa_instrs.extend(format!("{}", ssa_state).lines().map(|l| {
-                let s = l
-                    .replace("&", "&amp;")
-                    .replace("<", "&lt;")
-                    .replace(">", "&gt;");
-                let sections: Vec<_> = s.split(":").collect();
-                format!(
-                    r#"<TD ALIGN="left"><B>{:>13}:</B>{}   </TD>"#,
-                    sections[0],
-                    &sections[1..sections.len()].join(":")
-                )
-            }));
-
-            for i in bytecode_instrs.iter().zip_longest(ssa_instrs) {
-                match i {
-                    EitherOrBoth::Both(a, b) => {
-                        writeln!(f, "<TR>{}{}</TR>", a, b)?;
+                        Some(ssa_instrs)
                     }
-                    EitherOrBoth::Left(a) => {
-                        writeln!(f, r#"<TR>{}<TD style="invis"></TD></TR>"#, a)?;
+                    Err(e) => {
+                        eprintln!(
+                            "Error converting to SSA in closure {}, block {}",
+                            closure_no, block_no
+                        );
+                        eprintln!("{}", e);
+                        let mut ssa_instrs: Vec<_> = format!("{}", e)
+                            .lines()
+                            .map(|l| format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(l)))
+                            .collect();
+                        Some(ssa_instrs)
                     }
-                    EitherOrBoth::Right(b) => {
-                        writeln!(f, r#"<TR><TD style="invis"></TD>{}</TR>"#, b)?;
+                }
+            } else {
+                None
+            };
+
+            match self.options.show {
+                DotShow::Both => {
+                    for i in bytecode_instrs
+                        .unwrap()
+                        .into_iter()
+                        .zip_longest(ssa_instrs.unwrap())
+                    {
+                        match i {
+                            EitherOrBoth::Both(a, b) => {
+                                writeln!(f, "<TR>{}{}</TR>", a, b)?;
+                            }
+                            EitherOrBoth::Left(a) => {
+                                writeln!(f, r#"<TR>{}<TD style="invis"></TD></TR>"#, a)?;
+                            }
+                            EitherOrBoth::Right(b) => {
+                                writeln!(f, r#"<TR><TD style="invis"></TD>{}</TR>"#, b)?;
+                            }
+                        }
+                    }
+                }
+                DotShow::Bytecode => {
+                    for s in bytecode_instrs.unwrap().into_iter() {
+                        writeln!(f, "<TR>{}</TR>", s)?;
+                    }
+                }
+                DotShow::SSA => {
+                    for s in ssa_instrs.unwrap().into_iter() {
+                        writeln!(f, "<TR>{}</TR>", s)?;
                     }
                 }
             }
@@ -392,17 +438,18 @@ impl<'a> VisContext<'a> {
     }
 
     fn format_simple_instruction(&self, contents: &str) -> String {
-        format!(r#"<TD ALIGN="left">{}  </TD>"#, contents)
+        format!(r#"<TD ALIGN="left">{}  </TD>"#, html_escape(contents))
     }
 
     fn format_linked_instruction(&self, contents: &str, href: &str) -> String {
         if self.options.use_links {
             format!(
                 r#"<TD ALIGN="left" HREF="{}"><U>{}</U>   </TD>"#,
-                href, contents
+                href,
+                html_escape(contents)
             )
         } else {
-            format!(r#"<TD ALIGN="left">{}   </TD>"#, contents)
+            format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(contents))
         }
     }
 
