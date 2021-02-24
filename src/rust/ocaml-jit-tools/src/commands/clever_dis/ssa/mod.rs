@@ -95,13 +95,15 @@ impl Display for State {
 struct Vars {
     statements: Vec<SSAStatement>,
     num_assignments: usize,
+    block_num: usize,
 }
 
 impl Vars {
-    fn new() -> Vars {
+    fn new(block_num: usize) -> Vars {
         Vars {
             statements: Vec::new(),
             num_assignments: 0,
+            block_num,
         }
     }
 
@@ -113,16 +115,20 @@ impl Vars {
         let assignment_num = self.num_assignments;
         self.num_assignments += 1;
 
-        self.add_statement(SSAStatement::Assign(assignment_num, expr));
-        SSAVar::Computed(assignment_num)
+        self.add_statement(SSAStatement::Assign(self.block_num, assignment_num, expr));
+        SSAVar::Computed(self.block_num, assignment_num)
     }
 }
 
-pub fn translate_block(block: &Block, is_entry_block: bool) -> Result<(SSABlock, State)> {
+pub fn translate_block(
+    block: &Block,
+    block_num: usize,
+    is_entry_block: bool,
+) -> Result<(SSABlock, State)> {
     ensure!(!block.instructions.is_empty());
     let last_instr_idx = block.instructions.len() - 1;
 
-    let mut vars_d = Vars::new();
+    let mut vars_d = Vars::new(block_num);
     let mut state_d = State {
         stack: vec![],
         acc: SSAVar::PrevAcc,
