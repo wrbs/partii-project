@@ -1,4 +1,3 @@
-use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
@@ -334,7 +333,6 @@ fn display_array<T: Display>(f: &mut Formatter, array: &[T]) -> std::fmt::Result
 
     if array.len() > MAX_ON_LINE {
         write!(f, "[")?;
-        let count = 0;
         for (count, v) in array.iter().enumerate() {
             if count % MAX_ON_LINE == 0 {
                 write!(f, "\n   ")?;

@@ -1,14 +1,11 @@
 use std::cmp::max;
-use std::env::args;
-use std::fmt::{Binary, Display, Formatter};
-use std::process::exit;
+use std::fmt::{Display, Formatter};
 
 use anyhow::{bail, ensure, Result};
-use strum_macros;
 
-use ocaml_jit_shared::{ArithOp, Comp, Instruction, Primitive, RaiseKind};
+use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
-use crate::commands::clever_dis::data::{Block, BlockExit, Closure, Program};
+use crate::commands::clever_dis::data::{Block, BlockExit};
 use crate::commands::clever_dis::ssa::data::{
     BinaryFloatOp, SSABlock, SSAExit, SSAExpr, SSAStatement, SSAVar, UnaryFloatOp, UnaryOp,
 };

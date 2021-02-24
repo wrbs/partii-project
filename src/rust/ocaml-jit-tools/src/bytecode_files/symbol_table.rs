@@ -3,7 +3,7 @@ use std::fs::File;
 
 use anyhow::{bail, Result};
 
-use crate::bytecode_files::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
+use crate::bytecode_files::{MLValue, MLValueBlocks, MLValueString};
 
 use super::ml_data::input_value;
 use super::trailer::{Trailer, SYMB_SECTION};

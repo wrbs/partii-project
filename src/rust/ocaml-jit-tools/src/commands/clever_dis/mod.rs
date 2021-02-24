@@ -73,8 +73,6 @@ pub fn run(options: Options) -> Result<()> {
 
     let program = process_bytecode(bcf).context("Problem analysing parsed bytecode")?;
 
-    assumptions::validate_assumptions(&program)?;
-
     if options.print_debug {
         println!("{:#?}", program);
     }
@@ -93,20 +91,4 @@ pub fn run(options: Options) -> Result<()> {
     }
 
     Ok(())
-}
-
-// Entrypoint to disassemble
-
-mod assumptions {
-    use std::collections::HashMap;
-
-    use anyhow::{bail, Result};
-
-    use crate::commands::clever_dis::data::Program;
-
-    pub fn validate_assumptions(program: &Program) -> Result<()> {
-        // Check that every closure has a unique path to it
-
-        Ok(())
-    }
 }
