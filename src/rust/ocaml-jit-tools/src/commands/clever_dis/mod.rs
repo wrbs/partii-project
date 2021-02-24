@@ -7,9 +7,37 @@ use crate::bytecode_files::parse_bytecode_file;
 use anyhow::{Context, Result};
 use std::fs::File;
 use std::path::PathBuf;
+use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
 use parsing::process_bytecode;
+
+arg_enum! {
+    #[derive(Debug, Eq, PartialEq, Copy, Clone)]
+    pub enum DotShow {
+        Both,
+        Bytecode,
+        SSA,
+    }
+}
+
+impl DotShow {
+    pub fn show_bytecode(&self) -> bool {
+        match self {
+            DotShow::Both => true,
+            DotShow::Bytecode => true,
+            DotShow::SSA => false,
+        }
+    }
+
+    pub fn show_ssa(&self) -> bool {
+        match self {
+            DotShow::Both => true,
+            DotShow::Bytecode => false,
+            DotShow::SSA => true,
+        }
+    }
+}
 
 #[derive(StructOpt)]
 #[structopt(about = "disassemble bytecode files")]
@@ -22,6 +50,9 @@ pub struct Options {
 
     #[structopt(long)]
     print_debug: bool,
+
+    #[structopt(long, possible_values = &DotShow::variants(), case_insensitive = true, default_value="Both")]
+    dot_show: DotShow,
 
     #[structopt(parse(from_os_str))]
     input: PathBuf,
@@ -52,6 +83,7 @@ pub fn run(options: Options) -> Result<()> {
             visualisation::Options {
                 use_links: true,
                 verbose: options.verbose,
+                show: options.dot_show,
                 output_path: dot.clone(),
             },
         )

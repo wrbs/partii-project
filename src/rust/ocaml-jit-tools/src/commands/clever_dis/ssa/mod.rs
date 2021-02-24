@@ -2,6 +2,7 @@
 mod tests;
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure, Program};
+use anyhow::{bail, ensure, Result};
 use ocaml_jit_shared::{ArithOp, Comp, Instruction, Primitive, RaiseKind};
 use std::cmp::max;
 use std::env::args;
@@ -13,7 +14,7 @@ fn display_array<T: Display>(f: &mut Formatter, array: &[T]) -> std::fmt::Result
 
     if array.len() > MAX_ON_LINE {
         write!(f, "[")?;
-        let mut count = 0;
+        let count = 0;
         for (count, v) in array.iter().enumerate() {
             if count % MAX_ON_LINE == 0 {
                 write!(f, "\n   ")?;
@@ -449,8 +450,8 @@ impl Vars {
     }
 }
 
-pub fn translate_block(block: &Block, is_entry_block: bool) -> (SSABlock, State) {
-    assert!(block.instructions.len() > 0);
+pub fn translate_block(block: &Block, is_entry_block: bool) -> Result<(SSABlock, State)> {
+    ensure!(block.instructions.len() > 0);
     let last_instr_idx = block.instructions.len() - 1;
 
     let mut vars_d = Vars::new();
@@ -482,22 +483,26 @@ pub fn translate_block(block: &Block, is_entry_block: bool) -> (SSABlock, State)
     let first_instr_idx = if has_grab { 1 } else { 0 };
 
     for instr in &block.instructions[first_instr_idx..last_instr_idx] {
-        process_body_instruction(state, vars, instr);
+        process_body_instruction(state, vars, instr)?;
     }
 
     let last_instruction = block.instructions.last().unwrap();
-    let exit = process_final_instruction(state, vars, last_instruction, &block.exit);
+    let exit = process_final_instruction(state, vars, last_instruction, &block.exit)?;
 
-    (
+    Ok((
         SSABlock {
             statements: vars_d.statements,
             exit,
         },
         state_d,
-    )
+    ))
 }
 
-fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruction<usize>) {
+fn process_body_instruction(
+    state: &mut State,
+    vars: &mut Vars,
+    instr: &Instruction<usize>,
+) -> Result<()> {
     match instr {
         Instruction::ApplyTerm(_, _)
         | Instruction::Apply(_)
@@ -509,10 +514,10 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
         | Instruction::Raise(_)
         | Instruction::Switch(_, _)
         | Instruction::Stop => {
-            panic!("{:?} should be last call in a block!", instr);
+            bail!("{:?} should be last call in a block!", instr);
         }
         Instruction::Restart => {
-            unreachable!("Restarts should not appear in blocks");
+            bail!("Restarts should not appear in blocks");
         }
         Instruction::LabelDef(_) => {}
         Instruction::Acc(n) => {
@@ -553,7 +558,7 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
             ));
             state.pop(3);
         }
-        Instruction::Grab(_) => unreachable!("Grabs should not appear in the body of blocks"),
+        Instruction::Grab(_) => bail!("Grabs should not appear in the body of blocks"),
         Instruction::Closure(loc, nvars) => {
             let nvars = *nvars as usize;
             if nvars > 0 {
@@ -696,6 +701,8 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
         // Instruction::Event => {}
         i => vars.add_statement(SSAStatement::NotImplemented(i.clone())),
     }
+
+    Ok(())
 }
 
 fn process_final_instruction(
@@ -703,11 +710,11 @@ fn process_final_instruction(
     vars: &mut Vars,
     instr: &Instruction<usize>,
     exit: &BlockExit,
-) -> SSAExit {
-    match (instr, exit) {
+) -> Result<SSAExit> {
+    let exit = match (instr, exit) {
         (Instruction::Stop, BlockExit::Stop) => SSAExit::Stop(state.acc),
         (Instruction::Branch(n2), BlockExit::UnconditionalJump(n1)) => {
-            assert_eq!(n1, n2);
+            ensure!(n1 == n2);
             SSAExit::Jump(*n1)
         }
         (Instruction::Return(count), BlockExit::Return) => {
@@ -715,7 +722,7 @@ fn process_final_instruction(
             SSAExit::Return(state.acc)
         }
         (Instruction::BranchIf(to1), BlockExit::ConditionalJump(ift, iff)) => {
-            assert_eq!(to1, ift);
+            ensure!(to1 == ift);
             SSAExit::JumpIf {
                 var: state.acc,
                 if_true: *ift,
@@ -723,7 +730,7 @@ fn process_final_instruction(
             }
         }
         (Instruction::BranchIfNot(to1), BlockExit::ConditionalJump(iff, ift)) => {
-            assert_eq!(to1, iff);
+            ensure!(to1 == iff);
             SSAExit::JumpIf {
                 var: state.acc,
                 if_true: *ift,
@@ -731,7 +738,7 @@ fn process_final_instruction(
             }
         }
         (Instruction::BranchCmp(comp, compare, ift1), BlockExit::ConditionalJump(ift2, iff)) => {
-            assert_eq!(ift1, ift2);
+            ensure!(ift1 == ift2);
             let v = vars.add_assignment(SSAExpr::IntCmp(*comp, SSAVar::Const(*compare), state.acc));
             SSAExit::JumpIf {
                 var: v,
@@ -740,25 +747,27 @@ fn process_final_instruction(
             }
         }
         (Instruction::Raise(kind), BlockExit::Raise) => SSAExit::Raise(*kind, state.acc),
-        (Instruction::Apply(nvars), BlockExit::UnconditionalJump(retloc1)) => {
+        (Instruction::Apply(nvars), BlockExit::UnconditionalJump(retloc)) => {
             let nvars = *nvars as usize;
-            let retloc1 = *retloc1;
-            assert!(nvars > 3);
+            let retloc = *retloc;
+            ensure!(nvars > 3);
 
             let passed_vars = (0..nvars).map(|n| state.pick(n)).collect();
             state.pop(nvars);
 
+            /*
             let retloc2 = match state.pick(0) {
                 SSAVar::RetLoc(l) => l,
-                o => panic!("Expected return location but got {}", o),
+                o => bail!("Expected return location but got {}", o),
             };
-            assert_eq!(retloc1, retloc2);
-            assert_eq!(state.pick(1), SSAVar::RetEnv);
-            assert_eq!(state.pick(2), SSAVar::RetExtraArgs);
+            ensure!(retloc1 == retloc2);
+            ensure!(state.pick(1) == SSAVar::RetEnv);
+            ensure!(state.pick(2) == SSAVar::RetExtraArgs);
+             */
             state.pop(3);
 
             state.acc = vars.add_assignment(SSAExpr::Apply(state.acc, passed_vars));
-            SSAExit::Jump(retloc1)
+            SSAExit::Jump(retloc)
         }
         (Instruction::ApplyTerm(nargs, slotsize), BlockExit::TailCall) => {
             let nargs = *nargs as usize;
@@ -774,8 +783,8 @@ fn process_final_instruction(
                 blocks: blocks2,
             },
         ) => {
-            assert_eq!(ints1, ints2);
-            assert_eq!(blocks1, blocks2);
+            ensure!(ints1 == ints2);
+            ensure!(blocks1 == blocks2);
             SSAExit::Switch {
                 var: state.acc,
                 ints: ints1.clone(),
@@ -783,12 +792,14 @@ fn process_final_instruction(
             }
         }
         (i, BlockExit::UnconditionalJump(to)) => {
-            process_body_instruction(state, vars, i);
+            process_body_instruction(state, vars, i)?;
             SSAExit::Jump(*to)
         }
 
         _ => SSAExit::Unimplemented(instr.clone(), exit.clone()),
-    }
+    };
+
+    Ok(exit)
 }
 
 // Shared utilities for parser
