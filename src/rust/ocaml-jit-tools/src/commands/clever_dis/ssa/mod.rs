@@ -716,7 +716,13 @@ fn process_body_instruction(
                 SSAVar::Const(*n),
             ));
         }
-        // Instruction::OffsetRef(_) => {}
+        Instruction::OffsetRef(n) => {
+            // Todo investigate whether special casing helps avoid a caml_modify
+            let a = vars.add_assignment(SSAExpr::GetField(state.acc, 0));
+            let b = vars.add_assignment(SSAExpr::ArithInt(ArithOp::Add, a, SSAVar::Const(*n)));
+            vars.add_statement(SSAStatement::SetField(state.acc, 0, b));
+            state.acc = SSAVar::Unit;
+        }
         Instruction::IsInt => {
             state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::IsInt, state.acc))
         }

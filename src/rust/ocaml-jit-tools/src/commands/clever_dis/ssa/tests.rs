@@ -542,6 +542,44 @@ fn test_block_translation() {
         "#]],
     );
 
+    // OffsetRef
+    check(
+        vec![
+            Const(92),
+            Push,
+            Acc(5),
+            GetField(0),
+            Push,
+            Acc(5),
+            SetBytesChar,
+            Acc(4),
+            OffsetRef(1),
+            Const(98),
+            Push,
+            Acc(5),
+            GetField(0),
+            Push,
+            Acc(5),
+            SetBytesChar,
+            Branch(31),
+        ],
+        BlockExit::UnconditionalJump(31),
+        expect![[r#"
+            v0 = <prev:4>[0]
+            set bytes <prev:3>[v0] = 92
+            v1 = <prev:4>[0]
+            v2 = v1 + 1
+            set <prev:4>[0] = v2
+            v3 = <prev:4>[0]
+            set bytes <prev:3>[v3] = 98
+            Exit: jump 31
+
+            Final acc: <unit>
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
+        "#]],
+    );
+
     // Monster case - pervasives
     check(
         vec![
