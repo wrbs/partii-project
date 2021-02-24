@@ -137,9 +137,10 @@ pub enum UnaryOp {
 pub enum SSAExpr {
     Apply(SSAVar, Vec<SSAVar>),
     GetGlobal(usize),
-    GetField(SSAVar, usize),
+    GetField(SSAVar, SSAVar),
     GetFloatField(SSAVar, usize),
     GetBytesChar(SSAVar, SSAVar),
+    GetVecTLength(SSAVar),
     ArithInt(ArithOp, SSAVar, SSAVar),
     UnaryOp(UnaryOp, SSAVar),
     IntCmp(Comp, SSAVar, SSAVar),
@@ -163,6 +164,11 @@ pub enum SSAExpr {
         primitive_id: usize,
         vars: Vec<SSAVar>,
     },
+    GetMethod(SSAVar, SSAVar),
+    GetDynMet {
+        tag: SSAVar,
+        object: SSAVar,
+    },
 }
 
 impl Display for SSAExpr {
@@ -177,6 +183,7 @@ impl Display for SSAExpr {
             SSAExpr::GetField(v, i) => write!(f, "{}[{}]", v, i)?,
             SSAExpr::GetFloatField(v, i) => write!(f, "float {}[{}]", v, i)?,
             SSAExpr::GetBytesChar(v, i) => write!(f, "bytes {}[{}]", v, i)?,
+            SSAExpr::GetVecTLength(v) => write!(f, "vec_t length {}", v)?,
             SSAExpr::ArithInt(op, a, b) => match op {
                 ArithOp::Add => write!(f, "{} + {}", a, b)?,
                 ArithOp::Sub => write!(f, "{} - {}", a, b)?,
@@ -232,6 +239,12 @@ impl Display for SSAExpr {
                 write!(f, "ccall {} ", primitive_id)?;
                 display_array(f, vars)?;
             }
+            SSAExpr::GetMethod(a, b) => {
+                write!(f, "get method {} {}", a, b)?;
+            }
+            SSAExpr::GetDynMet { tag, object } => {
+                write!(f, "get dynmet tag:{} object:{} ", tag, object)?;
+            }
         }
         Ok(())
     }
@@ -244,7 +257,7 @@ pub enum SSAStatement {
     CheckSignals,
     Grab(usize),
     SetGlobal(usize, SSAVar),
-    SetField(SSAVar, usize, SSAVar),
+    SetField(SSAVar, SSAVar, SSAVar),
     SetFloatField(SSAVar, usize, SSAVar),
     SetBytesChar(SSAVar, SSAVar, SSAVar),
 }
@@ -635,12 +648,12 @@ fn process_body_instruction(
             state.pop(size);
         }
         Instruction::GetField(n) => {
-            state.acc = vars.add_assignment(SSAExpr::GetField(state.acc, *n as usize));
+            state.acc = vars.add_assignment(SSAExpr::GetField(state.acc, SSAVar::Const(*n as i32)));
         }
         Instruction::SetField(n) => {
             vars.add_statement(SSAStatement::SetField(
                 state.acc,
-                *n as usize,
+                SSAVar::Const(*n as i32),
                 state.pick(0),
             ));
             state.pop(1);
@@ -658,9 +671,22 @@ fn process_body_instruction(
             state.pop(1);
             state.acc = SSAVar::Unit;
         }
-        // Instruction::VecTLength => {}
-        // Instruction::GetVecTItem => {}
-        // Instruction::SetVecTItem => {}
+        Instruction::VecTLength => {
+            state.acc = vars.add_assignment(SSAExpr::GetVecTLength(state.acc));
+        }
+        Instruction::GetVecTItem => {
+            state.acc = vars.add_assignment(SSAExpr::GetField(state.acc, state.pick(0)));
+            state.pop(1);
+        }
+        Instruction::SetVecTItem => {
+            vars.add_statement(SSAStatement::SetField(
+                state.acc,
+                state.pick(0),
+                state.pick(1),
+            ));
+            state.pop(2);
+            state.acc = SSAVar::Unit;
+        }
         Instruction::GetBytesChar => {
             state.acc = vars.add_assignment(SSAExpr::GetBytesChar(state.acc, state.pick(0)));
             state.pop(1);
@@ -718,17 +744,29 @@ fn process_body_instruction(
         }
         Instruction::OffsetRef(n) => {
             // Todo investigate whether special casing helps avoid a caml_modify
-            let a = vars.add_assignment(SSAExpr::GetField(state.acc, 0));
+            let a = vars.add_assignment(SSAExpr::GetField(state.acc, SSAVar::Const(0)));
             let b = vars.add_assignment(SSAExpr::ArithInt(ArithOp::Add, a, SSAVar::Const(*n)));
-            vars.add_statement(SSAStatement::SetField(state.acc, 0, b));
+            vars.add_statement(SSAStatement::SetField(state.acc, SSAVar::Const(0), b));
             state.acc = SSAVar::Unit;
         }
         Instruction::IsInt => {
             state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::IsInt, state.acc))
         }
-        // Instruction::GetMethod => {}
-        // Instruction::SetupForPubMet(_) => {}
-        // Instruction::GetDynMet => {}
+        Instruction::GetMethod => {
+            state.acc = vars.add_assignment(SSAExpr::GetMethod(state.pick(0), state.acc));
+            state.pop(1);
+        }
+        Instruction::SetupForPubMet(n) => {
+            state.push(state.acc);
+            state.acc = SSAVar::Const(*n);
+        }
+        Instruction::GetDynMet => {
+            state.acc = vars.add_assignment(SSAExpr::GetDynMet {
+                tag: state.acc,
+                object: state.pick(0),
+            });
+            state.pop(1);
+        }
         Instruction::Break | Instruction::Event => (),
         i => bail!("Unimplemented instruction type: {:?}", i),
     }
