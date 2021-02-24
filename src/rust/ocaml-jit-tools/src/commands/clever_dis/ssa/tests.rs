@@ -463,6 +463,20 @@ fn test_block_translation() {
         "#]],
     );
 
+    // BoolNot
+    check(
+        vec![BoolNot],
+        BlockExit::UnconditionalJump(1),
+        expect![[r#"
+            v0 = not <prev:acc>
+            Exit: jump 1
+
+            Final acc: v0
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
+        "#]],
+    );
+
     // Monster case - pervasives
     check(
         vec![
