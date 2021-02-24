@@ -49,8 +49,8 @@ fn find_rec(
     val: &MLValue,
     entries: &mut HashMap<usize, String>,
 ) -> Result<()> {
-    match val {
-        MLValue::Block(block_id) => match blocks.get_block(block_id) {
+    if let MLValue::Block(block_id) = val {
+        match blocks.get_block(block_id) {
             Some((_, [l, v, MLValue::Int(index), r, _])) => {
                 find_rec(blocks, l, entries)?;
                 match v {
@@ -73,8 +73,7 @@ fn find_rec(
                 find_rec(blocks, r, entries)?;
             }
             _ => bail!("Unexpected symbol table format - Map.Make t"),
-        },
-        _ => (),
+        }
     }
 
     Ok(())

@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use strum::EnumProperty;
-use strum_macros;
 
 #[derive(
     Debug,

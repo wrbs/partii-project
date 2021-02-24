@@ -31,7 +31,7 @@ pub fn run(options: Options) -> Result<()> {
     // Ignore the first line
     let mut lines = dumpobj_f.lines().peekable();
 
-    lines.next().ok_or(anyhow!("No first line"))??;
+    lines.next().ok_or_else(|| anyhow!("No first line"))??;
 
     let mut dumpobj_rest = String::new();
     let mut first = true;
@@ -108,35 +108,39 @@ enum Line {
 }
 
 fn get_line<R: BufRead>(lines: &mut Peekable<Lines<R>>, show_debug: bool) -> Result<Line> {
-    let mut line = lines.next().ok_or(anyhow!("No first line"))??;
+    let mut line = lines.next().ok_or_else(|| anyhow!("No first line"))??;
 
     while line.starts_with("File") {
         if show_debug {
             println!("{}", line);
         }
-        line = lines.next().ok_or(anyhow!("No first line"))??;
+        line = lines.next().ok_or_else(|| anyhow!("No first line"))??;
     }
 
     let trimmed = line.trim();
     let mut sections = trimmed.splitn(2, ' ');
-    let offset = sections.next().ok_or(anyhow!("No offset for line"))?;
+    let offset = sections
+        .next()
+        .ok_or_else(|| anyhow!("No offset for line"))?;
     let offset: usize = offset.parse()?;
-    let dumpobj_output = String::from(sections.next().ok_or(anyhow!("No rest for line"))?.trim());
+    let dumpobj_output = String::from(
+        sections
+            .next()
+            .ok_or_else(|| anyhow!("No rest for line"))?
+            .trim(),
+    );
 
     let mut rest = String::new();
     if dumpobj_output.starts_with("SWITCH") {
         loop {
             // Deal with errors
             let p = lines.peek();
-            let problem = match p {
-                Some(Err(_)) => true,
-                _ => false,
-            };
+            let problem = matches!(p, Some(Err(_)));
             if problem {
                 // Parse the error we found
                 lines
                     .next()
-                    .ok_or(anyhow!("Cannot get next line for problem"))??;
+                    .ok_or_else(|| anyhow!("Cannot get next line for problem"))??;
             }
 
             if let Some(l) = lines.peek() {

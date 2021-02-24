@@ -28,7 +28,7 @@ impl State {
             self.stack[self.stack.len() - 1 - n]
         } else {
             let arg_offset = n - self.stack.len();
-            return SSAVar::PrevStack(self.stack_start + arg_offset);
+            SSAVar::PrevStack(self.stack_start + arg_offset)
         }
     }
 
@@ -119,7 +119,7 @@ impl Vars {
 }
 
 pub fn translate_block(block: &Block, is_entry_block: bool) -> Result<(SSABlock, State)> {
-    ensure!(block.instructions.len() > 0);
+    ensure!(!block.instructions.is_empty());
     let last_instr_idx = block.instructions.len() - 1;
 
     let mut vars_d = Vars::new();

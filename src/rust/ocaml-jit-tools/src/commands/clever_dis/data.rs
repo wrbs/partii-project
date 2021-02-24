@@ -17,9 +17,9 @@ pub struct Program {
 
 #[derive(Debug, Clone)]
 pub struct PositionInfo {
-    pub module: Rc<String>,
-    pub def_name: Rc<String>,
-    pub filename: Rc<String>,
+    pub module: Rc<str>,
+    pub def_name: Rc<str>,
+    pub filename: Rc<str>,
     pub heap_env: Vec<(i64, Ident)>,
     pub rec_env: Vec<(i64, Ident)>,
 }

@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use expect_test::{expect, Expect};
 
-use ocaml_jit_shared::Primitive;
+use ocaml_jit_shared::{Comp, Primitive, RaiseKind};
 use Instruction::*;
 
 use crate::commands::clever_dis::data::BlockExit;
@@ -119,7 +119,7 @@ fn test_state() {
 
     // Assignments 2
     {
-        let mut state = start_state.clone();
+        let mut state = start_state;
         state.push(SSAVar::Computed(12));
         check_debug(
             &state,

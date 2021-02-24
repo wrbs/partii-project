@@ -240,7 +240,7 @@ impl<'a> VisContext<'a> {
 
                         ssa_instrs.extend(format!("{}", ssa_state).lines().map(|l| {
                             let s = html_escape(l);
-                            let sections: Vec<_> = s.split(":").collect();
+                            let sections: Vec<_> = s.split(':').collect();
                             format!(
                                 r#"<TD ALIGN="left"><B>{:>13}:</B>{}   </TD>"#,
                                 sections[0],
@@ -389,7 +389,7 @@ impl<'a> VisContext<'a> {
                 format!("./{}", self.closure_filename(*to, Extension::SVG)).as_str(),
             ),
             Instruction::ClosureRec(funcs, nvars) => {
-                let first = format!("{}", &self.format_simple_instruction("ClosureRec(["));
+                let first = self.format_simple_instruction("ClosureRec([");
 
                 for func in funcs {
                     extra.push(format!(
@@ -472,7 +472,7 @@ impl<'a> VisContext<'a> {
             Some(GlobalTableEntry::Constant(g)) => {
                 format!("{}", self.program.global_data_blocks.format_value(g))
             }
-            None => format!("<empty>"),
+            None => "<empty>".into(),
         }
     }
 }
