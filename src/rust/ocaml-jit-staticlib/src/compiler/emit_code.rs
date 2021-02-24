@@ -21,6 +21,7 @@ struct CompilerContext {
     labels: Vec<Option<DynamicLabel>>,
     print_traces: bool,
     section_number: usize,
+    current_instruction_offset: BytecodeRelativeOffset,
 }
 
 pub fn compile_instructions(
@@ -44,6 +45,7 @@ pub fn compile_instructions(
         labels,
         print_traces,
         section_number,
+        current_instruction_offset: BytecodeRelativeOffset(0),
     };
 
     let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
@@ -147,6 +149,7 @@ pub fn emit_callback_entrypoint(
         labels,
         print_traces,
         section_number,
+        current_instruction_offset: BytecodeRelativeOffset(0),
     };
 
     let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
@@ -352,6 +355,7 @@ impl CompilerContext {
         code_base: *const i32,
     ) -> Option<()> {
         if let Instruction::LabelDef(bytecode_offset) = instruction {
+            self.current_instruction_offset = *bytecode_offset;
             let label = self.get_label(bytecode_offset);
             oc_dynasm!(self.ops
                 ; =>label
@@ -542,8 +546,10 @@ impl CompilerContext {
                     ; pop r_extra_args
                 );
             }
-            Instruction::Grab(l, required_arg_count) => {
-                let prev_restart = self.get_label(l);
+            Instruction::Grab(required_arg_count) => {
+                let prev_restart = self.get_label(&BytecodeRelativeOffset(
+                    self.current_instruction_offset.0 - 1, // RESTART always appears before GRAB
+                ));
                 oc_dynasm!(self.ops
                     ; mov rax, *required_arg_count as i32
                     // If extra_args >= required
