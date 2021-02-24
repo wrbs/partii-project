@@ -12,7 +12,10 @@ use crate::commands::clever_dis::ssa::data::{
 };
 
 #[cfg(test)]
-mod tests;
+mod test_block_translation;
+
+#[cfg(test)]
+mod test_stack;
 
 pub mod data;
 
