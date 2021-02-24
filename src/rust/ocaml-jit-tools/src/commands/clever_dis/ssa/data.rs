@@ -4,6 +4,11 @@ use crate::commands::clever_dis::ssa::SSAStackState;
 use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
 
 #[derive(Debug)]
+pub struct SSAClosure {
+    pub blocks: Vec<SSABlock>,
+}
+
+#[derive(Debug)]
 pub struct SSABlock {
     pub statements: Vec<SSAStatement>,
     pub exit: SSAExit,
