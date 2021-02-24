@@ -131,6 +131,7 @@ pub enum SSAExpr {
     ArithInt(ArithOp, SSAVar, SSAVar),
     NegInt(SSAVar),
     IntCmp(Comp, SSAVar, SSAVar),
+    BoolNot(SSAVar),
     UnaryFloat(UnaryFloatOp, SSAVar),
     BinaryFloat(BinaryFloatOp, SSAVar, SSAVar),
     MakeBlock {
@@ -194,6 +195,7 @@ impl Display for SSAExpr {
                 Comp::ULt => write!(f, "{} u< {}", a, b)?,
                 Comp::UGe => write!(f, "{} u>= {}", a, b)?,
             },
+            SSAExpr::BoolNot(var) => write!(f, "not {}", var)?,
             SSAExpr::BinaryFloat(op, a, b) => {
                 write!(f, "{} {} {}", op, a, b)?;
             }
@@ -652,7 +654,7 @@ fn process_body_instruction(
         // Instruction::SetVecTItem => {}
         // Instruction::GetBytesChar => {}
         // Instruction::SetBytesChar => {}
-        // Instruction::BoolNot => {}
+        Instruction::BoolNot => state.acc = vars.add_assignment(SSAExpr::BoolNot(state.acc)),
         Instruction::PopTrap => {
             vars.add_statement(SSAStatement::PopTrap);
             state.pop(4);
