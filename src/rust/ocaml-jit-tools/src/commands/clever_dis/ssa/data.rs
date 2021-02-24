@@ -24,7 +24,7 @@ pub enum SSAVar {
     PrevAcc,
     Arg(usize),
     Env(usize),
-    Computed(usize),
+    Computed(usize, usize),
     OffsetClosure(isize),
     Const(i32),
     Unit,
@@ -38,9 +38,9 @@ impl Display for SSAVar {
         match self {
             SSAVar::PrevStack(i) => write!(f, "<prev:{}>", i),
             SSAVar::PrevAcc => write!(f, "<prev:acc>"),
-            SSAVar::Arg(i) => write!(f, "a{}", i),
+            SSAVar::Arg(i) => write!(f, "<arg:{}>", i),
             SSAVar::Env(i) => write!(f, "<env:{}>", i),
-            SSAVar::Computed(i) => write!(f, "v{}", i),
+            SSAVar::Computed(block_num, i) => write!(f, "<{}_{}>", block_num, i),
             SSAVar::OffsetClosure(i) => write!(f, "<closure:{}>", i),
             SSAVar::Const(i) => write!(f, "{}", i),
             SSAVar::Unit => write!(f, "<unit>"),
@@ -141,7 +141,7 @@ impl Display for SSAExpr {
 
                 display_array(f, args)?;
             }
-            SSAExpr::GetGlobal(n) => write!(f, "g{}", n)?,
+            SSAExpr::GetGlobal(n) => write!(f, "global {}", n)?,
             SSAExpr::GetField(v, i) => write!(f, "{}[{}]", v, i)?,
             SSAExpr::GetFloatField(v, i) => write!(f, "float {}[{}]", v, i)?,
             SSAExpr::GetBytesChar(v, i) => write!(f, "bytes {}[{}]", v, i)?,
@@ -214,7 +214,7 @@ impl Display for SSAExpr {
 
 #[derive(Debug)]
 pub enum SSAStatement {
-    Assign(usize, SSAExpr),
+    Assign(usize, usize, SSAExpr),
     PopTrap,
     CheckSignals,
     Grab(usize),
@@ -227,8 +227,8 @@ pub enum SSAStatement {
 impl Display for SSAStatement {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
-            SSAStatement::Assign(i, expr) => {
-                write!(f, "v{} = {}", i, expr)?;
+            SSAStatement::Assign(block_num, i, expr) => {
+                write!(f, "<{}_{}> = {}", block_num, i, expr)?;
             }
             SSAStatement::PopTrap => {
                 write!(f, "pop trap")?;
@@ -240,7 +240,7 @@ impl Display for SSAStatement {
                 write!(f, "grab {}", i)?;
             }
             SSAStatement::SetGlobal(n, v) => {
-                write!(f, "set g{} = {}", n, v)?;
+                write!(f, "set global {} = {}", n, v)?;
             }
             SSAStatement::SetField(b, n, v) => {
                 write!(f, "set {}[{}] = {}", b, n, v)?;
