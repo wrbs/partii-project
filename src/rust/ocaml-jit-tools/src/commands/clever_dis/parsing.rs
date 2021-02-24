@@ -1,4 +1,3 @@
-use std::collections::hash_map::RandomState;
 use std::collections::{HashMap, HashSet, VecDeque};
 
 use anyhow::{anyhow, bail, Result};
@@ -6,7 +5,7 @@ use anyhow::{anyhow, bail, Result};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 
 use crate::bytecode_files::debug_events::DebugEvent;
-use crate::bytecode_files::{BytecodeFile, DebugInfo, MLValue};
+use crate::bytecode_files::{BytecodeFile, MLValue};
 
 use super::data::*;
 

@@ -256,7 +256,7 @@ impl<'a> VisContext<'a> {
                             closure_no, block_no
                         );
                         eprintln!("{}", e);
-                        let mut ssa_instrs: Vec<_> = format!("{}", e)
+                        let ssa_instrs: Vec<_> = format!("{}", e)
                             .lines()
                             .map(|l| format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(l)))
                             .collect();

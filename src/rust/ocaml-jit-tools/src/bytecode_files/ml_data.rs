@@ -42,7 +42,6 @@ pub enum MLValue {
     String(usize),
     Int32(i32),
     Int64(i64),
-    Shared(usize),
     Double(f64),
 }
 
@@ -91,7 +90,6 @@ impl<'a, 'b> Display for FormattableValue<'a, 'b> {
                 write!(f, "]}}")?;
                 Ok(())
             }
-            MLValue::Shared(offset) => write!(f, "Shared({})", offset),
             MLValue::Double(d) => write!(f, "{:.8}", d),
         }
     }
@@ -134,8 +132,9 @@ const CODE_CUSTOM: u8 = 0x12 /* deprecated */;
 const CODE_CUSTOM_LEN: u8 = 0x18;
 const CODE_CUSTOM_FIXED: u8 = 0x19;
 
-const OBJECT_TAG: u8 = 248;
+// const OBJECT_TAG: u8 = 248;
 
+#[allow(unused)]
 struct Header {
     data_len: usize,
     num_objects: usize,

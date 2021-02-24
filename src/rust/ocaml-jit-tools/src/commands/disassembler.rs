@@ -9,9 +9,7 @@ use structopt::StructOpt;
 
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 
-use crate::bytecode_files::{
-    parse_bytecode_file, BytecodeFile, DebugInfo, MLValue, MLValueBlock, MLValueBlocks,
-};
+use crate::bytecode_files::{parse_bytecode_file, BytecodeFile, DebugInfo, MLValue, MLValueBlocks};
 
 arg_enum! {
     #[derive(Debug, Eq, PartialEq, Copy, Clone)]
