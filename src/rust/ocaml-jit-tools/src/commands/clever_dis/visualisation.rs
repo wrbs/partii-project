@@ -232,13 +232,13 @@ impl<'a> VisContext<'a> {
             let ssa_instrs = if self.options.show.show_ssa() {
                 let is_entry_block = closure_no != 0 && block_no == 0;
                 match translate_block(block, block_no, is_entry_block) {
-                    Ok((ssa_block, ssa_state)) => {
+                    Ok(ssa_block) => {
                         let mut ssa_instrs: Vec<_> = format!("{}", ssa_block)
                             .lines()
                             .map(|l| format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(l)))
                             .collect();
 
-                        ssa_instrs.extend(format!("{}", ssa_state).lines().map(|l| {
+                        ssa_instrs.extend(format!("{}", ssa_block.final_state).lines().map(|l| {
                             let s = html_escape(l);
                             let sections: Vec<_> = s.split(':').collect();
                             format!(
