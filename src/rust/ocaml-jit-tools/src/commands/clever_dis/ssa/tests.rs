@@ -491,6 +491,57 @@ fn test_block_translation() {
         "#]],
     );
 
+    // SetBytesChar
+    check(
+        vec![
+            Const(255),
+            Push,
+            Acc(2),
+            ArithInt(ArithOp::And),
+            Push,
+            Acc(1),
+            Push,
+            Acc(5),
+            GetField(0),
+            SetBytesChar,
+        ],
+        BlockExit::UnconditionalJump(1),
+        expect![[r#"
+            v0 = <prev:1> & 255
+            v1 = <prev:3>[0]
+            set bytes v1[<prev:0>] = v0
+            Exit: jump 1
+
+            Final acc: <unit>
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
+        "#]],
+    );
+
+    // GetBytesChar
+    check(
+        vec![
+            Acc(2),
+            Push,
+            Acc(2),
+            Push,
+            Acc(2),
+            GetBytesChar,
+            IntCmp(Comp::Eq),
+            BranchIfNot(3),
+        ],
+        BlockExit::ConditionalJump(3, 4),
+        expect![[r#"
+            v0 = bytes <prev:0>[<prev:1>]
+            v1 = v0 == <prev:2>
+            Exit: jump_if v1 t:4 f:3
+
+            Final acc: v1
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
+        "#]],
+    );
+
     // Monster case - pervasives
     check(
         vec![
