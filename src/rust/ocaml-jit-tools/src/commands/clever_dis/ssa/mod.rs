@@ -7,15 +7,19 @@ use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
 use crate::commands::clever_dis::ssa::data::{
-    BinaryFloatOp, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar, UnaryFloatOp,
-    UnaryOp,
+    BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar,
+    UnaryFloatOp, UnaryOp,
 };
+use std::collections::HashSet;
 
 #[cfg(test)]
 mod test_block_translation;
 
 #[cfg(test)]
 mod test_stack;
+
+#[cfg(test)]
+mod test_closure_translation;
 
 pub mod data;
 
@@ -24,16 +28,32 @@ pub struct SSAStackState {
     pub stack: Vec<SSAVar>,
     pub acc: SSAVar,
     pub stack_start: usize,
+    pub used_prev: HashSet<usize>,
 }
 
 impl SSAStackState {
-    fn pick(&self, n: usize) -> SSAVar {
-        if n < self.stack.len() {
+    fn new() -> SSAStackState {
+        SSAStackState {
+            stack: vec![],
+            acc: SSAVar::PrevAcc,
+            stack_start: 0,
+            used_prev: HashSet::new(),
+        }
+    }
+
+    fn pick(&mut self, n: usize) -> SSAVar {
+        let v = if n < self.stack.len() {
             self.stack[self.stack.len() - 1 - n]
         } else {
             let arg_offset = n - self.stack.len();
             SSAVar::PrevStack(self.stack_start + arg_offset)
+        };
+
+        if let SSAVar::PrevStack(i) = &v {
+            self.used_prev.insert(*i);
         }
+
+        v
     }
 
     fn pop(&mut self, count: usize) {
@@ -67,6 +87,16 @@ impl SSAStackState {
     }
 }
 
+impl ModifySSAVars for SSAStackState {
+    fn modify_ssa_vars<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut SSAVar),
+    {
+        f(&mut self.acc);
+        self.stack.iter_mut().for_each(f);
+    }
+}
+
 impl Display for SSAStackState {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         writeln!(f, "Final acc: {}", self.acc)?;
@@ -84,6 +114,8 @@ impl Display for SSAStackState {
             write!(f, "{}", entry)?;
         }
         writeln!(f)?;
+
+        writeln!(f, "Used prev: {:?}", self.used_prev)?;
 
         writeln!(
             f,
@@ -125,28 +157,89 @@ impl Vars {
 }
 
 pub fn translate_closure(closure: &Closure) -> Result<SSAClosure> {
-    let mut blocks = vec![];
-    for (block_num, b) in closure.blocks.iter().enumerate() {
+    let blocks = translate_blocks(&closure.blocks)?;
+    Ok(SSAClosure { blocks })
+}
+
+fn translate_blocks(blocks: &[Block]) -> Result<Vec<SSABlock>> {
+    let mut result = vec![];
+    for (block_num, b) in blocks.iter().enumerate() {
         if block_num == 0 {
-            blocks.push(translate_block(b, 0, true)?);
+            result.push(translate_block(b, 0, true)?);
         } else {
-            blocks.push(translate_block(b, block_num, false)?);
+            result.push(translate_block(b, block_num, false)?);
         }
     }
 
-    Ok(SSAClosure { blocks })
+    Ok(result)
 }
+
+fn get_referencing(blocks: &[SSABlock]) -> Vec<HashSet<usize>> {
+    let mut result = vec![HashSet::new(); blocks.len()];
+
+    for (block_num, block) in blocks.iter().enumerate() {
+        match &block.exit {
+            SSAExit::Jump(to) => {
+                result[*to].insert(block_num);
+            }
+            SSAExit::JumpIf {
+                if_false,
+                if_true,
+                var: _,
+            } => {
+                result[*if_false].insert(block_num);
+                result[*if_true].insert(block_num);
+            }
+            SSAExit::Switch {
+                var: _,
+                ints,
+                blocks,
+            } => {
+                for i in ints.iter().chain(blocks.iter()) {
+                    result[*i].insert(block_num);
+                }
+            }
+            SSAExit::PushTrap { normal, trap } => {
+                result[*normal].insert(block_num);
+                result[*trap].insert(block_num);
+            }
+            SSAExit::TailApply(_, _) => {}
+            SSAExit::Raise(_, _) => {}
+            SSAExit::Return(_) => {}
+            SSAExit::Stop(_) => {}
+        }
+    }
+
+    result
+}
+
+fn offset_vars(block: &mut SSABlock, block_num: usize, offset: usize) {
+    block.modify_ssa_vars(&mut |v| match v {
+        SSAVar::Computed(actual_block_num, i) => {
+            if *actual_block_num == block_num {
+                *i += offset;
+            }
+        }
+        _ => {}
+    });
+
+    for statement in block.statements.iter_mut() {
+        if let SSAStatement::Assign(actual_block_num, i, _) = statement {
+            if *actual_block_num == block_num {
+                *i += offset;
+            }
+        }
+    }
+}
+
+fn join_previous_stack
 
 pub fn translate_block(block: &Block, block_num: usize, is_entry_block: bool) -> Result<SSABlock> {
     ensure!(!block.instructions.is_empty());
     let last_instr_idx = block.instructions.len() - 1;
 
     let mut vars_d = Vars::new(block_num);
-    let mut state_d = SSAStackState {
-        stack: vec![],
-        acc: SSAVar::PrevAcc,
-        stack_start: 0,
-    };
+    let mut state_d = SSAStackState::new();
     let vars = &mut vars_d;
     let state = &mut state_d;
 

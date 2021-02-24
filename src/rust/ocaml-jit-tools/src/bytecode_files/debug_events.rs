@@ -8,6 +8,7 @@ use anyhow::{anyhow, bail, ensure, Context, Result};
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::bytecode_files::{MLValue, MLValueBlocks, MLValueString};
+use serde::{Deserialize, Serialize};
 
 use super::ml_data::input_value;
 use super::trailer::{Trailer, DBUG_SECTION};
@@ -36,7 +37,7 @@ pub struct DebugEvent {
     pub repr: DebugEventRepr,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Ident {
     Local {
         name: Rc<str>,

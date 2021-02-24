@@ -17,6 +17,6 @@ mkdir -p "${OUT_DIR}"
 
 cd ${RUST_DIR}
 
-cargo run clever-dis --dot "${OUT_DIR}" ${TEST_PROGRAMS_DIR}/out/${PROGRAM}.byte "$@"
+cargo run --release -- clever-dis --dot "${OUT_DIR}" ${TEST_PROGRAMS_DIR}/out/${PROGRAM}.byte "$@"
 
 $BROWSER "${OUT_DIR}/root.svg"

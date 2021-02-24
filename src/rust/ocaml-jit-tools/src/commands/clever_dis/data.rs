@@ -3,6 +3,7 @@
 use std::rc::Rc;
 
 use ocaml_jit_shared::Instruction;
+use serde::{Deserialize, Serialize};
 
 use crate::bytecode_files::debug_events::Ident;
 use crate::bytecode_files::{MLValue, MLValueBlocks};
@@ -15,7 +16,7 @@ pub struct Program {
     pub primitives: Vec<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PositionInfo {
     pub module: Rc<str>,
     pub def_name: Rc<str>,
@@ -25,7 +26,7 @@ pub struct PositionInfo {
 }
 // debug position info goes here
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Closure {
     pub blocks: Vec<Block>,
     pub position: Option<PositionInfo>,
@@ -57,14 +58,14 @@ impl Closure {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
     pub instructions: Vec<Instruction<usize>>,
     pub closures: Vec<usize>,
     pub exit: BlockExit,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BlockExit {
     UnconditionalJump(usize),
     ConditionalJump(usize, usize),
