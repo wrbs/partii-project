@@ -2,6 +2,19 @@
 // right thing" or "we're trusting the JIT isn't broken"
 #![allow(clippy::missing_safety_doc)]
 
+use std::ffi::c_void;
+use std::fs;
+use std::io::Write;
+
+use caml::mlvalues::Value;
+use global_data::GlobalData;
+
+use crate::caml::mlvalues::LongValue;
+use crate::compiler::{
+    compile, compile_callback_if_needed, get_entrypoint, EntryPoint, LongjmpEntryPoint, Section,
+};
+use crate::trace::{print_trace, PrintTraceType};
+
 // A side-effect of how we emit the JIT code means we have to cast functions to i64s not usizes
 // It's fine here
 #[allow(clippy::fn_to_numeric_cast)]
@@ -11,17 +24,6 @@ mod compiler;
 mod configuration;
 mod global_data;
 mod trace;
-
-use crate::caml::mlvalues::LongValue;
-use crate::compiler::{
-    compile, compile_callback_if_needed, get_entrypoint, EntryPoint, LongjmpEntryPoint, Section,
-};
-use crate::trace::{print_trace, PrintTraceType};
-use caml::mlvalues::Value;
-use global_data::GlobalData;
-use std::ffi::c_void;
-use std::fs;
-use std::io::Write;
 
 /* These are the hook points from the existing runtime to the JIT */
 

@@ -1,10 +1,13 @@
-use crate::bytecode_files::ParseFileError;
+use std::io::Cursor;
+use std::str::FromStr;
+
 use byteorder::{LittleEndian, ReadBytesExt};
+
 use ocaml_jit_shared::{
     BytecodeRelativeOffset, Instruction, InstructionIterator, Primitive, PrimitiveLookup,
 };
-use std::io::Cursor;
-use std::str::FromStr;
+
+use crate::bytecode_files::ParseFileError;
 
 #[allow(clippy::type_complexity)]
 pub fn parse_bytecode(

@@ -1,9 +1,12 @@
-use super::types::*;
-use crate::primitives::Primitive;
-use crate::Opcode;
 use std::collections::VecDeque;
 use std::iter::Peekable;
+
 use thiserror::Error;
+
+use crate::primitives::Primitive;
+use crate::Opcode;
+
+use super::types::*;
 
 pub trait PrimitiveLookup {
     fn get_primitive(&self, primitive_id: u32) -> Option<Primitive>;

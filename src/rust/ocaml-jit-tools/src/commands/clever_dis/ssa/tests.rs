@@ -1,10 +1,13 @@
-use super::*;
-use crate::commands::clever_dis::data::BlockExit;
+use std::fmt::Debug;
+
 use expect_test::{expect, Expect};
 
 use ocaml_jit_shared::Primitive;
-use std::fmt::Debug;
 use Instruction::*;
+
+use crate::commands::clever_dis::data::BlockExit;
+
+use super::*;
 
 fn check_debug<T: Debug>(thing: &T, expected: Expect) {
     expected.assert_eq(&format!("{:?}", thing));

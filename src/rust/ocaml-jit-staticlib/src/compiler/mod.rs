@@ -1,8 +1,8 @@
+pub use saved_data::{CompilerData, EntryPoint, LongjmpEntryPoint, LongjmpHandler, Section};
+
 mod c_primitives;
 mod emit_code;
 mod saved_data;
-
-pub use saved_data::{CompilerData, EntryPoint, LongjmpEntryPoint, LongjmpHandler, Section};
 
 pub fn compile(compiler_data: &mut CompilerData, bytecode: &[i32], print_traces: bool) -> usize {
     let section_number = compiler_data.sections.len();

@@ -1,6 +1,8 @@
-use ocaml_jit_shared::InstructionParseError;
 use std::io;
+
 use thiserror::Error;
+
+use ocaml_jit_shared::InstructionParseError;
 
 // all the ways it can go wrong
 #[derive(Error, Debug)]

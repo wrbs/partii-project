@@ -1,12 +1,13 @@
-mod bytecode_files;
-mod commands;
-
-use anyhow::{Context, Result};
-use commands::{clever_dis, compare_traces, disassembler, hexdump, process_disassembly};
-
 #[macro_use]
 extern crate prettytable;
+
+use anyhow::{Context, Result};
 use structopt::StructOpt;
+
+use commands::{clever_dis, compare_traces, disassembler, hexdump, process_disassembly};
+
+mod bytecode_files;
+mod commands;
 
 #[derive(StructOpt)]
 #[structopt(

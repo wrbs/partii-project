@@ -1,5 +1,6 @@
-use super::mlvalues::Value;
 use std::os::raw::c_void;
+
+use super::mlvalues::Value;
 
 // Using void pointers where I don't care about the types
 

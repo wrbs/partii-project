@@ -1,11 +1,12 @@
+use ocaml_jit_shared::{
+    BytecodeRelativeOffset, Instruction, Opcode, TraceEntry, TraceLocation, ValueOrBytecodeLocation,
+};
+
 use crate::caml::domain_state::{get_stack_high, get_trap_sp};
 use crate::caml::mlvalues::{Value, ValueType};
 use crate::compiler::CompilerData;
 use crate::configuration::TraceType;
 use crate::global_data::GlobalData;
-use ocaml_jit_shared::{
-    BytecodeRelativeOffset, Instruction, Opcode, TraceEntry, TraceLocation, ValueOrBytecodeLocation,
-};
 
 const STACK_ELEMENTS_TO_SHOW: usize = 5;
 

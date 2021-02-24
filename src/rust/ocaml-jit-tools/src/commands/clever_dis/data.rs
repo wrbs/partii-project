@@ -1,10 +1,12 @@
 // Data model for parsed instructions
 
-use crate::bytecode_files::debug_events::{DebugSpan, Ident};
-use crate::bytecode_files::{MLValue, MLValueBlocks};
-use ocaml_jit_shared::Instruction;
 use std::process::id;
 use std::rc::Rc;
+
+use ocaml_jit_shared::Instruction;
+
+use crate::bytecode_files::debug_events::{DebugSpan, Ident};
+use crate::bytecode_files::{MLValue, MLValueBlocks};
 
 #[derive(Debug, Clone)]
 pub struct Program {

@@ -1,9 +1,12 @@
-use super::ml_data::input_value;
-use super::trailer::{Trailer, SYMB_SECTION};
-use crate::bytecode_files::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
-use anyhow::{bail, Result};
 use std::collections::HashMap;
 use std::fs::File;
+
+use anyhow::{bail, Result};
+
+use crate::bytecode_files::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
+
+use super::ml_data::input_value;
+use super::trailer::{Trailer, SYMB_SECTION};
 
 pub fn parse_symbol_table(f: &mut File, trailer: &Trailer) -> Result<HashMap<usize, String>> {
     let mut section = trailer

@@ -1,6 +1,8 @@
-use crate::Primitive;
-use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
+
+use serde::{Deserialize, Serialize};
+
+use crate::Primitive;
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct BytecodeRelativeOffset(pub usize);
