@@ -70,6 +70,7 @@ pub enum SSAVar {
     Unit,
     Atom(u8),
     Special, // Traps and such like
+    Junk,
 }
 
 impl Display for SSAVar {
@@ -85,6 +86,7 @@ impl Display for SSAVar {
             SSAVar::Unit => write!(f, "<unit>"),
             SSAVar::Atom(tag) => write!(f, "<atom:{}>", tag),
             SSAVar::Special => write!(f, "<special>"),
+            SSAVar::Junk => write!(f, "<junk>"),
         }
     }
 }
@@ -709,6 +711,7 @@ fn process_body_instruction(
         }
         Instruction::CheckSignals => {
             vars.add_statement(SSAStatement::CheckSignals);
+            state.acc = SSAVar::Junk;
         }
         Instruction::Prim(p) => match p {
             Primitive::NegFloat => unary_float(state, vars, UnaryFloatOp::Neg),
@@ -768,7 +771,6 @@ fn process_body_instruction(
             state.pop(1);
         }
         Instruction::Break | Instruction::Event => (),
-        i => bail!("Unimplemented instruction type: {:?}", i),
     }
 
     Ok(())
