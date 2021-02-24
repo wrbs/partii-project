@@ -580,6 +580,57 @@ fn test_block_translation() {
         "#]],
     );
 
+    // GetDynMet
+    check_advanced(
+        vec![
+            EnvAcc(3),
+            Push,
+            EnvAcc(2),
+            Push,
+            EnvAcc(1),
+            GetDynMet,
+            ApplyTerm(2, 3),
+        ],
+        true,
+        BlockExit::TailCall,
+        expect![[r#"
+            v0 = get dynmet tag:<env:1> object:<env:2> 
+            Exit: tail_apply v0 [<env:3>, a0]
+
+            Final acc: v0
+            End stack: ..., <prev:1> | 
+            Stack delta: -1/+0
+        "#]],
+    );
+
+    // PubMet
+    check(
+        vec![
+            Pop(2),
+            Const(0),
+            Push,
+            Acc(1),
+            GetField(0),
+            Apply1,
+            SetupForPubMet(109),
+            GetDynMet,
+            Apply1,
+            Push,
+        ],
+        BlockExit::UnconditionalJump(1),
+        expect![[r#"
+            v0 = <prev:2>[0]
+            v1 = apply v0 [0]
+            v2 = get dynmet tag:109 object:v1 
+            v3 = apply v2 [<prev:2>]
+            Exit: jump 1
+
+            Final acc: v3
+            End stack: ..., <prev:3> | v3
+            Stack delta: -3/+1
+        "#]],
+    );
+
     // Monster case - pervasives
     check(
         vec![
