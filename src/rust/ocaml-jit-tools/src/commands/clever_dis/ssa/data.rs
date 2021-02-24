@@ -1,11 +1,13 @@
 use std::fmt::{Display, Formatter};
 
+use crate::commands::clever_dis::ssa::SSAStackState;
 use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
 
 #[derive(Debug)]
 pub struct SSABlock {
     pub statements: Vec<SSAStatement>,
     pub exit: SSAExit,
+    pub final_state: SSAStackState,
 }
 
 impl Display for SSABlock {

@@ -19,7 +19,7 @@ fn check_debug_pretty<T: Debug>(thing: &T, expected: Expect) {
 
 #[test]
 fn test_state() {
-    let start_state = State {
+    let start_state = SSAStackState {
         stack: vec![],
         acc: SSAVar::PrevAcc,
         stack_start: 0,
@@ -49,13 +49,13 @@ fn test_state() {
 
         check_debug(
             &state,
-            expect![[r#"State { stack: [], acc: PrevAcc, stack_start: 0 }"#]],
+            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 0 }"#]],
         );
 
         state.pop(3);
         check_debug(
             &state,
-            expect![[r#"State { stack: [], acc: PrevAcc, stack_start: 3 }"#]],
+            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 3 }"#]],
         );
         check_debug(&state.pick(0), expect![[r#"PrevStack(3)"#]]);
         check_debug(&state.pick(1), expect![[r#"PrevStack(4)"#]]);
@@ -73,7 +73,7 @@ fn test_state() {
         check_debug_pretty(
             &state,
             expect![[r#"
-                State {
+                SSAStackState {
                     stack: [
                         Computed(
                             0,
@@ -100,13 +100,13 @@ fn test_state() {
         state.pop(2);
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(0, 0), Computed(0, 1)], acc: PrevAcc, stack_start: 0 }"#]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 0), Computed(0, 1)], acc: PrevAcc, stack_start: 0 }"#]],
         );
 
         state.pop(3);
         check_debug(
             &state,
-            expect![[r#"State { stack: [], acc: PrevAcc, stack_start: 1 }"#]],
+            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 1 }"#]],
         );
     }
     // Assignments 1
@@ -115,7 +115,7 @@ fn test_state() {
         state.assign(0, SSAVar::Computed(0, 12));
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(0, 12)], acc: PrevAcc, stack_start: 1 }"#]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 12)], acc: PrevAcc, stack_start: 1 }"#]],
         );
     }
 
@@ -125,26 +125,26 @@ fn test_state() {
         state.push(SSAVar::Computed(0, 12));
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(0, 12)], acc: PrevAcc, stack_start: 0 }"#]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 12)], acc: PrevAcc, stack_start: 0 }"#]],
         );
 
         state.assign(0, SSAVar::Computed(0, 23));
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(0, 23)], acc: PrevAcc, stack_start: 0 }"#]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 23)], acc: PrevAcc, stack_start: 0 }"#]],
         );
 
         state.assign(1, SSAVar::Computed(0, 24));
         check_debug(
             &state,
-            expect![[r#"State { stack: [Computed(0, 24), Computed(0, 23)], acc: PrevAcc, stack_start: 1 }"#]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 24), Computed(0, 23)], acc: PrevAcc, stack_start: 1 }"#]],
         );
 
         state.assign(5, SSAVar::Computed(0, 25));
         check_debug_pretty(
             &state,
             expect![[r#"
-                State {
+                SSAStackState {
                     stack: [
                         Computed(
                             0,
@@ -189,8 +189,8 @@ fn test_block_translation() {
             closures: vec![],
         };
 
-        let (ssa_block, final_state) = translate_block(&block, 0, is_entry_block).unwrap();
-        let actual = format!("{}\n{}", ssa_block, final_state);
+        let ssa_block = translate_block(&block, 0, is_entry_block).unwrap();
+        let actual = format!("{}\n{}", ssa_block, ssa_block.final_state);
         expected.assert_eq(&actual);
     }
 

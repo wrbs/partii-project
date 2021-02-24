@@ -16,13 +16,13 @@ mod tests;
 pub mod data;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct State {
+pub struct SSAStackState {
     pub stack: Vec<SSAVar>,
     pub acc: SSAVar,
     pub stack_start: usize,
 }
 
-impl State {
+impl SSAStackState {
     fn pick(&self, n: usize) -> SSAVar {
         if n < self.stack.len() {
             self.stack[self.stack.len() - 1 - n]
@@ -63,7 +63,7 @@ impl State {
     }
 }
 
-impl Display for State {
+impl Display for SSAStackState {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         writeln!(f, "Final acc: {}", self.acc)?;
 
@@ -120,16 +120,12 @@ impl Vars {
     }
 }
 
-pub fn translate_block(
-    block: &Block,
-    block_num: usize,
-    is_entry_block: bool,
-) -> Result<(SSABlock, State)> {
+pub fn translate_block(block: &Block, block_num: usize, is_entry_block: bool) -> Result<SSABlock> {
     ensure!(!block.instructions.is_empty());
     let last_instr_idx = block.instructions.len() - 1;
 
     let mut vars_d = Vars::new(block_num);
-    let mut state_d = State {
+    let mut state_d = SSAStackState {
         stack: vec![],
         acc: SSAVar::PrevAcc,
         stack_start: 0,
@@ -163,17 +159,15 @@ pub fn translate_block(
     let last_instruction = block.instructions.last().unwrap();
     let exit = process_final_instruction(state, vars, last_instruction, &block.exit)?;
 
-    Ok((
-        SSABlock {
-            statements: vars_d.statements,
-            exit,
-        },
-        state_d,
-    ))
+    Ok(SSABlock {
+        statements: vars_d.statements,
+        exit,
+        final_state: state_d,
+    })
 }
 
 fn process_body_instruction(
-    state: &mut State,
+    state: &mut SSAStackState,
     vars: &mut Vars,
     instr: &Instruction<usize>,
 ) -> Result<()> {
@@ -430,7 +424,7 @@ fn process_body_instruction(
 }
 
 fn process_final_instruction(
-    state: &mut State,
+    state: &mut SSAStackState,
     vars: &mut Vars,
     instr: &Instruction<usize>,
     exit: &BlockExit,
@@ -547,7 +541,7 @@ fn process_final_instruction(
 
 // Shared utilities for parser
 
-fn c_call(state: &mut State, vars: &mut Vars, count: usize, primitive_id: &u32) {
+fn c_call(state: &mut SSAStackState, vars: &mut Vars, count: usize, primitive_id: &u32) {
     state.push(state.acc);
 
     state.acc = vars.add_assignment(SSAExpr::CCall {
@@ -557,11 +551,11 @@ fn c_call(state: &mut State, vars: &mut Vars, count: usize, primitive_id: &u32) 
     state.pop(count);
 }
 
-fn unary_float(state: &mut State, vars: &mut Vars, op: UnaryFloatOp) {
+fn unary_float(state: &mut SSAStackState, vars: &mut Vars, op: UnaryFloatOp) {
     state.acc = vars.add_assignment(SSAExpr::UnaryFloat(op, state.acc));
 }
 
-fn binary_float(state: &mut State, vars: &mut Vars, op: BinaryFloatOp) {
+fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
     state.acc = vars.add_assignment(SSAExpr::BinaryFloat(op, state.acc, state.pick(0)));
     state.pop(1);
 }
