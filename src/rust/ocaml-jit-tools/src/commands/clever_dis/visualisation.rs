@@ -339,10 +339,11 @@ impl<'a> VisContext<'a> {
                     writeln!(f, "n{} -> raise{};", block_no, block_no)?;
                     writeln!(f, r#"raise{} [shape=box label="Raise"];"#, block_no)?;
                 }
-            }
 
-            for trap in &block.traps {
-                writeln!(f, "n{} -> n{} [color=green]", block_no, trap)?;
+                BlockExit::PushTrap { normal, trap } => {
+                    writeln!(f, "n{} -> n{};", block_no, normal)?;
+                    writeln!(f, "n{} -> n{} [color=green]", block_no, trap)?;
+                }
             }
         }
 

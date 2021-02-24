@@ -68,9 +68,7 @@ pub enum SSAVar {
     Const(i32),
     Unit,
     Atom(u8),
-    RetExtraArgs,
-    RetEnv,
-    RetLoc(usize),
+    Special, // Traps and such like
 }
 
 impl Display for SSAVar {
@@ -85,9 +83,7 @@ impl Display for SSAVar {
             SSAVar::Const(i) => write!(f, "{}", i),
             SSAVar::Unit => write!(f, "<unit>"),
             SSAVar::Atom(tag) => write!(f, "<atom:{}>", tag),
-            SSAVar::RetExtraArgs => write!(f, "<ret_extra_args>"),
-            SSAVar::RetEnv => write!(f, "<ret_env>"),
-            SSAVar::RetLoc(n) => write!(f, "<ret_loc:{}>", n),
+            SSAVar::Special => write!(f, "<special>"),
         }
     }
 }
@@ -243,7 +239,6 @@ pub enum SSAStatement {
     SetGlobal(usize, SSAVar),
     SetField(SSAVar, usize, SSAVar),
     SetFloatField(SSAVar, usize, SSAVar),
-    NotImplemented(Instruction<usize>),
 }
 
 impl Display for SSAStatement {
@@ -270,9 +265,6 @@ impl Display for SSAStatement {
             SSAStatement::SetFloatField(b, n, v) => {
                 write!(f, "set float {}[{}] = {}", b, n, v)?;
             }
-            SSAStatement::NotImplemented(instr) => {
-                write!(f, "**{:?}**", instr)?;
-            }
         }
 
         Ok(())
@@ -281,7 +273,6 @@ impl Display for SSAStatement {
 
 #[derive(Debug)]
 pub enum SSAExit {
-    Unimplemented(Instruction<usize>, BlockExit),
     Stop(SSAVar),
     Jump(usize),
     JumpIf {
@@ -295,6 +286,10 @@ pub enum SSAExit {
         blocks: Vec<usize>,
     },
     TailApply(SSAVar, Vec<SSAVar>),
+    PushTrap {
+        normal: usize,
+        trap: usize,
+    },
     Raise(RaiseKind, SSAVar),
     Return(SSAVar),
 }
@@ -302,9 +297,6 @@ pub enum SSAExit {
 impl Display for SSAExit {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
-            SSAExit::Unimplemented(instr, exit) => {
-                write!(f, "**{:?} {:?}**", instr, exit)?;
-            }
             SSAExit::Stop(v) => {
                 write!(f, "stop {}", v)?;
             }
@@ -328,6 +320,9 @@ impl Display for SSAExit {
                 write!(f, "tail_apply {} ", closure)?;
 
                 display_array(f, args)?;
+            }
+            SSAExit::PushTrap { normal, trap } => {
+                write!(f, "push trap normal:{} trap:{}", normal, trap)?;
             }
             SSAExit::Raise(RaiseKind::Regular, v) => {
                 write!(f, "raise {}", v)?;
@@ -513,6 +508,7 @@ fn process_body_instruction(
         | Instruction::BranchCmp(_, _, _)
         | Instruction::Raise(_)
         | Instruction::Switch(_, _)
+        | Instruction::PushTrap(_)
         | Instruction::Stop => {
             bail!("{:?} should be last call in a block!", instr);
         }
@@ -535,10 +531,10 @@ fn process_body_instruction(
         Instruction::Assign(n) => {
             state.assign(*n as usize, state.acc);
         }
-        Instruction::PushRetAddr(retloc) => {
-            state.push(SSAVar::RetExtraArgs);
-            state.push(SSAVar::RetEnv);
-            state.push(SSAVar::RetLoc(*retloc));
+        Instruction::PushRetAddr(_) => {
+            state.push(SSAVar::Special);
+            state.push(SSAVar::Special);
+            state.push(SSAVar::Special);
         }
         Instruction::Apply1 => {
             state.acc = vars.add_assignment(SSAExpr::Apply(state.acc, vec![state.pick(0)]));
@@ -657,8 +653,10 @@ fn process_body_instruction(
         // Instruction::GetBytesChar => {}
         // Instruction::SetBytesChar => {}
         // Instruction::BoolNot => {}
-        // Instruction::PushTrap(_) => {}
-        // Instruction::PopTrap => {}
+        Instruction::PopTrap => {
+            vars.add_statement(SSAStatement::PopTrap);
+            state.pop(4);
+        }
         Instruction::CheckSignals => {
             vars.add_statement(SSAStatement::CheckSignals);
         }
@@ -699,7 +697,7 @@ fn process_body_instruction(
         // Instruction::GetDynMet => {}
         // Instruction::Break => {}
         // Instruction::Event => {}
-        i => vars.add_statement(SSAStatement::NotImplemented(i.clone())),
+        i => bail!("Unimplemented instruction type: {:?}", i),
     }
 
     Ok(())
@@ -791,12 +789,31 @@ fn process_final_instruction(
                 blocks: blocks1.clone(),
             }
         }
+
+        (
+            Instruction::PushTrap(trap1),
+            BlockExit::PushTrap {
+                normal,
+                trap: trap2,
+            },
+        ) => {
+            ensure!(trap1 == trap2);
+
+            for _ in 0..4 {
+                state.push(SSAVar::Special);
+            }
+
+            SSAExit::PushTrap {
+                normal: *normal,
+                trap: *trap1,
+            }
+        }
         (i, BlockExit::UnconditionalJump(to)) => {
             process_body_instruction(state, vars, i)?;
             SSAExit::Jump(*to)
         }
 
-        _ => SSAExit::Unimplemented(instr.clone(), exit.clone()),
+        (i, e) => bail!("Invalid block exit: {:?} {:?}", i, e),
     };
 
     Ok(exit)
