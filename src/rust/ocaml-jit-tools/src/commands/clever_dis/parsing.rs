@@ -195,7 +195,6 @@ fn process_block(
     let mut block_instructions = Vec::new();
 
     let mut closures = Vec::new();
-    let mut traps = Vec::new();
     let mut end = None;
 
     while end.is_none() {
@@ -263,16 +262,15 @@ fn process_block(
             }
             // PushTraps are treated as block boundaries
             Instruction::PushTrap(dest) => {
-                traps.push(closure_ctx.get_block(dest.0));
-
                 let next_label = match &global_ctx.instructions[current_index + 1] {
                     Instruction::LabelDef(l) => l.0,
                     _ => panic!("PushTrap should always be followed by label defs"),
                 };
 
-                end = Some(BlockExit::UnconditionalJump(
-                    closure_ctx.get_block(next_label),
-                ));
+                end = Some(BlockExit::PushTrap {
+                    normal: closure_ctx.get_block(next_label),
+                    trap: closure_ctx.get_block(dest.0),
+                });
             }
             // In other cases, emit end cases
             Instruction::ApplyTerm(_, _) => {
@@ -349,7 +347,6 @@ fn process_block(
     Ok(Block {
         instructions: block_instructions,
         closures,
-        traps,
         exit,
     })
 }

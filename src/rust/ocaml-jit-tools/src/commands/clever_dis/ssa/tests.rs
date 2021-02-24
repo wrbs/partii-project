@@ -181,10 +181,9 @@ fn test_block_translation() {
             instructions,
             exit,
             closures: vec![],
-            traps: vec![],
         };
 
-        let (ssa_block, final_state) = translate_block(&block, is_entry_block);
+        let (ssa_block, final_state) = translate_block(&block, is_entry_block).unwrap();
         let actual = format!("{}\n{}", ssa_block, final_state);
         expected.assert_eq(&actual);
     }
@@ -434,6 +433,33 @@ fn test_block_translation() {
             Final acc: <prev:0>
             End stack: ..., <prev:0> | 
             Stack delta: -0/+0
+        "#]],
+    );
+
+    // Test traps
+    check(
+        vec![Acc(0), PushTrap(2)],
+        BlockExit::PushTrap { normal: 1, trap: 2 },
+        expect![[r#"
+            Exit: push trap normal:1 trap:2
+
+            Final acc: <prev:0>
+            End stack: ..., <prev:0> | <special>, <special>, <special>, <special>
+            Stack delta: -0/+4
+        "#]],
+    );
+
+    // Test traps
+    check(
+        vec![PopTrap],
+        BlockExit::UnconditionalJump(1),
+        expect![[r#"
+            pop trap
+            Exit: jump 1
+
+            Final acc: <prev:acc>
+            End stack: ..., <prev:4> | 
+            Stack delta: -4/+0
         "#]],
     );
 

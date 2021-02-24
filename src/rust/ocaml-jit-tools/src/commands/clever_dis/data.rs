@@ -60,7 +60,6 @@ impl Closure {
 pub struct Block {
     pub instructions: Vec<Instruction<usize>>,
     pub closures: Vec<usize>,
-    pub traps: Vec<usize>,
     pub exit: BlockExit,
 }
 
@@ -68,6 +67,10 @@ pub struct Block {
 pub enum BlockExit {
     UnconditionalJump(usize),
     ConditionalJump(usize, usize),
+    PushTrap {
+        normal: usize,
+        trap: usize,
+    },
     Switch {
         ints: Vec<usize>,
         blocks: Vec<usize>,
