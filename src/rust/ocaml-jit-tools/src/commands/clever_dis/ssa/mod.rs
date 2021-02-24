@@ -139,6 +139,7 @@ pub enum SSAExpr {
     GetGlobal(usize),
     GetField(SSAVar, usize),
     GetFloatField(SSAVar, usize),
+    GetBytesChar(SSAVar, SSAVar),
     ArithInt(ArithOp, SSAVar, SSAVar),
     UnaryOp(UnaryOp, SSAVar),
     IntCmp(Comp, SSAVar, SSAVar),
@@ -172,15 +173,10 @@ impl Display for SSAExpr {
 
                 display_array(f, args)?;
             }
-            SSAExpr::GetGlobal(n) => {
-                write!(f, "g{}", n)?;
-            }
-            SSAExpr::GetField(v, i) => {
-                write!(f, "{}[{}]", v, i)?;
-            }
-            SSAExpr::GetFloatField(v, i) => {
-                write!(f, "float {}[{}]", v, i)?;
-            }
+            SSAExpr::GetGlobal(n) => write!(f, "g{}", n)?,
+            SSAExpr::GetField(v, i) => write!(f, "{}[{}]", v, i)?,
+            SSAExpr::GetFloatField(v, i) => write!(f, "float {}[{}]", v, i)?,
+            SSAExpr::GetBytesChar(v, i) => write!(f, "bytes {}[{}]", v, i)?,
             SSAExpr::ArithInt(op, a, b) => match op {
                 ArithOp::Add => write!(f, "{} + {}", a, b)?,
                 ArithOp::Sub => write!(f, "{} - {}", a, b)?,
@@ -250,6 +246,7 @@ pub enum SSAStatement {
     SetGlobal(usize, SSAVar),
     SetField(SSAVar, usize, SSAVar),
     SetFloatField(SSAVar, usize, SSAVar),
+    SetBytesChar(SSAVar, SSAVar, SSAVar),
 }
 
 impl Display for SSAStatement {
@@ -275,6 +272,9 @@ impl Display for SSAStatement {
             }
             SSAStatement::SetFloatField(b, n, v) => {
                 write!(f, "set float {}[{}] = {}", b, n, v)?;
+            }
+            SSAStatement::SetBytesChar(b, n, v) => {
+                write!(f, "set bytes {}[{}] = {}", b, n, v)?;
             }
         }
 
@@ -661,8 +661,19 @@ fn process_body_instruction(
         // Instruction::VecTLength => {}
         // Instruction::GetVecTItem => {}
         // Instruction::SetVecTItem => {}
-        // Instruction::GetBytesChar => { }
-        // Instruction::SetBytesChar => { }
+        Instruction::GetBytesChar => {
+            state.acc = vars.add_assignment(SSAExpr::GetBytesChar(state.acc, state.pick(0)));
+            state.pop(1);
+        }
+        Instruction::SetBytesChar => {
+            vars.add_statement(SSAStatement::SetBytesChar(
+                state.acc,
+                state.pick(0),
+                state.pick(1),
+            ));
+            state.pop(2);
+            state.acc = SSAVar::Unit;
+        }
         Instruction::BoolNot => {
             state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::BoolNot, state.acc))
         }
