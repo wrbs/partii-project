@@ -1,6 +1,6 @@
 // There's lots of unsafe stuff where the safety doc would just be "we're trusting OCaml does the
 // right thing" or "we're trusting the JIT isn't broken"
-#![allow(clippy::missing_safety_doc)]
+#![allow(clippy::missing_safety_doc, clippy::clippy::fn_to_numeric_cast)]
 
 use std::ffi::c_void;
 use std::fs;
@@ -151,7 +151,7 @@ pub fn on_shutdown() {
         fs::write(json_path, json).unwrap();
 
         let total_instrs = instruction_counts.values().sum::<usize>() as f32;
-        let mut counts: Vec<_> = instruction_counts.into_iter().collect();
+        let mut counts: Vec<_> = instruction_counts.iter().collect();
         counts.sort_by_key(|(_, c)| **c);
         counts.reverse();
 

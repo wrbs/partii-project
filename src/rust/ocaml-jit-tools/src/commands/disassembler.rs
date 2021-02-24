@@ -144,7 +144,7 @@ fn show_symbol_table(symbol_table: &HashMap<usize, String>) {
     println!("{}", "Symbol table:".red().bold());
     let mut entries: Vec<(usize, &str)> =
         symbol_table.iter().map(|(n, s)| (*n, s.as_str())).collect();
-    entries.sort();
+    entries.sort_unstable();
 
     let n = entries.len();
     let width = (n as f32).log10() as usize;

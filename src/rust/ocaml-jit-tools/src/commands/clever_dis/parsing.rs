@@ -37,7 +37,7 @@ pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
             referenced_labels,
             closures_todo,
             closure_nums,
-            debug_events: bcf.debug_info.map(|di| di.events.clone()),
+            debug_events: bcf.debug_info.map(|di| di.events),
             parent_closures: HashMap::new(),
         }
     };
@@ -53,7 +53,7 @@ pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
             Some((_, items)) => items
                 .iter()
                 .cloned()
-                .map(|v| GlobalTableEntry::Constant(v))
+                .map(GlobalTableEntry::Constant)
                 .collect(),
             _ => bail!("Invalid global data format"),
         },
@@ -68,7 +68,7 @@ pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
         closures,
         global_data_blocks: bcf.global_data_blocks.clone(),
         globals,
-        primitives: bcf.primitives.clone(),
+        primitives: bcf.primitives,
     })
 }
 

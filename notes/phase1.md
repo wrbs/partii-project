@@ -26,8 +26,8 @@ ideas.
 There are three places to look:
 
 - Smaller optimisations to the emitted code to try to speed up slow things in the assembly
-    - Store caml_state in a register!
-    - Use a jump table instead of switch statements
+  - Store caml_state in a register!
+  - Use a jump table instead of switch statements
 - Compiler optimisations while emitting code - use an intermediate layer
 - Threading in optional usage of the JIT with the ability to specialise functions based on
   information gained during execution
@@ -50,7 +50,6 @@ There are three places to look:
 - https://dl.acm.org/doi/10.1145/1542476.1542528 (trace-based just-in-type type specialisation for
   dynamic languages 2009, gal et al)
 
-
 ## Research notes
 
 There is a distinction between tracing JITs and method-based JITs [pycket]. Trace-based type
@@ -68,7 +67,7 @@ Convert to an SSA IR - i.e. recover some of the structure from the bytecode.
 
 Everything we use must be on the stack to live well with the garbage collector - it scans the local
 roots. Does this limit the opportunity for faster compilation? Everything at alloc time must be on
-the stack. 
+the stack.
 
 Allocs happen when making blocks, making closures, or potentially during C calls. At those times
 all of the memory addresses of values could change from under us. Every register would need to be

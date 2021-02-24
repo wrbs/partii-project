@@ -88,7 +88,7 @@ fn get_trace(
     let mut top_of_stack = Vec::new();
     for i in 0..stack_size.min(STACK_ELEMENTS_TO_SHOW) {
         unsafe {
-            let val = *sp.offset(i as isize);
+            let val = *sp.add(i);
             top_of_stack.push(process_value(compiler_data, val));
         }
     }

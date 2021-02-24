@@ -22,10 +22,10 @@ pub struct DebugEventList {
 #[derive(Debug, Clone)]
 pub struct DebugEvent {
     pub position: usize,
-    pub module: Rc<String>,
+    pub module: Rc<str>,
     pub span: DebugSpan,
     pub kind: DebugEventKind,
-    pub def_name: Rc<String>,
+    pub def_name: Rc<str>,
     pub info: DebugEventInfo,
     // pub type_env: usize,
     // pub type_subst: usize,
@@ -39,25 +39,25 @@ pub struct DebugEvent {
 #[derive(Debug, Clone)]
 pub enum Ident {
     Local {
-        name: Rc<String>,
+        name: Rc<str>,
         stamp: i64,
     },
     Scoped {
-        name: Rc<String>,
+        name: Rc<str>,
         stamp: i64,
         scope: i64,
     },
     Global {
-        name: Rc<String>,
+        name: Rc<str>,
     },
     Predef {
-        name: Rc<String>,
+        name: Rc<str>,
         stamp: i64,
     },
 }
 
 impl Ident {
-    fn name(&self) -> &Rc<String> {
+    fn name(&self) -> &Rc<str> {
         match self {
             Ident::Local { name, .. } => name,
             Ident::Scoped { name, .. } => name,
@@ -75,7 +75,7 @@ impl fmt::Display for Ident {
 
 #[derive(Debug, Clone)]
 pub struct DebugPosition {
-    pub filename: Rc<String>,
+    pub filename: Rc<str>,
     pub line: usize,
     pub column: usize,
 }
@@ -162,7 +162,7 @@ pub fn parse_debug_events(f: &mut File, trailer: &Trailer) -> Result<Option<Debu
 
 struct Strings<'a> {
     blocks: &'a MLValueBlocks,
-    strings: HashMap<usize, Rc<String>>,
+    strings: HashMap<usize, Rc<str>>,
 }
 
 impl<'a> Strings<'a> {
@@ -173,7 +173,7 @@ impl<'a> Strings<'a> {
         }
     }
 
-    fn get<U: Borrow<usize>>(&mut self, id: U) -> Result<Rc<String>> {
+    fn get<U: Borrow<usize>>(&mut self, id: U) -> Result<Rc<str>> {
         let id = *id.borrow();
         match self.strings.get(&id) {
             Some(s) => Ok(s.clone()),
@@ -182,7 +182,7 @@ impl<'a> Strings<'a> {
                     Some(MLValueString::UTF8(s)) => s,
                     _ => bail!("Could not find/invalid UTF8 for string with id {}", id),
                 };
-                let s1 = Rc::new(old_s.clone());
+                let s1: Rc<str> = Rc::from(old_s.as_str());
                 let s2 = s1.clone();
                 self.strings.insert(id, s1);
                 Ok(s2)
@@ -190,7 +190,7 @@ impl<'a> Strings<'a> {
         }
     }
 
-    fn get_from_value(&mut self, value: &MLValue) -> Result<Rc<String>> {
+    fn get_from_value(&mut self, value: &MLValue) -> Result<Rc<str>> {
         match value {
             MLValue::String(id) => self.get(id),
             _ => bail!("Expected string but found other type of value"),

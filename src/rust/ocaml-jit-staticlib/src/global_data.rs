@@ -18,6 +18,7 @@ pub struct GlobalData {
 static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(on_startup()));
 
 impl GlobalData {
+    #[allow(clippy::clippy::new_without_default)]
     pub fn new() -> GlobalData {
         let options = Options::get_from_env();
 
