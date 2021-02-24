@@ -149,6 +149,7 @@ pub enum SSAExpr {
         codes: Vec<usize>,
         vars: Vec<SSAVar>,
     },
+    ClosureRecInfix(SSAVar, usize),
     CCall {
         primitive_id: usize,
         vars: Vec<SSAVar>,
@@ -219,6 +220,9 @@ impl Display for SSAExpr {
                 display_array(f, codes)?;
                 write!(f, " vars:")?;
                 display_array(f, vars)?;
+            }
+            SSAExpr::ClosureRecInfix(closure_rec, offset) => {
+                write!(f, "rec closure infix {}[{}]", closure_rec, offset)?;
             }
             SSAExpr::CCall { primitive_id, vars } => {
                 write!(f, "ccall {} ", primitive_id)?;
@@ -575,8 +579,11 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
             });
 
             state.pop(nvars);
-            // I have no idea why closure-rec does this but normal closure doesn't
             state.push(state.acc);
+
+            for i in 1..locs.len() {
+                state.push(vars.add_assignment(SSAExpr::ClosureRecInfix(state.acc, i)));
+            }
         }
         Instruction::OffsetClosure(i) => {
             state.acc = SSAVar::OffsetClosure(*i as isize);

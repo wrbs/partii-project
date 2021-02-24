@@ -277,6 +277,20 @@ fn test_block_translation() {
     );
 
     check(
+        vec![ClosureRec(vec![95, 96], 0)],
+        BlockExit::UnconditionalJump(1),
+        expect![[r#"
+            v0 = make rec closure codes:[95, 96] vars:[]
+            v1 = rec closure infix v0[1]
+            Exit: jump 1
+
+            Final acc: v0
+            End stack: ..., <prev:0> | v0, v1
+            Stack delta: -0/+2
+        "#]],
+    );
+
+    check(
         vec![
             Acc(0),
             GetField(1),
