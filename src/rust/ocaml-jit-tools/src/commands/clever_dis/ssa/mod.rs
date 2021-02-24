@@ -5,9 +5,10 @@ use anyhow::{bail, ensure, Result};
 
 use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
-use crate::commands::clever_dis::data::{Block, BlockExit};
+use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
 use crate::commands::clever_dis::ssa::data::{
-    BinaryFloatOp, SSABlock, SSAExit, SSAExpr, SSAStatement, SSAVar, UnaryFloatOp, UnaryOp,
+    BinaryFloatOp, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar, UnaryFloatOp,
+    UnaryOp,
 };
 
 #[cfg(test)]
@@ -118,6 +119,19 @@ impl Vars {
         self.add_statement(SSAStatement::Assign(self.block_num, assignment_num, expr));
         SSAVar::Computed(self.block_num, assignment_num)
     }
+}
+
+pub fn translate_closure(closure: &Closure) -> Result<SSAClosure> {
+    let mut blocks = vec![];
+    for (block_num, b) in closure.blocks.iter().enumerate() {
+        if block_num == 0 {
+            blocks.push(translate_block(b, 0, true)?);
+        } else {
+            blocks.push(translate_block(b, block_num, false)?);
+        }
+    }
+
+    Ok(SSAClosure { blocks })
 }
 
 pub fn translate_block(block: &Block, block_num: usize, is_entry_block: bool) -> Result<SSABlock> {
