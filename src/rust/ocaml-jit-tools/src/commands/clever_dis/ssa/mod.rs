@@ -277,7 +277,7 @@ impl Display for SSAStatement {
 #[derive(Debug)]
 pub enum SSAExit {
     Unimplemented(Instruction<usize>, BlockExit),
-    Stop,
+    Stop(SSAVar),
     Jump(usize),
     JumpIf {
         var: SSAVar,
@@ -295,8 +295,8 @@ impl Display for SSAExit {
             SSAExit::Unimplemented(instr, exit) => {
                 write!(f, "**{:?} {:?}**", instr, exit)?;
             }
-            SSAExit::Stop => {
-                write!(f, "stop")?;
+            SSAExit::Stop(v) => {
+                write!(f, "stop {}", v)?;
             }
             SSAExit::Jump(block) => {
                 write!(f, "jump {}", block)?;
@@ -687,7 +687,7 @@ fn process_final_instruction(
     exit: &BlockExit,
 ) -> SSAExit {
     match (instr, exit) {
-        (Instruction::Stop, BlockExit::Stop) => SSAExit::Stop,
+        (Instruction::Stop, BlockExit::Stop) => SSAExit::Stop(state.acc),
         (Instruction::Branch(n2), BlockExit::UnconditionalJump(n1)) => {
             assert_eq!(n1, n2);
             SSAExit::Jump(*n1)

@@ -171,7 +171,12 @@ fn test_state() {
 
 #[test]
 fn test_block_translation() {
-    fn check(instructions: Vec<Instruction<usize>>, exit: BlockExit, expected: Expect) {
+    fn check_advanced(
+        instructions: Vec<Instruction<usize>>,
+        is_entry_block: bool,
+        exit: BlockExit,
+        expected: Expect,
+    ) {
         let block = Block {
             instructions,
             exit,
@@ -179,9 +184,13 @@ fn test_block_translation() {
             traps: vec![],
         };
 
-        let (ssa_block, final_state) = translate_block(&block);
+        let (ssa_block, final_state) = translate_block(&block, is_entry_block);
         let actual = format!("{}\n{}", ssa_block, final_state);
         expected.assert_eq(&actual);
+    }
+
+    fn check(instructions: Vec<Instruction<usize>>, exit: BlockExit, expected: Expect) {
+        check_advanced(instructions, false, exit, expected);
     }
 
     check(
@@ -227,7 +236,7 @@ fn test_block_translation() {
         BlockExit::Return,
         expect![[r#"
             v0 = <prev:0>[0]
-            v1 = apply oc[0] [v0]
+            v1 = apply <closure:0> [v0]
             v2 = make block tag:2 vars:[v1]
             Exit: return v2
 
@@ -261,7 +270,7 @@ fn test_block_translation() {
             set g12 = v3
             Exit: jump 2
 
-            Final acc: ()
+            Final acc: <unit>
             End stack: ..., <prev:0> | 
             Stack delta: -0/+0
         "#]],
@@ -338,7 +347,7 @@ fn test_block_translation() {
             Exit: jump_if v6 t:6 f:5
 
             Final acc: v6
-            End stack: ..., <prev:0> | <prev:acc>, v2, ()
+            End stack: ..., <prev:0> | <prev:acc>, v2, <unit>
             Stack delta: -0/+3
         "#]],
     );
@@ -390,11 +399,11 @@ fn test_block_translation() {
         expect![[r#"
             v0 = <prev:1>[1]
             v1 = <prev:1>[0]
-            v2 = apply e1 [v1]
+            v2 = apply <env:1> [v1]
             v3 = make block tag:0 vars:[v2, <prev:0>]
-            Exit: tail_apply oc[0] [v3, v0]
+            Exit: tail_apply <closure:0> [v3, v0]
 
-            Final acc: oc[0]
+            Final acc: <closure:0>
             End stack: ..., <prev:2> | 
             Stack delta: -2/+0
         "#]],
@@ -506,11 +515,41 @@ fn test_block_translation() {
             v22 = v21[102]
             v23 = apply v22 [0]
             set g312 = <atom:0>
-            Exit: stop
+            Exit: stop <unit>
 
-            Final acc: ()
+            Final acc: <unit>
             End stack: ..., <prev:0> | 
             Stack delta: -0/+0
+        "#]],
+    );
+
+    // Block entries
+    // no grab
+    check_advanced(
+        vec![Acc(0), Pop(1), Stop],
+        true,
+        BlockExit::Stop,
+        expect![[r#"
+            Exit: stop a0
+
+            Final acc: a0
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
+        "#]],
+    );
+
+    // with grab
+    check_advanced(
+        vec![Grab(1), Acc(1), BranchIfNot(1)],
+        true,
+        BlockExit::ConditionalJump(1, 2),
+        expect![[r#"
+            grab 1
+            Exit: jump_if a1 t:2 f:1
+
+            Final acc: a1
+            End stack: ..., <prev:0> | a1, a0
+            Stack delta: -0/+2
         "#]],
     );
 
@@ -571,9 +610,9 @@ fn test_block_translation() {
             v8 = v7[102]
             v9 = apply v8 [0]
             set g304 = <atom:0>
-            Exit: stop
+            Exit: stop <unit>
 
-            Final acc: ()
+            Final acc: <unit>
             End stack: ..., <prev:0> | 
             Stack delta: -0/+0
         "#]],
@@ -698,9 +737,9 @@ fn test_block_translation() {
             v2 = v1[102]
             v3 = apply v2 [0]
             set g47 = <atom:0>
-            Exit: stop
+            Exit: stop <unit>
 
-            Final acc: ()
+            Final acc: <unit>
             End stack: ..., <prev:5> | 
             Stack delta: -5/+0
         "#]],
