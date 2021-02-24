@@ -154,7 +154,7 @@ fn process_closure(global_ctx: &mut GlobalCtx, entrypoint: usize) -> Result<Clos
             global_ctx,
             &mut closure_ctx,
             block_entrypoint,
-        )?);
+        )?)
     }
 
     Ok(Closure {
@@ -224,6 +224,9 @@ fn process_block(
                     break;
                 }
             }
+
+            // Ignore restarts
+            Instruction::Restart => unreachable!("Restarts should not be processed"),
 
             // Otherwise, parse the instruction and map labels:
 
@@ -332,15 +335,6 @@ fn process_block(
                 }
 
                 end = Some(BlockExit::Switch(dest_blocks));
-            }
-            Instruction::Restart => {
-                let next_label = match &global_ctx.instructions[current_index + 1] {
-                    Instruction::LabelDef(l) => l.0,
-                    _ => panic!("Restart should always be followed by label defs"),
-                };
-                end = Some(BlockExit::UnconditionalJump(
-                    closure_ctx.get_block(next_label),
-                ));
             }
             Instruction::Break | Instruction::Event => {
                 unreachable!();

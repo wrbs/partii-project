@@ -57,7 +57,7 @@ pub enum Instruction<L> {
     ApplyTerm(u32, u32),
     Return(u32),
     Restart,
-    Grab(L, u32),
+    Grab(u32),
     Closure(L, u32),
     ClosureRec(Vec<L>, u32),
     OffsetClosure(i32),
@@ -127,7 +127,6 @@ impl<L1> Instruction<L1> {
                 Instruction::Switch(l1s_mapped, l2s_mapped)
             }
             Instruction::PushTrap(l) => Instruction::PushTrap(f(l)),
-            Instruction::Grab(l, x) => Instruction::Grab(f(l), *x),
 
             // Other cases
             Instruction::Acc(x) => Instruction::Acc(*x),
@@ -142,6 +141,7 @@ impl<L1> Instruction<L1> {
             Instruction::ApplyTerm(x, y) => Instruction::ApplyTerm(*x, *y),
             Instruction::Return(x) => Instruction::Return(*x),
             Instruction::Restart => Instruction::Restart,
+            Instruction::Grab(x) => Instruction::Grab(*x),
             Instruction::OffsetClosure(x) => Instruction::OffsetClosure(*x),
             Instruction::GetGlobal(x) => Instruction::GetGlobal(*x),
             Instruction::SetGlobal(x) => Instruction::SetGlobal(*x),

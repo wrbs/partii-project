@@ -259,12 +259,7 @@ impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
 
             Opcode::Return => Instruction::Return(self.u32()?),
             Opcode::Restart => Instruction::Restart,
-            Opcode::Grab => {
-                let pos = self.current_position();
-                let prev_restart = pos - 2;
-                let n = self.u32()?;
-                Instruction::Grab(BytecodeRelativeOffset(prev_restart), n)
-            }
+            Opcode::Grab => Instruction::Grab(self.u32()?),
 
             Opcode::Closure => {
                 let n = self.u32()?;
@@ -428,7 +423,7 @@ impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
             Opcode::CCall5 => {
                 let primitive_id = self.u32()?;
                 self.get_primitive(primitive_id, 5)?
-                    .unwrap_or_else(|| Instruction::CCall4(primitive_id))
+                    .unwrap_or_else(|| Instruction::CCall5(primitive_id))
             }
             Opcode::CCallN => {
                 let primitive_id = self.u32()?;

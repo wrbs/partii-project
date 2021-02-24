@@ -463,7 +463,6 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
         Instruction::ApplyTerm(_, _)
         | Instruction::Apply(_)
         | Instruction::Return(_)
-        // | Instruction::Restart
         | Instruction::Branch(_)
         | Instruction::BranchIf(_)
         | Instruction::BranchIfNot(_)
@@ -472,6 +471,9 @@ fn process_body_instruction(state: &mut State, vars: &mut Vars, instr: &Instruct
         | Instruction::Switch(_, _)
         | Instruction::Stop => {
             panic!("{:?} should be last call in a block!", instr);
+        }
+        Instruction::Restart => {
+            unreachable!("Restarts should not appear in blocks");
         }
         Instruction::LabelDef(_) => {}
         Instruction::Acc(n) => {
