@@ -21,6 +21,7 @@ pub struct Options {
     pub verbose: bool,
     pub output_path: PathBuf,
     pub show: DotShow,
+    pub output_closure_json: bool,
 }
 
 #[derive(Debug)]
@@ -73,6 +74,15 @@ pub fn write_dot_graphs(program: &Program, options: Options) -> Result<()> {
         ctx.output_closure_dot(closure_id, closure, &mut dot_file)
             .with_context(|| format!("Problem writing closure file for closure {}", closure_id))?;
 
+        if ctx.options.output_closure_json {
+            let mut json_path = ctx
+                .options
+                .output_path
+                .join(ctx.closure_filename(closure_id, Extension::JSON));
+            let f = File::create(json_path).context("Cannot create output json file")?;
+            serde_json::to_writer(f, &closure).context("Problem serializing output JSON")?;
+        }
+
         let args = &[
             &OsString::from("-Tsvg"),
             &OsString::from("-Nfontname=monospace"),
@@ -114,6 +124,7 @@ fn html_escape(s: &str) -> String {
 enum Extension {
     SVG,
     Dot,
+    JSON,
 }
 
 impl Extension {
@@ -121,6 +132,7 @@ impl Extension {
         match self {
             Extension::SVG => "svg",
             Extension::Dot => "dot",
+            Extension::JSON => "json",
         }
     }
 }

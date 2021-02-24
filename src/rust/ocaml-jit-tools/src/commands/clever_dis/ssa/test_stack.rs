@@ -13,11 +13,7 @@ fn check_debug_pretty<T: Debug>(thing: &T, expected: Expect) {
 
 #[test]
 fn test_state() {
-    let start_state = SSAStackState {
-        stack: vec![],
-        acc: SSAVar::PrevAcc,
-        stack_start: 0,
-    };
+    let start_state = SSAStackState::new();
 
     // Basic pick behaviour
     {
@@ -43,13 +39,13 @@ fn test_state() {
 
         check_debug(
             &state,
-            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 0 }"#]],
+            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 0, used_prev: {} }"#]],
         );
 
         state.pop(3);
         check_debug(
             &state,
-            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 3 }"#]],
+            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 3, used_prev: {} }"#]],
         );
         check_debug(&state.pick(0), expect![[r#"PrevStack(3)"#]]);
         check_debug(&state.pick(1), expect![[r#"PrevStack(4)"#]]);
@@ -88,21 +84,20 @@ fn test_state() {
                     ],
                     acc: PrevAcc,
                     stack_start: 0,
+                    used_prev: {},
                 }"#]],
         );
 
         state.pop(2);
         check_debug(
             &state,
-            expect![[
-                r#"SSAStackState { stack: [Computed(0, 0), Computed(0, 1)], acc: PrevAcc, stack_start: 0 }"#
-            ]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 0), Computed(0, 1)], acc: PrevAcc, stack_start: 0, used_prev: {} }"#]],
         );
 
         state.pop(3);
         check_debug(
             &state,
-            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 1 }"#]],
+            expect![[r#"SSAStackState { stack: [], acc: PrevAcc, stack_start: 1, used_prev: {} }"#]],
         );
     }
     // Assignments 1
@@ -111,9 +106,7 @@ fn test_state() {
         state.assign(0, SSAVar::Computed(0, 12));
         check_debug(
             &state,
-            expect![[
-                r#"SSAStackState { stack: [Computed(0, 12)], acc: PrevAcc, stack_start: 1 }"#
-            ]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 12)], acc: PrevAcc, stack_start: 1, used_prev: {} }"#]],
         );
     }
 
@@ -123,25 +116,19 @@ fn test_state() {
         state.push(SSAVar::Computed(0, 12));
         check_debug(
             &state,
-            expect![[
-                r#"SSAStackState { stack: [Computed(0, 12)], acc: PrevAcc, stack_start: 0 }"#
-            ]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 12)], acc: PrevAcc, stack_start: 0, used_prev: {} }"#]],
         );
 
         state.assign(0, SSAVar::Computed(0, 23));
         check_debug(
             &state,
-            expect![[
-                r#"SSAStackState { stack: [Computed(0, 23)], acc: PrevAcc, stack_start: 0 }"#
-            ]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 23)], acc: PrevAcc, stack_start: 0, used_prev: {} }"#]],
         );
 
         state.assign(1, SSAVar::Computed(0, 24));
         check_debug(
             &state,
-            expect![[
-                r#"SSAStackState { stack: [Computed(0, 24), Computed(0, 23)], acc: PrevAcc, stack_start: 1 }"#
-            ]],
+            expect![[r#"SSAStackState { stack: [Computed(0, 24), Computed(0, 23)], acc: PrevAcc, stack_start: 1, used_prev: {} }"#]],
         );
 
         state.assign(5, SSAVar::Computed(0, 25));
@@ -174,6 +161,7 @@ fn test_state() {
                     ],
                     acc: PrevAcc,
                     stack_start: 5,
+                    used_prev: {},
                 }"#]],
         );
     }

@@ -396,6 +396,7 @@ dependencies = [
  "os_pipe",
  "pretty-hex",
  "prettytable-rs",
+ "serde",
  "serde_json",
  "structopt",
  "strum",

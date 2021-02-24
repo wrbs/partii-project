@@ -56,6 +56,7 @@ fn test_block_translation() {
 
             Final acc: <0_4>
             End stack: ..., <prev:1> | <0_4>
+            Used prev: {0}
             Stack delta: -1/+1
         "#]],
     );
@@ -79,6 +80,7 @@ fn test_block_translation() {
 
             Final acc: <0_2>
             End stack: ..., <prev:2> | 
+            Used prev: {0}
             Stack delta: -2/+0
         "#]],
     );
@@ -109,6 +111,7 @@ fn test_block_translation() {
 
             Final acc: <unit>
             End stack: ..., <prev:0> | 
+            Used prev: {}
             Stack delta: -0/+0
         "#]],
     );
@@ -123,6 +126,7 @@ fn test_block_translation() {
 
             Final acc: <0_0>
             End stack: ..., <prev:0> | <0_0>, <0_1>
+            Used prev: {}
             Stack delta: -0/+2
         "#]],
     );
@@ -160,6 +164,7 @@ fn test_block_translation() {
 
             Final acc: <0_5>
             End stack: ..., <prev:1> | 
+            Used prev: {0}
             Stack delta: -1/+0
         "#]],
     );
@@ -199,6 +204,7 @@ fn test_block_translation() {
 
             Final acc: <0_6>
             End stack: ..., <prev:0> | <prev:acc>, <0_2>, <unit>
+            Used prev: {}
             Stack delta: -0/+3
         "#]],
     );
@@ -220,6 +226,7 @@ fn test_block_translation() {
 
             Final acc: <0_1>
             End stack: ..., <prev:0> | 
+            Used prev: {0}
             Stack delta: -0/+0
         "#]],
     );
@@ -256,6 +263,7 @@ fn test_block_translation() {
 
             Final acc: <closure:0>
             End stack: ..., <prev:2> | 
+            Used prev: {1, 0}
             Stack delta: -2/+0
         "#]],
     );
@@ -270,6 +278,7 @@ fn test_block_translation() {
 
             Final acc: <prev:0>
             End stack: ..., <prev:0> | 
+            Used prev: {0}
             Stack delta: -0/+0
         "#]],
     );
@@ -283,6 +292,7 @@ fn test_block_translation() {
 
             Final acc: <prev:0>
             End stack: ..., <prev:0> | <special>, <special>, <special>, <special>
+            Used prev: {0}
             Stack delta: -0/+4
         "#]],
     );
@@ -297,6 +307,7 @@ fn test_block_translation() {
 
             Final acc: <prev:acc>
             End stack: ..., <prev:4> | 
+            Used prev: {}
             Stack delta: -4/+0
         "#]],
     );
@@ -311,6 +322,7 @@ fn test_block_translation() {
 
             Final acc: <0_0>
             End stack: ..., <prev:0> | 
+            Used prev: {}
             Stack delta: -0/+0
         "#]],
     );
@@ -325,6 +337,7 @@ fn test_block_translation() {
 
             Final acc: <0_0>
             End stack: ..., <prev:0> | 
+            Used prev: {}
             Stack delta: -0/+0
         "#]],
     );
@@ -352,6 +365,7 @@ fn test_block_translation() {
 
             Final acc: <unit>
             End stack: ..., <prev:0> | 
+            Used prev: {1, 0, 3}
             Stack delta: -0/+0
         "#]],
     );
@@ -376,6 +390,7 @@ fn test_block_translation() {
 
             Final acc: <0_1>
             End stack: ..., <prev:0> | 
+            Used prev: {1, 0, 2}
             Stack delta: -0/+0
         "#]],
     );
@@ -414,6 +429,7 @@ fn test_block_translation() {
 
             Final acc: <unit>
             End stack: ..., <prev:0> | 
+            Used prev: {4, 3}
             Stack delta: -0/+0
         "#]],
     );
@@ -437,6 +453,7 @@ fn test_block_translation() {
 
             Final acc: <0_0>
             End stack: ..., <prev:1> | 
+            Used prev: {}
             Stack delta: -1/+0
         "#]],
     );
@@ -465,6 +482,7 @@ fn test_block_translation() {
 
             Final acc: <0_3>
             End stack: ..., <prev:3> | <0_3>
+            Used prev: {2}
             Stack delta: -3/+1
         "#]],
     );
@@ -565,6 +583,7 @@ fn test_block_translation() {
 
             Final acc: <unit>
             End stack: ..., <prev:0> | 
+            Used prev: {}
             Stack delta: -0/+0
         "#]],
     );
@@ -580,6 +599,7 @@ fn test_block_translation() {
 
             Final acc: <arg:0>
             End stack: ..., <prev:0> | 
+            Used prev: {}
             Stack delta: -0/+0
         "#]],
     );
@@ -595,6 +615,7 @@ fn test_block_translation() {
 
             Final acc: <arg:1>
             End stack: ..., <prev:0> | <arg:1>, <arg:0>
+            Used prev: {}
             Stack delta: -0/+2
         "#]],
     );
@@ -660,6 +681,7 @@ fn test_block_translation() {
 
             Final acc: <unit>
             End stack: ..., <prev:0> | 
+            Used prev: {}
             Stack delta: -0/+0
         "#]],
     );
@@ -722,6 +744,7 @@ fn test_block_translation() {
 
             Final acc: <0_8>
             End stack: ..., <prev:0> | <0_0>, <0_1>, <0_2>, <0_3>, <0_4>
+            Used prev: {}
             Stack delta: -0/+5
         "#]],
     );
@@ -748,6 +771,7 @@ fn test_block_translation() {
 
             Final acc: <0_0>
             End stack: ..., <prev:0> | 
+            Used prev: {0}
             Stack delta: -0/+0
         "#]],
     );
@@ -787,6 +811,7 @@ fn test_block_translation() {
 
             Final acc: <unit>
             End stack: ..., <prev:5> | 
+            Used prev: {1, 3, 0, 2, 4}
             Stack delta: -5/+0
         "#]],
     );
@@ -890,6 +915,7 @@ fn test_block_translation() {
 
             Final acc: <0_17>
             End stack: ..., <prev:0> | 1
+            Used prev: {}
             Stack delta: -0/+1
         "#]],
     );
@@ -911,6 +937,7 @@ fn test_block_translation() {
 
             Final acc: <arg:0>
             End stack: ..., <prev:0> | <arg:1>, <arg:0>
+            Used prev: {}
             Stack delta: -0/+2
         "#]],
     );

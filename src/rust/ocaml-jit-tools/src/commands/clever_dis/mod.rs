@@ -51,6 +51,9 @@ pub struct Options {
     verbose: bool,
 
     #[structopt(long)]
+    output_closure_json: bool,
+
+    #[structopt(long)]
     print_debug: bool,
 
     #[structopt(long, possible_values = &DotShow::variants(), case_insensitive = true, default_value="Both")]
@@ -85,6 +88,7 @@ pub fn run(options: Options) -> Result<()> {
                 verbose: options.verbose,
                 show: options.dot_show,
                 output_path: dot.clone(),
+                output_closure_json: options.output_closure_json,
             },
         )
         .context("Problem writing visualisation graphs")?;

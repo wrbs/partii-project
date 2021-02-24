@@ -3,6 +3,12 @@ use std::fmt::{Display, Formatter};
 use crate::commands::clever_dis::ssa::SSAStackState;
 use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
 
+pub trait ModifySSAVars {
+    fn modify_ssa_vars<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut SSAVar);
+}
+
 #[derive(Debug)]
 pub struct SSAClosure {
     pub blocks: Vec<SSABlock>,
@@ -13,6 +19,19 @@ pub struct SSABlock {
     pub statements: Vec<SSAStatement>,
     pub exit: SSAExit,
     pub final_state: SSAStackState,
+}
+
+impl ModifySSAVars for SSABlock {
+    fn modify_ssa_vars<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut SSAVar),
+    {
+        self.statements
+            .iter_mut()
+            .for_each(|s| s.modify_ssa_vars(f));
+        self.exit.modify_ssa_vars(f);
+        self.final_state.modify_ssa_vars(f);
+    }
 }
 
 impl Display for SSABlock {
@@ -140,6 +159,77 @@ pub enum SSAExpr {
     },
 }
 
+impl ModifySSAVars for SSAExpr {
+    fn modify_ssa_vars<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut SSAVar),
+    {
+        match self {
+            SSAExpr::Apply(v, vs) => {
+                f(v);
+                vs.iter_mut().for_each(f);
+            }
+            SSAExpr::GetGlobal(_) => {}
+            SSAExpr::GetField(v1, v2) => {
+                f(v1);
+                f(v2);
+            }
+            SSAExpr::GetFloatField(v, _) => {
+                f(v);
+            }
+            SSAExpr::GetBytesChar(v1, v2) => {
+                f(v1);
+                f(v2);
+            }
+            SSAExpr::GetVecTLength(v) => {
+                f(v);
+            }
+            SSAExpr::ArithInt(_, v1, v2) => {
+                f(v1);
+                f(v2);
+            }
+            SSAExpr::UnaryOp(_, v) => {
+                f(v);
+            }
+            SSAExpr::IntCmp(_, v1, v2) => {
+                f(v1);
+                f(v2);
+            }
+            SSAExpr::UnaryFloat(_, v) => {
+                f(v);
+            }
+            SSAExpr::BinaryFloat(_, v1, v2) => {
+                f(v1);
+                f(v2);
+            }
+            SSAExpr::MakeBlock { vars, .. } => {
+                vars.iter_mut().for_each(f);
+            }
+            SSAExpr::MakeFloatBlock(vars) => {
+                vars.iter_mut().for_each(f);
+            }
+            SSAExpr::Closure { vars, .. } => {
+                vars.iter_mut().for_each(f);
+            }
+            SSAExpr::ClosureRec { vars, .. } => {
+                vars.iter_mut().for_each(f);
+            }
+            SSAExpr::ClosureRecInfix(v, _) => f(v),
+            SSAExpr::CCall { vars, .. } => {
+                vars.iter_mut().for_each(f);
+            }
+            SSAExpr::GetMethod(v1, v2) => {
+                f(v1);
+                f(v2);
+            }
+            SSAExpr::GetDynMet { tag, object } => {
+                f(tag);
+                f(object);
+            }
+        }
+    }
+}
+
 impl Display for SSAExpr {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
@@ -231,6 +321,39 @@ pub enum SSAStatement {
     SetBytesChar(SSAVar, SSAVar, SSAVar),
 }
 
+impl ModifySSAVars for SSAStatement {
+    fn modify_ssa_vars<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut SSAVar),
+    {
+        match self {
+            SSAStatement::Assign(_, _, expr) => {
+                expr.modify_ssa_vars(f);
+            }
+            SSAStatement::PopTrap => {}
+            SSAStatement::CheckSignals => {}
+            SSAStatement::Grab(_) => {}
+            SSAStatement::SetGlobal(_, v) => {
+                f(v);
+            }
+            SSAStatement::SetField(v1, v2, v3) => {
+                f(v1);
+                f(v2);
+                f(v3);
+            }
+            SSAStatement::SetFloatField(v1, _, v2) => {
+                f(v1);
+                f(v2);
+            }
+            SSAStatement::SetBytesChar(v1, v2, v3) => {
+                f(v1);
+                f(v2);
+                f(v3);
+            }
+        }
+    }
+}
+
 impl Display for SSAStatement {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
@@ -285,6 +408,37 @@ pub enum SSAExit {
     },
     Raise(RaiseKind, SSAVar),
     Return(SSAVar),
+}
+
+impl ModifySSAVars for SSAExit {
+    fn modify_ssa_vars<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut SSAVar),
+    {
+        match self {
+            SSAExit::Stop(v) => {
+                f(v);
+            }
+            SSAExit::Jump(_) => {}
+            SSAExit::JumpIf { var, .. } => {
+                f(var);
+            }
+            SSAExit::Switch { var, .. } => {
+                f(var);
+            }
+            SSAExit::TailApply(v1, vs) => {
+                f(v1);
+                vs.iter_mut().for_each(f);
+            }
+            SSAExit::PushTrap { .. } => {}
+            SSAExit::Raise(_, v) => {
+                f(v);
+            }
+            SSAExit::Return(v) => {
+                f(v);
+            }
+        }
+    }
 }
 
 impl Display for SSAExit {
