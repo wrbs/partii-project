@@ -477,6 +477,20 @@ fn test_block_translation() {
         "#]],
     );
 
+    // IsInt
+    check(
+        vec![IsInt],
+        BlockExit::UnconditionalJump(1),
+        expect![[r#"
+            v0 = is_int <prev:acc>
+            Exit: jump 1
+
+            Final acc: v0
+            End stack: ..., <prev:0> | 
+            Stack delta: -0/+0
+        "#]],
+    );
+
     // Monster case - pervasives
     check(
         vec![
@@ -893,7 +907,7 @@ fn test_block_translation() {
             v14 = 2 >= 1
             v15 = 2 u< 1
             v16 = 1 u>= v15
-            v17 = - 1
+            v17 = neg int 1
             Exit: jump 3
 
             Final acc: v17

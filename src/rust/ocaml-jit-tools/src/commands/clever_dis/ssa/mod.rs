@@ -8,6 +8,7 @@ use std::cmp::max;
 use std::env::args;
 use std::fmt::{Binary, Display, Formatter};
 use std::process::exit;
+use strum_macros;
 
 fn display_array<T: Display>(f: &mut Formatter, array: &[T]) -> std::fmt::Result {
     const MAX_ON_LINE: usize = 8;
@@ -122,6 +123,16 @@ impl Display for BinaryFloatOp {
     }
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, strum_macros::Display)]
+pub enum UnaryOp {
+    #[strum(serialize = "neg int")]
+    Neg,
+    #[strum(serialize = "not")]
+    BoolNot,
+    #[strum(serialize = "is_int")]
+    IsInt,
+}
+
 #[derive(Debug)]
 pub enum SSAExpr {
     Apply(SSAVar, Vec<SSAVar>),
@@ -129,9 +140,8 @@ pub enum SSAExpr {
     GetField(SSAVar, usize),
     GetFloatField(SSAVar, usize),
     ArithInt(ArithOp, SSAVar, SSAVar),
-    NegInt(SSAVar),
+    UnaryOp(UnaryOp, SSAVar),
     IntCmp(Comp, SSAVar, SSAVar),
-    BoolNot(SSAVar),
     UnaryFloat(UnaryFloatOp, SSAVar),
     BinaryFloat(BinaryFloatOp, SSAVar, SSAVar),
     MakeBlock {
@@ -184,7 +194,7 @@ impl Display for SSAExpr {
                 ArithOp::Lsr => write!(f, "{} l>> {}", a, b)?,
                 ArithOp::Asr => write!(f, "{} a>> {}", a, b)?,
             },
-            SSAExpr::NegInt(var) => write!(f, "- {}", var)?,
+            SSAExpr::UnaryOp(op, v) => write!(f, "{} {}", op, v)?,
             SSAExpr::IntCmp(comp, a, b) => match comp {
                 Comp::Eq => write!(f, "{} == {}", a, b)?,
                 Comp::Ne => write!(f, "{} != {}", a, b)?,
@@ -195,7 +205,6 @@ impl Display for SSAExpr {
                 Comp::ULt => write!(f, "{} u< {}", a, b)?,
                 Comp::UGe => write!(f, "{} u>= {}", a, b)?,
             },
-            SSAExpr::BoolNot(var) => write!(f, "not {}", var)?,
             SSAExpr::BinaryFloat(op, a, b) => {
                 write!(f, "{} {} {}", op, a, b)?;
             }
@@ -652,9 +661,11 @@ fn process_body_instruction(
         // Instruction::VecTLength => {}
         // Instruction::GetVecTItem => {}
         // Instruction::SetVecTItem => {}
-        // Instruction::GetBytesChar => {}
-        // Instruction::SetBytesChar => {}
-        Instruction::BoolNot => state.acc = vars.add_assignment(SSAExpr::BoolNot(state.acc)),
+        // Instruction::GetBytesChar => { }
+        // Instruction::SetBytesChar => { }
+        Instruction::BoolNot => {
+            state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::BoolNot, state.acc))
+        }
         Instruction::PopTrap => {
             vars.add_statement(SSAStatement::PopTrap);
             state.pop(4);
@@ -680,7 +691,9 @@ fn process_body_instruction(
             state.acc = vars.add_assignment(SSAExpr::ArithInt(*op, state.acc, state.pick(0)));
             state.pop(1);
         }
-        Instruction::NegInt => state.acc = vars.add_assignment(SSAExpr::NegInt(state.acc)),
+        Instruction::NegInt => {
+            state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::Neg, state.acc))
+        }
         Instruction::IntCmp(comp) => {
             state.acc = vars.add_assignment(SSAExpr::IntCmp(*comp, state.acc, state.pick(0)));
             state.pop(1);
@@ -693,12 +706,13 @@ fn process_body_instruction(
             ));
         }
         // Instruction::OffsetRef(_) => {}
-        // Instruction::IsInt => {}
+        Instruction::IsInt => {
+            state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::IsInt, state.acc))
+        }
         // Instruction::GetMethod => {}
         // Instruction::SetupForPubMet(_) => {}
         // Instruction::GetDynMet => {}
-        // Instruction::Break => {}
-        // Instruction::Event => {}
+        Instruction::Break | Instruction::Event => (),
         i => bail!("Unimplemented instruction type: {:?}", i),
     }
 
