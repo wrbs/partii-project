@@ -398,6 +398,8 @@ dependencies = [
  "prettytable-rs",
  "serde_json",
  "structopt",
+ "strum",
+ "strum_macros",
  "thiserror",
 ]
 
