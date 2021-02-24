@@ -1,3 +1,4 @@
+use std::ffi::c_void;
 use std::panic;
 use std::slice;
 
@@ -7,7 +8,6 @@ use crate::{
     interpret_bytecode, old_interpreter_trace, on_bytecode_loaded, on_bytecode_released,
     on_shutdown,
 };
-use std::ffi::c_void;
 
 // We need some way to convince Rust that the OCaml interpreter is single threaded
 // Easiest way is to just use a mutex at each entry point for our global data

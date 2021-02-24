@@ -1,13 +1,16 @@
-use super::ml_data::input_value;
-use super::trailer::{Trailer, DBUG_SECTION};
-use crate::bytecode_files::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
-use anyhow::{anyhow, bail, ensure, Context, Result};
-use byteorder::{BigEndian, ReadBytesExt};
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fmt;
 use std::fs::File;
 use std::rc::Rc;
+
+use anyhow::{anyhow, bail, ensure, Context, Result};
+use byteorder::{BigEndian, ReadBytesExt};
+
+use crate::bytecode_files::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
+
+use super::ml_data::input_value;
+use super::trailer::{Trailer, DBUG_SECTION};
 
 pub struct DebugEventList {
     pub orig: u32,

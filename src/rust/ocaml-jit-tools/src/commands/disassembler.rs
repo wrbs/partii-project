@@ -1,15 +1,17 @@
+use std::collections::HashMap;
+use std::fs::File;
+use std::path::PathBuf;
+
+use anyhow::{Context, Result};
 use colored::Colorize;
+use structopt::clap::arg_enum;
+use structopt::StructOpt;
+
+use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 
 use crate::bytecode_files::{
     parse_bytecode_file, BytecodeFile, DebugInfo, MLValue, MLValueBlock, MLValueBlocks,
 };
-use anyhow::{Context, Result};
-use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
-use std::collections::HashMap;
-use std::fs::File;
-use std::path::PathBuf;
-use structopt::clap::arg_enum;
-use structopt::StructOpt;
 
 arg_enum! {
     #[derive(Debug, Eq, PartialEq, Copy, Clone)]

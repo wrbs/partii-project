@@ -1,10 +1,13 @@
+use std::collections::HashMap;
+use std::sync::{Mutex, MutexGuard};
+
+use once_cell::sync::Lazy;
+
+use ocaml_jit_shared::Opcode;
+
 use crate::compiler::CompilerData;
 use crate::configuration::Options;
 use crate::on_startup;
-use ocaml_jit_shared::Opcode;
-use once_cell::sync::Lazy;
-use std::collections::HashMap;
-use std::sync::{Mutex, MutexGuard};
 
 pub struct GlobalData {
     pub options: Options,

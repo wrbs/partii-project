@@ -1,7 +1,9 @@
-use super::trailer::PRIM_SECTION;
-use crate::bytecode_files::{ParseFileError, Trailer};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+
+use crate::bytecode_files::{ParseFileError, Trailer};
+
+use super::trailer::PRIM_SECTION;
 
 pub fn parse_primitives(f: &mut File, trailer: &Trailer) -> Result<Vec<String>, ParseFileError> {
     let section = match trailer.find_section(PRIM_SECTION) {

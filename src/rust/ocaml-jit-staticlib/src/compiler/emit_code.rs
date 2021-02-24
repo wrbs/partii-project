@@ -1,5 +1,14 @@
-use super::c_primitives::*;
-use super::saved_data::EntryPoint;
+use std::convert::TryInto;
+use std::ffi::{c_void, CStr};
+use std::os::raw::c_char;
+
+use dynasmrt::x64::Assembler;
+use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
+
+use ocaml_jit_shared::{
+    ArithOp, BytecodeRelativeOffset, Comp, EmptyPrimitiveLookup, Instruction, InstructionIterator,
+};
+
 use crate::caml::domain_state::get_extern_sp_addr;
 use crate::caml::mlvalues::{BlockValue, LongValue, Tag, Value};
 use crate::caml::{domain_state, mlvalues};
@@ -7,14 +16,9 @@ use crate::compiler::saved_data::LongjmpHandler;
 use crate::compiler::LongjmpEntryPoint;
 use crate::global_data::GlobalData;
 use crate::trace::{print_trace, PrintTraceType};
-use dynasmrt::x64::Assembler;
-use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
-use ocaml_jit_shared::{
-    ArithOp, BytecodeRelativeOffset, Comp, EmptyPrimitiveLookup, Instruction, InstructionIterator,
-};
-use std::convert::TryInto;
-use std::ffi::{c_void, CStr};
-use std::os::raw::c_char;
+
+use super::c_primitives::*;
+use super::saved_data::EntryPoint;
 
 struct CompilerContext {
     ops: Assembler,

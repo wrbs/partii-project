@@ -1,7 +1,7 @@
 use std::fs::File;
+use std::io::{Read, Seek, SeekFrom};
 
 use byteorder::{BigEndian, ReadBytesExt};
-use std::io::{Read, Seek, SeekFrom};
 
 use crate::bytecode_files::ParseFileError;
 

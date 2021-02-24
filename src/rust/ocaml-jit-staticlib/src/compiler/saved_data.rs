@@ -1,8 +1,11 @@
+use std::ffi::c_void;
+
+use dynasmrt::ExecutableBuffer;
+
+use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
+
 use crate::caml::mlvalues::Value;
 use crate::compiler::emit_code::emit_longjmp_entrypoint;
-use dynasmrt::ExecutableBuffer;
-use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
-use std::ffi::c_void;
 
 const CODE_SIZE: usize = 4; // i32
 

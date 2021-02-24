@@ -1,11 +1,14 @@
-use crate::bytecode_files::parse_bytecode_file;
-use anyhow::{anyhow, bail, Result};
-use ocaml_jit_shared::Instruction;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use std::iter::Peekable;
 use std::path::PathBuf;
+
+use anyhow::{anyhow, bail, Result};
 use structopt::StructOpt;
+
+use ocaml_jit_shared::Instruction;
+
+use crate::bytecode_files::parse_bytecode_file;
 
 #[derive(StructOpt)]
 #[structopt(about = "compare traces between the interpreter and the JIT")]

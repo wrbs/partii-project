@@ -1,12 +1,14 @@
-use anyhow::{Context, Result};
-use colored::Colorize;
-use ocaml_jit_shared::{compare_traces, TraceEntry};
-use os_pipe::{pipe, PipeReader};
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process;
+
+use anyhow::{Context, Result};
+use colored::Colorize;
+use os_pipe::{pipe, PipeReader};
 use structopt::StructOpt;
+
+use ocaml_jit_shared::{compare_traces, TraceEntry};
 
 #[derive(StructOpt)]
 #[structopt(about = "compare traces between the interpreter and the JIT")]

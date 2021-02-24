@@ -1,6 +1,7 @@
-use crate::{BytecodeLocation, BytecodeRelativeOffset, Instruction, Opcode};
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
+
+use crate::{BytecodeLocation, BytecodeRelativeOffset, Instruction, Opcode};
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
 pub enum ValueOrBytecodeLocation {

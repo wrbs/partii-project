@@ -1,16 +1,18 @@
-mod data;
-mod parsing;
-mod ssa;
-mod visualisation;
-
-use crate::bytecode_files::parse_bytecode_file;
-use anyhow::{Context, Result};
 use std::fs::File;
 use std::path::PathBuf;
+
+use anyhow::{Context, Result};
 use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
 use parsing::process_bytecode;
+
+use crate::bytecode_files::parse_bytecode_file;
+
+mod data;
+mod parsing;
+mod ssa;
+mod visualisation;
 
 arg_enum! {
     #[derive(Debug, Eq, PartialEq, Copy, Clone)]
@@ -96,9 +98,11 @@ pub fn run(options: Options) -> Result<()> {
 // Entrypoint to disassemble
 
 mod assumptions {
-    use crate::commands::clever_dis::data::Program;
-    use anyhow::{bail, Result};
     use std::collections::HashMap;
+
+    use anyhow::{bail, Result};
+
+    use crate::commands::clever_dis::data::Program;
 
     pub fn validate_assumptions(program: &Program) -> Result<()> {
         // Check that every closure has a unique path to it

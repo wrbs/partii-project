@@ -1,17 +1,20 @@
-#[cfg(test)]
-mod tests;
+use std::cmp::max;
+use std::env::args;
+use std::fmt::{Binary, Display, Formatter};
+use std::process::exit;
+
+use anyhow::{bail, ensure, Result};
+use strum_macros;
+
+use ocaml_jit_shared::{ArithOp, Comp, Instruction, Primitive, RaiseKind};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure, Program};
 use crate::commands::clever_dis::ssa::data::{
     BinaryFloatOp, SSABlock, SSAExit, SSAExpr, SSAStatement, SSAVar, UnaryFloatOp, UnaryOp,
 };
-use anyhow::{bail, ensure, Result};
-use ocaml_jit_shared::{ArithOp, Comp, Instruction, Primitive, RaiseKind};
-use std::cmp::max;
-use std::env::args;
-use std::fmt::{Binary, Display, Formatter};
-use std::process::exit;
-use strum_macros;
+
+#[cfg(test)]
+mod tests;
 
 pub mod data;
 

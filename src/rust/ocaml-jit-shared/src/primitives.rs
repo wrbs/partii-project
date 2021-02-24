@@ -45,9 +45,11 @@ impl Primitive {
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use std::str::FromStr;
+
     use strum::IntoEnumIterator;
+
+    use super::*;
 
     #[test]
     fn check_primitives_arity() {

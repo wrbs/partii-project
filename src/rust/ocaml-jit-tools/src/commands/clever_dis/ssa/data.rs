@@ -1,6 +1,7 @@
-use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
 use std::fmt;
 use std::fmt::{Display, Formatter};
+
+use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
 
 #[derive(Debug)]
 pub struct SSABlock {

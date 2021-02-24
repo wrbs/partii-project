@@ -1,11 +1,14 @@
-use super::data::*;
+use std::collections::hash_map::RandomState;
+use std::collections::{HashMap, HashSet, VecDeque};
+
+use anyhow::{anyhow, bail, Result};
+
+use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 
 use crate::bytecode_files::debug_events::DebugEvent;
 use crate::bytecode_files::{BytecodeFile, DebugInfo, MLValue};
-use anyhow::{anyhow, bail, Result};
-use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
-use std::collections::hash_map::RandomState;
-use std::collections::{HashMap, HashSet, VecDeque};
+
+use super::data::*;
 
 pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
     let mut ctx = {

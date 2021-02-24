@@ -1,3 +1,15 @@
+use std::collections::HashMap;
+use std::fs::File;
+
+use anyhow::{Context, Result};
+
+pub use debug_events::DebugInfo;
+pub use error::ParseFileError;
+pub use ml_data::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
+use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
+pub use trailer::Trailer;
+use trailer::{CODE_SECTION, DATA_SECTION};
+
 mod bytecode;
 pub mod debug_events;
 mod error;
@@ -5,16 +17,6 @@ pub mod ml_data;
 mod primitives;
 mod symbol_table;
 pub mod trailer;
-
-use anyhow::{Context, Result};
-pub use debug_events::DebugInfo;
-pub use error::ParseFileError;
-pub use ml_data::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
-use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
-use std::collections::HashMap;
-use std::fs::File;
-pub use trailer::Trailer;
-use trailer::{CODE_SECTION, DATA_SECTION};
 
 pub struct BytecodeFile {
     pub trailer: Trailer,
