@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::bytecode_files::debug_events::Ident;
 use crate::bytecode_files::{MLValue, MLValueBlocks};
+use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 pub struct Program {
@@ -28,8 +29,10 @@ pub struct PositionInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Closure {
+    pub is_root: bool,
     pub blocks: Vec<Block>,
     pub position: Option<PositionInfo>,
+    pub trap_handlers: HashSet<usize>,
 }
 
 fn lookup_ident(table: &[(i64, Ident)], wanted_id: i64) -> Option<&Ident> {

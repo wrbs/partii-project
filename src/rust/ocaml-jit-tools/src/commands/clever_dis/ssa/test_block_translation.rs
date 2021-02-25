@@ -12,6 +12,7 @@ fn test_block_translation() {
     fn check_advanced(
         instructions: Vec<Instruction<usize>>,
         is_entry_block: bool,
+        is_trap_handler: bool,
         exit: BlockExit,
         expected: Expect,
     ) {
@@ -21,13 +22,17 @@ fn test_block_translation() {
             closures: vec![],
         };
 
-        let ssa_block = translate_block(&block, 0, is_entry_block).unwrap();
+        let ssa_block = translate_block(&block, 0, is_entry_block, is_trap_handler).unwrap();
         let actual = format!("{}\n{}", ssa_block, ssa_block.final_state);
         expected.assert_eq(&actual);
     }
 
     fn check(instructions: Vec<Instruction<usize>>, exit: BlockExit, expected: Expect) {
-        check_advanced(instructions, false, exit, expected);
+        check_advanced(instructions, false, false, exit, expected);
+    }
+
+    fn check_entrypoint(instructions: Vec<Instruction<usize>>, exit: BlockExit, expected: Expect) {
+        check_advanced(instructions, true, false, exit, expected);
     }
 
     check(
@@ -435,7 +440,7 @@ fn test_block_translation() {
     );
 
     // GetDynMet
-    check_advanced(
+    check_entrypoint(
         vec![
             EnvAcc(3),
             Push,
@@ -445,7 +450,6 @@ fn test_block_translation() {
             GetDynMet,
             ApplyTerm(2, 3),
         ],
-        true,
         BlockExit::TailCall,
         expect![[r#"
             <0_0> = get dynmet tag:<env:1> object:<env:2> 
@@ -590,9 +594,8 @@ fn test_block_translation() {
 
     // Block entries
     // no grab
-    check_advanced(
+    check_entrypoint(
         vec![Acc(0), Pop(1), Stop],
-        true,
         BlockExit::Stop,
         expect![[r#"
             Exit: stop <arg:0>
@@ -605,9 +608,8 @@ fn test_block_translation() {
     );
 
     // with grab
-    check_advanced(
+    check_entrypoint(
         vec![Grab(1), Acc(1), BranchIfNot(1)],
-        true,
         BlockExit::ConditionalJump(1, 2),
         expect![[r#"
             grab 1
@@ -921,9 +923,8 @@ fn test_block_translation() {
     );
 
     // Switches - start of CamlinternalFormatBasics.concat_fmtty
-    check_advanced(
+    check_entrypoint(
         vec![Grab(1), Acc(0), Switch(vec![1], (2..=16).collect())],
-        true,
         BlockExit::Switch {
             ints: vec![1],
             blocks: (2..=16).collect(),

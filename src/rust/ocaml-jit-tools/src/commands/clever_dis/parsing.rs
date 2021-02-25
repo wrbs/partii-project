@@ -147,6 +147,7 @@ fn process_closure(global_ctx: &mut GlobalCtx, entrypoint: usize) -> Result<Clos
             block_nums,
             current_closure_id,
             position: None,
+            trap_handlers: HashSet::new(),
         }
     };
 
@@ -159,9 +160,13 @@ fn process_closure(global_ctx: &mut GlobalCtx, entrypoint: usize) -> Result<Clos
         )?)
     }
 
+    let is_root = closure_ctx.current_closure_id == 0;
+
     Ok(Closure {
+        is_root,
         blocks,
         position: closure_ctx.position,
+        trap_handlers: closure_ctx.trap_handlers,
     })
 }
 
@@ -171,6 +176,7 @@ struct ClosureCtx {
     block_nums: HashMap<usize, usize>,
     current_closure_id: usize,
     position: Option<PositionInfo>,
+    trap_handlers: HashSet<usize>,
 }
 
 impl ClosureCtx {
@@ -269,10 +275,12 @@ fn process_block(
                     _ => panic!("PushTrap should always be followed by label defs"),
                 };
 
-                end = Some(BlockExit::PushTrap {
-                    normal: closure_ctx.get_block(next_label),
-                    trap: closure_ctx.get_block(dest.0),
-                });
+                let normal = closure_ctx.get_block(next_label);
+                let trap = closure_ctx.get_block(dest.0);
+
+                closure_ctx.trap_handlers.insert(trap);
+
+                end = Some(BlockExit::PushTrap { normal, trap });
             }
             // In other cases, emit end cases
             Instruction::ApplyTerm(_, _) => {
