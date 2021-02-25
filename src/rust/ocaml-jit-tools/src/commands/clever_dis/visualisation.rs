@@ -10,7 +10,7 @@ use itertools::{EitherOrBoth, Itertools};
 
 use ocaml_jit_shared::Instruction;
 
-use crate::commands::clever_dis::ssa::translate_block;
+use crate::commands::clever_dis::ssa::{translate_block, translate_closure};
 
 use super::data::*;
 use super::DotShow;
@@ -75,7 +75,7 @@ pub fn write_dot_graphs(program: &Program, options: Options) -> Result<()> {
             .with_context(|| format!("Problem writing closure file for closure {}", closure_id))?;
 
         if ctx.options.output_closure_json {
-            let mut json_path = ctx
+            let json_path = ctx
                 .options
                 .output_path
                 .join(ctx.closure_filename(closure_id, Extension::JSON));

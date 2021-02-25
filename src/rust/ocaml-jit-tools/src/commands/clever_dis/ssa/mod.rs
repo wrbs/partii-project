@@ -1,7 +1,7 @@
 use std::cmp::max;
 use std::fmt::{Display, Formatter};
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{anyhow, bail, ensure, Result};
 
 use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
@@ -10,7 +10,7 @@ use crate::commands::clever_dis::ssa::data::{
     BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar,
     UnaryFloatOp, UnaryOp,
 };
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[cfg(test)]
 mod test_block_translation;
@@ -85,6 +85,10 @@ impl SSAStackState {
         let length = self.stack.len();
         self.stack[length - 1 - index] = entry;
     }
+
+    fn delta(&self) -> isize {
+        return self.stack.len() as isize - self.stack_start as isize;
+    }
 }
 
 impl ModifySSAVars for SSAStackState {
@@ -157,7 +161,9 @@ impl Vars {
 }
 
 pub fn translate_closure(closure: &Closure) -> Result<SSAClosure> {
-    let blocks = translate_blocks(&closure.blocks)?;
+    let mut blocks = translate_blocks(&closure.blocks)?;
+    let _ = relocate_blocks(&mut blocks)?;
+
     Ok(SSAClosure { blocks })
 }
 
@@ -174,65 +180,9 @@ fn translate_blocks(blocks: &[Block]) -> Result<Vec<SSABlock>> {
     Ok(result)
 }
 
-fn get_referencing(blocks: &[SSABlock]) -> Vec<HashSet<usize>> {
-    let mut result = vec![HashSet::new(); blocks.len()];
-
-    for (block_num, block) in blocks.iter().enumerate() {
-        match &block.exit {
-            SSAExit::Jump(to) => {
-                result[*to].insert(block_num);
-            }
-            SSAExit::JumpIf {
-                if_false,
-                if_true,
-                var: _,
-            } => {
-                result[*if_false].insert(block_num);
-                result[*if_true].insert(block_num);
-            }
-            SSAExit::Switch {
-                var: _,
-                ints,
-                blocks,
-            } => {
-                for i in ints.iter().chain(blocks.iter()) {
-                    result[*i].insert(block_num);
-                }
-            }
-            SSAExit::PushTrap { normal, trap } => {
-                result[*normal].insert(block_num);
-                result[*trap].insert(block_num);
-            }
-            SSAExit::TailApply(_, _) => {}
-            SSAExit::Raise(_, _) => {}
-            SSAExit::Return(_) => {}
-            SSAExit::Stop(_) => {}
-        }
-    }
-
-    result
-}
-
-fn offset_vars(block: &mut SSABlock, block_num: usize, offset: usize) {
-    block.modify_ssa_vars(&mut |v| match v {
-        SSAVar::Computed(actual_block_num, i) => {
-            if *actual_block_num == block_num {
-                *i += offset;
-            }
-        }
-        _ => {}
-    });
-
-    for statement in block.statements.iter_mut() {
-        if let SSAStatement::Assign(actual_block_num, i, _) = statement {
-            if *actual_block_num == block_num {
-                *i += offset;
-            }
-        }
-    }
-}
-
-fn join_previous_stack
+// Initial block translation
+// Convert a list of bytecode instructions using the stack into a list of SSA instructions
+// but only considering each basic block locally
 
 pub fn translate_block(block: &Block, block_num: usize, is_entry_block: bool) -> Result<SSABlock> {
     ensure!(!block.instructions.is_empty());
@@ -649,8 +599,6 @@ fn process_final_instruction(
     Ok(exit)
 }
 
-// Shared utilities for parser
-
 fn c_call(state: &mut SSAStackState, vars: &mut Vars, count: usize, primitive_id: &u32) {
     state.push(state.acc);
 
@@ -668,4 +616,74 @@ fn unary_float(state: &mut SSAStackState, vars: &mut Vars, op: UnaryFloatOp) {
 fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
     state.acc = vars.add_assignment(SSAExpr::BinaryFloat(op, state.acc, state.pick(0)));
     state.pop(1);
+}
+
+// Relocation
+// ==========
+// Use the CFG to patch together variables between blocks handling branches and loops
+// by inserting phi nodes
+
+// Find the start stack size
+//
+// Assuming the first block has a size of 0 find the start stack sizes of every block
+//
+// Validate the following invariants:
+// 1. Every path to the start of the block has the same stack stack size
+// 2. Every normal return (Return/Stop i.e. not Raise) ends with a stack size of 0
+// 3. At no point does the stack size dip below 0
+// 4. Every block is actually reachable from block 0 (we get this after removing Restart)
+//
+// Err is returned on failure of any of these invariants. These represent a
+// mistake in the SSA conversion code as they are true in general for the output of
+// the OCaml compiler
+fn find_start_stack_sizes(blocks: &[SSABlock]) -> Result<Vec<usize>> {
+    let mut sizes = HashMap::new();
+
+    // Do a depth-first-search through the blocks
+    // DFS stack - (block to visit, starting size)
+    let mut to_visit = vec![(0, 0)];
+    while let Some((block_num, start_size)) = to_visit.pop() {
+        match sizes.get(&block_num) {
+            Some(existing_size) => {
+                ensure!(start_size == *existing_size); // invariant 1
+            }
+            None => {
+                let b = &blocks[block_num];
+
+                sizes.insert(block_num, start_size);
+                let new_size = start_size as isize + b.final_state.delta();
+                ensure!(new_size >= 0); // Invariant 3
+                let new_size = new_size as usize;
+
+                match b.exit {
+                    SSAExit::Stop(_) => {
+                        ensure!(new_size == 0); // invariant 2
+                    }
+                    SSAExit::Return(_) => {
+                        ensure!(new_size == 0); // invariant 2
+                    }
+                    _ => {
+                        for other_block in b.exit.referenced_blocks() {
+                            to_visit.push((other_block, new_size));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let mut result = vec![];
+    for i in 0..blocks.len() {
+        let size = sizes
+            .get(&i)
+            .ok_or_else(|| anyhow!("Block {} not reachable from block 0", i))?; // Invariant 4
+        result.push(*size)
+    }
+
+    Ok(result)
+}
+
+fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
+    let ss = find_start_stack_sizes(blocks)?;
+    Ok(())
 }
