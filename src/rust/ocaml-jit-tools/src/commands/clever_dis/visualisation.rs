@@ -243,7 +243,8 @@ impl<'a> VisContext<'a> {
 
             let ssa_instrs = if self.options.show.show_ssa() {
                 let is_entry_block = closure_no != 0 && block_no == 0;
-                match translate_block(block, block_no, is_entry_block) {
+                let is_trap_handler = closure.trap_handlers.contains(&block_no);
+                match translate_block(block, block_no, is_entry_block, is_trap_handler) {
                     Ok(ssa_block) => {
                         let mut ssa_instrs: Vec<_> = format!("{}", ssa_block)
                             .lines()

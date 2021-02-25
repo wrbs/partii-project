@@ -58,6 +58,7 @@ pub enum SSAVar {
     Atom(u8),
     Special, // Traps and such like
     Junk,
+    TrapAcc,
 }
 
 impl Display for SSAVar {
@@ -74,6 +75,7 @@ impl Display for SSAVar {
             SSAVar::Atom(tag) => write!(f, "<atom:{}>", tag),
             SSAVar::Special => write!(f, "<special>"),
             SSAVar::Junk => write!(f, "<junk>"),
+            SSAVar::TrapAcc => write!(f, "<trap_acc>"),
         }
     }
 }

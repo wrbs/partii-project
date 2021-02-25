@@ -161,30 +161,32 @@ impl Vars {
 }
 
 pub fn translate_closure(closure: &Closure) -> Result<SSAClosure> {
-    let mut blocks = translate_blocks(&closure.blocks)?;
+    let mut blocks = vec![];
+    for (block_num, b) in closure.blocks.iter().enumerate() {
+        let is_entry_block = block_num == 0 && !closure.is_root;
+        let is_trap_handler = closure.trap_handlers.contains(&block_num);
+        blocks.push(translate_block(
+            b,
+            block_num,
+            is_entry_block,
+            is_trap_handler,
+        )?);
+    }
     let _ = relocate_blocks(&mut blocks)?;
 
     Ok(SSAClosure { blocks })
-}
-
-fn translate_blocks(blocks: &[Block]) -> Result<Vec<SSABlock>> {
-    let mut result = vec![];
-    for (block_num, b) in blocks.iter().enumerate() {
-        if block_num == 0 {
-            result.push(translate_block(b, 0, true)?);
-        } else {
-            result.push(translate_block(b, block_num, false)?);
-        }
-    }
-
-    Ok(result)
 }
 
 // Initial block translation
 // Convert a list of bytecode instructions using the stack into a list of SSA instructions
 // but only considering each basic block locally
 
-pub fn translate_block(block: &Block, block_num: usize, is_entry_block: bool) -> Result<SSABlock> {
+pub fn translate_block(
+    block: &Block,
+    block_num: usize,
+    is_entry_block: bool,
+    is_trap_handler: bool,
+) -> Result<SSABlock> {
     ensure!(!block.instructions.is_empty());
     let last_instr_idx = block.instructions.len() - 1;
 
@@ -192,6 +194,11 @@ pub fn translate_block(block: &Block, block_num: usize, is_entry_block: bool) ->
     let mut state_d = SSAStackState::new();
     let vars = &mut vars_d;
     let state = &mut state_d;
+
+    if is_trap_handler {
+        state.acc = SSAVar::TrapAcc;
+        state.pop(4);
+    }
 
     let has_grab = if is_entry_block {
         if let Instruction::Grab(nargs) = &block.instructions[0] {
