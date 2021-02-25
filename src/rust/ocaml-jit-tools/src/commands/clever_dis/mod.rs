@@ -1,13 +1,15 @@
 use std::fs::File;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Error, Result};
 use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
 use parsing::process_bytecode;
 
 use crate::bytecode_files::parse_bytecode_file;
+use crate::commands::clever_dis::ssa::data::SSAClosure;
+use crate::commands::clever_dis::ssa::translate_closure;
 
 mod data;
 mod parsing;
@@ -75,6 +77,15 @@ pub fn run(options: Options) -> Result<()> {
     let bcf = parse_bytecode_file(&mut f).context("Problem parsing bytecode file")?;
 
     let program = process_bytecode(bcf).context("Problem analysing parsed bytecode")?;
+
+    for (closure_id, closure) in program.closures.iter().enumerate() {
+        match translate_closure(closure) {
+            Ok(_) => {}
+            Err(e) => {
+                eprintln!("Problem translate closure {}: {}", closure_id, e);
+            }
+        }
+    }
 
     if options.print_debug {
         println!("{:#?}", program);

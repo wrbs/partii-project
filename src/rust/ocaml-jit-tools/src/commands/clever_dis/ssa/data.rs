@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::commands::clever_dis::ssa::SSAStackState;
 use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
+use std::collections::HashSet;
 
 pub trait ModifySSAVars {
     fn modify_ssa_vars<F>(&mut self, f: &mut F)
@@ -9,12 +10,12 @@ pub trait ModifySSAVars {
         F: FnMut(&mut SSAVar);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SSAClosure {
     pub blocks: Vec<SSABlock>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SSABlock {
     pub statements: Vec<SSAStatement>,
     pub exit: SSAExit,
@@ -121,7 +122,7 @@ pub enum UnaryOp {
     IsInt,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SSAExpr {
     Apply(SSAVar, Vec<SSAVar>),
     GetGlobal(usize),
@@ -309,7 +310,7 @@ impl Display for SSAExpr {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SSAStatement {
     Assign(usize, usize, SSAExpr),
     PopTrap,
@@ -387,7 +388,7 @@ impl Display for SSAStatement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SSAExit {
     Stop(SSAVar),
     Jump(usize),
@@ -408,6 +409,43 @@ pub enum SSAExit {
     },
     Raise(RaiseKind, SSAVar),
     Return(SSAVar),
+}
+
+impl SSAExit {
+    pub fn referenced_blocks(&self) -> HashSet<usize> {
+        let mut result = HashSet::new();
+        match self {
+            SSAExit::Stop(_) => {}
+            SSAExit::Jump(to) => {
+                result.insert(*to);
+            }
+            SSAExit::JumpIf {
+                var: _,
+                if_true,
+                if_false,
+            } => {
+                result.insert(*if_true);
+                result.insert(*if_false);
+            }
+            SSAExit::Switch {
+                var: _,
+                ints,
+                blocks,
+            } => {
+                result.extend(ints.iter().copied());
+                result.extend(blocks.iter().copied());
+            }
+            SSAExit::TailApply(_, _) => {}
+            SSAExit::PushTrap { normal, trap } => {
+                result.insert(*normal);
+                result.insert(*trap);
+            }
+            SSAExit::Raise(_, _) => {}
+            SSAExit::Return(_) => {}
+        }
+
+        result
+    }
 }
 
 impl ModifySSAVars for SSAExit {
