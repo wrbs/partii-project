@@ -96,7 +96,7 @@ fn test_while_looper() -> Result<()> {
             Stack delta: -0/+2
 
             Block 1:
-            <1_0> = phi 0:<0_0> 2:<not_implemented>
+            <1_0> = phi 0:<0_0> 2:<1_0>
             <1_1> = <1_0>[0]
             <1_2> = 10 > <1_1>
             Exit: jump_if <1_2> t:2 f:3

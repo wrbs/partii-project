@@ -4,8 +4,8 @@ use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
 use crate::commands::clever_dis::ssa::data::{
-    BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar,
-    UnaryFloatOp, UnaryOp,
+    BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement,
+    SSASubstitutionTarget, SSAVar, UnaryFloatOp, UnaryOp,
 };
 use crate::commands::clever_dis::ssa::stack_state::SSAStackState;
 use std::collections::{HashMap, HashSet};
@@ -708,6 +708,15 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
 
     let is_back_edge = |u, v| block_num_to_order[u] >= block_num_to_order[v];
 
+    #[derive(Clone)]
+    struct Patch {
+        substitution: SSASubstitutionTarget,
+        child_block: usize,
+        child_statement: usize,
+    }
+
+    let mut patches = vec![vec![]; blocks.len()];
+
     for &cur_block_num in order.iter() {
         let mut phis = vec![];
         let mut substitutions = HashMap::new();
@@ -725,7 +734,12 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
                     if is_back_edge(ancestor_block_num, cur_block_num) {
                         // Back edges are dealt with later, because they won't be computed
                         // at this point in the search
-                        (ancestor_block_num, SSAVar::NotImplemented)
+                        patches[ancestor_block_num].push(Patch {
+                            substitution: prev_n,
+                            child_block: cur_block_num,
+                            child_statement: phis.len(),
+                        });
+                        (ancestor_block_num, SSAVar::Junk)
                     } else {
                         let prev_value = blocks[ancestor_block_num].final_state.get_subst(prev_n);
                         (ancestor_block_num, prev_value)
@@ -787,7 +801,22 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
         });
     }
 
-    // TODO clean up code and patch
+    for (parent_block_num, patches) in patches.into_iter().enumerate() {
+        for Patch {
+            substitution,
+            child_block,
+            child_statement,
+        } in patches
+        {
+            let new_value = blocks[parent_block_num].final_state.get_subst(substitution);
+            match &mut blocks[child_block].statements[child_statement] {
+                SSAStatement::Assign(_, _, SSAExpr::Phi(nodes)) => {
+                    nodes.insert(parent_block_num, new_value);
+                }
+                _ => bail!("Expected phi node!"),
+            }
+        }
+    }
 
     Ok(())
 }

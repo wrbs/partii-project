@@ -65,7 +65,6 @@ pub enum SSAVar {
     Special, // Traps and such like
     Junk,
     TrapAcc,
-    NotImplemented,
 }
 
 // Most cases are obvious, but Special != Special, TrapAcc != TrapAcc
@@ -102,7 +101,6 @@ impl Display for SSAVar {
             SSAVar::Special => write!(f, "<special>"),
             SSAVar::Junk => write!(f, "<junk>"),
             SSAVar::TrapAcc => write!(f, "<trap_acc>"),
-            SSAVar::NotImplemented => write!(f, "<not_implemented>"),
         }
     }
 }
