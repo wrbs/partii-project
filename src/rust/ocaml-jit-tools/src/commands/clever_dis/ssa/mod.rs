@@ -1,161 +1,24 @@
-use std::cmp::max;
-use std::fmt::{Display, Formatter};
-
 use anyhow::{bail, ensure, Result};
 
 use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
 use crate::commands::clever_dis::ssa::data::{
-    BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement,
-    SSASubstitutionTarget, SSAVar, UnaryFloatOp, UnaryOp,
+    BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar,
+    UnaryFloatOp, UnaryOp,
 };
-use itertools::Itertools;
+use crate::commands::clever_dis::ssa::stack_state::SSAStackState;
 use std::collections::{HashMap, HashSet};
+
+mod stack_state;
 
 #[cfg(test)]
 mod test_block_translation;
 
 #[cfg(test)]
-mod test_stack;
-
-#[cfg(test)]
 mod test_closure_translation;
 
 pub mod data;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct SSAStackState {
-    pub stack: Vec<SSAVar>,
-    pub accu: SSAVar,
-    pub stack_start: usize,
-    pub used_prev: HashSet<SSASubstitutionTarget>,
-}
-
-impl SSAStackState {
-    fn new() -> SSAStackState {
-        SSAStackState {
-            stack: vec![],
-            accu: SSAVar::Prev(SSASubstitutionTarget::Acc),
-            stack_start: 0,
-            used_prev: HashSet::new(),
-        }
-    }
-
-    fn get_subst(&mut self, t: SSASubstitutionTarget) -> SSAVar {
-        let v = match t {
-            SSASubstitutionTarget::Stack(i) => {
-                self.ensure_capacity_for(i);
-                self.stack[self.stack.len() - 1 - i]
-            }
-            SSASubstitutionTarget::Acc => self.accu,
-        };
-
-        if let SSAVar::Prev(t) = v {
-            self.used_prev.insert(t);
-        }
-
-        v
-    }
-
-    fn pick(&mut self, n: usize) -> SSAVar {
-        self.get_subst(SSASubstitutionTarget::Stack(n))
-    }
-
-    fn accu(&mut self) -> SSAVar {
-        self.get_subst(SSASubstitutionTarget::Acc)
-    }
-
-    #[inline(always)]
-    fn set_accu(&mut self, value: SSAVar) {
-        self.accu = value;
-    }
-
-    fn pop(&mut self, count: usize) {
-        let to_keep_in_stack = max(self.stack.len() as isize - count as isize, 0) as usize;
-        let to_remove_from_stack = self.stack.len() - to_keep_in_stack;
-        self.stack.truncate(to_keep_in_stack);
-
-        let remaining = count - to_remove_from_stack;
-        self.stack_start += remaining;
-    }
-
-    fn push(&mut self, entry: SSAVar) {
-        self.stack.push(entry);
-    }
-
-    fn assign(&mut self, index: usize, entry: SSAVar) {
-        self.ensure_capacity_for(index);
-
-        let length = self.stack.len();
-        self.stack[length - 1 - index] = entry;
-    }
-
-    fn ensure_capacity_for(&mut self, index: usize) {
-        if index >= self.stack.len() {
-            let todo = index - self.stack.len() + 1;
-            self.stack_start += todo;
-            let mut tmp_stack = vec![];
-            for i in 0..todo {
-                tmp_stack.push(SSAVar::Prev(SSASubstitutionTarget::Stack(
-                    self.stack_start - i - 1,
-                )));
-            }
-
-            std::mem::swap(&mut self.stack, &mut tmp_stack);
-            self.stack.extend(tmp_stack);
-        }
-    }
-
-    fn delta(&self) -> isize {
-        return self.stack.len() as isize - self.stack_start as isize;
-    }
-}
-
-impl ModifySSAVars for SSAStackState {
-    fn modify_ssa_vars<F>(&mut self, f: &mut F)
-    where
-        F: FnMut(&mut SSAVar),
-    {
-        f(&mut self.accu);
-        self.stack.iter_mut().for_each(f);
-    }
-}
-
-impl Display for SSAStackState {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        writeln!(f, "Final accu: {}", self.accu)?;
-
-        write!(f, "End stack: ..., <prev:{}> | ", self.stack_start)?;
-
-        let mut first = true;
-
-        for entry in &self.stack {
-            if first {
-                first = false
-            } else {
-                write!(f, ", ")?;
-            }
-            write!(f, "{}", entry)?;
-        }
-        writeln!(f)?;
-
-        writeln!(
-            f,
-            "Used prev: {:?}",
-            self.used_prev.iter().sorted().collect::<Vec<_>>()
-        )?;
-
-        writeln!(
-            f,
-            "Stack delta: -{}/+{}",
-            self.stack_start,
-            self.stack.len()
-        )?;
-
-        Ok(())
-    }
-}
 
 struct Vars {
     statements: Vec<SSAStatement>,

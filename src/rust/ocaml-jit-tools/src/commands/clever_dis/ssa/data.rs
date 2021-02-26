@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use crate::commands::clever_dis::ssa::SSAStackState;
+use crate::commands::clever_dis::ssa::stack_state::SSAStackState;
 use itertools::Itertools;
 use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
 use std::collections::{HashMap, HashSet};

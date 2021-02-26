@@ -10,8 +10,6 @@ use itertools::{EitherOrBoth, Itertools};
 
 use ocaml_jit_shared::Instruction;
 
-use crate::commands::clever_dis::ssa::translate_block;
-
 use super::data::*;
 use super::DotShow;
 use crate::commands::clever_dis::ssa::data::SSAClosure;
