@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::path::PathBuf;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
