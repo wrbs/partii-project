@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::commands::clever_dis::ssa::SSAStackState;
 use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub trait ModifySSAVars {
     fn modify_ssa_vars<F>(&mut self, f: &mut F)
@@ -45,7 +45,7 @@ impl Display for SSABlock {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone)]
 pub enum SSAVar {
     PrevStack(usize),
     PrevAcc,
@@ -59,6 +59,26 @@ pub enum SSAVar {
     Special, // Traps and such like
     Junk,
     TrapAcc,
+}
+
+// Most cases are obvious, but Special != Special, TrapAcc != TrapAcc
+impl PartialEq for SSAVar {
+    fn eq(&self, other: &Self) -> bool {
+        use SSAVar::*;
+        match (self, other) {
+            (PrevStack(a), PrevStack(b)) => a == b,
+            (PrevAcc, PrevAcc) => true,
+            (Arg(a), Arg(b)) => a == b,
+            (Env(a), Env(b)) => a == b,
+            (Computed(a1, a2), Computed(b1, b2)) => a1 == b1 && a2 == b2,
+            (OffsetClosure(a), OffsetClosure(b)) => a == b,
+            (Const(a), Const(b)) => a == b,
+            (Unit, Unit) => true,
+            (Atom(a), Atom(b)) => a == b,
+            (Junk, Junk) => true,
+            _ => false,
+        }
+    }
 }
 
 impl Display for SSAVar {
@@ -126,6 +146,7 @@ pub enum UnaryOp {
 
 #[derive(Debug, Clone)]
 pub enum SSAExpr {
+    // Normal nodes
     Apply(SSAVar, Vec<SSAVar>),
     GetGlobal(usize),
     GetField(SSAVar, SSAVar),
@@ -160,6 +181,8 @@ pub enum SSAExpr {
         tag: SSAVar,
         object: SSAVar,
     },
+    // Phi nodes
+    Phi(HashMap<usize, SSAVar>),
 }
 
 impl ModifySSAVars for SSAExpr {
@@ -228,6 +251,9 @@ impl ModifySSAVars for SSAExpr {
             SSAExpr::GetDynMet { tag, object } => {
                 f(tag);
                 f(object);
+            }
+            SSAExpr::Phi(options) => {
+                options.values_mut().for_each(f);
             }
         }
     }
@@ -306,6 +332,12 @@ impl Display for SSAExpr {
             }
             SSAExpr::GetDynMet { tag, object } => {
                 write!(f, "get dynmet tag:{} object:{} ", tag, object)?;
+            }
+            SSAExpr::Phi(options) => {
+                write!(f, "phi")?;
+                for (block, v) in options.iter() {
+                    write!(f, " {}:{}", block, v)?;
+                }
             }
         }
         Ok(())

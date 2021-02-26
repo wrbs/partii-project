@@ -6,11 +6,13 @@ use anyhow::{anyhow, bail, ensure, Result};
 use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
+use crate::commands::clever_dis::ssa::data::SSAVar::PrevAcc;
 use crate::commands::clever_dis::ssa::data::{
     BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar,
     UnaryFloatOp, UnaryOp,
 };
-use std::collections::{HashMap, HashSet};
+use itertools::Itertools;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 #[cfg(test)]
 mod test_block_translation;
@@ -23,7 +25,7 @@ mod test_closure_translation;
 
 pub mod data;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SSAStackState {
     pub stack: Vec<SSAVar>,
     pub acc: SSAVar,
@@ -160,7 +162,7 @@ impl Vars {
     }
 }
 
-pub fn translate_closure(closure: &Closure) -> Result<SSAClosure> {
+fn get_blocks(closure: &Closure) -> Result<Vec<SSABlock>> {
     let mut blocks = vec![];
     for (block_num, b) in closure.blocks.iter().enumerate() {
         let is_entry_block = block_num == 0 && !closure.is_root;
@@ -172,6 +174,11 @@ pub fn translate_closure(closure: &Closure) -> Result<SSAClosure> {
             is_trap_handler,
         )?);
     }
+    Ok(blocks)
+}
+
+pub fn translate_closure(closure: &Closure) -> Result<SSAClosure> {
+    let mut blocks = get_blocks(closure)?;
     let _ = relocate_blocks(&mut blocks)?;
 
     Ok(SSAClosure { blocks })
@@ -690,7 +697,220 @@ fn find_start_stack_sizes(blocks: &[SSABlock]) -> Result<Vec<usize>> {
     Ok(result)
 }
 
+// Find block ancestors and detect back edges
+// Could be folded into above DFS
+//
+// Uses the property that for the most part control flow is
+// acyclic and the only type of cycles we get are
+// enter -> check <-> loop ;
+// check -> exit;
+
+fn find_ancestors(blocks: &[SSABlock]) -> (Vec<HashSet<usize>>, Vec<HashSet<usize>>) {
+    let mut ancestors = vec![HashSet::new(); blocks.len()];
+    let mut back_edges = vec![HashSet::new(); blocks.len()];
+
+    #[derive(Copy, Clone)]
+    enum Colour {
+        Unseen,   // white
+        Visiting, // gray
+        Visited,  // black
+    }
+    let mut colours = vec![Colour::Unseen; blocks.len()];
+
+    enum StackItem {
+        Visit(usize),
+        Visited(usize),
+    }
+    let mut stack = vec![StackItem::Visit(0)];
+
+    while let Some(i) = stack.pop() {
+        match i {
+            StackItem::Visit(b) => {
+                colours[b] = Colour::Visiting;
+                stack.push(StackItem::Visited(b));
+                for other_block in blocks[b].exit.referenced_blocks() {
+                    match colours[other_block] {
+                        Colour::Unseen => {
+                            stack.push(StackItem::Visit(other_block));
+                            ancestors[other_block].insert(b);
+                        }
+                        Colour::Visiting => {
+                            ancestors[other_block].insert(b);
+                            back_edges[other_block].insert(b);
+                        }
+                        Colour::Visited => {
+                            ancestors[other_block].insert(b);
+                        }
+                    }
+                }
+            }
+            StackItem::Visited(b) => {
+                colours[b] = Colour::Visited;
+            }
+        }
+    }
+
+    return (ancestors, back_edges);
+}
+
+fn expand_used_prev(blocks: &mut [SSABlock], ancestors: &[HashSet<usize>]) {
+    let mut stack = vec![];
+
+    for (block_num, b) in blocks.iter().enumerate() {
+        for uses in &b.final_state.used_prev {
+            for ancestor in &ancestors[block_num] {
+                stack.push((*ancestor, *uses));
+            }
+        }
+    }
+
+    while let Some((block_num, used_elem)) = stack.pop() {
+        if !blocks[block_num].final_state.used_prev.contains(&used_elem) {
+            // Note pick will updated used_elems if needed
+            if let SSAVar::PrevStack(uses) = blocks[block_num].final_state.pick(used_elem) {
+                for ancestor in &ancestors[block_num] {
+                    stack.push((*ancestor, uses));
+                }
+            }
+        }
+    }
+
+    // Eventually this will settle(*) and used_prev will be the transitive closure of everything used
+}
+
 fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
-    let ss = find_start_stack_sizes(blocks)?;
+    let _ = find_start_stack_sizes(blocks)?;
+    let (ancestors, back_edges) = find_ancestors(blocks);
+    expand_used_prev(blocks, &ancestors);
+
+    // Now the actual algorithm to join the blocks together
+    // This time it's a BFS starting at block 0.
+    //
+    // For every block, look at it's ancestors and see if they have different opinions about the
+    // value of a given <prev:{}> node.
+    //
+    // If they do insert a phi node.
+    //
+    // We deal with back edges by saying they *all* need phi nodes added but not specifying a value
+    // yet.
+    // After it's done we fix things up
+
+    let mut queue = VecDeque::new();
+    let mut seen = HashSet::new();
+    queue.push_back(0);
+
+    while let Some(cur) = queue.pop_front() {
+        // BFS part
+        if seen.contains(&cur) {
+            continue;
+        }
+        seen.insert(cur);
+
+        for descendent in blocks[cur].exit.referenced_blocks() {
+            queue.push_back(descendent);
+        }
+
+        // Actual relocation
+        let mut phis = vec![];
+        let mut substitutions = HashMap::new();
+
+        // Deal with previous accs
+        let prev_acc_sub = if ancestors[cur].is_empty() {
+            SSAVar::PrevAcc
+        } else {
+            let mut acc_options: HashMap<_, _> = ancestors[cur]
+                .iter()
+                .map(|i| {
+                    let i = *i;
+                    if back_edges[cur].contains(&i) {
+                        // Back edges are dealt with later, because they won't be computed
+                        // at this point in the search
+                        (i, SSAVar::Special)
+                    } else {
+                        let prev_value = blocks[i].final_state.acc;
+                        (i, prev_value)
+                    }
+                })
+                .collect();
+
+            let first_value = *acc_options.values().next().unwrap();
+
+            if acc_options.values().all(|v| v == &first_value) {
+                first_value
+            } else {
+                phis.push(acc_options);
+                SSAVar::Computed(cur, 0)
+            }
+        };
+
+        let used_prev: Vec<_> = blocks[cur].final_state.used_prev.iter().copied().collect();
+        for prev_n in used_prev {
+            let mut options: HashMap<_, _> = ancestors[cur]
+                .iter()
+                .map(|i| {
+                    let i = *i;
+                    if back_edges[cur].contains(&i) {
+                        // Back edges are dealt with later, because they won't be computed
+                        // at this point in the search
+                        (i, SSAVar::Special)
+                    } else {
+                        let prev_value = blocks[i].final_state.pick(prev_n);
+                        (i, prev_value)
+                    }
+                })
+                .collect();
+
+            let first_value = *options.values().next().unwrap();
+
+            if options.values().all(|v| v == &first_value) {
+                substitutions.insert(prev_n, first_value);
+            } else {
+                substitutions.insert(prev_n, SSAVar::Computed(cur, phis.len()));
+                phis.push(options)
+            }
+        }
+
+        // Ok, we need to make room for any phi nodes by relocating variables offset by the number
+        // of phi nodes
+        let offset = phis.len();
+        if offset > 0 {
+            for s in blocks[cur].statements.iter_mut() {
+                if let SSAStatement::Assign(_, var_num, _) = s {
+                    *var_num += offset;
+                }
+            }
+
+            blocks[cur].modify_ssa_vars(&mut |v| {
+                if let SSAVar::Computed(block_num, var_num) = v {
+                    if *block_num == cur {
+                        *var_num += offset;
+                    }
+                }
+            });
+
+            // Now we can insert the new phi nodes at the start of the block
+            let mut new_statements = vec![];
+            for (i, options) in phis.into_iter().enumerate() {
+                new_statements.push(SSAStatement::Assign(cur, i, SSAExpr::Phi(options)));
+            }
+            new_statements.append(&mut blocks[cur].statements);
+            blocks[cur].statements = new_statements;
+        }
+
+        // Now we've got a value (in substitutions) for everything, we need to perform the
+        // substitutions
+        blocks[cur].modify_ssa_vars(&mut |v| match v {
+            SSAVar::PrevStack(n) => {
+                *v = *substitutions.get(n).unwrap();
+            }
+            SSAVar::PrevAcc => {
+                *v = prev_acc_sub;
+            }
+            _ => (),
+        });
+    }
+
+    // TODO  fixup
+
     Ok(())
 }
