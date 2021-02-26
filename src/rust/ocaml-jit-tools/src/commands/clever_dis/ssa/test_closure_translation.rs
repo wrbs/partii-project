@@ -48,7 +48,7 @@ fn test_while_looper() -> Result<()> {
             Block 0:
             <0_0> = make block tag:0 vars:[0]
             Exit: jump 1
-            Final acc: <0_0>
+            Final accu: <0_0>
             End stack: ..., <prev:0> | <arg:0>, <0_0>
             Used prev: []
             Stack delta: -0/+2
@@ -57,9 +57,9 @@ fn test_while_looper() -> Result<()> {
             <1_0> = <prev:0>[0]
             <1_1> = 10 > <1_0>
             Exit: jump_if <1_1> t:2 f:3
-            Final acc: <1_0>
+            Final accu: <1_0>
             End stack: ..., <prev:1> | <prev:0>
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+1
 
             Block 2:
@@ -73,14 +73,14 @@ fn test_while_looper() -> Result<()> {
             <2_6> = <2_5> + 1
             set <prev:0>[0] = <2_6>
             Exit: jump 1
-            Final acc: <unit>
+            Final accu: <unit>
             End stack: ..., <prev:1> | <prev:0>
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+1
 
             Block 3:
             Exit: return 0
-            Final acc: 0
+            Final accu: 0
             End stack: ..., <prev:2> | 
             Used prev: []
             Stack delta: -2/+0
@@ -90,41 +90,40 @@ fn test_while_looper() -> Result<()> {
             Block 0:
             <0_0> = make block tag:0 vars:[0]
             Exit: jump 1
-            Final acc: <0_0>
+            Final accu: <0_0>
             End stack: ..., <prev:0> | <arg:0>, <0_0>
             Used prev: []
             Stack delta: -0/+2
 
             Block 1:
             <1_0> = phi 0:<0_0> 2:<not_implemented>
-            <1_1> = phi 0:<0_0> 2:<not_implemented>
-            <1_2> = <1_1>[0]
-            <1_3> = 10 > <1_2>
-            Exit: jump_if <1_3> t:2 f:3
-            Final acc: <1_2>
-            End stack: ..., <prev:1> | <1_1>
-            Used prev: [0]
+            <1_1> = <1_0>[0]
+            <1_2> = 10 > <1_1>
+            Exit: jump_if <1_2> t:2 f:3
+            Final accu: <1_1>
+            End stack: ..., <prev:1> | <1_0>
+            Used prev: [Stack(0)]
             Stack delta: -1/+1
 
             Block 2:
             check signals
-            <2_0> = <1_1>[0]
+            <2_0> = <1_0>[0]
             <2_1> = global 310
             <2_2> = global 308
             <2_3> = <2_2>[1]
             <2_4> = apply <2_3> [<2_1>, <2_0>]
-            <2_5> = <1_1>[0]
+            <2_5> = <1_0>[0]
             <2_6> = <2_5> + 1
-            set <1_1>[0] = <2_6>
+            set <1_0>[0] = <2_6>
             Exit: jump 1
-            Final acc: <unit>
-            End stack: ..., <prev:1> | <1_1>
-            Used prev: [0]
+            Final accu: <unit>
+            End stack: ..., <prev:1> | <1_0>
+            Used prev: [Stack(0)]
             Stack delta: -1/+1
 
             Block 3:
             Exit: return 0
-            Final acc: 0
+            Final accu: 0
             End stack: ..., <prev:2> | 
             Used prev: []
             Stack delta: -2/+0
@@ -142,14 +141,14 @@ fn test_seq_filter_map() -> Result<()> {
             grab 2
             <0_0> = apply <arg:1> [0]
             Exit: jump_if <0_0> t:2 f:1
-            Final acc: <0_0>
+            Final accu: <0_0>
             End stack: ..., <prev:0> | <arg:2>, <arg:1>, <arg:0>, <0_0>
             Used prev: []
             Stack delta: -0/+4
 
             Block 1:
             Exit: return 0
-            Final acc: 0
+            Final accu: 0
             End stack: ..., <prev:4> | 
             Used prev: []
             Stack delta: -4/+0
@@ -159,16 +158,16 @@ fn test_seq_filter_map() -> Result<()> {
             <2_1> = <prev:0>[0]
             <2_2> = apply <prev:1> [<2_1>]
             Exit: jump_if <2_2> t:4 f:3
-            Final acc: <2_2>
+            Final accu: <2_2>
             End stack: ..., <prev:2> | <prev:1>, <prev:0>, <2_0>, <2_1>, <2_2>
-            Used prev: [0, 1]
+            Used prev: [Stack(0), Stack(1)]
             Stack delta: -2/+5
 
             Block 3:
             Exit: tail_apply <closure:0> [<prev:4>, <prev:2>, 0]
-            Final acc: <closure:0>
+            Final accu: <closure:0>
             End stack: ..., <prev:7> | 
-            Used prev: [2, 4]
+            Used prev: [Stack(2), Stack(4)]
             Stack delta: -7/+0
 
             Block 4:
@@ -176,9 +175,9 @@ fn test_seq_filter_map() -> Result<()> {
             <4_1> = apply <closure:0> [<prev:4>, <prev:2>]
             <4_2> = make block tag:0 vars:[<4_0>, <4_1>]
             Exit: return <4_2>
-            Final acc: <4_2>
+            Final accu: <4_2>
             End stack: ..., <prev:7> | 
-            Used prev: [0, 2, 4]
+            Used prev: [Stack(0), Stack(2), Stack(4)]
             Stack delta: -7/+0
 
         "#]],
@@ -187,14 +186,14 @@ fn test_seq_filter_map() -> Result<()> {
             grab 2
             <0_0> = apply <arg:1> [0]
             Exit: jump_if <0_0> t:2 f:1
-            Final acc: <0_0>
+            Final accu: <0_0>
             End stack: ..., <prev:0> | <arg:2>, <arg:1>, <arg:0>, <0_0>
             Used prev: []
             Stack delta: -0/+4
 
             Block 1:
             Exit: return 0
-            Final acc: 0
+            Final accu: 0
             End stack: ..., <prev:4> | 
             Used prev: []
             Stack delta: -4/+0
@@ -204,16 +203,16 @@ fn test_seq_filter_map() -> Result<()> {
             <2_1> = <0_0>[0]
             <2_2> = apply <arg:0> [<2_1>]
             Exit: jump_if <2_2> t:4 f:3
-            Final acc: <2_2>
+            Final accu: <2_2>
             End stack: ..., <prev:2> | <arg:0>, <0_0>, <2_0>, <2_1>, <2_2>
-            Used prev: [0, 1]
+            Used prev: [Stack(0), Stack(1)]
             Stack delta: -2/+5
 
             Block 3:
             Exit: tail_apply <closure:0> [<arg:0>, <2_0>, 0]
-            Final acc: <closure:0>
+            Final accu: <closure:0>
             End stack: ..., <prev:7> | 
-            Used prev: [2, 4]
+            Used prev: [Stack(2), Stack(4)]
             Stack delta: -7/+0
 
             Block 4:
@@ -221,9 +220,9 @@ fn test_seq_filter_map() -> Result<()> {
             <4_1> = apply <closure:0> [<arg:0>, <2_0>]
             <4_2> = make block tag:0 vars:[<4_0>, <4_1>]
             Exit: return <4_2>
-            Final acc: <4_2>
+            Final accu: <4_2>
             End stack: ..., <prev:7> | 
-            Used prev: [0, 2, 4]
+            Used prev: [Stack(0), Stack(2), Stack(4)]
             Stack delta: -7/+0
 
         "#]],
@@ -239,7 +238,7 @@ fn test_char_uppercase() -> Result<()> {
             <0_0> = <arg:0> + -224
             <0_1> = 30 u>= <0_0>
             Exit: jump_if <0_1> t:1 f:2
-            Final acc: <0_0>
+            Final accu: <0_0>
             End stack: ..., <prev:0> | <arg:0>, <0_0>
             Used prev: []
             Stack delta: -0/+2
@@ -247,61 +246,61 @@ fn test_char_uppercase() -> Result<()> {
             Block 1:
             <1_0> = 23 == <prev:0>
             Exit: jump_if <1_0> t:3 f:4
-            Final acc: <prev:0>
+            Final accu: <prev:0>
             End stack: ..., <prev:1> | <prev:0>
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+1
 
             Block 2:
             <2_0> = <prev:0> + 127
             <2_1> = 25 u>= <2_0>
             Exit: jump_if <2_1> t:5 f:6
-            Final acc: <2_0>
+            Final accu: <2_0>
             End stack: ..., <prev:1> | <prev:0>, <2_0>
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+2
 
             Block 3:
             Exit: jump 7
-            Final acc: <prev:acc>
+            Final accu: <prev:acc>
             End stack: ..., <prev:1> | 
             Used prev: []
             Stack delta: -1/+0
 
             Block 4:
             Exit: jump 8
-            Final acc: <prev:acc>
+            Final accu: <prev:acc>
             End stack: ..., <prev:1> | 
             Used prev: []
             Stack delta: -1/+0
 
             Block 5:
             Exit: jump 8
-            Final acc: <prev:acc>
+            Final accu: <prev:acc>
             End stack: ..., <prev:2> | 
             Used prev: []
             Stack delta: -2/+0
 
             Block 6:
             Exit: jump 7
-            Final acc: <prev:acc>
+            Final accu: <prev:acc>
             End stack: ..., <prev:2> | 
             Used prev: []
             Stack delta: -2/+0
 
             Block 7:
             Exit: return <prev:0>
-            Final acc: <prev:0>
+            Final accu: <prev:0>
             End stack: ..., <prev:1> | 
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+0
 
             Block 8:
             <8_0> = <prev:0> + -32
             Exit: return <8_0>
-            Final acc: <8_0>
+            Final accu: <8_0>
             End stack: ..., <prev:1> | 
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+0
 
         "#]],
@@ -310,7 +309,7 @@ fn test_char_uppercase() -> Result<()> {
             <0_0> = <arg:0> + -224
             <0_1> = 30 u>= <0_0>
             Exit: jump_if <0_1> t:1 f:2
-            Final acc: <0_0>
+            Final accu: <0_0>
             End stack: ..., <prev:0> | <arg:0>, <0_0>
             Used prev: []
             Stack delta: -0/+2
@@ -318,63 +317,61 @@ fn test_char_uppercase() -> Result<()> {
             Block 1:
             <1_0> = 23 == <0_0>
             Exit: jump_if <1_0> t:3 f:4
-            Final acc: <0_0>
+            Final accu: <0_0>
             End stack: ..., <prev:2> | <arg:0>, <0_0>
-            Used prev: [0, 1]
+            Used prev: [Stack(0), Stack(1)]
             Stack delta: -2/+2
 
             Block 2:
             <2_0> = <0_0> + 127
             <2_1> = 25 u>= <2_0>
             Exit: jump_if <2_1> t:5 f:6
-            Final acc: <2_0>
+            Final accu: <2_0>
             End stack: ..., <prev:2> | <arg:0>, <0_0>, <2_0>
-            Used prev: [0, 1]
+            Used prev: [Stack(0), Stack(1)]
             Stack delta: -2/+3
 
             Block 3:
             Exit: jump 7
-            Final acc: <0_0>
+            Final accu: <prev:acc>
             End stack: ..., <prev:2> | <arg:0>
-            Used prev: [1]
+            Used prev: [Stack(1)]
             Stack delta: -2/+1
 
             Block 4:
             Exit: jump 8
-            Final acc: <0_0>
+            Final accu: <prev:acc>
             End stack: ..., <prev:2> | <arg:0>
-            Used prev: [1]
+            Used prev: [Stack(1)]
             Stack delta: -2/+1
 
             Block 5:
             Exit: jump 8
-            Final acc: <2_0>
+            Final accu: <prev:acc>
             End stack: ..., <prev:3> | <arg:0>
-            Used prev: [2]
+            Used prev: [Stack(2)]
             Stack delta: -3/+1
 
             Block 6:
             Exit: jump 7
-            Final acc: <2_0>
+            Final accu: <prev:acc>
             End stack: ..., <prev:3> | <arg:0>
-            Used prev: [2]
+            Used prev: [Stack(2)]
             Stack delta: -3/+1
 
             Block 7:
-            <7_0> = phi 3:<0_0> 6:<2_0>
             Exit: return <arg:0>
-            Final acc: <arg:0>
+            Final accu: <arg:0>
             End stack: ..., <prev:1> | 
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+0
 
             Block 8:
-            <8_0> = phi 4:<0_0> 5:<2_0>
-            <8_1> = <arg:0> + -32
-            Exit: return <8_1>
-            Final acc: <8_1>
+            <8_0> = <arg:0> + -32
+            Exit: return <8_0>
+            Final accu: <8_0>
             End stack: ..., <prev:1> | 
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+0
 
         "#]],
@@ -389,7 +386,7 @@ fn test_thing() -> Result<()> {
             Block 0:
             <0_0> = 0 > <arg:0>
             Exit: jump_if <0_0> t:1 f:2
-            Final acc: <arg:0>
+            Final accu: <arg:0>
             End stack: ..., <prev:0> | <arg:0>
             Used prev: []
             Stack delta: -0/+1
@@ -397,7 +394,7 @@ fn test_thing() -> Result<()> {
             Block 1:
             <1_0> = global 34
             Exit: tail_apply <env:1> [<1_0>]
-            Final acc: <env:1>
+            Final accu: <env:1>
             End stack: ..., <prev:1> | 
             Used prev: []
             Stack delta: -1/+0
@@ -405,16 +402,16 @@ fn test_thing() -> Result<()> {
             Block 2:
             <2_0> = 255 >= <prev:0>
             Exit: jump_if <2_0> t:3 f:1
-            Final acc: <prev:0>
+            Final accu: <prev:0>
             End stack: ..., <prev:1> | <prev:0>
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+1
 
             Block 3:
             Exit: return <prev:0>
-            Final acc: <prev:0>
+            Final accu: <prev:0>
             End stack: ..., <prev:1> | 
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+0
 
         "#]],
@@ -422,7 +419,7 @@ fn test_thing() -> Result<()> {
             Block 0:
             <0_0> = 0 > <arg:0>
             Exit: jump_if <0_0> t:1 f:2
-            Final acc: <arg:0>
+            Final accu: <arg:0>
             End stack: ..., <prev:0> | <arg:0>
             Used prev: []
             Stack delta: -0/+1
@@ -430,7 +427,7 @@ fn test_thing() -> Result<()> {
             Block 1:
             <1_0> = global 34
             Exit: tail_apply <env:1> [<1_0>]
-            Final acc: <env:1>
+            Final accu: <env:1>
             End stack: ..., <prev:1> | 
             Used prev: []
             Stack delta: -1/+0
@@ -438,16 +435,16 @@ fn test_thing() -> Result<()> {
             Block 2:
             <2_0> = 255 >= <arg:0>
             Exit: jump_if <2_0> t:3 f:1
-            Final acc: <arg:0>
+            Final accu: <arg:0>
             End stack: ..., <prev:1> | <arg:0>
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+1
 
             Block 3:
             Exit: return <arg:0>
-            Final acc: <arg:0>
+            Final accu: <arg:0>
             End stack: ..., <prev:1> | 
-            Used prev: [0]
+            Used prev: [Stack(0)]
             Stack delta: -1/+0
 
         "#]],
