@@ -14,6 +14,7 @@ use crate::commands::clever_dis::ssa::translate_block;
 
 use super::data::*;
 use super::DotShow;
+use crate::commands::clever_dis::ssa::data::SSAClosure;
 
 #[derive(Debug)]
 pub struct Options {
@@ -30,7 +31,11 @@ struct VisContext<'a> {
     options: Options,
 }
 
-pub fn write_dot_graphs(program: &Program, options: Options) -> Result<()> {
+pub fn write_dot_graphs(
+    program: &Program,
+    ssa_closures: &[SSAClosure],
+    options: Options,
+) -> Result<()> {
     let ctx = VisContext { program, options };
 
     create_dir_all(&ctx.options.output_path).context("Could not create output directory")?;
@@ -48,6 +53,7 @@ pub fn write_dot_graphs(program: &Program, options: Options) -> Result<()> {
     };
 
     for (closure_id, closure) in ctx.program.closures.iter().enumerate() {
+        let ssa_closure = &ssa_closures[closure_id];
         let dot_path = ctx
             .options
             .output_path
@@ -71,7 +77,7 @@ pub fn write_dot_graphs(program: &Program, options: Options) -> Result<()> {
             )
         })?;
 
-        ctx.output_closure_dot(closure_id, closure, &mut dot_file)
+        ctx.output_closure_dot(closure_id, closure, ssa_closure, &mut dot_file)
             .with_context(|| format!("Problem writing closure file for closure {}", closure_id))?;
 
         if ctx.options.output_closure_json {
@@ -150,6 +156,7 @@ impl<'a> VisContext<'a> {
         &self,
         closure_no: usize,
         closure: &Closure,
+        ssa_closure: &SSAClosure,
         f: &mut W,
     ) -> Result<()> {
         writeln!(f, "digraph G {{")?;
@@ -242,16 +249,15 @@ impl<'a> VisContext<'a> {
             };
 
             let ssa_instrs = if self.options.show.show_ssa() {
-                let is_entry_block = closure_no != 0 && block_no == 0;
-                let is_trap_handler = closure.trap_handlers.contains(&block_no);
-                match translate_block(block, block_no, is_entry_block, is_trap_handler) {
-                    Ok(ssa_block) => {
-                        let mut ssa_instrs: Vec<_> = format!("{}", ssa_block)
-                            .lines()
-                            .map(|l| format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(l)))
-                            .collect();
+                let mut ssa_instrs: Vec<_> = format!("{}", ssa_closure.blocks[block_no])
+                    .lines()
+                    .map(|l| format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(l)))
+                    .collect();
 
-                        ssa_instrs.extend(format!("{}", ssa_block.final_state).lines().map(|l| {
+                ssa_instrs.extend(
+                    format!("{}", ssa_closure.blocks[block_no].final_state)
+                        .lines()
+                        .map(|l| {
                             let s = html_escape(l);
                             let sections: Vec<_> = s.split(':').collect();
                             format!(
@@ -259,23 +265,10 @@ impl<'a> VisContext<'a> {
                                 sections[0],
                                 &sections[1..sections.len()].join(":")
                             )
-                        }));
+                        }),
+                );
 
-                        Some(ssa_instrs)
-                    }
-                    Err(e) => {
-                        eprintln!(
-                            "Error converting to SSA in closure {}, block {}",
-                            closure_no, block_no
-                        );
-                        eprintln!("{}", e);
-                        let ssa_instrs: Vec<_> = format!("{}", e)
-                            .lines()
-                            .map(|l| format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(l)))
-                            .collect();
-                        Some(ssa_instrs)
-                    }
-                }
+                Some(ssa_instrs)
             } else {
                 None
             };

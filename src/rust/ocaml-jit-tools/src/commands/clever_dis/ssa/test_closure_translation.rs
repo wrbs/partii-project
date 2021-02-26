@@ -96,8 +96,8 @@ fn test_while_looper() -> Result<()> {
             Stack delta: -0/+2
 
             Block 1:
-            <1_0> = phi 0:<0_0> 2:<special>
-            <1_1> = phi 0:<0_0> 2:<special>
+            <1_0> = phi 0:<0_0> 2:<not_implemented>
+            <1_1> = phi 0:<0_0> 2:<not_implemented>
             <1_2> = <1_1>[0]
             <1_3> = 10 > <1_2>
             Exit: jump_if <1_3> t:2 f:3
@@ -373,6 +373,79 @@ fn test_char_uppercase() -> Result<()> {
             <8_1> = <arg:0> + -32
             Exit: return <8_1>
             Final acc: <8_1>
+            End stack: ..., <prev:1> | 
+            Used prev: [0]
+            Stack delta: -1/+0
+
+        "#]],
+    })
+}
+
+#[test]
+fn test_thing() -> Result<()> {
+    run_test(Test {
+        source: include_str!("./char_of_int.json"),
+        first_parse: expect![[r#"
+            Block 0:
+            <0_0> = 0 > <arg:0>
+            Exit: jump_if <0_0> t:1 f:2
+            Final acc: <arg:0>
+            End stack: ..., <prev:0> | <arg:0>
+            Used prev: []
+            Stack delta: -0/+1
+
+            Block 1:
+            <1_0> = global 34
+            Exit: tail_apply <env:1> [<1_0>]
+            Final acc: <env:1>
+            End stack: ..., <prev:1> | 
+            Used prev: []
+            Stack delta: -1/+0
+
+            Block 2:
+            <2_0> = 255 >= <prev:0>
+            Exit: jump_if <2_0> t:3 f:1
+            Final acc: <prev:0>
+            End stack: ..., <prev:1> | <prev:0>
+            Used prev: [0]
+            Stack delta: -1/+1
+
+            Block 3:
+            Exit: return <prev:0>
+            Final acc: <prev:0>
+            End stack: ..., <prev:1> | 
+            Used prev: [0]
+            Stack delta: -1/+0
+
+        "#]],
+        after_relocate: expect![[r#"
+            Block 0:
+            <0_0> = 0 > <arg:0>
+            Exit: jump_if <0_0> t:1 f:2
+            Final acc: <arg:0>
+            End stack: ..., <prev:0> | <arg:0>
+            Used prev: []
+            Stack delta: -0/+1
+
+            Block 1:
+            <1_0> = global 34
+            Exit: tail_apply <env:1> [<1_0>]
+            Final acc: <env:1>
+            End stack: ..., <prev:1> | 
+            Used prev: []
+            Stack delta: -1/+0
+
+            Block 2:
+            <2_0> = 255 >= <arg:0>
+            Exit: jump_if <2_0> t:3 f:1
+            Final acc: <arg:0>
+            End stack: ..., <prev:1> | <arg:0>
+            Used prev: [0]
+            Stack delta: -1/+1
+
+            Block 3:
+            Exit: return <arg:0>
+            Final acc: <arg:0>
             End stack: ..., <prev:1> | 
             Used prev: [0]
             Stack delta: -1/+0
