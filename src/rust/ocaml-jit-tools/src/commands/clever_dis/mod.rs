@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
@@ -55,6 +55,9 @@ pub struct Options {
     output_closure_json: bool,
 
     #[structopt(long)]
+    no_relocate: bool,
+
+    #[structopt(long)]
     print_debug: bool,
 
     #[structopt(long, possible_values = &DotShow::variants(), case_insensitive = true, default_value="Both")]
@@ -77,13 +80,14 @@ pub fn run(options: Options) -> Result<()> {
 
     let program = process_bytecode(bcf).context("Problem analysing parsed bytecode")?;
 
+    let use_relocations = !options.no_relocate;
+
+    let mut ssa_closures = vec![];
     for (closure_id, closure) in program.closures.iter().enumerate() {
-        match translate_closure(closure) {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("Problem translate closure {}: {}", closure_id, e);
-            }
-        }
+        ssa_closures.push(
+            translate_closure(closure, use_relocations)
+                .with_context(|| format!("Problem translating closure {}", closure_id))?,
+        );
     }
 
     if options.print_debug {
@@ -93,6 +97,7 @@ pub fn run(options: Options) -> Result<()> {
     if let Some(dot) = &options.dot {
         visualisation::write_dot_graphs(
             &program,
+            &ssa_closures,
             visualisation::Options {
                 use_links: true,
                 verbose: options.verbose,

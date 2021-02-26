@@ -60,6 +60,7 @@ pub enum SSAVar {
     Special, // Traps and such like
     Junk,
     TrapAcc,
+    NotImplemented,
 }
 
 // Most cases are obvious, but Special != Special, TrapAcc != TrapAcc
@@ -97,6 +98,7 @@ impl Display for SSAVar {
             SSAVar::Special => write!(f, "<special>"),
             SSAVar::Junk => write!(f, "<junk>"),
             SSAVar::TrapAcc => write!(f, "<trap_acc>"),
+            SSAVar::NotImplemented => write!(f, "<not_implemented>"),
         }
     }
 }
@@ -355,6 +357,7 @@ pub enum SSAStatement {
     SetField(SSAVar, SSAVar, SSAVar),
     SetFloatField(SSAVar, usize, SSAVar),
     SetBytesChar(SSAVar, SSAVar, SSAVar),
+    TemporaryCommentHack(String),
 }
 
 impl ModifySSAVars for SSAStatement {
@@ -386,6 +389,7 @@ impl ModifySSAVars for SSAStatement {
                 f(v2);
                 f(v3);
             }
+            SSAStatement::TemporaryCommentHack(_) => {}
         }
     }
 }
@@ -417,6 +421,7 @@ impl Display for SSAStatement {
             SSAStatement::SetBytesChar(b, n, v) => {
                 write!(f, "set bytes {}[{}] = {}", b, n, v)?;
             }
+            SSAStatement::TemporaryCommentHack(s) => write!(f, "{}", s)?,
         }
 
         Ok(())

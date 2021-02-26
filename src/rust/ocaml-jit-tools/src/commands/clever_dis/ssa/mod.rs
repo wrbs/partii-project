@@ -180,9 +180,11 @@ fn get_blocks(closure: &Closure) -> Result<Vec<SSABlock>> {
     Ok(blocks)
 }
 
-pub fn translate_closure(closure: &Closure) -> Result<SSAClosure> {
+pub fn translate_closure(closure: &Closure, use_relocations: bool) -> Result<SSAClosure> {
     let mut blocks = get_blocks(closure)?;
-    let _ = relocate_blocks(&mut blocks)?;
+    if use_relocations {
+        relocate_blocks(&mut blocks)?;
+    }
 
     Ok(SSAClosure { blocks })
 }
@@ -663,55 +665,49 @@ fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
 //
 // So validating the invariants is a good sanity check of being sensible with our approach to the stack
 fn dfs_blocks(blocks: &[SSABlock]) -> Result<(Vec<usize>, Vec<usize>)> {
-    let mut sizes = HashMap::new();
-    let mut post_order = vec![];
+    fn dfs(
+        blocks: &[SSABlock],
+        sizes: &mut HashMap<usize, usize>,
+        post_order: &mut Vec<usize>,
+        block_num: usize,
+        start_size: usize,
+    ) -> Result<()> {
+        let b = &blocks[block_num];
 
-    enum StackItem {
-        Visit(usize, usize),
-        PostVisit(usize),
-    }
+        sizes.insert(block_num, start_size);
+        let new_size = start_size as isize + b.final_state.delta();
+        ensure!(new_size >= 0); // Invariant 3
+        let new_size = new_size as usize;
 
-    // Do a depth-first-search through the blocks
-    // DFS stack - (block to visit, starting size)
-    let mut to_visit = vec![StackItem::Visit(0, 0)];
-    while let Some(item) = to_visit.pop() {
-        match item {
-            StackItem::Visit(block_num, start_size) => {
-                // Push a post visit for later
-                to_visit.push(StackItem::PostVisit(block_num));
-                let b = &blocks[block_num];
-
-                sizes.insert(block_num, start_size);
-                let new_size = start_size as isize + b.final_state.delta();
-                ensure!(new_size >= 0); // Invariant 3
-                let new_size = new_size as usize;
-
-                match b.exit {
-                    SSAExit::Stop(_) => {
-                        ensure!(new_size == 0); // invariant 2
-                    }
-                    SSAExit::Return(_) => {
-                        ensure!(new_size == 0); // invariant 2
-                    }
-                    _ => {
-                        for other_block in b.exit.referenced_blocks() {
-                            match sizes.get(&other_block) {
-                                Some(&existing_size) => {
-                                    ensure!(new_size == existing_size); // invariant 1
-                                }
-                                None => {
-                                    to_visit.push(StackItem::Visit(other_block, new_size));
-                                }
-                            }
+        match b.exit {
+            SSAExit::Stop(_) => {
+                ensure!(new_size == 0); // invariant 2
+            }
+            SSAExit::Return(_) => {
+                ensure!(new_size == 0); // invariant 2
+            }
+            _ => {
+                for other_block in b.exit.referenced_blocks() {
+                    match sizes.get(&other_block) {
+                        Some(&existing_size) => {
+                            ensure!(new_size == existing_size); // invariant 1
+                        }
+                        None => {
+                            dfs(blocks, sizes, post_order, other_block, new_size)?;
                         }
                     }
                 }
             }
-            StackItem::PostVisit(block_num) => {
-                post_order.push(block_num);
-            }
         }
+        post_order.push(block_num);
+
+        Ok(())
     }
+
+    let mut sizes = HashMap::new();
+    let mut post_order = vec![];
+
+    dfs(blocks, &mut sizes, &mut post_order, 0, 0)?;
 
     // Ensure all blocks visited
     ensure!(blocks.len() == post_order.len());
@@ -806,7 +802,7 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
                     if is_back_edge(ancestor_block_num, cur_block_num) {
                         // Back edges are dealt with later, because they won't be computed
                         // at this point in the search
-                        (ancestor_block_num, SSAVar::Special)
+                        (ancestor_block_num, SSAVar::NotImplemented)
                     } else {
                         let prev_value = blocks[ancestor_block_num].final_state.acc;
                         (ancestor_block_num, prev_value)
@@ -837,7 +833,7 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
                     if is_back_edge(ancestor_block_num, cur_block_num) {
                         // Back edges are dealt with later, because they won't be computed
                         // at this point in the search
-                        (ancestor_block_num, SSAVar::Special)
+                        (ancestor_block_num, SSAVar::NotImplemented)
                     } else {
                         let prev_value = blocks[ancestor_block_num].final_state.pick(prev_n);
                         (ancestor_block_num, prev_value)
@@ -857,7 +853,8 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
 
         // Ok, we need to make room for any phi nodes by relocating variables offset by the number
         // of phi nodes
-        let offset = phis.len();
+        let offset = phis.len(); // + 1;
+
         if offset > 0 {
             for s in blocks[cur_block_num].statements.iter_mut() {
                 if let SSAStatement::Assign(_, var_num, _) = s {
@@ -875,6 +872,10 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
 
             // Now we can insert the new phi nodes at the start of the block
             let mut new_statements = vec![];
+            // new_statements.push(SSAStatement::TemporaryCommentHack(format!(
+            //     "Block order: {}, ancestors: {:?}",
+            //     block_num_to_order[cur_block_num], ancestors[cur_block_num]
+            // )));
             for (i, options) in phis.into_iter().enumerate() {
                 new_statements.push(SSAStatement::Assign(
                     cur_block_num,
