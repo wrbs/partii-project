@@ -46,10 +46,15 @@ impl Display for SSABlock {
     }
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub enum SSASubstitutionTarget {
+    Acc,
+    Stack(usize),
+}
+
 #[derive(Debug, Copy, Clone)]
 pub enum SSAVar {
-    PrevStack(usize),
-    PrevAcc,
+    Prev(SSASubstitutionTarget),
     Arg(usize),
     Env(usize),
     Computed(usize, usize),
@@ -68,8 +73,7 @@ impl PartialEq for SSAVar {
     fn eq(&self, other: &Self) -> bool {
         use SSAVar::*;
         match (self, other) {
-            (PrevStack(a), PrevStack(b)) => a == b,
-            (PrevAcc, PrevAcc) => true,
+            (Prev(a), Prev(b)) => a == b,
             (Arg(a), Arg(b)) => a == b,
             (Env(a), Env(b)) => a == b,
             (Computed(a1, a2), Computed(b1, b2)) => a1 == b1 && a2 == b2,
@@ -86,8 +90,8 @@ impl PartialEq for SSAVar {
 impl Display for SSAVar {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
-            SSAVar::PrevStack(i) => write!(f, "<prev:{}>", i),
-            SSAVar::PrevAcc => write!(f, "<prev:acc>"),
+            SSAVar::Prev(SSASubstitutionTarget::Stack(i)) => write!(f, "<prev:{}>", i),
+            SSAVar::Prev(SSASubstitutionTarget::Acc) => write!(f, "<prev:acc>"),
             SSAVar::Arg(i) => write!(f, "<arg:{}>", i),
             SSAVar::Env(i) => write!(f, "<env:{}>", i),
             SSAVar::Computed(block_num, i) => write!(f, "<{}_{}>", block_num, i),
@@ -357,7 +361,6 @@ pub enum SSAStatement {
     SetField(SSAVar, SSAVar, SSAVar),
     SetFloatField(SSAVar, usize, SSAVar),
     SetBytesChar(SSAVar, SSAVar, SSAVar),
-    TemporaryCommentHack(String),
 }
 
 impl ModifySSAVars for SSAStatement {
@@ -389,7 +392,6 @@ impl ModifySSAVars for SSAStatement {
                 f(v2);
                 f(v3);
             }
-            SSAStatement::TemporaryCommentHack(_) => {}
         }
     }
 }
@@ -421,7 +423,6 @@ impl Display for SSAStatement {
             SSAStatement::SetBytesChar(b, n, v) => {
                 write!(f, "set bytes {}[{}] = {}", b, n, v)?;
             }
-            SSAStatement::TemporaryCommentHack(s) => write!(f, "{}", s)?,
         }
 
         Ok(())

@@ -7,8 +7,8 @@ use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
 use crate::commands::clever_dis::ssa::data::{
-    BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar,
-    UnaryFloatOp, UnaryOp,
+    BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement,
+    SSASubstitutionTarget, SSAVar, UnaryFloatOp, UnaryOp,
 };
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
@@ -27,30 +27,48 @@ pub mod data;
 #[derive(Debug, Clone, PartialEq)]
 pub struct SSAStackState {
     pub stack: Vec<SSAVar>,
-    pub acc: SSAVar,
+    pub accu: SSAVar,
     pub stack_start: usize,
-    pub used_prev: HashSet<usize>,
+    pub used_prev: HashSet<SSASubstitutionTarget>,
 }
 
 impl SSAStackState {
     fn new() -> SSAStackState {
         SSAStackState {
             stack: vec![],
-            acc: SSAVar::PrevAcc,
+            accu: SSAVar::Prev(SSASubstitutionTarget::Acc),
             stack_start: 0,
             used_prev: HashSet::new(),
         }
     }
 
-    fn pick(&mut self, n: usize) -> SSAVar {
-        self.ensure_capacity_for(n);
-        let v = self.stack[self.stack.len() - 1 - n];
+    fn get_subst(&mut self, t: SSASubstitutionTarget) -> SSAVar {
+        let v = match t {
+            SSASubstitutionTarget::Stack(i) => {
+                self.ensure_capacity_for(i);
+                self.stack[self.stack.len() - 1 - i]
+            }
+            SSASubstitutionTarget::Acc => self.accu,
+        };
 
-        if let SSAVar::PrevStack(i) = v {
-            self.used_prev.insert(i);
+        if let SSAVar::Prev(t) = v {
+            self.used_prev.insert(t);
         }
 
         v
+    }
+
+    fn pick(&mut self, n: usize) -> SSAVar {
+        self.get_subst(SSASubstitutionTarget::Stack(n))
+    }
+
+    fn accu(&mut self) -> SSAVar {
+        self.get_subst(SSASubstitutionTarget::Acc)
+    }
+
+    #[inline(always)]
+    fn set_accu(&mut self, value: SSAVar) {
+        self.accu = value;
     }
 
     fn pop(&mut self, count: usize) {
@@ -79,7 +97,9 @@ impl SSAStackState {
             self.stack_start += todo;
             let mut tmp_stack = vec![];
             for i in 0..todo {
-                tmp_stack.push(SSAVar::PrevStack(self.stack_start - i - 1));
+                tmp_stack.push(SSAVar::Prev(SSASubstitutionTarget::Stack(
+                    self.stack_start - i - 1,
+                )));
             }
 
             std::mem::swap(&mut self.stack, &mut tmp_stack);
@@ -97,14 +117,14 @@ impl ModifySSAVars for SSAStackState {
     where
         F: FnMut(&mut SSAVar),
     {
-        f(&mut self.acc);
+        f(&mut self.accu);
         self.stack.iter_mut().for_each(f);
     }
 }
 
 impl Display for SSAStackState {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        writeln!(f, "Final acc: {}", self.acc)?;
+        writeln!(f, "Final accu: {}", self.accu)?;
 
         write!(f, "End stack: ..., <prev:{}> | ", self.stack_start)?;
 
@@ -208,12 +228,12 @@ pub fn translate_block(
     let state = &mut state_d;
 
     if is_trap_handler {
-        state.acc = SSAVar::TrapAcc;
+        state.set_accu(SSAVar::TrapAcc);
         state.pop(4);
     }
 
     let has_grab = if is_entry_block {
-        state.acc = SSAVar::Junk;
+        state.set_accu(SSAVar::Junk);
         if let Instruction::Grab(nargs) = &block.instructions[0] {
             let nargs = *nargs as usize;
             for arg in (0..=nargs).rev() {
@@ -270,19 +290,22 @@ fn process_body_instruction(
         }
         Instruction::LabelDef(_) => {}
         Instruction::Acc(n) => {
-            state.acc = state.pick(*n as usize);
+            let v = state.pick(*n as usize);
+            state.set_accu(v);
         }
         Instruction::EnvAcc(n) => {
-            state.acc = SSAVar::Env(*n as usize);
+            state.set_accu(SSAVar::Env(*n as usize));
         }
         Instruction::Push => {
-            state.push(state.acc);
+            let v = state.accu();
+            state.push(v);
         }
         Instruction::Pop(n) => {
             state.pop(*n as usize);
         }
         Instruction::Assign(n) => {
-            state.assign(*n as usize, state.acc);
+            let v = state.accu();
+            state.assign(*n as usize, v);
         }
         Instruction::PushRetAddr(_) => {
             state.push(SSAVar::Special);
@@ -290,147 +313,163 @@ fn process_body_instruction(
             state.push(SSAVar::Special);
         }
         Instruction::Apply1 => {
-            state.acc = vars.add_assignment(SSAExpr::Apply(state.acc, vec![state.pick(0)]));
+            let v = vars.add_assignment(SSAExpr::Apply(state.accu(), vec![state.pick(0)]));
+            state.set_accu(v);
             state.pop(1);
         }
         Instruction::Apply2 => {
-            state.acc = vars.add_assignment(SSAExpr::Apply(
-                state.acc,
+            let v = vars.add_assignment(SSAExpr::Apply(
+                state.accu(),
                 vec![state.pick(0), state.pick(1)],
             ));
+            state.set_accu(v);
             state.pop(2);
         }
         Instruction::Apply3 => {
-            state.acc = vars.add_assignment(SSAExpr::Apply(
-                state.acc,
+            let v = vars.add_assignment(SSAExpr::Apply(
+                state.accu(),
                 vec![state.pick(0), state.pick(1), state.pick(2)],
             ));
+            state.set_accu(v);
             state.pop(3);
         }
         Instruction::Grab(_) => bail!("Grabs should not appear in the body of blocks"),
         Instruction::Closure(loc, nvars) => {
             let nvars = *nvars as usize;
             if nvars > 0 {
-                state.push(state.acc);
+                let accu = state.accu();
+                state.push(accu);
             }
 
-            state.acc = vars.add_assignment(SSAExpr::Closure {
+            let v = vars.add_assignment(SSAExpr::Closure {
                 code: *loc,
                 vars: (0..nvars).map(|i| state.pick(i)).collect(),
             });
+            state.set_accu(v);
 
             state.pop(nvars);
         }
         Instruction::ClosureRec(locs, nvars) => {
             let nvars = *nvars as usize;
             if nvars > 0 {
-                state.push(state.acc);
+                let accu = state.accu();
+                state.push(accu);
             }
 
-            state.acc = vars.add_assignment(SSAExpr::ClosureRec {
+            let v = vars.add_assignment(SSAExpr::ClosureRec {
                 codes: locs.clone(),
                 vars: (0..nvars).map(|i| state.pick(i)).collect(),
             });
 
             state.pop(nvars);
-            state.push(state.acc);
+            state.set_accu(v);
+            state.push(v);
 
             for i in 1..locs.len() {
-                state.push(vars.add_assignment(SSAExpr::ClosureRecInfix(state.acc, i)));
+                state.push(vars.add_assignment(SSAExpr::ClosureRecInfix(v, i)));
             }
         }
         Instruction::OffsetClosure(i) => {
-            state.acc = SSAVar::OffsetClosure(*i as isize);
+            state.set_accu(SSAVar::OffsetClosure(*i as isize));
         }
         Instruction::GetGlobal(n) => {
-            state.acc = vars.add_assignment(SSAExpr::GetGlobal(*n as usize));
+            state.set_accu(vars.add_assignment(SSAExpr::GetGlobal(*n as usize)));
         }
         Instruction::SetGlobal(n) => {
-            vars.add_statement(SSAStatement::SetGlobal(*n as usize, state.acc));
-            state.acc = SSAVar::Unit;
+            vars.add_statement(SSAStatement::SetGlobal(*n as usize, state.accu()));
+            state.set_accu(SSAVar::Unit);
         }
         Instruction::Const(v) => {
-            state.acc = SSAVar::Const(*v);
+            state.set_accu(SSAVar::Const(*v));
         }
         Instruction::MakeBlock(size, tag) => {
             let size = *size as usize;
             let tag = *tag;
             if size == 0 {
-                state.acc = SSAVar::Atom(tag);
+                state.set_accu(SSAVar::Atom(tag));
             } else {
-                state.push(state.acc);
+                let accu = state.accu();
+                state.push(accu);
 
-                state.acc = vars.add_assignment(SSAExpr::MakeBlock {
+                let v = vars.add_assignment(SSAExpr::MakeBlock {
                     tag,
                     vars: (0..size).map(|i| state.pick(i)).collect(),
                 });
-
+                state.set_accu(v);
                 state.pop(size);
             }
         }
         Instruction::MakeFloatBlock(size) => {
             let size = *size as usize;
-            state.push(state.acc);
-            state.acc = vars.add_assignment(SSAExpr::MakeFloatBlock(
+            let accu = state.accu();
+            state.push(accu);
+            let v = vars.add_assignment(SSAExpr::MakeFloatBlock(
                 (0..size).map(|i| state.pick(i)).collect(),
             ));
+            state.set_accu(v);
             state.pop(size);
         }
         Instruction::GetField(n) => {
-            state.acc = vars.add_assignment(SSAExpr::GetField(state.acc, SSAVar::Const(*n as i32)));
+            let v = vars.add_assignment(SSAExpr::GetField(state.accu(), SSAVar::Const(*n as i32)));
+            state.set_accu(v);
         }
         Instruction::SetField(n) => {
             vars.add_statement(SSAStatement::SetField(
-                state.acc,
+                state.accu(),
                 SSAVar::Const(*n as i32),
                 state.pick(0),
             ));
             state.pop(1);
-            state.acc = SSAVar::Unit;
+            state.set_accu(SSAVar::Unit);
         }
         Instruction::GetFloatField(n) => {
-            state.acc = vars.add_assignment(SSAExpr::GetFloatField(state.acc, *n as usize));
+            let v = vars.add_assignment(SSAExpr::GetFloatField(state.accu(), *n as usize));
+            state.set_accu(v);
         }
         Instruction::SetFloatField(n) => {
             vars.add_statement(SSAStatement::SetFloatField(
-                state.acc,
+                state.accu(),
                 *n as usize,
                 state.pick(0),
             ));
             state.pop(1);
-            state.acc = SSAVar::Unit;
+            state.set_accu(SSAVar::Unit);
         }
         Instruction::VecTLength => {
-            state.acc = vars.add_assignment(SSAExpr::GetVecTLength(state.acc));
+            let v = vars.add_assignment(SSAExpr::GetVecTLength(state.accu()));
+            state.set_accu(v);
         }
         Instruction::GetVecTItem => {
-            state.acc = vars.add_assignment(SSAExpr::GetField(state.acc, state.pick(0)));
+            let v = vars.add_assignment(SSAExpr::GetField(state.accu(), state.pick(0)));
+            state.set_accu(v);
             state.pop(1);
         }
         Instruction::SetVecTItem => {
             vars.add_statement(SSAStatement::SetField(
-                state.acc,
+                state.accu(),
                 state.pick(0),
                 state.pick(1),
             ));
             state.pop(2);
-            state.acc = SSAVar::Unit;
+            state.set_accu(SSAVar::Unit);
         }
         Instruction::GetBytesChar => {
-            state.acc = vars.add_assignment(SSAExpr::GetBytesChar(state.acc, state.pick(0)));
+            let v = vars.add_assignment(SSAExpr::GetBytesChar(state.accu(), state.pick(0)));
+            state.set_accu(v);
             state.pop(1);
         }
         Instruction::SetBytesChar => {
             vars.add_statement(SSAStatement::SetBytesChar(
-                state.acc,
+                state.accu(),
                 state.pick(0),
                 state.pick(1),
             ));
             state.pop(2);
-            state.acc = SSAVar::Unit;
+            state.set_accu(SSAVar::Unit);
         }
         Instruction::BoolNot => {
-            state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::BoolNot, state.acc))
+            let v = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::BoolNot, state.accu()));
+            state.set_accu(v);
         }
         Instruction::PopTrap => {
             vars.add_statement(SSAStatement::PopTrap);
@@ -438,7 +477,7 @@ fn process_body_instruction(
         }
         Instruction::CheckSignals => {
             vars.add_statement(SSAStatement::CheckSignals);
-            state.acc = SSAVar::Junk;
+            state.set_accu(SSAVar::Junk);
         }
         Instruction::Prim(p) => match p {
             Primitive::NegFloat => unary_float(state, vars, UnaryFloatOp::Neg),
@@ -455,46 +494,54 @@ fn process_body_instruction(
         Instruction::CCall5(id) => c_call(state, vars, 5, id),
         Instruction::CCallN(nargs, id) => c_call(state, vars, *nargs as usize, id),
         Instruction::ArithInt(op) => {
-            state.acc = vars.add_assignment(SSAExpr::ArithInt(*op, state.acc, state.pick(0)));
+            let v = vars.add_assignment(SSAExpr::ArithInt(*op, state.accu(), state.pick(0)));
+            state.set_accu(v);
             state.pop(1);
         }
         Instruction::NegInt => {
-            state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::Neg, state.acc))
+            let v = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::Neg, state.accu()));
+            state.set_accu(v);
         }
         Instruction::IntCmp(comp) => {
-            state.acc = vars.add_assignment(SSAExpr::IntCmp(*comp, state.acc, state.pick(0)));
+            let v = vars.add_assignment(SSAExpr::IntCmp(*comp, state.accu(), state.pick(0)));
+            state.set_accu(v);
             state.pop(1);
         }
         Instruction::OffsetInt(n) => {
-            state.acc = vars.add_assignment(SSAExpr::ArithInt(
+            let v = vars.add_assignment(SSAExpr::ArithInt(
                 ArithOp::Add,
-                state.acc,
+                state.accu(),
                 SSAVar::Const(*n),
             ));
+            state.set_accu(v);
         }
         Instruction::OffsetRef(n) => {
             // Todo investigate whether special casing helps avoid a caml_modify
-            let a = vars.add_assignment(SSAExpr::GetField(state.acc, SSAVar::Const(0)));
+            let a = vars.add_assignment(SSAExpr::GetField(state.accu(), SSAVar::Const(0)));
             let b = vars.add_assignment(SSAExpr::ArithInt(ArithOp::Add, a, SSAVar::Const(*n)));
-            vars.add_statement(SSAStatement::SetField(state.acc, SSAVar::Const(0), b));
-            state.acc = SSAVar::Unit;
+            vars.add_statement(SSAStatement::SetField(state.accu(), SSAVar::Const(0), b));
+            state.set_accu(SSAVar::Unit);
         }
         Instruction::IsInt => {
-            state.acc = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::IsInt, state.acc))
+            let v = vars.add_assignment(SSAExpr::UnaryOp(UnaryOp::IsInt, state.accu()));
+            state.set_accu(v);
         }
         Instruction::GetMethod => {
-            state.acc = vars.add_assignment(SSAExpr::GetMethod(state.pick(0), state.acc));
+            let v = vars.add_assignment(SSAExpr::GetMethod(state.pick(0), state.accu()));
+            state.set_accu(v);
             state.pop(1);
         }
         Instruction::SetupForPubMet(n) => {
-            state.push(state.acc);
-            state.acc = SSAVar::Const(*n);
+            let accu = state.accu();
+            state.push(accu);
+            state.set_accu(SSAVar::Const(*n));
         }
         Instruction::GetDynMet => {
-            state.acc = vars.add_assignment(SSAExpr::GetDynMet {
-                tag: state.acc,
+            let v = vars.add_assignment(SSAExpr::GetDynMet {
+                tag: state.accu(),
                 object: state.pick(0),
             });
+            state.set_accu(v);
             state.pop(1);
         }
         Instruction::Break | Instruction::Event => (),
@@ -510,19 +557,19 @@ fn process_final_instruction(
     exit: &BlockExit,
 ) -> Result<SSAExit> {
     let exit = match (instr, exit) {
-        (Instruction::Stop, BlockExit::Stop) => SSAExit::Stop(state.acc),
+        (Instruction::Stop, BlockExit::Stop) => SSAExit::Stop(state.accu()),
         (Instruction::Branch(n2), BlockExit::UnconditionalJump(n1)) => {
             ensure!(n1 == n2);
             SSAExit::Jump(*n1)
         }
         (Instruction::Return(count), BlockExit::Return) => {
             state.pop(*count as usize);
-            SSAExit::Return(state.acc)
+            SSAExit::Return(state.accu())
         }
         (Instruction::BranchIf(to1), BlockExit::ConditionalJump(ift, iff)) => {
             ensure!(to1 == ift);
             SSAExit::JumpIf {
-                var: state.acc,
+                var: state.accu(),
                 if_true: *ift,
                 if_false: *iff,
             }
@@ -530,21 +577,25 @@ fn process_final_instruction(
         (Instruction::BranchIfNot(to1), BlockExit::ConditionalJump(iff, ift)) => {
             ensure!(to1 == iff);
             SSAExit::JumpIf {
-                var: state.acc,
+                var: state.accu(),
                 if_true: *ift,
                 if_false: *iff,
             }
         }
         (Instruction::BranchCmp(comp, compare, ift1), BlockExit::ConditionalJump(ift2, iff)) => {
             ensure!(ift1 == ift2);
-            let v = vars.add_assignment(SSAExpr::IntCmp(*comp, SSAVar::Const(*compare), state.acc));
+            let v = vars.add_assignment(SSAExpr::IntCmp(
+                *comp,
+                SSAVar::Const(*compare),
+                state.accu(),
+            ));
             SSAExit::JumpIf {
                 var: v,
                 if_true: *ift1,
                 if_false: *iff,
             }
         }
-        (Instruction::Raise(kind), BlockExit::Raise) => SSAExit::Raise(*kind, state.acc),
+        (Instruction::Raise(kind), BlockExit::Raise) => SSAExit::Raise(*kind, state.accu()),
         (Instruction::Apply(nvars), BlockExit::UnconditionalJump(retloc)) => {
             let nvars = *nvars as usize;
             let retloc = *retloc;
@@ -564,7 +615,8 @@ fn process_final_instruction(
              */
             state.pop(3);
 
-            state.acc = vars.add_assignment(SSAExpr::Apply(state.acc, passed_vars));
+            let v = vars.add_assignment(SSAExpr::Apply(state.accu(), passed_vars));
+            state.set_accu(v);
             SSAExit::Jump(retloc)
         }
         (Instruction::ApplyTerm(nargs, slotsize), BlockExit::TailCall) => {
@@ -572,7 +624,7 @@ fn process_final_instruction(
             let slotsize = *slotsize as usize;
             let vars = (0..nargs).map(|i| state.pick(i)).collect();
             state.pop(slotsize);
-            SSAExit::TailApply(state.acc, vars)
+            SSAExit::TailApply(state.accu(), vars)
         }
         (
             Instruction::Switch(ints1, blocks1),
@@ -584,7 +636,7 @@ fn process_final_instruction(
             ensure!(ints1 == ints2);
             ensure!(blocks1 == blocks2);
             SSAExit::Switch {
-                var: state.acc,
+                var: state.accu(),
                 ints: ints1.clone(),
                 blocks: blocks1.clone(),
             }
@@ -620,21 +672,25 @@ fn process_final_instruction(
 }
 
 fn c_call(state: &mut SSAStackState, vars: &mut Vars, count: usize, primitive_id: &u32) {
-    state.push(state.acc);
+    let accu = state.accu();
+    state.push(accu);
 
-    state.acc = vars.add_assignment(SSAExpr::CCall {
+    let v = vars.add_assignment(SSAExpr::CCall {
         primitive_id: *primitive_id as usize,
         vars: (0..count).map(|i| state.pick(i)).collect(),
     });
+    state.set_accu(v);
     state.pop(count);
 }
 
 fn unary_float(state: &mut SSAStackState, vars: &mut Vars, op: UnaryFloatOp) {
-    state.acc = vars.add_assignment(SSAExpr::UnaryFloat(op, state.acc));
+    let v = vars.add_assignment(SSAExpr::UnaryFloat(op, state.accu()));
+    state.set_accu(v);
 }
 
 fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
-    state.acc = vars.add_assignment(SSAExpr::BinaryFloat(op, state.acc, state.pick(0)));
+    let v = vars.add_assignment(SSAExpr::BinaryFloat(op, state.accu(), state.pick(0)));
+    state.set_accu(v);
     state.pop(1);
 }
 
@@ -758,7 +814,8 @@ fn expand_used_prev(blocks: &mut [SSABlock], ancestors: &[Vec<usize>]) {
     while let Some((block_num, used_elem)) = stack.pop() {
         if !blocks[block_num].final_state.used_prev.contains(&used_elem) {
             // Note pick will updated used_elems if needed
-            if let SSAVar::PrevStack(uses) = blocks[block_num].final_state.pick(used_elem) {
+
+            if let SSAVar::Prev(uses) = blocks[block_num].final_state.get_subst(used_elem) {
                 for ancestor in &ancestors[block_num] {
                     stack.push((*ancestor, uses));
                 }
@@ -792,34 +849,6 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
         let mut phis = vec![];
         let mut substitutions = HashMap::new();
 
-        // Deal with previous accs
-        let prev_acc_sub = if ancestors[cur_block_num].is_empty() {
-            None
-        } else {
-            let acc_options: HashMap<_, _> = ancestors[cur_block_num]
-                .iter()
-                .map(|&ancestor_block_num| {
-                    if is_back_edge(ancestor_block_num, cur_block_num) {
-                        // Back edges are dealt with later, because they won't be computed
-                        // at this point in the search
-                        (ancestor_block_num, SSAVar::NotImplemented)
-                    } else {
-                        let prev_value = blocks[ancestor_block_num].final_state.acc;
-                        (ancestor_block_num, prev_value)
-                    }
-                })
-                .collect();
-
-            let first_value = *acc_options.values().next().unwrap();
-
-            if acc_options.values().all(|v| v == &first_value) {
-                Some(first_value)
-            } else {
-                phis.push(acc_options);
-                Some(SSAVar::Computed(cur_block_num, 0))
-            }
-        };
-
         let used_prev: Vec<_> = blocks[cur_block_num]
             .final_state
             .used_prev
@@ -835,7 +864,7 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
                         // at this point in the search
                         (ancestor_block_num, SSAVar::NotImplemented)
                     } else {
-                        let prev_value = blocks[ancestor_block_num].final_state.pick(prev_n);
+                        let prev_value = blocks[ancestor_block_num].final_state.get_subst(prev_n);
                         (ancestor_block_num, prev_value)
                     }
                 })
@@ -853,7 +882,7 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
 
         // Ok, we need to make room for any phi nodes by relocating variables offset by the number
         // of phi nodes
-        let offset = phis.len(); // + 1;
+        let offset = phis.len();
 
         if offset > 0 {
             for s in blocks[cur_block_num].statements.iter_mut() {
@@ -872,10 +901,7 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
 
             // Now we can insert the new phi nodes at the start of the block
             let mut new_statements = vec![];
-            // new_statements.push(SSAStatement::TemporaryCommentHack(format!(
-            //     "Block order: {}, ancestors: {:?}",
-            //     block_num_to_order[cur_block_num], ancestors[cur_block_num]
-            // )));
+
             for (i, options) in phis.into_iter().enumerate() {
                 new_statements.push(SSAStatement::Assign(
                     cur_block_num,
@@ -890,12 +916,8 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
         // Now we've got a value (in substitutions) for everything, we need to perform the
         // substitutions
         blocks[cur_block_num].modify_ssa_vars(&mut |v| match v {
-            SSAVar::PrevStack(n) => match substitutions.get(n) {
+            SSAVar::Prev(t) => match substitutions.get(t) {
                 Some(&v_new) => *v = v_new,
-                None => (),
-            },
-            SSAVar::PrevAcc => match prev_acc_sub {
-                Some(v_new) => *v = v_new,
                 None => (),
             },
             _ => (),
