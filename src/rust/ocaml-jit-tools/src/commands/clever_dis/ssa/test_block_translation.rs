@@ -395,7 +395,7 @@ fn test_block_translation() {
 
             Final acc: <0_1>
             End stack: ..., <prev:0> | 
-            Used prev: {0, 2, 1}
+            Used prev: {1, 0, 2}
             Stack delta: -0/+0
         "#]],
     );
@@ -434,7 +434,7 @@ fn test_block_translation() {
 
             Final acc: <unit>
             End stack: ..., <prev:0> | 
-            Used prev: {3, 4}
+            Used prev: {4, 3}
             Stack delta: -0/+0
         "#]],
     );
@@ -813,7 +813,7 @@ fn test_block_translation() {
 
             Final acc: <unit>
             End stack: ..., <prev:5> | 
-            Used prev: {0, 2, 1, 4, 3}
+            Used prev: {2, 3, 1, 0, 4}
             Stack delta: -5/+0
         "#]],
     );
