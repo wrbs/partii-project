@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 
 use crate::commands::clever_dis::ssa::SSAStackState;
+use itertools::Itertools;
 use ocaml_jit_shared::{ArithOp, Comp, RaiseKind};
 use std::collections::{HashMap, HashSet};
 
@@ -335,7 +336,7 @@ impl Display for SSAExpr {
             }
             SSAExpr::Phi(options) => {
                 write!(f, "phi")?;
-                for (block, v) in options.iter() {
+                for (block, v) in options.iter().sorted_by_key(|x| x.0) {
                     write!(f, " {}:{}", block, v)?;
                 }
             }
@@ -446,7 +447,7 @@ pub enum SSAExit {
 }
 
 impl SSAExit {
-    pub fn referenced_blocks(&self) -> HashSet<usize> {
+    pub fn referenced_blocks(&self) -> Vec<usize> {
         let mut result = HashSet::new();
         match self {
             SSAExit::Stop(_) => {}
@@ -478,7 +479,7 @@ impl SSAExit {
             SSAExit::Return(_) => {}
         }
 
-        result
+        result.into_iter().sorted().collect()
     }
 }
 

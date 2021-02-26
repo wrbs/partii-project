@@ -1,18 +1,17 @@
 use std::cmp::max;
 use std::fmt::{Display, Formatter};
 
-use anyhow::{anyhow, bail, ensure, Result};
+use anyhow::{bail, ensure, Result};
 
 use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
-use crate::commands::clever_dis::ssa::data::SSAVar::PrevAcc;
 use crate::commands::clever_dis::ssa::data::{
     BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSAVar,
     UnaryFloatOp, UnaryOp,
 };
 use itertools::Itertools;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 
 #[cfg(test)]
 mod test_block_translation;
@@ -44,15 +43,11 @@ impl SSAStackState {
     }
 
     fn pick(&mut self, n: usize) -> SSAVar {
-        let v = if n < self.stack.len() {
-            self.stack[self.stack.len() - 1 - n]
-        } else {
-            let arg_offset = n - self.stack.len();
-            SSAVar::PrevStack(self.stack_start + arg_offset)
-        };
+        self.ensure_capacity_for(n);
+        let v = self.stack[self.stack.len() - 1 - n];
 
-        if let SSAVar::PrevStack(i) = &v {
-            self.used_prev.insert(*i);
+        if let SSAVar::PrevStack(i) = v {
+            self.used_prev.insert(i);
         }
 
         v
@@ -72,20 +67,24 @@ impl SSAStackState {
     }
 
     fn assign(&mut self, index: usize, entry: SSAVar) {
+        self.ensure_capacity_for(index);
+
+        let length = self.stack.len();
+        self.stack[length - 1 - index] = entry;
+    }
+
+    fn ensure_capacity_for(&mut self, index: usize) {
         if index >= self.stack.len() {
             let todo = index - self.stack.len() + 1;
             self.stack_start += todo;
             let mut tmp_stack = vec![];
             for i in 0..todo {
-                tmp_stack.push(SSAVar::PrevStack(self.stack_start - i));
+                tmp_stack.push(SSAVar::PrevStack(self.stack_start - i - 1));
             }
 
             std::mem::swap(&mut self.stack, &mut tmp_stack);
             self.stack.extend(tmp_stack);
         }
-
-        let length = self.stack.len();
-        self.stack[length - 1 - index] = entry;
     }
 
     fn delta(&self) -> isize {
@@ -121,7 +120,11 @@ impl Display for SSAStackState {
         }
         writeln!(f)?;
 
-        writeln!(f, "Used prev: {:?}", self.used_prev)?;
+        writeln!(
+            f,
+            "Used prev: {:?}",
+            self.used_prev.iter().sorted().collect::<Vec<_>>()
+        )?;
 
         writeln!(
             f,
@@ -208,6 +211,7 @@ pub fn translate_block(
     }
 
     let has_grab = if is_entry_block {
+        state.acc = SSAVar::Junk;
         if let Instruction::Grab(nargs) = &block.instructions[0] {
             let nargs = *nargs as usize;
             for arg in (0..=nargs).rev() {
@@ -636,12 +640,18 @@ fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
 // ==========
 // Use the CFG to patch together variables between blocks handling branches and loops
 // by inserting phi nodes
-
-// Find the start stack size
 //
-// Assuming the first block has a size of 0 find the start stack sizes of every block
+// The reverse post order is the order we want to process stack unifications in as it's broadly
+// compatible with program flow. Where it isn't that's because the edge is a back edge due to a loop
 //
-// Validate the following invariants:
+// We return a mapping of original (effectively pre-order) block numbers to the reverse post order
+//
+// TODO: (maybe) investigate modifying original block numbering to be a reverse-post-order
+//       would be cleaner but maybe not worth it at this point
+//
+// This is true for OCaml CFGs but possibly not true for all graphs
+//
+// We also use the fact we're searching to validate the following invariants:
 // 1. Every path to the start of the block has the same stack stack size
 // 2. Every normal return (Return/Stop i.e. not Raise) ends with a stack size of 0
 // 3. At no point does the stack size dip below 0
@@ -650,18 +660,25 @@ fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
 // Err is returned on failure of any of these invariants. These represent a
 // mistake in the SSA conversion code as they are true in general for the output of
 // the OCaml compiler
-fn find_start_stack_sizes(blocks: &[SSABlock]) -> Result<Vec<usize>> {
+//
+// So validating the invariants is a good sanity check of being sensible with our approach to the stack
+fn dfs_blocks(blocks: &[SSABlock]) -> Result<(Vec<usize>, Vec<usize>)> {
     let mut sizes = HashMap::new();
+    let mut post_order = vec![];
+
+    enum StackItem {
+        Visit(usize, usize),
+        PostVisit(usize),
+    }
 
     // Do a depth-first-search through the blocks
     // DFS stack - (block to visit, starting size)
-    let mut to_visit = vec![(0, 0)];
-    while let Some((block_num, start_size)) = to_visit.pop() {
-        match sizes.get(&block_num) {
-            Some(existing_size) => {
-                ensure!(start_size == *existing_size); // invariant 1
-            }
-            None => {
+    let mut to_visit = vec![StackItem::Visit(0, 0)];
+    while let Some(item) = to_visit.pop() {
+        match item {
+            StackItem::Visit(block_num, start_size) => {
+                // Push a post visit for later
+                to_visit.push(StackItem::PostVisit(block_num));
                 let b = &blocks[block_num];
 
                 sizes.insert(block_num, start_size);
@@ -678,23 +695,36 @@ fn find_start_stack_sizes(blocks: &[SSABlock]) -> Result<Vec<usize>> {
                     }
                     _ => {
                         for other_block in b.exit.referenced_blocks() {
-                            to_visit.push((other_block, new_size));
+                            match sizes.get(&other_block) {
+                                Some(&existing_size) => {
+                                    ensure!(new_size == existing_size); // invariant 1
+                                }
+                                None => {
+                                    to_visit.push(StackItem::Visit(other_block, new_size));
+                                }
+                            }
                         }
                     }
                 }
             }
+            StackItem::PostVisit(block_num) => {
+                post_order.push(block_num);
+            }
         }
     }
 
-    let mut result = vec![];
-    for i in 0..blocks.len() {
-        let size = sizes
-            .get(&i)
-            .ok_or_else(|| anyhow!("Block {} not reachable from block 0", i))?; // Invariant 4
-        result.push(*size)
+    // Ensure all blocks visited
+    ensure!(blocks.len() == post_order.len());
+
+    post_order.reverse();
+    let order = post_order;
+
+    let mut block_num_to_order = vec![0; blocks.len()];
+    for (i, block) in order.iter().enumerate() {
+        block_num_to_order[*block] = i;
     }
 
-    Ok(result)
+    Ok((order, block_num_to_order))
 }
 
 // Find block ancestors and detect back edges
@@ -705,55 +735,20 @@ fn find_start_stack_sizes(blocks: &[SSABlock]) -> Result<Vec<usize>> {
 // enter -> check <-> loop ;
 // check -> exit;
 
-fn find_ancestors(blocks: &[SSABlock]) -> (Vec<HashSet<usize>>, Vec<HashSet<usize>>) {
+fn find_ancestors(blocks: &[SSABlock]) -> Vec<Vec<usize>> {
     let mut ancestors = vec![HashSet::new(); blocks.len()];
-    let mut back_edges = vec![HashSet::new(); blocks.len()];
-
-    #[derive(Copy, Clone)]
-    enum Colour {
-        Unseen,   // white
-        Visiting, // gray
-        Visited,  // black
-    }
-    let mut colours = vec![Colour::Unseen; blocks.len()];
-
-    enum StackItem {
-        Visit(usize),
-        Visited(usize),
-    }
-    let mut stack = vec![StackItem::Visit(0)];
-
-    while let Some(i) = stack.pop() {
-        match i {
-            StackItem::Visit(b) => {
-                colours[b] = Colour::Visiting;
-                stack.push(StackItem::Visited(b));
-                for other_block in blocks[b].exit.referenced_blocks() {
-                    match colours[other_block] {
-                        Colour::Unseen => {
-                            stack.push(StackItem::Visit(other_block));
-                            ancestors[other_block].insert(b);
-                        }
-                        Colour::Visiting => {
-                            ancestors[other_block].insert(b);
-                            back_edges[other_block].insert(b);
-                        }
-                        Colour::Visited => {
-                            ancestors[other_block].insert(b);
-                        }
-                    }
-                }
-            }
-            StackItem::Visited(b) => {
-                colours[b] = Colour::Visited;
-            }
+    for (block_num, block) in blocks.iter().enumerate() {
+        for a in block.exit.referenced_blocks() {
+            ancestors[a].insert(block_num);
         }
     }
-
-    return (ancestors, back_edges);
+    return ancestors
+        .into_iter()
+        .map(|a| a.into_iter().collect())
+        .collect();
 }
 
-fn expand_used_prev(blocks: &mut [SSABlock], ancestors: &[HashSet<usize>]) {
+fn expand_used_prev(blocks: &mut [SSABlock], ancestors: &[Vec<usize>]) {
     let mut stack = vec![];
 
     for (block_num, b) in blocks.iter().enumerate() {
@@ -779,8 +774,8 @@ fn expand_used_prev(blocks: &mut [SSABlock], ancestors: &[HashSet<usize>]) {
 }
 
 fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
-    let _ = find_start_stack_sizes(blocks)?;
-    let (ancestors, back_edges) = find_ancestors(blocks);
+    let (order, block_num_to_order) = dfs_blocks(blocks)?;
+    let ancestors = find_ancestors(blocks);
     expand_used_prev(blocks, &ancestors);
 
     // Now the actual algorithm to join the blocks together
@@ -795,40 +790,26 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
     // yet.
     // After it's done we fix things up
 
-    let mut queue = VecDeque::new();
-    let mut seen = HashSet::new();
-    queue.push_back(0);
+    let is_back_edge = |u, v| block_num_to_order[u] >= block_num_to_order[v];
 
-    while let Some(cur) = queue.pop_front() {
-        // BFS part
-        if seen.contains(&cur) {
-            continue;
-        }
-        seen.insert(cur);
-
-        for descendent in blocks[cur].exit.referenced_blocks() {
-            queue.push_back(descendent);
-        }
-
-        // Actual relocation
+    for &cur_block_num in order.iter() {
         let mut phis = vec![];
         let mut substitutions = HashMap::new();
 
         // Deal with previous accs
-        let prev_acc_sub = if ancestors[cur].is_empty() {
-            SSAVar::PrevAcc
+        let prev_acc_sub = if ancestors[cur_block_num].is_empty() {
+            None
         } else {
-            let mut acc_options: HashMap<_, _> = ancestors[cur]
+            let acc_options: HashMap<_, _> = ancestors[cur_block_num]
                 .iter()
-                .map(|i| {
-                    let i = *i;
-                    if back_edges[cur].contains(&i) {
+                .map(|&ancestor_block_num| {
+                    if is_back_edge(ancestor_block_num, cur_block_num) {
                         // Back edges are dealt with later, because they won't be computed
                         // at this point in the search
-                        (i, SSAVar::Special)
+                        (ancestor_block_num, SSAVar::Special)
                     } else {
-                        let prev_value = blocks[i].final_state.acc;
-                        (i, prev_value)
+                        let prev_value = blocks[ancestor_block_num].final_state.acc;
+                        (ancestor_block_num, prev_value)
                     }
                 })
                 .collect();
@@ -836,26 +817,30 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
             let first_value = *acc_options.values().next().unwrap();
 
             if acc_options.values().all(|v| v == &first_value) {
-                first_value
+                Some(first_value)
             } else {
                 phis.push(acc_options);
-                SSAVar::Computed(cur, 0)
+                Some(SSAVar::Computed(cur_block_num, 0))
             }
         };
 
-        let used_prev: Vec<_> = blocks[cur].final_state.used_prev.iter().copied().collect();
+        let used_prev: Vec<_> = blocks[cur_block_num]
+            .final_state
+            .used_prev
+            .iter()
+            .copied()
+            .collect();
         for prev_n in used_prev {
-            let mut options: HashMap<_, _> = ancestors[cur]
+            let options: HashMap<_, _> = ancestors[cur_block_num]
                 .iter()
-                .map(|i| {
-                    let i = *i;
-                    if back_edges[cur].contains(&i) {
+                .map(|&ancestor_block_num| {
+                    if is_back_edge(ancestor_block_num, cur_block_num) {
                         // Back edges are dealt with later, because they won't be computed
                         // at this point in the search
-                        (i, SSAVar::Special)
+                        (ancestor_block_num, SSAVar::Special)
                     } else {
-                        let prev_value = blocks[i].final_state.pick(prev_n);
-                        (i, prev_value)
+                        let prev_value = blocks[ancestor_block_num].final_state.pick(prev_n);
+                        (ancestor_block_num, prev_value)
                     }
                 })
                 .collect();
@@ -865,7 +850,7 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
             if options.values().all(|v| v == &first_value) {
                 substitutions.insert(prev_n, first_value);
             } else {
-                substitutions.insert(prev_n, SSAVar::Computed(cur, phis.len()));
+                substitutions.insert(prev_n, SSAVar::Computed(cur_block_num, phis.len()));
                 phis.push(options)
             }
         }
@@ -874,15 +859,15 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
         // of phi nodes
         let offset = phis.len();
         if offset > 0 {
-            for s in blocks[cur].statements.iter_mut() {
+            for s in blocks[cur_block_num].statements.iter_mut() {
                 if let SSAStatement::Assign(_, var_num, _) = s {
                     *var_num += offset;
                 }
             }
 
-            blocks[cur].modify_ssa_vars(&mut |v| {
+            blocks[cur_block_num].modify_ssa_vars(&mut |v| {
                 if let SSAVar::Computed(block_num, var_num) = v {
-                    if *block_num == cur {
+                    if *block_num == cur_block_num {
                         *var_num += offset;
                     }
                 }
@@ -891,26 +876,32 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
             // Now we can insert the new phi nodes at the start of the block
             let mut new_statements = vec![];
             for (i, options) in phis.into_iter().enumerate() {
-                new_statements.push(SSAStatement::Assign(cur, i, SSAExpr::Phi(options)));
+                new_statements.push(SSAStatement::Assign(
+                    cur_block_num,
+                    i,
+                    SSAExpr::Phi(options),
+                ));
             }
-            new_statements.append(&mut blocks[cur].statements);
-            blocks[cur].statements = new_statements;
+            new_statements.append(&mut blocks[cur_block_num].statements);
+            blocks[cur_block_num].statements = new_statements;
         }
 
         // Now we've got a value (in substitutions) for everything, we need to perform the
         // substitutions
-        blocks[cur].modify_ssa_vars(&mut |v| match v {
-            SSAVar::PrevStack(n) => {
-                *v = *substitutions.get(n).unwrap();
-            }
-            SSAVar::PrevAcc => {
-                *v = prev_acc_sub;
-            }
+        blocks[cur_block_num].modify_ssa_vars(&mut |v| match v {
+            SSAVar::PrevStack(n) => match substitutions.get(n) {
+                Some(&v_new) => *v = v_new,
+                None => (),
+            },
+            SSAVar::PrevAcc => match prev_acc_sub {
+                Some(v_new) => *v = v_new,
+                None => (),
+            },
             _ => (),
         });
     }
 
-    // TODO  fixup
+    // TODO clean up code and patch
 
     Ok(())
 }

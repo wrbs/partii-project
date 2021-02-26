@@ -1,14 +1,13 @@
 use std::fs::File;
 use std::path::PathBuf;
 
-use anyhow::{Context, Error, Result};
+use anyhow::{Context, Result};
 use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
 use parsing::process_bytecode;
 
 use crate::bytecode_files::parse_bytecode_file;
-use crate::commands::clever_dis::ssa::data::SSAClosure;
 use crate::commands::clever_dis::ssa::translate_closure;
 
 mod data;

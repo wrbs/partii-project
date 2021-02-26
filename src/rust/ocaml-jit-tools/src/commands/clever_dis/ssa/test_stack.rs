@@ -27,7 +27,7 @@ fn test_state() {
 
         // Push something
         state.push(SSAVar::Computed(0, 0));
-        check_debug(&state.stack, expect![[r#"[Computed(0, 0)]"#]]);
+        check_debug(&state.stack, expect![[r#"[PrevStack(2), PrevStack(1), PrevStack(0), Computed(0, 0)]"#]]);
         check_debug(&state.pick(0), expect![[r#"Computed(0, 0)"#]]);
         check_debug(&state.pick(1), expect![[r#"PrevStack(0)"#]]);
         check_debug(&state.pick(2), expect![[r#"PrevStack(1)"#]]);
@@ -142,13 +142,13 @@ fn test_state() {
                             25,
                         ),
                         PrevStack(
-                            4,
-                        ),
-                        PrevStack(
                             3,
                         ),
                         PrevStack(
                             2,
+                        ),
+                        PrevStack(
+                            1,
                         ),
                         Computed(
                             0,
