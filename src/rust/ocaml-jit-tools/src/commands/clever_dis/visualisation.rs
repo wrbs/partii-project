@@ -21,6 +21,7 @@ pub struct Options {
     pub output_path: PathBuf,
     pub show: DotShow,
     pub output_closure_json: bool,
+    pub show_final_state: bool,
 }
 
 #[derive(Debug)]
@@ -252,19 +253,21 @@ impl<'a> VisContext<'a> {
                     .map(|l| format!(r#"<TD ALIGN="left">{}   </TD>"#, html_escape(l)))
                     .collect();
 
-                ssa_instrs.extend(
-                    format!("{}", ssa_closure.blocks[block_no].final_state)
-                        .lines()
-                        .map(|l| {
-                            let s = html_escape(l);
-                            let sections: Vec<_> = s.split(':').collect();
-                            format!(
-                                r#"<TD ALIGN="left"><B>{:>13}:</B>{}   </TD>"#,
-                                sections[0],
-                                &sections[1..sections.len()].join(":")
-                            )
-                        }),
-                );
+                if self.options.show_final_state {
+                    ssa_instrs.extend(
+                        format!("{}", ssa_closure.blocks[block_no].final_state)
+                            .lines()
+                            .map(|l| {
+                                let s = html_escape(l);
+                                let sections: Vec<_> = s.split(':').collect();
+                                format!(
+                                    r#"<TD ALIGN="left"><B>{:>13}:</B>{}   </TD>"#,
+                                    sections[0],
+                                    &sections[1..sections.len()].join(":")
+                                )
+                            }),
+                    );
+                }
 
                 Some(ssa_instrs)
             } else {

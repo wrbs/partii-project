@@ -104,6 +104,7 @@ pub fn run(options: Options) -> Result<()> {
                 show: options.dot_show,
                 output_path: dot.clone(),
                 output_closure_json: options.output_closure_json,
+                show_final_state: !use_relocations,
             },
         )
         .context("Problem writing visualisation graphs")?;
