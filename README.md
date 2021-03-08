@@ -12,6 +12,41 @@ Install rust: https://www.rust-lang.org/tools/install
 You'll also need a system version of LLVM which matches to the version
 the rust compiler is using. This shouldn't be needed but it is.
 
+### LLVM
+
+Building LLVM takes ages - so this project doesn't do that as part of its build process.
+
+The exact version needed (as it's the version that our Rust binding library supports) is `11.0.0`.
+
+You'll still need to do this once, though:
+
+I used https://github.com/llvmenv/llvmenv. It's at time of writing effectively abandoned but it
+works well for the use case I care about.
+
+    cargo install llvmenv
+
+Initialise it
+
+    llvmenv init
+
+Add this to your zshrc (it only supports ZSH but luckily that's what I use):
+
+    export LLVMENV_RUST_BINDING=1
+    source <(llvmenv zsh)
+
+Install cmake and ninja for speed, then
+
+   llvmenv build-entry 11.0.0 -G ninja -j16 
+
+It will still take ages but after it's setup it works.
+
+In any case, the important bit is you use exactly 11.0.0.
+
+If some other method is used make sure that you export wherever LLVM 11.0.0 lives as:
+
+    LLVM_SYS_110_PREFIX=(thing)
+
+
 ### Optional
 
 Install nodejs and `npm install -g prettier`. It's for autoformatting markdown

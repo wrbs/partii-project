@@ -8,10 +8,17 @@ use crate::{
     interpret_bytecode, old_interpreter_trace, on_bytecode_loaded, on_bytecode_released,
     on_shutdown,
 };
+use inkwell::execution_engine::ExecutionEngine;
+
+#[no_mangle]
+pub extern "C" fn ocaml_jit_link_stuff_please() {
+    // Needed for linking reasons - it's very hacky, but we get a segfault if we don't
+    ExecutionEngine::link_in_interpreter();
+    ExecutionEngine::link_in_mc_jit();
+}
 
 // We need some way to convince Rust that the OCaml interpreter is single threaded
 // Easiest way is to just use a mutex at each entry point for our global data
-
 #[no_mangle]
 pub extern "C" fn ocaml_jit_on_startup() {
     // Set up the panic hook to call into the OCaml fatal error machinery

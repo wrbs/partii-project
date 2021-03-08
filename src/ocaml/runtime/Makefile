@@ -109,8 +109,7 @@ libasmrunpic_OBJECTS := $(NATIVE_C_SOURCES:.c=_npic.$(O)) \
 # Rust JIT
 
 ifdef USE_RUST_JIT
-RUST_JIT_RELEASE_LIB = libocamljit.a
-RUST_JIT_RELEASE_OBJECT_DIR = jit_objects_release
+RUST_LIB = libocamljit.a
 libcamlrun_OBJECTS += jit_support_b.o
 
 RUST_JIT_CPPFLAGS += -DUSE_RUST_JIT
@@ -225,11 +224,12 @@ distclean: clean
 # Rust JIT object files
 
 ifdef USE_RUST_JIT
-$(RUST_JIT_RELEASE_OBJECT_DIR)/.d: $(RUST_JIT_RELEASE_LIB)
-	rm -rf $(RUST_JIT_RELEASE_OBJECT_DIR)
-	mkdir $(RUST_JIT_RELEASE_OBJECT_DIR)
-	cd $(RUST_JIT_RELEASE_OBJECT_DIR) && ar x ../$(RUST_JIT_RELEASE_LIB)
-	touch $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
+# $(RUST_JIT_RELEASE_OBJECT_DIR)/.d: $(RUST_JIT_RELEASE_LIB)
+# 	rm -rf $(RUST_JIT_RELEASE_OBJECT_DIR)
+# 	mkdir $(RUST_JIT_RELEASE_OBJECT_DIR)
+# 	cd $(RUST_JIT_RELEASE_OBJECT_DIR) && ar x ../$(RUST_JIT_RELEASE_LIB)
+# 	cd $(RUST_JIT_RELEASE_OBJECT_DIR) && for f in *.o ; do mv "$$f" rust_jit_"$$f" ; done
+# 	touch $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
 
 endif
 
@@ -296,12 +296,14 @@ caml/version.h : $(ROOTDIR)/tools/make-version-header.sh $(ROOTDIR)/VERSION
 # Libraries and programs
 
 ocamlrun$(EXE): prims.$(O) libcamlrun.$(A)
-	$(call MAKE_OCAMLRUN,$@,$^ $(LIBS))
-
+	$(call MAKE_OCAMLRUN,$@, $^ $(LIBS))
 
 ifeq "$(USE_RUST_JIT)" "true"
-libcamlrun.$(A): $(libcamlrun_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/.d
-	$(call MKLIB,$@, $(libcamlrun_OBJECTS) $(RUST_JIT_RELEASE_OBJECT_DIR)/*.o)
+libcamlrun_smaller.$(A): $(libcamlrun_OBJECTS)
+	$(call MKLIB,$@, $(libcamlrun_OBJECTS))
+
+libcamlrun.$(A): libcamlrun_smaller.$(A) $(RUST_LIB)
+	echo -e "create libcamlrun.a\n addlib libcamlrun_smaller.a\n addlib $(RUST_LIB)\n save\n end" | ar -M
 else
 libcamlrun.$(A): $(libcamlrun_OBJECTS)
 	$(call MKLIB,$@, $^)
@@ -323,7 +325,7 @@ libcamlrun_pic.$(A): $(libcamlrunpic_OBJECTS)
 	$(call MKLIB,$@, $^)
 
 libcamlrun_shared.$(SO): $(libcamlrunpic_OBJECTS)
-	$(MKDLL) -o $@ $^ $(BYTECCLIBS)
+	$(MKDLL) -o $@ $^ $(OC_LDFLAGS) $(BYTECCLIBS)
 
 libasmrun.$(A): $(libasmrun_OBJECTS)
 	$(call MKLIB,$@, $^)

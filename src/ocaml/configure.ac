@@ -631,15 +631,6 @@ AS_CASE([$host],
   [*-*-mingw32|*-pc-windows], [],
   [common_cppflags="$common_cppflags -D_FILE_OFFSET_BITS=64"])
 
-# Check for rust
-
-AS_IF([test "x$enable_rust_jit" = "xyes"], [
-  use_rust_jit=true
-],
-  use_rust_jit=false
-)
-
-
 # Adjust according to target
 
 # On Windows we do not take $enable_shared because it does not seem
@@ -1950,5 +1941,16 @@ AS_CASE([$host],
 
 AS_IF([test x"$enable_stdlib_manpages" != "xno"],
   [stdlib_manpages=true],[stdlib_manpages=false])
+
+# Check for rust
+
+AS_IF([test "x$enable_rust_jit" = "xyes"], [
+  use_rust_jit=true
+
+  # Link in LLVM - lazy, I'm not testing for the right version or even being
+  bytecclibs="$bytecclibs -lffi -lz -lrt -ldl -ltinfo -lpthread -lm -lxml2 -lstdc++ -lutil -ldl -lutil -lgcc_s -lc -lm -lrt -lpthread -lutil -ldl -lutil"
+],
+  use_rust_jit=false
+)
 
 AC_OUTPUT

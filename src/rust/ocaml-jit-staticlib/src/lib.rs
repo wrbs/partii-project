@@ -25,9 +25,13 @@ mod configuration;
 mod global_data;
 mod trace;
 
+pub mod jit_test;
+
 /* These are the hook points from the existing runtime to the JIT */
 
 pub fn on_startup() -> GlobalData {
+    jit_test::run();
+
     let global_data = GlobalData::new();
 
     if let Some(output_dir) = global_data.options.output_dir.as_ref() {
