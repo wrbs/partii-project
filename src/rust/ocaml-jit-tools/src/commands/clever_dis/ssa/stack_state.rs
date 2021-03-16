@@ -10,6 +10,7 @@ pub struct SSAStackState {
     accu: SSAVar,
     stack_start: usize,
     pub used_prev: HashSet<SSASubstitutionTarget>,
+    pub max_size: usize,
 }
 
 impl SSAStackState {
@@ -19,6 +20,7 @@ impl SSAStackState {
             accu: SSAVar::Prev(SSASubstitutionTarget::Acc),
             stack_start: 0,
             used_prev: HashSet::new(),
+            max_size: 0,
         }
     }
 
@@ -62,6 +64,10 @@ impl SSAStackState {
 
     pub fn push(&mut self, entry: SSAVar) {
         self.stack.push(entry);
+        let new_size = self.stack.len() - self.stack_start;
+        if new_size > self.max_size {
+            self.max_size = new_size;
+        }
     }
 
     pub fn assign(&mut self, index: usize, entry: SSAVar) {

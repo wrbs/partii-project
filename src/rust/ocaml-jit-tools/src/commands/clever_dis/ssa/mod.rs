@@ -72,6 +72,27 @@ pub fn translate_closure(closure: &Closure, use_relocations: bool) -> Result<SSA
     Ok(SSAClosure { blocks })
 }
 
+pub fn get_closure_info(closure: &Closure) -> Result<(Vec<usize>, Vec<usize>, usize)> {
+    let blocks = get_blocks(closure)?;
+    let (order, _, sizes_map) = dfs_blocks(&blocks)?;
+    let mut sizes = vec![0; blocks.len()];
+
+    for (block, size) in sizes_map {
+        sizes[block] = size;
+    }
+
+    let mut max_size = 0;
+
+    for (i, block) in blocks.iter().enumerate() {
+        let max_block_size = sizes[i] + block.final_state.max_size;
+        if max_block_size > max_size {
+            max_size = max_block_size;
+        }
+    }
+
+    Ok((order, sizes, max_size))
+}
+
 // Initial block translation
 // Convert a list of bytecode instructions using the stack into a list of SSA instructions
 // but only considering each basic block locally
@@ -583,7 +604,7 @@ fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
 // the OCaml compiler
 //
 // So validating the invariants is a good sanity check of being sensible with our approach to the stack
-fn dfs_blocks(blocks: &[SSABlock]) -> Result<(Vec<usize>, Vec<usize>)> {
+fn dfs_blocks(blocks: &[SSABlock]) -> Result<(Vec<usize>, Vec<usize>, HashMap<usize, usize>)> {
     fn dfs(
         blocks: &[SSABlock],
         sizes: &mut HashMap<usize, usize>,
@@ -639,7 +660,7 @@ fn dfs_blocks(blocks: &[SSABlock]) -> Result<(Vec<usize>, Vec<usize>)> {
         block_num_to_order[*block] = i;
     }
 
-    Ok((order, block_num_to_order))
+    Ok((order, block_num_to_order, sizes))
 }
 
 // Find block ancestors and detect back edges
@@ -690,7 +711,7 @@ fn expand_used_prev(blocks: &mut [SSABlock], ancestors: &[Vec<usize>]) {
 }
 
 fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
-    let (order, block_num_to_order) = dfs_blocks(blocks)?;
+    let (order, block_num_to_order, _) = dfs_blocks(blocks)?;
     let ancestors = find_ancestors(blocks);
     expand_used_prev(blocks, &ancestors);
 

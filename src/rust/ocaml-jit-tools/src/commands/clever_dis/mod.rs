@@ -11,6 +11,7 @@ use crate::bytecode_files::parse_bytecode_file;
 use crate::commands::clever_dis::ssa::translate_closure;
 
 mod data;
+mod llvm_codegen;
 mod parsing;
 mod ssa;
 mod visualisation;
