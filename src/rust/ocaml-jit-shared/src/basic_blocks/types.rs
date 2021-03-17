@@ -17,9 +17,12 @@ pub enum BasicBlockType {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BasicBlock {
     pub block_id: usize,
+    pub predecessors: Vec<usize>,
     pub block_type: BasicBlockType,
     pub instructions: Vec<BasicBlockInstruction>,
     pub exit: BasicBlockExit,
+    pub start_stack_size: u32,
+    pub end_stack_size: u32,
 }
 
 // Instructions are generic over a few parameters
@@ -75,7 +78,7 @@ pub enum BasicBlockInstruction {
     CCall3(u32),
     CCall4(u32),
     CCall5(u32),
-    CCallN(u32, u32),
+    CCallN { nargs: u32, id: u32 },
 
     // Other
     VecTLength,
@@ -91,6 +94,13 @@ pub enum BasicBlockExit {
     // Branches
     Branch(usize),
     BranchIf {
+        then_block: usize,
+        else_block: usize,
+    },
+    BranchCmp {
+        // they have different semantics with what they do to the accu
+        cmp: Comp,
+        constant: i32,
         then_block: usize,
         else_block: usize,
     },
@@ -126,6 +136,14 @@ impl BasicBlockExit {
             BranchIf {
                 then_block,
                 else_block,
+            } => {
+                f(then_block);
+                f(else_block);
+            }
+            BranchCmp {
+                then_block,
+                else_block,
+                ..
             } => {
                 f(then_block);
                 f(else_block);
