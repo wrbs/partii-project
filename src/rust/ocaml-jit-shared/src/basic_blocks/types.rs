@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct BasicClosure {
     pub arity: usize,
     pub blocks: Vec<BasicBlock>,
+    pub used_closures: Vec<usize>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]

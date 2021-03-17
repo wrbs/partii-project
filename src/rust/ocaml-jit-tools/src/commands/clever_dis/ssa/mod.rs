@@ -4,8 +4,8 @@ use ocaml_jit_shared::{ArithOp, Instruction};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
 use crate::commands::clever_dis::ssa::data::{
-    BinaryFloatOp, ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement,
-    SSASubstitutionTarget, SSAVar, UnaryFloatOp, UnaryOp,
+    ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSASubstitutionTarget,
+    SSAVar, UnaryOp,
 };
 use crate::commands::clever_dis::ssa::stack_state::SSAStackState;
 use std::collections::{HashMap, HashSet};
@@ -134,6 +134,7 @@ fn process_body_instruction(
     vars: &mut Vars,
     instr: &Instruction<usize>,
 ) -> Result<()> {
+    eprint!("{}: {:?}", state.delta(), instr);
     match instr {
         Instruction::ApplyTerm(_, _)
         | Instruction::Apply(_)
@@ -402,6 +403,8 @@ fn process_body_instruction(
         Instruction::Break | Instruction::Event => (),
     }
 
+    eprintln!(" => {}", state.delta());
+
     Ok(())
 }
 
@@ -538,16 +541,16 @@ fn c_call(state: &mut SSAStackState, vars: &mut Vars, count: usize, primitive_id
     state.pop(count);
 }
 
-fn unary_float(state: &mut SSAStackState, vars: &mut Vars, op: UnaryFloatOp) {
-    let v = vars.add_assignment(SSAExpr::UnaryFloat(op, state.accu()));
-    state.set_accu(v);
-}
-
-fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
-    let v = vars.add_assignment(SSAExpr::BinaryFloat(op, state.accu(), state.pick(0)));
-    state.set_accu(v);
-    state.pop(1);
-}
+// fn unary_float(state: &mut SSAStackState, vars: &mut Vars, op: UnaryFloatOp) {
+//     let v = vars.add_assignment(SSAExpr::UnaryFloat(op, state.accu()));
+//     state.set_accu(v);
+// }
+//
+// fn binary_float(state: &mut SSAStackState, vars: &mut Vars, op: BinaryFloatOp) {
+//     let v = vars.add_assignment(SSAExpr::BinaryFloat(op, state.accu(), state.pick(0)));
+//     state.set_accu(v);
+//     state.pop(1);
+// }
 
 // Relocation
 // ==========
@@ -649,10 +652,10 @@ fn find_ancestors(blocks: &[SSABlock]) -> Vec<Vec<usize>> {
             ancestors[a].insert(block_num);
         }
     }
-    return ancestors
+    ancestors
         .into_iter()
         .map(|a| a.into_iter().collect())
-        .collect();
+        .collect()
 }
 
 fn expand_used_prev(blocks: &mut [SSABlock], ancestors: &[Vec<usize>]) {
@@ -784,12 +787,12 @@ fn relocate_blocks(blocks: &mut [SSABlock]) -> Result<()> {
 
         // Now we've got a value (in substitutions) for everything, we need to perform the
         // substitutions
-        blocks[cur_block_num].modify_ssa_vars(&mut |v| match v {
-            SSAVar::Prev(t) => match substitutions.get(t) {
-                Some(&v_new) => *v = v_new,
-                None => (),
-            },
-            _ => (),
+        blocks[cur_block_num].modify_ssa_vars(&mut |v| {
+            if let SSAVar::Prev(t) = v {
+                if let Some(&v_new) = substitutions.get(t) {
+                    *v = v_new;
+                }
+            }
         });
     }
 

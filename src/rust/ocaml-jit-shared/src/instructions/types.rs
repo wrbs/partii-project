@@ -186,14 +186,14 @@ impl<L1> Instruction<L1> {
             // Cases with labels
             Instruction::LabelDef(l) => f(l),
             Instruction::PushRetAddr(l) => f(l),
-            Instruction::Closure(l, x) => f(l),
-            Instruction::ClosureRec(ls, x) => {
+            Instruction::Closure(l, _) => f(l),
+            Instruction::ClosureRec(ls, _) => {
                 ls.iter_mut().for_each(&mut f);
             }
             Instruction::Branch(l) => f(l),
             Instruction::BranchIf(l) => f(l),
             Instruction::BranchIfNot(l) => f(l),
-            Instruction::BranchCmp(cmp, v, l) => f(l),
+            Instruction::BranchCmp(_, _, l) => f(l),
             Instruction::Switch(l1s, l2s) => {
                 l1s.iter_mut().for_each(&mut f);
                 l2s.iter_mut().for_each(&mut f);
@@ -209,14 +209,14 @@ impl<L1> Instruction<L1> {
             // Cases with labels
             Instruction::LabelDef(l) => f(l),
             Instruction::PushRetAddr(l) => f(l),
-            Instruction::Closure(l, x) => f(l),
-            Instruction::ClosureRec(ls, x) => {
+            Instruction::Closure(l, _) => f(l),
+            Instruction::ClosureRec(ls, _) => {
                 ls.iter().for_each(f);
             }
             Instruction::Branch(l) => f(l),
             Instruction::BranchIf(l) => f(l),
             Instruction::BranchIfNot(l) => f(l),
-            Instruction::BranchCmp(cmp, v, l) => f(l),
+            Instruction::BranchCmp(_, _, l) => f(l),
             Instruction::Switch(l1s, l2s) => {
                 l1s.iter().for_each(&mut f);
                 l2s.iter().for_each(&mut f);

@@ -1,6 +1,6 @@
 use expect_test::{expect, Expect};
 
-use ocaml_jit_shared::{Comp, Primitive, RaiseKind};
+use ocaml_jit_shared::{Comp, RaiseKind};
 use Instruction::*;
 
 use crate::commands::clever_dis::data::BlockExit;
@@ -133,44 +133,6 @@ fn test_block_translation() {
             End stack: ..., <prev:0> | <0_0>, <0_1>
             Used prev: []
             Stack delta: -0/+2
-        "#]],
-    );
-
-    check(
-        vec![
-            Acc(0),
-            GetField(1),
-            Push,
-            Acc(1),
-            GetField(0),
-            Push,
-            Acc(1),
-            Push,
-            Acc(2),
-            Prim(Primitive::MulFloat),
-            Push,
-            Acc(1),
-            Push,
-            Acc(2),
-            Prim(Primitive::MulFloat),
-            Prim(Primitive::AddFloat),
-            Prim(Primitive::SqrtFloat),
-            Return(3),
-        ],
-        BlockExit::Return,
-        expect![[r#"
-            <0_0> = <prev:0>[1]
-            <0_1> = <prev:0>[0]
-            <0_2> = mul.f <0_0> <0_0>
-            <0_3> = mul.f <0_1> <0_1>
-            <0_4> = add.f <0_3> <0_2>
-            <0_5> = sqrt.f <0_4>
-            Exit: return <0_5>
-
-            Final accu: <0_5>
-            End stack: ..., <prev:1> | 
-            Used prev: [Stack(0)]
-            Stack delta: -1/+0
         "#]],
     );
 

@@ -111,6 +111,7 @@ impl SectionEntry {
         Ok(ReadAtMost::new(f, self.length))
     }
 
+    #[allow(dead_code)]
     pub fn read_section_vec(&self, f: &mut File) -> Result<Vec<u8>, ParseFileError> {
         let mut result = Vec::new();
         self.read_section(f)?.read_to_end(&mut result)?;
