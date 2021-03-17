@@ -5,9 +5,7 @@ use std::os::raw::c_char;
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
 
-use ocaml_jit_shared::{
-    ArithOp, BytecodeRelativeOffset, Comp, EmptyPrimitiveLookup, Instruction, InstructionIterator,
-};
+use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction, InstructionIterator};
 
 use crate::caml::domain_state::get_extern_sp_addr;
 use crate::caml::mlvalues::{BlockValue, LongValue, Tag, Value};
@@ -55,9 +53,7 @@ pub fn compile_instructions(
     let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
     let code_base = code.as_ptr();
 
-    for (offset, instruction) in
-        InstructionIterator::new(code.iter().copied(), EmptyPrimitiveLookup()).enumerate()
-    {
+    for (offset, instruction) in InstructionIterator::new(code.iter().copied()).enumerate() {
         let instruction = instruction.unwrap();
 
         cc.emit_instruction(&instruction, offset, code_base);
@@ -914,9 +910,6 @@ impl CompilerContext {
                     ; or rax, 2
                 );
                 self.emit_return();
-            }
-            Instruction::Prim(_) => {
-                unreachable!("No primitive special-casing is done in the JIT compiler")
             }
             Instruction::CCall1(primno) => {
                 // FIXME Setup_for_c_call

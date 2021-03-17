@@ -2,8 +2,6 @@ use std::fmt::Debug;
 
 use serde::{Deserialize, Serialize};
 
-use crate::Primitive;
-
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct BytecodeRelativeOffset(pub usize);
 
@@ -87,7 +85,6 @@ pub enum Instruction<L> {
     PopTrap,
     Raise(RaiseKind),
     CheckSignals,
-    Prim(Primitive),
     CCall1(u32),
     CCall2(u32),
     CCall3(u32),
@@ -163,7 +160,6 @@ impl<L1> Instruction<L1> {
             Instruction::PopTrap => Instruction::PopTrap,
             Instruction::Raise(x) => Instruction::Raise(*x),
             Instruction::CheckSignals => Instruction::CheckSignals,
-            Instruction::Prim(p) => Instruction::Prim(*p),
             Instruction::CCall1(x) => Instruction::CCall1(*x),
             Instruction::CCall2(x) => Instruction::CCall2(*x),
             Instruction::CCall3(x) => Instruction::CCall3(*x),
@@ -182,6 +178,52 @@ impl<L1> Instruction<L1> {
             Instruction::Stop => Instruction::Stop,
             Instruction::Break => Instruction::Break,
             Instruction::Event => Instruction::Event,
+        }
+    }
+
+    pub fn modify_labels<F: FnMut(&mut L1)>(&mut self, mut f: F) {
+        match self {
+            // Cases with labels
+            Instruction::LabelDef(l) => f(l),
+            Instruction::PushRetAddr(l) => f(l),
+            Instruction::Closure(l, x) => f(l),
+            Instruction::ClosureRec(ls, x) => {
+                ls.iter_mut().for_each(&mut f);
+            }
+            Instruction::Branch(l) => f(l),
+            Instruction::BranchIf(l) => f(l),
+            Instruction::BranchIfNot(l) => f(l),
+            Instruction::BranchCmp(cmp, v, l) => f(l),
+            Instruction::Switch(l1s, l2s) => {
+                l1s.iter_mut().for_each(&mut f);
+                l2s.iter_mut().for_each(&mut f);
+            }
+            Instruction::PushTrap(l) => f(l),
+
+            _ => (),
+        }
+    }
+
+    pub fn visit_labels<F: FnMut(&L1)>(&self, mut f: F) {
+        match self {
+            // Cases with labels
+            Instruction::LabelDef(l) => f(l),
+            Instruction::PushRetAddr(l) => f(l),
+            Instruction::Closure(l, x) => f(l),
+            Instruction::ClosureRec(ls, x) => {
+                ls.iter().for_each(f);
+            }
+            Instruction::Branch(l) => f(l),
+            Instruction::BranchIf(l) => f(l),
+            Instruction::BranchIfNot(l) => f(l),
+            Instruction::BranchCmp(cmp, v, l) => f(l),
+            Instruction::Switch(l1s, l2s) => {
+                l1s.iter().for_each(&mut f);
+                l2s.iter().for_each(&mut f);
+            }
+            Instruction::PushTrap(l) => f(l),
+
+            _ => (),
         }
     }
 }

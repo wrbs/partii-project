@@ -4,12 +4,12 @@ use serde::{Deserialize, Serialize};
 
 pub use instructions::*;
 pub use opcodes::*;
-pub use primitives::*;
 pub use trace::*;
 
+mod basic_blocks;
+mod cranelift_codegen;
 mod instructions;
 mod opcodes;
-mod primitives;
 mod trace;
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]

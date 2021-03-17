@@ -66,6 +66,6 @@ impl BytecodeFile {
     pub fn parse_instructions(
         &self,
     ) -> Result<Vec<Instruction<BytecodeRelativeOffset>>, ParseFileError> {
-        bytecode::parse_bytecode(&self.code, &self.primitives)
+        bytecode::parse_bytecode(&self.code)
     }
 }

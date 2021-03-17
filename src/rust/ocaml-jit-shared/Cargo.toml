@@ -12,3 +12,7 @@ serde = {version = "1.0", features = ["derive"]}
 colored = "2"
 strum = "0.20"
 strum_macros = "0.20"
+cranelift = "0.72.0"
+cranelift-codegen = {version = "0.72.0", features = ["x64"]}
+cranelift-module = {version = "0.72.0"}
+anyhow = "1.0"

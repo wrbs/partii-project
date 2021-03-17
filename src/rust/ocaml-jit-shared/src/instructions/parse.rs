@@ -3,22 +3,9 @@ use std::iter::Peekable;
 
 use thiserror::Error;
 
-use crate::primitives::Primitive;
 use crate::Opcode;
 
 use super::types::*;
-
-pub trait PrimitiveLookup {
-    fn get_primitive(&self, primitive_id: u32) -> Option<Primitive>;
-}
-
-pub struct EmptyPrimitiveLookup();
-
-impl PrimitiveLookup for EmptyPrimitiveLookup {
-    fn get_primitive(&self, _primitive_id: u32) -> Option<Primitive> {
-        None
-    }
-}
 
 #[derive(Debug, Error)]
 pub enum InstructionParseError {
@@ -30,34 +17,34 @@ pub enum InstructionParseError {
 
     #[error("unknown opcode: {0}")]
     BadOpcode(i32),
-
-    #[error("Wrong primitive arity for {primitive}: Expected {expected} but got {actual}")]
-    WrongArity {
-        primitive: Primitive,
-        expected: usize,
-        actual: usize,
-    },
 }
 
 // default result type in this file
 type Result<T, E = InstructionParseError> = std::result::Result<T, E>;
 
-pub struct InstructionIterator<I: Iterator<Item = i32>, L: PrimitiveLookup> {
+pub struct InstructionIterator<I: Iterator<Item = i32>> {
     iter: Peekable<I>,
     position: usize,
     next_queued: VecDeque<Instruction<BytecodeRelativeOffset>>,
     error: bool,
-    primitives: L,
 }
 
-impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
-    pub fn new(iterator: I, primitives: L) -> InstructionIterator<I, L> {
+impl<I: Iterator<Item = i32>> InstructionIterator<I> {
+    pub fn new(iterator: I) -> InstructionIterator<I> {
         InstructionIterator {
             iter: iterator.peekable(),
             position: 0,
             next_queued: VecDeque::new(),
             error: false,
-            primitives,
+        }
+    }
+
+    pub fn new_from_offset(iterator: I, offset: usize) -> InstructionIterator<I> {
+        InstructionIterator {
+            iter: iterator.peekable(),
+            position: offset,
+            next_queued: VecDeque::new(),
+            error: false,
         }
     }
 
@@ -119,27 +106,6 @@ impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
         }
 
         Ok(result)
-    }
-
-    fn get_primitive(
-        &self,
-        primitive_id: u32,
-        arity: usize,
-    ) -> Result<Option<Instruction<BytecodeRelativeOffset>>> {
-        match self.primitives.get_primitive(primitive_id) {
-            None => Ok(None),
-            Some(primitive) => {
-                if primitive.arity() == arity {
-                    Ok(Some(Instruction::Prim(primitive)))
-                } else {
-                    Err(InstructionParseError::WrongArity {
-                        primitive,
-                        expected: primitive.arity(),
-                        actual: arity,
-                    })
-                }
-            }
-        }
     }
 
     fn get_next_instr(&mut self) -> Result<Option<Instruction<BytecodeRelativeOffset>>> {
@@ -403,36 +369,15 @@ impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
 
             Opcode::GetDynMet => Instruction::GetDynMet,
 
-            Opcode::CCall1 => {
-                let primitive_id = self.u32()?;
-                self.get_primitive(primitive_id, 1)?
-                    .unwrap_or(Instruction::CCall1(primitive_id))
-            }
-            Opcode::CCall2 => {
-                let primitive_id = self.u32()?;
-                self.get_primitive(primitive_id, 2)?
-                    .unwrap_or(Instruction::CCall2(primitive_id))
-            }
-            Opcode::CCall3 => {
-                let primitive_id = self.u32()?;
-                self.get_primitive(primitive_id, 3)?
-                    .unwrap_or(Instruction::CCall3(primitive_id))
-            }
-            Opcode::CCall4 => {
-                let primitive_id = self.u32()?;
-                self.get_primitive(primitive_id, 4)?
-                    .unwrap_or(Instruction::CCall4(primitive_id))
-            }
-            Opcode::CCall5 => {
-                let primitive_id = self.u32()?;
-                self.get_primitive(primitive_id, 5)?
-                    .unwrap_or(Instruction::CCall5(primitive_id))
-            }
+            Opcode::CCall1 => Instruction::CCall1(self.u32()?),
+            Opcode::CCall2 => Instruction::CCall2(self.u32()?),
+            Opcode::CCall3 => Instruction::CCall3(self.u32()?),
+            Opcode::CCall4 => Instruction::CCall4(self.u32()?),
+            Opcode::CCall5 => Instruction::CCall5(self.u32()?),
             Opcode::CCallN => {
                 let primitive_id = self.u32()?;
                 let nargs = self.u32()?;
-                self.get_primitive(primitive_id, nargs as usize)?
-                    .unwrap_or(Instruction::CCallN(primitive_id, nargs))
+                Instruction::CCallN(primitive_id, nargs)
             }
 
             Opcode::Raise => Instruction::Raise(RaiseKind::Regular),
@@ -500,7 +445,7 @@ impl<I: Iterator<Item = i32>, L: PrimitiveLookup> InstructionIterator<I, L> {
     }
 }
 
-impl<I: Iterator<Item = i32>, L: PrimitiveLookup> Iterator for InstructionIterator<I, L> {
+impl<I: Iterator<Item = i32>> Iterator for InstructionIterator<I> {
     type Item = Result<Instruction<BytecodeRelativeOffset>>;
 
     fn next(&mut self) -> Option<Self::Item> {

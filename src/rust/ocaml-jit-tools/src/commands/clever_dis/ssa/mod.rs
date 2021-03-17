@@ -1,6 +1,6 @@
 use anyhow::{bail, ensure, Result};
 
-use ocaml_jit_shared::{ArithOp, Instruction, Primitive};
+use ocaml_jit_shared::{ArithOp, Instruction};
 
 use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
 use crate::commands::clever_dis::ssa::data::{
@@ -342,14 +342,6 @@ fn process_body_instruction(
             vars.add_statement(SSAStatement::CheckSignals);
             state.set_accu(SSAVar::Junk);
         }
-        Instruction::Prim(p) => match p {
-            Primitive::NegFloat => unary_float(state, vars, UnaryFloatOp::Neg),
-            Primitive::SqrtFloat => unary_float(state, vars, UnaryFloatOp::Sqrt),
-            Primitive::AddFloat => binary_float(state, vars, BinaryFloatOp::Add),
-            Primitive::SubFloat => binary_float(state, vars, BinaryFloatOp::Sub),
-            Primitive::MulFloat => binary_float(state, vars, BinaryFloatOp::Mul),
-            Primitive::DivFloat => binary_float(state, vars, BinaryFloatOp::Div),
-        },
         Instruction::CCall1(id) => c_call(state, vars, 1, id),
         Instruction::CCall2(id) => c_call(state, vars, 2, id),
         Instruction::CCall3(id) => c_call(state, vars, 3, id),
