@@ -1,19 +1,16 @@
 use super::types::*;
-use crate::{BytecodeRelativeOffset, Instruction, InstructionIterator, Opcode};
+use crate::{Instruction, InstructionIterator, Opcode};
 use anyhow::{anyhow, ensure, Result};
-use cranelift::prelude::Block;
 use std::collections::{HashMap, HashSet};
 
 // Conversion of a closure
 
-pub fn parse_to_basic_blocks(code: &[i32], start_offset: usize) -> Result<()> {
+pub fn parse_to_basic_blocks(code: &[i32], start_offset: usize) -> Result<BasicClosure> {
     let mut block_starts = HashSet::new();
     block_starts.insert(start_offset);
     find_block_starts_dfs(code, start_offset, &mut block_starts)?;
 
-    convert_dfs(code, start_offset, &block_starts)?;
-
-    Ok(())
+    convert_dfs(code, start_offset, &block_starts)
 }
 
 // Find all referenced locations which are the starts of blocks
@@ -95,7 +92,11 @@ fn find_block_starts_dfs(
 // form!
 //
 // It requires knowing the back edge block starts for while loops only
-fn convert_dfs(code: &[i32], entrypoint: usize, block_starts: &HashSet<usize>) -> Result<()> {
+fn convert_dfs(
+    code: &[i32],
+    entrypoint: usize,
+    block_starts: &HashSet<usize>,
+) -> Result<BasicClosure> {
     // Check for the first instruction to work out arity
     let arity = if let Some(Opcode::Grab) = Opcode::from_i32(code[entrypoint]) {
         code[entrypoint + 1] as usize + 1
@@ -110,9 +111,38 @@ fn convert_dfs(code: &[i32], entrypoint: usize, block_starts: &HashSet<usize>) -
         total_blocks: block_starts.len(),
         finished: Vec::new(),
     };
-    search_state.visit(entrypoint, None, arity as u32, BasicBlockType::First);
+    search_state.visit(entrypoint, None, arity as u32, BasicBlockType::First)?;
 
-    Ok(())
+    // Now we've visited everything, we can actually create the blocks
+    let mut blocks = vec![];
+    let mut offset_to_block_id_map = HashMap::new();
+
+    for (block_id, finished_block) in search_state.finished.into_iter().rev().enumerate() {
+        let pending_block = search_state.seen.remove(&finished_block.offset).unwrap();
+        blocks.push(BasicBlock {
+            block_id,
+            predecessors: pending_block.predecessors.iter().copied().collect(),
+            block_type: pending_block.block_type,
+            instructions: finished_block.instructions,
+            exit: finished_block.exit,
+            start_stack_size: pending_block.start_stack_size,
+            end_stack_size: finished_block.end_stack_size,
+        });
+        offset_to_block_id_map.insert(finished_block.offset, block_id);
+    }
+
+    // We now need to relocate offsets into block ids
+    let relocate_offset = |offset: &mut usize| {
+        let block_id = *offset_to_block_id_map.get(offset).unwrap();
+        *offset = block_id;
+    };
+
+    for block in &mut blocks {
+        block.exit.modify_block_labels(relocate_offset);
+        block.predecessors.iter_mut().for_each(relocate_offset);
+    }
+
+    Ok(BasicClosure { arity, blocks })
 }
 
 struct SearchState<'a> {
@@ -135,6 +165,7 @@ struct FinishedBlock {
     offset: usize,
     instructions: Vec<BasicBlockInstruction>,
     exit: BasicBlockExit,
+    end_stack_size: u32,
 }
 
 impl<'a> SearchState<'a> {
@@ -274,7 +305,7 @@ impl<'a> SearchState<'a> {
                         }
                         Instruction::ClosureRec(closures, nvars) => {
                             ensure!(stack_size >= nvars - 1);
-                            stack_size -= (nvars - 1);
+                            stack_size -= nvars - 1;
                             stack_size += closures.len() as u32 - 1;
                             instructions.push(ClosureRec(
                                 closures.into_iter().map(|x| x.0).collect(),
@@ -438,6 +469,7 @@ impl<'a> SearchState<'a> {
                                 BasicBlockType::Normal,
                             )?;
                             self.visit(trap, Some(entrypoint), stack_size, BasicBlockType::Normal)?;
+                            stack_size += 4; // Consider normal as the end stack size
                             exit = Some(PushTrap { normal, trap });
                         }
                         Instruction::PopTrap => {
@@ -450,23 +482,99 @@ impl<'a> SearchState<'a> {
                         Instruction::CheckSignals => {
                             instructions.push(CheckSignals);
                         }
-                        Instruction::CCall1(id) => {}
-                        Instruction::CCall2(id) => {}
-                        Instruction::CCall3(id) => {}
-                        Instruction::CCall4(id) => {}
-                        Instruction::CCall5(id) => {}
-                        Instruction::CCallN(nargs, id) => {}
-                        Instruction::ArithInt(_) => {}
-                        Instruction::NegInt => {}
-                        Instruction::IntCmp(_) => {}
-                        Instruction::BranchCmp(_, _, _) => {}
-                        Instruction::OffsetInt(_) => {}
-                        Instruction::OffsetRef(_) => {}
-                        Instruction::IsInt => {}
-                        Instruction::GetMethod => {}
-                        Instruction::SetupForPubMet(_) => {}
-                        Instruction::GetDynMet => {}
-                        Instruction::Stop => {}
+                        Instruction::CCall1(id) => {
+                            instructions.push(CCall1(id));
+                        }
+                        Instruction::CCall2(id) => {
+                            ensure!(stack_size >= 1);
+                            stack_size -= 1;
+                            instructions.push(CCall2(id));
+                        }
+                        Instruction::CCall3(id) => {
+                            ensure!(stack_size >= 2);
+                            stack_size -= 2;
+                            instructions.push(CCall3(id));
+                        }
+                        Instruction::CCall4(id) => {
+                            ensure!(stack_size >= 3);
+                            stack_size -= 3;
+                            instructions.push(CCall4(id));
+                        }
+                        Instruction::CCall5(id) => {
+                            ensure!(stack_size >= 4);
+                            stack_size -= 4;
+                            instructions.push(CCall5(id));
+                        }
+                        Instruction::CCallN(nargs, id) => {
+                            let to_pop = nargs - 1;
+                            ensure!(stack_size >= to_pop);
+                            stack_size -= to_pop;
+                            instructions.push(CCallN { nargs, id })
+                        }
+                        Instruction::ArithInt(op) => {
+                            ensure!(stack_size >= 1);
+                            stack_size -= 1;
+                            instructions.push(ArithInt(op));
+                        }
+                        Instruction::NegInt => {
+                            instructions.push(NegInt);
+                        }
+                        Instruction::IntCmp(comp) => {
+                            ensure!(stack_size >= 1);
+                            stack_size -= 1;
+                            instructions.push(IntCmp(comp));
+                        }
+                        Instruction::BranchCmp(cmp, constant, to) => {
+                            let then_block = to.0;
+                            let else_block = inst_iter.current_position();
+                            self.visit(
+                                then_block,
+                                Some(entrypoint),
+                                stack_size,
+                                BasicBlockType::Normal,
+                            )?;
+                            self.visit(
+                                else_block,
+                                Some(entrypoint),
+                                stack_size,
+                                BasicBlockType::Normal,
+                            )?;
+                            exit = Some(BranchCmp {
+                                cmp,
+                                constant,
+                                then_block,
+                                else_block,
+                            });
+                        }
+                        Instruction::OffsetInt(n) => {
+                            instructions.push(OffsetInt(n));
+                        }
+                        Instruction::OffsetRef(r) => {
+                            instructions.push(OffsetRef(r));
+                        }
+                        Instruction::IsInt => {
+                            instructions.push(IsInt);
+                        }
+                        Instruction::GetMethod => {
+                            ensure!(stack_size >= 1);
+                            stack_size -= 1;
+                            instructions.push(GetMethod);
+                        }
+                        Instruction::SetupForPubMet(n) => {
+                            stack_size += 1;
+                            instructions.push(Push);
+                            instructions.push(Const(n));
+                        }
+                        Instruction::GetDynMet => {
+                            ensure!(stack_size >= 1);
+                            stack_size -= 1;
+                            instructions.push(GetDynMet);
+                        }
+                        Instruction::Stop => {
+                            ensure!(stack_size == 0);
+                            exit = Some(Stop);
+                        }
+                        // Ignore break/event
                         Instruction::Break => {}
                         Instruction::Event => {}
                     }
@@ -476,6 +584,7 @@ impl<'a> SearchState<'a> {
                         offset: entrypoint,
                         instructions,
                         exit,
+                        end_stack_size: stack_size,
                     });
                     return Ok(());
                 }
