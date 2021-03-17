@@ -6,7 +6,7 @@ pub use instructions::*;
 pub use opcodes::*;
 pub use trace::*;
 
-mod basic_blocks;
+pub mod basic_blocks;
 mod cranelift_codegen;
 mod instructions;
 mod opcodes;

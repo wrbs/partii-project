@@ -105,39 +105,39 @@ impl Display for SSAVar {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum UnaryFloatOp {
-    Neg,
-    Sqrt,
-}
-
-impl Display for UnaryFloatOp {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        match self {
-            UnaryFloatOp::Neg => write!(f, "neg.f"),
-            UnaryFloatOp::Sqrt => write!(f, "sqrt.f"),
-        }
-    }
-}
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum BinaryFloatOp {
-    Add,
-    Sub,
-    Mul,
-    Div,
-}
-
-impl Display for BinaryFloatOp {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        match self {
-            BinaryFloatOp::Add => write!(f, "add.f"),
-            BinaryFloatOp::Sub => write!(f, "sub.f"),
-            BinaryFloatOp::Mul => write!(f, "mul.f"),
-            BinaryFloatOp::Div => write!(f, "div.f"),
-        }
-    }
-}
+// #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+// pub enum UnaryFloatOp {
+//     Neg,
+//     Sqrt,
+// }
+//
+// impl Display for UnaryFloatOp {
+//     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+//         match self {
+//             UnaryFloatOp::Neg => write!(f, "neg.f"),
+//             UnaryFloatOp::Sqrt => write!(f, "sqrt.f"),
+//         }
+//     }
+// }
+//
+// #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+// pub enum BinaryFloatOp {
+//     Add,
+//     Sub,
+//     Mul,
+//     Div,
+// }
+//
+// impl Display for BinaryFloatOp {
+//     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+//         match self {
+//             BinaryFloatOp::Add => write!(f, "add.f"),
+//             BinaryFloatOp::Sub => write!(f, "sub.f"),
+//             BinaryFloatOp::Mul => write!(f, "mul.f"),
+//             BinaryFloatOp::Div => write!(f, "div.f"),
+//         }
+//     }
+// }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, strum_macros::Display)]
 pub enum UnaryOp {
@@ -161,8 +161,8 @@ pub enum SSAExpr {
     ArithInt(ArithOp, SSAVar, SSAVar),
     UnaryOp(UnaryOp, SSAVar),
     IntCmp(Comp, SSAVar, SSAVar),
-    UnaryFloat(UnaryFloatOp, SSAVar),
-    BinaryFloat(BinaryFloatOp, SSAVar, SSAVar),
+    //    UnaryFloat(UnaryFloatOp, SSAVar),
+    //    BinaryFloat(BinaryFloatOp, SSAVar, SSAVar),
     MakeBlock {
         tag: u8,
         vars: Vec<SSAVar>,
@@ -226,13 +226,13 @@ impl ModifySSAVars for SSAExpr {
                 f(v1);
                 f(v2);
             }
-            SSAExpr::UnaryFloat(_, v) => {
-                f(v);
-            }
-            SSAExpr::BinaryFloat(_, v1, v2) => {
-                f(v1);
-                f(v2);
-            }
+            // SSAExpr::UnaryFloat(_, v) => {
+            //     f(v);
+            // }
+            // SSAExpr::BinaryFloat(_, v1, v2) => {
+            //     f(v1);
+            //     f(v2);
+            // }
             SSAExpr::MakeBlock { vars, .. } => {
                 vars.iter_mut().for_each(f);
             }
@@ -301,12 +301,12 @@ impl Display for SSAExpr {
                 Comp::ULt => write!(f, "{} u< {}", a, b)?,
                 Comp::UGe => write!(f, "{} u>= {}", a, b)?,
             },
-            SSAExpr::BinaryFloat(op, a, b) => {
-                write!(f, "{} {} {}", op, a, b)?;
-            }
-            SSAExpr::UnaryFloat(op, x) => {
-                write!(f, "{} {}", op, x)?;
-            }
+            // SSAExpr::BinaryFloat(op, a, b) => {
+            //     write!(f, "{} {} {}", op, a, b)?;
+            // }
+            // SSAExpr::UnaryFloat(op, x) => {
+            //     write!(f, "{} {}", op, x)?;
+            // }
             SSAExpr::MakeBlock { tag, vars } => {
                 write!(f, "make block tag:{} vars:", tag)?;
                 display_array(f, vars)?;

@@ -4,6 +4,7 @@ extern crate prettytable;
 use anyhow::{Context, Result};
 use structopt::StructOpt;
 
+use crate::commands::not_quite_so_clever_dis;
 use commands::{clever_dis, compare_traces, disassembler, hexdump, process_disassembly};
 
 mod bytecode_files;
@@ -20,6 +21,7 @@ enum BaseCli {
     CompareTraces(compare_traces::Options),
     ProcessDisassembly(process_disassembly::Options),
     CleverDis(clever_dis::Options),
+    NotQuiteSoCleverDis(not_quite_so_clever_dis::Options),
 }
 
 fn main() -> Result<()> {
@@ -32,6 +34,7 @@ fn main() -> Result<()> {
         BaseCli::CompareTraces(opts) => compare_traces::run(opts),
         BaseCli::ProcessDisassembly(opts) => process_disassembly::run(opts),
         BaseCli::CleverDis(opts) => clever_dis::run(opts),
+        BaseCli::NotQuiteSoCleverDis(opts) => not_quite_so_clever_dis::run(opts),
     }
 }
 

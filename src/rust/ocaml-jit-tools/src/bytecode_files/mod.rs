@@ -8,7 +8,7 @@ pub use error::ParseFileError;
 pub use ml_data::{MLValue, MLValueBlock, MLValueBlocks, MLValueString};
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 pub use trailer::Trailer;
-use trailer::{CODE_SECTION, DATA_SECTION};
+use trailer::DATA_SECTION;
 
 mod bytecode;
 pub mod debug_events;
@@ -21,7 +21,7 @@ pub mod trailer;
 pub struct BytecodeFile {
     pub trailer: Trailer,
     pub primitives: Vec<String>,
-    pub code: Vec<u8>,
+    pub code: Vec<i32>,
     pub global_data_blocks: MLValueBlocks,
     pub global_data: MLValue,
     pub symbol_table: HashMap<usize, String>,
@@ -33,10 +33,7 @@ pub fn parse_bytecode_file(f: &mut File) -> Result<BytecodeFile> {
     let primitives =
         primitives::parse_primitives(f, &trailer).context("Problem parsing primitives")?;
 
-    let code = trailer
-        .find_required_section(CODE_SECTION)?
-        .read_section_vec(f)
-        .context("Problem reading code section")?;
+    let code = bytecode::read_code_section(f, &trailer)?;
 
     let (global_data_blocks, global_data) = {
         let mut data_section = trailer

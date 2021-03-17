@@ -35,21 +35,18 @@ fn find_block_starts_dfs(
         Ok(())
     };
 
-    let mut current_offset = start_offset;
     let mut to_visit = vec![];
 
     while let Some(instr) = inst_iter.next() {
         let instr = instr?;
         match instr {
-            Instruction::LabelDef(l) => {
-                current_offset = l.0;
+            Instruction::LabelDef(_)
+            | Instruction::PushRetAddr(_)
+            | Instruction::Closure(_, _)
+            | Instruction::ClosureRec(_, _) => {
                 continue;
             }
-            Instruction::PushRetAddr(_) => {
-                // We deal with > 5 arity differently without
-                // making a new basic block
-                continue;
-            }
+
             _ => (),
         }
         to_visit.clear();
@@ -72,15 +69,15 @@ fn find_block_starts_dfs(
             }
 
             // These don't follow through but do end the block
-            Instruction::Branch(_) => {}
-            Instruction::ApplyTerm(_, _) => {}
-            Instruction::Return(_) => {}
-            Instruction::Switch(_, _) => {}
-            Instruction::Raise(_) => {}
-            Instruction::Stop => {}
-            _ => {
+            Instruction::Branch(_)
+            | Instruction::ApplyTerm(_, _)
+            | Instruction::Return(_)
+            | Instruction::Switch(_, _)
+            | Instruction::Raise(_)
+            | Instruction::Stop => {
                 break;
             }
+            _ => {}
         }
     }
 
@@ -108,7 +105,7 @@ fn convert_dfs(
         code,
         block_starts,
         seen: HashMap::new(),
-        total_blocks: block_starts.len(),
+        used_closures: Vec::new(),
         finished: Vec::new(),
     };
     search_state.visit(entrypoint, None, arity as u32, BasicBlockType::First)?;
@@ -142,14 +139,18 @@ fn convert_dfs(
         block.predecessors.iter_mut().for_each(relocate_offset);
     }
 
-    Ok(BasicClosure { arity, blocks })
+    Ok(BasicClosure {
+        arity,
+        blocks,
+        used_closures: search_state.used_closures,
+    })
 }
 
 struct SearchState<'a> {
     code: &'a [i32],
     block_starts: &'a HashSet<usize>,
     seen: HashMap<usize, PendingBlock>,
-    total_blocks: usize,
+    used_closures: Vec<usize>,
     // During the search this will hold things in post-order
     finished: Vec<FinishedBlock>,
 }
@@ -299,16 +300,28 @@ impl<'a> SearchState<'a> {
                         Instruction::Restart => {}
                         Instruction::Grab(_) => {}
                         Instruction::Closure(l, nvars) => {
-                            ensure!(stack_size >= nvars - 1);
-                            stack_size -= nvars;
+                            if nvars > 0 {
+                                ensure!(stack_size >= nvars - 1);
+                                stack_size -= nvars - 1;
+                            }
                             instructions.push(Closure(l.0, nvars));
+                            self.used_closures.push(l.0);
                         }
                         Instruction::ClosureRec(closures, nvars) => {
-                            ensure!(stack_size >= nvars - 1);
-                            stack_size -= nvars - 1;
-                            stack_size += closures.len() as u32 - 1;
+                            if nvars > 0 {
+                                ensure!(stack_size >= nvars - 1);
+                                stack_size -= nvars - 1;
+                            }
+                            stack_size += closures.len() as u32;
                             instructions.push(ClosureRec(
-                                closures.into_iter().map(|x| x.0).collect(),
+                                closures
+                                    .into_iter()
+                                    .map(|x| {
+                                        let offset = x.0;
+                                        self.used_closures.push(offset);
+                                        offset
+                                    })
+                                    .collect(),
                                 nvars,
                             ));
                         }
@@ -319,8 +332,6 @@ impl<'a> SearchState<'a> {
                             instructions.push(GetGlobal(g));
                         }
                         Instruction::SetGlobal(g) => {
-                            ensure!(stack_size >= 1);
-                            stack_size -= 1;
                             instructions.push(SetGlobal(g));
                         }
                         Instruction::Const(i) => {
@@ -329,13 +340,13 @@ impl<'a> SearchState<'a> {
                         Instruction::MakeBlock(size, tag) => {
                             let to_pop = if size > 0 { size - 1 } else { 0 };
                             ensure!(stack_size >= to_pop);
-                            stack_size -= (size - to_pop);
+                            stack_size -= to_pop;
                             instructions.push(MakeBlock(size, tag));
                         }
                         Instruction::MakeFloatBlock(size) => {
                             let to_pop = if size > 0 { size - 1 } else { 0 };
                             ensure!(stack_size >= to_pop);
-                            stack_size -= (size - to_pop);
+                            stack_size -= to_pop;
                             instructions.push(MakeFloatBlock(size));
                         }
                         Instruction::GetField(n) => {
@@ -391,13 +402,13 @@ impl<'a> SearchState<'a> {
                             let then_block = to.0;
                             let else_block = inst_iter.current_position();
                             self.visit(
-                                then_block,
+                                else_block,
                                 Some(entrypoint),
                                 stack_size,
                                 BasicBlockType::Normal,
                             )?;
                             self.visit(
-                                else_block,
+                                then_block,
                                 Some(entrypoint),
                                 stack_size,
                                 BasicBlockType::Normal,
@@ -411,13 +422,13 @@ impl<'a> SearchState<'a> {
                             let then_block = inst_iter.current_position();
                             let else_block = to.0;
                             self.visit(
-                                then_block,
+                                else_block,
                                 Some(entrypoint),
                                 stack_size,
                                 BasicBlockType::Normal,
                             )?;
                             self.visit(
-                                else_block,
+                                then_block,
                                 Some(entrypoint),
                                 stack_size,
                                 BasicBlockType::Normal,
@@ -462,13 +473,13 @@ impl<'a> SearchState<'a> {
                         Instruction::PushTrap(to) => {
                             let trap = to.0;
                             let normal = inst_iter.current_position();
+                            self.visit(trap, Some(entrypoint), stack_size, BasicBlockType::Normal)?;
                             self.visit(
                                 normal,
                                 Some(entrypoint),
                                 stack_size + 4,
                                 BasicBlockType::Normal,
                             )?;
-                            self.visit(trap, Some(entrypoint), stack_size, BasicBlockType::Normal)?;
                             stack_size += 4; // Consider normal as the end stack size
                             exit = Some(PushTrap { normal, trap });
                         }
@@ -571,7 +582,7 @@ impl<'a> SearchState<'a> {
                             instructions.push(GetDynMet);
                         }
                         Instruction::Stop => {
-                            ensure!(stack_size == 0);
+                            ensure!(stack_size == 1);
                             exit = Some(Stop);
                         }
                         // Ignore break/event

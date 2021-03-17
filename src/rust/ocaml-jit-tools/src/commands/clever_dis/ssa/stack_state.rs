@@ -8,7 +8,7 @@ use std::fmt::{Display, Formatter};
 pub struct SSAStackState {
     stack: Vec<SSAVar>,
     accu: SSAVar,
-    stack_start: usize,
+    pub stack_start: usize,
     pub used_prev: HashSet<SSASubstitutionTarget>,
 }
 
@@ -88,7 +88,7 @@ impl SSAStackState {
     }
 
     pub fn delta(&self) -> isize {
-        return self.stack.len() as isize - self.stack_start as isize;
+        self.stack.len() as isize - self.stack_start as isize
     }
 }
 
