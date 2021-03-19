@@ -1,0 +1,21 @@
+function u0:0(r64, r64, r64) -> r64 system_v {
+    sig0 = (r64, r64) -> r64 system_v
+    fn0 = u0:1 sig0
+
+block0(v0: r64, v1: r64, v2: r64):
+    v3 = null.r64 
+    v4 = call fn0(v1, v2)
+    v5 = raw_bitcast.i64 v4
+    v6 = icmp_imm eq v5, 1
+    brz v6, block1
+    jump block2
+
+block1:
+    jump block3(v2)
+
+block2:
+    jump block3(v1)
+
+block3(v7: r64):
+    return v7
+}

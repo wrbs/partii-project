@@ -134,7 +134,6 @@ fn process_body_instruction(
     vars: &mut Vars,
     instr: &Instruction<usize>,
 ) -> Result<()> {
-    eprint!("{}: {:?}", state.delta(), instr);
     match instr {
         Instruction::ApplyTerm(_, _)
         | Instruction::Apply(_)
@@ -402,8 +401,6 @@ fn process_body_instruction(
         }
         Instruction::Break | Instruction::Event => (),
     }
-
-    eprintln!(" => {}", state.delta());
 
     Ok(())
 }

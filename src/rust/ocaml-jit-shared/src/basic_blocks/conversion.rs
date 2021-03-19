@@ -1,7 +1,10 @@
 use super::types::*;
 use crate::{Instruction, InstructionIterator, Opcode};
 use anyhow::{anyhow, ensure, Result};
-use std::collections::{HashMap, HashSet};
+use std::{
+    cmp::max,
+    collections::{HashMap, HashSet},
+};
 
 // Conversion of a closure
 
@@ -107,6 +110,7 @@ fn convert_dfs(
         seen: HashMap::new(),
         used_closures: Vec::new(),
         finished: Vec::new(),
+        max_stack_size: 0,
     };
     search_state.visit(entrypoint, None, arity as u32, BasicBlockType::First)?;
 
@@ -124,6 +128,7 @@ fn convert_dfs(
             exit: finished_block.exit,
             start_stack_size: pending_block.start_stack_size,
             end_stack_size: finished_block.end_stack_size,
+            sealed_blocks: Vec::new(),
         });
         offset_to_block_id_map.insert(finished_block.offset, block_id);
     }
@@ -139,10 +144,24 @@ fn convert_dfs(
         block.predecessors.iter_mut().for_each(relocate_offset);
     }
 
+    let mut max_preds = vec![];
+
+    // Work out sealed blocks
+    for block in blocks.iter() {
+        max_preds.push(block.predecessors.iter().max().copied());
+    }
+
+    for (block_id, max_pred_opt) in max_preds.into_iter().enumerate() {
+        if let Some(max_pred) = max_pred_opt {
+            blocks[max_pred].sealed_blocks.push(block_id)
+        }
+    }
+
     Ok(BasicClosure {
         arity,
         blocks,
         used_closures: search_state.used_closures,
+        max_stack_size: search_state.max_stack_size,
     })
 }
 
@@ -151,6 +170,7 @@ struct SearchState<'a> {
     block_starts: &'a HashSet<usize>,
     seen: HashMap<usize, PendingBlock>,
     used_closures: Vec<usize>,
+    max_stack_size: u32,
     // During the search this will hold things in post-order
     finished: Vec<FinishedBlock>,
 }
@@ -218,6 +238,10 @@ impl<'a> SearchState<'a> {
         );
 
         loop {
+            if stack_size > self.max_stack_size {
+                self.max_stack_size = stack_size;
+            }
+
             match exit {
                 None => {
                     let instr = inst_iter
