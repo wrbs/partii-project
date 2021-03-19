@@ -17,6 +17,7 @@ fn run_test(
     closure_json: &str,
     expected_codegen: ExpectFile,
     expected_compile: ExpectFile,
+    expected_stack_maps: ExpectFile,
     expected_disasm: ExpectFile,
     expected_objdump: ExpectFile,
 ) {
@@ -60,6 +61,7 @@ fn run_test(
 
     expected_codegen.assert_eq(&compiler_output.ir_after_codegen);
     expected_compile.assert_eq(&compiler_output.ir_after_compile);
+    expected_stack_maps.assert_eq(&compiler_output.stack_maps);
     expected_disasm.assert_eq(&compiler_output.disasm);
     expected_objdump.assert_eq(&objdump_output);
 }
@@ -92,6 +94,7 @@ macro_rules! test_case {
                     stringify!($case),
                     "/ir-after-compile"
                 )],
+                expect_file![concat!("./test_cases/", stringify!($case), "/stack-maps")],
                 expect_file![concat!("./test_cases/", stringify!($case), "/disasm")],
                 expect_file![concat!("./test_cases/", stringify!($case), "/objdump")],
             );

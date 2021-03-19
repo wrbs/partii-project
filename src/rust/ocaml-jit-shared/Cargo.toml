@@ -8,17 +8,17 @@ edition = "2018"
 
 [dependencies]
 thiserror = "1.0"
-serde = {version = "1.0", features = ["derive"]}
+serde = { version = "1.0", features = ["derive"] }
 colored = "2"
 strum = "0.20"
 strum_macros = "0.20"
-cranelift = "0.72.0"
-cranelift-codegen = {version = "0.72.0", features = ["x64"]}
-cranelift-module = {version = "0.72.0"}
+cranelift = { git = "https://github.com/bytecodealliance/wasmtime.git", branch = "main" }
+cranelift-codegen = { git = "https://github.com/bytecodealliance/wasmtime.git", branch = "main", features = ["x64"] }
+cranelift-module = { git = "https://github.com/bytecodealliance/wasmtime.git", branch = "main" }
 anyhow = "1.0"
 
 [dev-dependencies]
 expect-test = "1.1"
 serde_json = "1.0"
-cranelift-object = "0.72.0"
+cranelift-object = { git = "https://github.com/bytecodealliance/wasmtime.git", branch = "main" }
 tempfile = "3.2"
