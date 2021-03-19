@@ -6,6 +6,7 @@ pub struct BasicClosure {
     pub arity: usize,
     pub blocks: Vec<BasicBlock>,
     pub used_closures: Vec<usize>,
+    pub max_stack_size: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
@@ -24,6 +25,19 @@ pub struct BasicBlock {
     pub exit: BasicBlockExit,
     pub start_stack_size: u32,
     pub end_stack_size: u32,
+
+    // When traversing the blocks in their ordering, which blocks
+    // is this block the last predecessor of - used to seal blocks
+    // in the SSA conversion scheme
+    pub sealed_blocks: Vec<usize>,
+}
+
+impl BasicBlock {
+    pub fn has_back_edges(&self) -> bool {
+        self.predecessors
+            .iter()
+            .any(|other_id| *other_id >= self.block_id)
+    }
 }
 
 // Instructions are generic over a few parameters

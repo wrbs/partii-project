@@ -1,0 +1,63 @@
+VCode_ShowWithRRU {{
+  Entry block: 0
+Block 0:
+  (original IR block: block0)
+  (successor: Block 1)
+  (successor: Block 3)
+  (instruction range: 0 .. 25)
+  Inst 0:   pushq   %rbp
+  Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
+  Inst 2:   movq    %rsp, %rbp
+  Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 16 }
+  Inst 4:   subq    $48, %rsp
+  Inst 5:   movq    %r12, 32(%rsp)
+  Inst 6:   unwind SaveReg { clobber_offset: 0, reg: r25J }
+  Inst 7:   movq    %r13, 40(%rsp)
+  Inst 8:   unwind SaveReg { clobber_offset: 8, reg: r26J }
+  Inst 9:   movq    %rsi, %r12
+  Inst 10:   movq    %rdx, %r13
+  Inst 11:   movq    %r12, %rdi
+  Inst 12:   movq    %r13, %rsi
+  Inst 13:   load_ext_name u0:1+0, %rax
+  Inst 14:   movq    %rsi, rsp(0 + virtual offset)
+  Inst 15:   movq    %r13, rsp(8 + virtual offset)
+  Inst 16:   movq    %rdi, rsp(16 + virtual offset)
+  Inst 17:   movq    %r12, rsp(24 + virtual offset)
+      (safepoint: slots [S0, S1, S2, S3] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 18:   call    *%rax
+  Inst 19:   movq    rsp(24 + virtual offset), %r12
+  Inst 20:   movq    rsp(8 + virtual offset), %r13
+  Inst 21:   movq    %rax, %rsi
+  Inst 22:   movl    $1, %edi
+  Inst 23:   cmpq    %rdi, %rsi
+  Inst 24:   jz      label1; j label3
+Block 1:
+  (original IR block: block2)
+  (successor: Block 2)
+  (instruction range: 25 .. 26)
+  Inst 25:   jmp     label2
+Block 2:
+  (successor: Block 5)
+  (instruction range: 26 .. 27)
+  Inst 26:   jmp     label5
+Block 3:
+  (original IR block: block1)
+  (successor: Block 4)
+  (instruction range: 27 .. 28)
+  Inst 27:   jmp     label4
+Block 4:
+  (successor: Block 5)
+  (instruction range: 28 .. 30)
+  Inst 28:   movq    %r13, %r12
+  Inst 29:   jmp     label5
+Block 5:
+  (original IR block: block3)
+  (instruction range: 30 .. 37)
+  Inst 30:   movq    %r12, %rax
+  Inst 31:   movq    32(%rsp), %r12
+  Inst 32:   movq    40(%rsp), %r13
+  Inst 33:   addq    $48, %rsp
+  Inst 34:   movq    %rbp, %rsp
+  Inst 35:   popq    %rbp
+  Inst 36:   ret
+}}

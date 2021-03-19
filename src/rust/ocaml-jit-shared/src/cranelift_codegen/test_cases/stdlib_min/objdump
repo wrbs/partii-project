@@ -1,0 +1,38 @@
+
+<input>:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <stdlib_min>:
+   0:	55                   	push   %rbp
+   1:	48 89 e5             	mov    %rsp,%rbp
+   4:	48 83 ec 30          	sub    $0x30,%rsp
+   8:	4c 89 64 24 20       	mov    %r12,0x20(%rsp)
+   d:	4c 89 6c 24 28       	mov    %r13,0x28(%rsp)
+  12:	49 89 f4             	mov    %rsi,%r12
+  15:	49 89 d5             	mov    %rdx,%r13
+  18:	4c 89 e7             	mov    %r12,%rdi
+  1b:	4c 89 ee             	mov    %r13,%rsi
+  1e:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  25:	00 00 00 
+			20: R_X86_64_64	ccall233
+  28:	48 89 34 24          	mov    %rsi,(%rsp)
+  2c:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
+  31:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
+  36:	4c 89 64 24 18       	mov    %r12,0x18(%rsp)
+  3b:	ff d0                	call   *%rax
+  3d:	4c 8b 64 24 18       	mov    0x18(%rsp),%r12
+  42:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
+  47:	48 89 c6             	mov    %rax,%rsi
+  4a:	bf 01 00 00 00       	mov    $0x1,%edi
+  4f:	48 39 fe             	cmp    %rdi,%rsi
+  52:	0f 84 03 00 00 00    	je     5b <stdlib_min+0x5b>
+  58:	4d 89 ec             	mov    %r13,%r12
+  5b:	4c 89 e0             	mov    %r12,%rax
+  5e:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+  63:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
+  68:	48 83 c4 30          	add    $0x30,%rsp
+  6c:	48 89 ec             	mov    %rbp,%rsp
+  6f:	5d                   	pop    %rbp
+  70:	c3                   	ret    
