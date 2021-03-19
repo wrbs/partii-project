@@ -1,0 +1,8 @@
+0x3d: StackMap {
+    bitmap: [
+        BitSet(
+            15,
+        ),
+    ],
+    mapped_words: 4,
+}

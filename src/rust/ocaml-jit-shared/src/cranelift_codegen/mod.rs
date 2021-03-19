@@ -4,7 +4,11 @@ use crate::basic_blocks::{
     BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicBlockType, BasicClosure,
 };
 use anyhow::{bail, Result};
-use codegen::{print_errors::pretty_error, Context};
+use codegen::{
+    binemit::{StackMap, StackMapSink},
+    print_errors::pretty_error,
+    Context,
+};
 use cranelift::prelude::*;
 use cranelift_module::{FuncId, Linkage, Module, ModuleError};
 
@@ -16,6 +20,18 @@ pub struct CompilerOutput {
     ir_after_codegen: String,
     ir_after_compile: String,
     disasm: String,
+    stack_maps: String,
+}
+
+#[derive(Debug, Default)]
+struct StackMaps {
+    maps: HashMap<u32, StackMap>,
+}
+
+impl StackMapSink for StackMaps {
+    fn add_stack_map(&mut self, offset: codegen::binemit::CodeOffset, map: StackMap) {
+        self.maps.insert(offset, map);
+    }
 }
 
 pub fn compile_closure<M: Module>(
@@ -53,7 +69,13 @@ pub fn compile_closure<M: Module>(
 
     // Finalise and compile
     ctx.want_disasm = debug_output.is_some();
-    match module.define_function(func_id, ctx, &mut codegen::binemit::NullTrapSink {}) {
+    let mut stack_map_sink = StackMaps::default();
+    match module.define_function(
+        func_id,
+        ctx,
+        &mut codegen::binemit::NullTrapSink {},
+        &mut stack_map_sink,
+    ) {
         Ok(_) => (),
         Err(ModuleError::Compilation(e)) => {
             bail!("{}", pretty_error(&ctx.func, Some(module.isa()), e))
@@ -64,9 +86,13 @@ pub fn compile_closure<M: Module>(
 
     if let Some(co) = debug_output {
         co.ir_after_compile.clear();
+        co.stack_maps.clear();
         co.disasm.clear();
 
         write!(co.ir_after_compile, "{}", ctx.func.display(module.isa())).unwrap();
+        for (offset, map) in &stack_map_sink.maps {
+            writeln!(co.stack_maps, "0x{:x}: {:#?}", offset, map).unwrap();
+        }
 
         if let Some(disasm) = ctx
             .mach_compile_result
