@@ -1368,18 +1368,10 @@ impl CompilerContext {
     }
 
     fn perform_apply(&mut self) {
-        // Check stacks, checks signals then jumps to the closure stored in the accu
+        // This used to inline the stuff, but I'm changing it to jump to one apply function
         oc_dynasm!(self.ops
-            ; mov r_env, r_accu
-            // Check stacks
-            ; mov rdi, r_sp
-            ; mov rax, QWORD jit_support_check_stacks as i64
-            ; call rax
-            ; mov r_sp, rax
-            // Check signals - then jump to the PC saved in the closure
-            ; mov rsi, [r_accu]
+            ; jmp ->apply
         );
-        self.emit_check_signals(NextInstruction::UseRSI);
     }
 
     fn emit_check_signals(&mut self, next_instr: NextInstruction) {
@@ -1414,6 +1406,27 @@ impl CompilerContext {
     }
 
     fn emit_shared_code(&mut self) {
+        self.emit_apply_shared();
+        self.emit_process_events_shared();
+    }
+
+    fn emit_apply_shared(&mut self) {
+        // Check stacks, checks signals then jumps to the closure stored in the accu
+        oc_dynasm!(self.ops
+            ; ->apply:
+            ; mov r_env, r_accu
+            // Check stacks
+            ; mov rdi, r_sp
+            ; mov rax, QWORD jit_support_check_stacks as i64
+            ; call rax
+            ; mov r_sp, rax
+            // Check signals - then jump to the PC saved in the closure
+            ; mov rsi, [r_accu]
+        );
+        self.emit_check_signals(NextInstruction::UseRSI);
+    }
+
+    fn emit_process_events_shared(&mut self) {
         /* process_events - calling convention - put return address in rsi */
         oc_dynasm!(self.ops
             ; ->process_events:
