@@ -79,7 +79,8 @@ impl MmapInner {
     pub fn map_exec(len: usize, file: &File, offset: u64) -> io::Result<MmapInner> {
         MmapInner::new(
             len,
-            libc::PROT_READ | libc::PROT_EXEC,
+            // This is unsafe, but I'm doing it for now
+            libc::PROT_READ | libc::PROT_EXEC | libc::PROT_WRITE,
             libc::MAP_SHARED,
             file.as_raw_fd(),
             offset,
@@ -177,7 +178,8 @@ impl MmapInner {
     }
 
     pub fn make_exec(&mut self) -> io::Result<()> {
-        self.mprotect(libc::PROT_READ | libc::PROT_EXEC)
+        // unsafe, but makes my life easier at this late stage in the project
+        self.mprotect(libc::PROT_READ | libc::PROT_EXEC | libc::PROT_WRITE)
     }
 
     pub fn make_mut(&mut self) -> io::Result<()> {
