@@ -1,11 +1,14 @@
-use std::convert::TryInto;
 use std::ffi::{c_void, CStr};
 use std::os::raw::c_char;
+use std::{collections::HashMap, convert::TryInto};
 
 use dynasmrt::x64::Assembler;
 use dynasmrt::{dynasm, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi, ExecutableBuffer};
 
-use ocaml_jit_shared::{ArithOp, BytecodeRelativeOffset, Comp, Instruction, InstructionIterator};
+use ocaml_jit_shared::{
+    ArithOp, BytecodeRelativeOffset, Closure, ClosureIterator, Comp, FoundClosure, Instruction,
+    InstructionIterator,
+};
 
 use crate::caml::domain_state::get_extern_sp_addr;
 use crate::caml::mlvalues::{BlockValue, LongValue, Tag, Value};
@@ -24,6 +27,51 @@ struct CompilerContext {
     print_traces: bool,
     section_number: usize,
     current_instruction_offset: BytecodeRelativeOffset,
+    closures: HashMap<usize, ClosureData>,
+}
+
+struct ClosureData {
+    label: DynamicLabel,
+    bytecode_addr: usize,
+    arity: usize,
+    restart_label: Option<DynamicLabel>,
+}
+
+fn process_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, ClosureData> {
+    let mut closures = HashMap::new();
+
+    let mut add_closure = |func: Closure| {
+        let restart_label = if func.arity > 1 {
+            Some(ops.new_dynamic_label())
+        } else {
+            None
+        };
+        let old = closures.insert(
+            func.code_offset,
+            ClosureData {
+                label: ops.new_dynamic_label(),
+                arity: func.arity,
+                bytecode_addr: func.code_offset,
+                restart_label,
+            },
+        );
+        assert!(old.is_none());
+    };
+
+    for closure in ClosureIterator::new(code) {
+        match closure {
+            FoundClosure::Normal { func, .. } => {
+                add_closure(func);
+            }
+            FoundClosure::Rec { funcs, .. } => {
+                for func in funcs {
+                    add_closure(func);
+                }
+            }
+        }
+    }
+
+    closures
 }
 
 pub fn compile_instructions(
@@ -36,11 +84,13 @@ pub fn compile_instructions(
     *const c_void,
     Option<Vec<Instruction<BytecodeRelativeOffset>>>,
 ) {
-    let ops = Assembler::new().unwrap();
+    let mut ops = Assembler::new().unwrap();
 
     let labels = vec![None; code.len()];
 
     let mut instrs = if print_traces { Some(Vec::new()) } else { None };
+
+    let closures = process_closures(&mut ops, code);
 
     let mut cc = CompilerContext {
         ops,
@@ -48,6 +98,7 @@ pub fn compile_instructions(
         print_traces,
         section_number,
         current_instruction_offset: BytecodeRelativeOffset(0),
+        closures,
     };
 
     let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
@@ -65,6 +116,7 @@ pub fn compile_instructions(
     }
 
     cc.emit_shared_code();
+    cc.emit_closure_table();
 
     let ops = cc.ops;
     let buf = ops.finalize().unwrap();
@@ -149,6 +201,7 @@ pub fn emit_callback_entrypoint(
         labels,
         print_traces,
         section_number,
+        closures: HashMap::new(),
         current_instruction_offset: BytecodeRelativeOffset(0),
     };
 
@@ -526,10 +579,8 @@ impl CompilerContext {
                     ; jmp rax
                     ; tailcall:
                     ; dec r_extra_args
-                    ; mov r_env, r_accu
-                    ; mov rax, [r_accu]
-                    ; jmp rax
                 );
+                self.perform_apply();
             }
             Instruction::Restart => {
                 oc_dynasm!(self.ops
@@ -547,9 +598,12 @@ impl CompilerContext {
                 );
             }
             Instruction::Grab(required_arg_count) => {
-                let prev_restart = self.get_label(&BytecodeRelativeOffset(
-                    self.current_instruction_offset.0 - 1, // RESTART always appears before GRAB
-                ));
+                let restart_label = self
+                    .closures
+                    .get(&self.current_instruction_offset.0)
+                    .unwrap()
+                    .restart_label
+                    .unwrap();
                 oc_dynasm!(self.ops
                     ; mov rax, *required_arg_count as i32
                     // If extra_args >= required
@@ -559,14 +613,13 @@ impl CompilerContext {
                     ; sub r_extra_args, rax
                     ; jmp >next
 
-                    // Otherwise something more complicated - leave for now
                     ; re_closure:
                     ; push r_extra_args
                     ; push r_sp
                     ; push r_env
                     ; push r_accu
                     ; mov rdi, rsp
-                    ; lea rsi, [=>prev_restart]
+                    ; lea rsi, [=>restart_label]
                     ; mov rax, QWORD jit_support_grab_closure as i64
                     ; call rax
                     ; pop r_accu
@@ -579,7 +632,7 @@ impl CompilerContext {
             }
             Instruction::Closure(codeval, nargs) => {
                 let nargs = *nargs as i32;
-                let label = self.get_label(codeval);
+                let closure = self.closures.get(&codeval.0).unwrap();
                 oc_dynasm!(self.ops
                     ; push r_extra_args
                     ; push r_sp
@@ -587,7 +640,7 @@ impl CompilerContext {
                     ; push r_accu
                     ; mov rdi, rsp
                     ; mov rsi, nargs
-                    ; lea rdx, [=>label]
+                    ; lea rdx, [=>closure.label]
                     ; mov rax, QWORD jit_support_closure as i64
                     ; call rax
                     ; pop r_accu
@@ -610,9 +663,9 @@ impl CompilerContext {
                 // Push all of the functions also onto the stack and put a pointer in the
                 // argument position
                 for offset in funcs.iter().rev() {
-                    let func = self.get_label(offset);
+                    let closure = self.closures.get(&offset.0).unwrap();
                     oc_dynasm!(self.ops
-                        ; lea rax, [=>func]
+                        ; lea rax, [=>closure.label]
                         ; push rax
                     );
                 }
@@ -912,7 +965,6 @@ impl CompilerContext {
                 self.emit_return();
             }
             Instruction::CCall1(primno) => {
-                // FIXME Setup_for_c_call
                 // TODO - possible optimisation, could load the static address
                 // if it's currently in the table
                 self.setup_for_c_call();
@@ -1421,9 +1473,39 @@ impl CompilerContext {
             ; call rax
             ; mov r_sp, rax
             // Check signals - then jump to the PC saved in the closure
-            ; mov rsi, [r_accu]
+            ; mov rax, [r_accu]
+            ; mov rsi, [rax]
         );
         self.emit_check_signals(NextInstruction::UseRSI);
+    }
+
+    fn emit_closure_table(&mut self) {
+        // This table contains structs where all fields are 64 bits:
+        //
+        // BYTECODE ADDR (absolute)
+        // NUMBER OF TIMES CALLED
+
+        // To make borrow checker happy, do a swap
+        let mut closures = HashMap::new();
+        std::mem::swap(&mut closures, &mut self.closures);
+        for closure in closures.values() {
+            if let Some(restart_label) = closure.restart_label {
+                let restart_addr =
+                    self.get_label(&BytecodeRelativeOffset(closure.bytecode_addr - 1));
+                oc_dynasm!(self.ops
+                    ; =>restart_label
+                    ;.qword => restart_addr  // restart addr
+                    ; .qword -1              // not used/tag for restart?
+                );
+            }
+
+            let bca = self.get_label(&BytecodeRelativeOffset(closure.bytecode_addr));
+            oc_dynasm!(self.ops
+                ; =>closure.label
+                ; .qword =>bca   // bytecode addr
+                ; .qword 0       // call count
+            );
+        }
     }
 
     fn emit_process_events_shared(&mut self) {
