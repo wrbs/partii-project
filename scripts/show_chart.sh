@@ -19,4 +19,6 @@ cd ${RUST_DIR}
 
 cargo run --release -- clever-dis --dot "${OUT_DIR}" ${TEST_PROGRAMS_DIR}/out/${PROGRAM}.byte "$@"
 
-$BROWSER "${OUT_DIR}/root.svg"
+if [ -z "${NO_OPEN+x}" ]; then
+  $BROWSER "${OUT_DIR}/root.svg"
+fi
