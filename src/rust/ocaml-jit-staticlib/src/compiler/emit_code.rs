@@ -1481,7 +1481,7 @@ impl CompilerContext {
             // for now just increment counter
             ; inc rsi
 
-            // ; mov [rax], rsi
+            ; mov [rax], rsi
 
             // Check signals - then jump to the PC saved in the closure
             ; bytecall:

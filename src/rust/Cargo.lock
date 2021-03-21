@@ -313,7 +313,6 @@ checksum = "fc4b29f4b9bb94bf267d57269fd0706d343a160937108e9619fe380645428abb"
 [[package]]
 name = "dynasm"
 version = "1.0.1"
-source = "git+https://github.com/wrbs/dynasm-rs?branch=reloc-data#faeac8b124a728ac4d2d5d3bf2b605fb874a8fe8"
 dependencies = [
  "bitflags",
  "byteorder",
@@ -327,7 +326,6 @@ dependencies = [
 [[package]]
 name = "dynasmrt"
 version = "1.0.1"
-source = "git+https://github.com/wrbs/dynasm-rs?branch=reloc-data#faeac8b124a728ac4d2d5d3bf2b605fb874a8fe8"
 dependencies = [
  "byteorder",
  "dynasm",
@@ -478,8 +476,6 @@ checksum = "3728d817d99e5ac407411fa471ff9800a778d88a24685968b36824eaf4bee400"
 [[package]]
 name = "memmap2"
 version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04e3e85b970d650e2ae6d70592474087051c11c54da7f7b4949725c5735fbcc6"
 dependencies = [
  "libc",
 ]
