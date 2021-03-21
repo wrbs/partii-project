@@ -1472,18 +1472,38 @@ impl CompilerContext {
             ; mov rax, QWORD jit_support_check_stacks as i64
             ; call rax
             ; mov r_sp, rax
-            // Check signals - then jump to the PC saved in the closure
+
+            // Check count and perform actions
             ; mov rax, [r_accu]
             ; mov rsi, [rax]
+            ; cmp rsi, 0
+            ; jl >bytecall
+            // for now just increment counter
+            ; inc rsi
+
+            // ; mov [rax], rsi
+
+            // Check signals - then jump to the PC saved in the closure
+            ; bytecall:
+            ; mov rax, [r_accu]
+            ; mov rsi, [rax + 8]
         );
         self.emit_check_signals(NextInstruction::UseRSI);
     }
 
     fn emit_closure_table(&mut self) {
-        // This table contains structs where all fields are 64 bits:
+        // This table contains a struct:
         //
-        // BYTECODE ADDR (absolute)
-        // NUMBER OF TIMES CALLED
+        // Call count/status:
+        // +ve = call count
+        // -1  = restart, don't optimise
+        // -2  = use optimised C version
+        //
+        // The fields are
+        // qword call count/status (see above)
+        // qword address to use (either bytecode/optimised)
+        // dword section number
+        // dword bytecode offset
 
         // To make borrow checker happy, do a swap
         let mut closures = HashMap::new();
@@ -1494,16 +1514,20 @@ impl CompilerContext {
                     self.get_label(&BytecodeRelativeOffset(closure.bytecode_addr - 1));
                 oc_dynasm!(self.ops
                     ; =>restart_label
-                    ;.qword => restart_addr  // restart addr
                     ; .qword -1              // not used/tag for restart?
+                    ; .qword =>restart_addr  // restart addr
+                    ; .dword self.section_number as _
+                    ; .dword (closure.bytecode_addr - 1) as _
                 );
             }
 
             let bca = self.get_label(&BytecodeRelativeOffset(closure.bytecode_addr));
             oc_dynasm!(self.ops
                 ; =>closure.label
-                ; .qword =>bca   // bytecode addr
                 ; .qword 0       // call count
+                ; .qword =>bca   // bytecode addr
+                ; .dword self.section_number as _
+                ; .dword closure.bytecode_addr as _
             );
         }
     }
