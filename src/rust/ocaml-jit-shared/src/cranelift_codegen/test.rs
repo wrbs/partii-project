@@ -10,7 +10,7 @@ use cranelift_codegen::{
 use cranelift_module::{default_libcall_names, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use expect_test::{expect_file, ExpectFile};
-use tempfile::{tempfile, NamedTempFile};
+use tempfile::NamedTempFile;
 
 fn run_test(
     case_name: &str,

@@ -41,7 +41,6 @@ struct CompilerContext {
 struct ClosureData {
     label: DynamicLabel,
     bytecode_addr: usize,
-    arity: usize,
     restart_label: Option<DynamicLabel>,
 }
 
@@ -58,7 +57,6 @@ fn process_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, Closure
             func.code_offset,
             ClosureData {
                 label: ops.new_dynamic_label(),
-                arity: func.arity,
                 bytecode_addr: func.code_offset,
                 restart_label,
             },

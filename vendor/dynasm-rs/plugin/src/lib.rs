@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 #![cfg_attr(feature = "filelocal", feature(proc_macro_span))]
 //! The dynasm crate contains the procedural macros that power the magic of dynasm-rs. It seamlessly integrates
 //! a full dynamic assembler for several assembly dialects with rust code.

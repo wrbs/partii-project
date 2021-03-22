@@ -1,10 +1,7 @@
 use super::types::*;
 use crate::{Instruction, InstructionIterator, Opcode};
 use anyhow::{anyhow, ensure, Result};
-use std::{
-    cmp::max,
-    collections::{HashMap, HashSet},
-};
+use std::collections::{HashMap, HashSet};
 
 // Conversion of a closure
 
