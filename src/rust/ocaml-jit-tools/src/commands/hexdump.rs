@@ -1,13 +1,14 @@
-use std::fs::File;
-use std::io;
-use std::io::{Read, Seek};
-use std::path::PathBuf;
+use std::{
+    fs::File,
+    io,
+    io::{Read, Seek},
+    path::PathBuf,
+};
 
 use anyhow::{bail, Context, Result};
 use colored::Colorize;
 use pretty_hex::PrettyHex;
-use prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE;
-use prettytable::Table;
+use prettytable::{format::consts::FORMAT_NO_LINESEP_WITH_TITLE, Table};
 use structopt::StructOpt;
 
 use crate::bytecode_files::trailer::{parse_trailer, TRAILER_LENGTH};

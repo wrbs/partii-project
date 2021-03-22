@@ -1,8 +1,10 @@
 use crate::commands::clever_dis::ssa::data::{ModifySSAVars, SSASubstitutionTarget, SSAVar};
 use itertools::Itertools;
-use std::cmp::max;
-use std::collections::HashSet;
-use std::fmt::{Display, Formatter};
+use std::{
+    cmp::max,
+    collections::HashSet,
+    fmt::{Display, Formatter},
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SSAStackState {
@@ -139,7 +141,6 @@ impl Display for SSAStackState {
 
 #[cfg(test)]
 mod test {
-
     use super::SSAStackState;
     use crate::commands::clever_dis::ssa::data::SSAVar;
     use expect_test::{expect, Expect};

@@ -1,8 +1,4 @@
-use std::borrow::Borrow;
-use std::collections::HashMap;
-use std::fmt;
-use std::fs::File;
-use std::rc::Rc;
+use std::{borrow::Borrow, collections::HashMap, fmt, fs::File, rc::Rc};
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use byteorder::{BigEndian, ReadBytesExt};
@@ -10,8 +6,10 @@ use byteorder::{BigEndian, ReadBytesExt};
 use crate::bytecode_files::{MLValue, MLValueBlocks, MLValueString};
 use serde::{Deserialize, Serialize};
 
-use super::ml_data::input_value;
-use super::trailer::{Trailer, DBUG_SECTION};
+use super::{
+    ml_data::input_value,
+    trailer::{Trailer, DBUG_SECTION},
+};
 
 pub struct DebugEventList {
     pub orig: u32,

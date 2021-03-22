@@ -1,8 +1,10 @@
-use std::ffi::OsString;
-use std::fs::{create_dir_all, File};
-use std::io::Write;
-use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::{
+    ffi::OsString,
+    fs::{create_dir_all, File},
+    io::Write,
+    path::PathBuf,
+    process::{Command, Stdio},
+};
 
 use anyhow::{bail, Context, Result};
 use indicatif::{ProgressBar, ProgressStyle};
@@ -10,8 +12,7 @@ use itertools::{EitherOrBoth, Itertools};
 
 use ocaml_jit_shared::Instruction;
 
-use super::data::*;
-use super::DotShow;
+use super::{data::*, DotShow};
 use crate::commands::clever_dis::ssa::data::SSAClosure;
 
 #[derive(Debug)]

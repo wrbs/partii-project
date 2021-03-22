@@ -2,9 +2,11 @@
 // This is used for serialization in OCaml - specifically especially to store metadata inside of
 // bytecode files
 
-use std::borrow::Borrow;
-use std::fmt::{Display, Formatter};
-use std::io::Read;
+use std::{
+    borrow::Borrow,
+    fmt::{Display, Formatter},
+    io::Read,
+};
 
 use anyhow::{bail, ensure, Context, Result};
 use byteorder::{BigEndian, ReadBytesExt};

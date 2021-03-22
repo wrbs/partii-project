@@ -1,14 +1,11 @@
-use std::fs::File;
-use std::path::PathBuf;
+use std::{fs::File, path::PathBuf};
 
 use anyhow::{Context, Result};
-use structopt::clap::arg_enum;
-use structopt::StructOpt;
+use structopt::{clap::arg_enum, StructOpt};
 
 use parsing::process_bytecode;
 
-use crate::bytecode_files::parse_bytecode_file;
-use crate::commands::clever_dis::ssa::translate_closure;
+use crate::{bytecode_files::parse_bytecode_file, commands::clever_dis::ssa::translate_closure};
 
 mod data;
 mod parsing;

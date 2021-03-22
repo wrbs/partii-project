@@ -31,8 +31,12 @@ const SECTION_MAP_READ: DWORD = 0x0004;
 const SECTION_MAP_EXECUTE: DWORD = 0x0008;
 const SECTION_EXTEND_SIZE: DWORD = 0x0010;
 const SECTION_MAP_EXECUTE_EXPLICIT: DWORD = 0x0020;
-const SECTION_ALL_ACCESS: DWORD = STANDARD_RIGHTS_REQUIRED | SECTION_QUERY
-    | SECTION_MAP_WRITE | SECTION_MAP_READ | SECTION_MAP_EXECUTE | SECTION_EXTEND_SIZE;
+const SECTION_ALL_ACCESS: DWORD = STANDARD_RIGHTS_REQUIRED
+    | SECTION_QUERY
+    | SECTION_MAP_WRITE
+    | SECTION_MAP_READ
+    | SECTION_MAP_EXECUTE
+    | SECTION_EXTEND_SIZE;
 
 const PAGE_READONLY: DWORD = 0x02;
 const PAGE_READWRITE: DWORD = 0x04;
@@ -82,9 +86,7 @@ struct SYSTEM_INFO {
 }
 
 extern "system" {
-    fn CloseHandle(
-        hObject: HANDLE,
-    ) -> BOOL;
+    fn CloseHandle(hObject: HANDLE) -> BOOL;
 
     fn CreateFileMappingW(
         hFile: HANDLE,
@@ -95,14 +97,9 @@ extern "system" {
         lpName: LPCWSTR,
     ) -> HANDLE;
 
-    fn FlushViewOfFile(
-        lpBaseAddress: LPCVOID,
-        dwNumberOfBytesToFlush: SIZE_T,
-    ) -> BOOL;
+    fn FlushViewOfFile(lpBaseAddress: LPCVOID, dwNumberOfBytesToFlush: SIZE_T) -> BOOL;
 
-    fn UnmapViewOfFile(
-        lpBaseAddress: LPCVOID,
-    ) -> BOOL;
+    fn UnmapViewOfFile(lpBaseAddress: LPCVOID) -> BOOL;
 
     fn MapViewOfFile(
         hFileMappingObject: HANDLE,
@@ -119,9 +116,7 @@ extern "system" {
         lpflOldProtect: PDWORD,
     ) -> BOOL;
 
-    fn GetSystemInfo(
-        lpSystemInfo: LPSYSTEM_INFO,
-    );
+    fn GetSystemInfo(lpSystemInfo: LPSYSTEM_INFO);
 }
 
 pub struct MmapInner {

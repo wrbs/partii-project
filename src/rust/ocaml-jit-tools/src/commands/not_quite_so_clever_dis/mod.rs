@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::path::PathBuf;
+use std::{fs::File, path::PathBuf};
 
 use anyhow::{Context, Result};
 use structopt::StructOpt;

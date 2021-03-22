@@ -1,7 +1,9 @@
-use std::fs::File;
-use std::io::{BufRead, BufReader, Lines};
-use std::iter::Peekable;
-use std::path::PathBuf;
+use std::{
+    fs::File,
+    io::{BufRead, BufReader, Lines},
+    iter::Peekable,
+    path::PathBuf,
+};
 
 use anyhow::{anyhow, bail, Result};
 use structopt::StructOpt;
@@ -86,7 +88,7 @@ pub fn run(options: Options) -> Result<()> {
                         | Instruction::Stop => {
                             extra_newline = true;
                         }
-                        _ => (),
+                        _ => {}
                     }
                 } else {
                     print!(", ");

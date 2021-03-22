@@ -4,8 +4,7 @@ use anyhow::{anyhow, bail, Result};
 
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 
-use crate::bytecode_files::debug_events::DebugEvent;
-use crate::bytecode_files::{BytecodeFile, MLValue};
+use crate::bytecode_files::{debug_events::DebugEvent, BytecodeFile, MLValue};
 
 use super::data::*;
 
@@ -346,7 +345,7 @@ fn process_block(
             Instruction::Break | Instruction::Event => {
                 unreachable!();
             }
-            _ => (),
+            _ => {}
         }
 
         current_index += 1;

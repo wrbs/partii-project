@@ -50,7 +50,7 @@ fn find_block_starts_dfs(
                 continue;
             }
 
-            _ => (),
+            _ => {}
         }
         to_visit.clear();
         instr.visit_labels(|l| {

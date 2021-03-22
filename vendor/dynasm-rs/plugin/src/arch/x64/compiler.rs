@@ -160,19 +160,19 @@ pub(super) fn compile_instruction(
                     )));
                 }
             }
-            X86Mode::Long => (),
+            X86Mode::Long => {}
         }
 
         if data.flags.contains(Flags::AUTO_NO32) {
             match (op_size, ctx.mode) {
                 (Size::WORD, _) => pref_size = true,
-                (Size::QWORD, X86Mode::Long) => (),
-                (Size::DWORD, X86Mode::Protected) => (),
+                (Size::QWORD, X86Mode::Long) => {}
+                (Size::DWORD, X86Mode::Protected) => {}
                 (Size::DWORD, X86Mode::Long) => {
                     return Err(Some(format!(
                         "'{}': Does not support 32 bit operands in 64-bit mode",
                         op.to_string()
-                    )))
+                    )));
                 }
                 (_, _) => panic!("bad formatting data"),
             }
@@ -600,7 +600,7 @@ pub(super) fn compile_instruction(
                         X86Mode::Long => {
                             return Err(Some(
                                 "Extern relocations are not supported in x64 mode".to_string(),
-                            ))
+                            ));
                         }
                     }
                 } else {
@@ -881,7 +881,7 @@ fn sanitize_indirects_and_sizes(
                         Some(Size::BYTE) => *disp_size = Some(Size::BYTE),
                         Some(_) if addr_size == Some(Size::WORD) => *disp_size = Some(Size::WORD),
                         Some(_) => *disp_size = Some(Size::DWORD),
-                        None => (),
+                        None => {}
                     }
                 }
             }
@@ -891,7 +891,7 @@ fn sanitize_indirects_and_sizes(
             } => {
                 *size = derive_size(value);
             }
-            _ => (),
+            _ => {}
         }
     }
 
@@ -999,8 +999,8 @@ fn sanitize_indirect(
             }
         }
         RegFamily::LEGACY => match size {
-            Size::DWORD => (),
-            Size::QWORD => (), // only valid in long mode, but should only be possible in long mode
+            Size::DWORD => {}
+            Size::QWORD => {} // only valid in long mode, but should only be possible in long mode
             Size::WORD => {
                 if ctx.mode == X86Mode::Protected || vsib_mode {
                     emit_error!(span, "16-bit addressing is not supported in this mode");
@@ -1032,7 +1032,7 @@ fn sanitize_indirect(
                 emit_error!(span, "RIP cannot be scaled");
                 return Err(None);
             }
-            None => (),
+            None => {}
         }
         return Ok(Some(size));
     }
@@ -1133,7 +1133,7 @@ fn sanitize_indirect(
                     *base = Some(reg.clone());
                     *scale -= 1
                 }
-                _ => (),
+                _ => {}
             }
         }
     }
@@ -1631,7 +1631,7 @@ fn check_rex(
                         requires_rex = requires_rex || reg.kind.is_extended();
                     }
                 }
-                _ => (),
+                _ => {}
             }
         }
     }
@@ -1692,7 +1692,7 @@ fn extract_args(
                 }
             }
             b'i' | b'o' => immediates.push(arg),
-            _ => (), // hardcoded regs don't have to be encoded
+            _ => {} // hardcoded regs don't have to be encoded
         }
     }
 

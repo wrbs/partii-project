@@ -2,8 +2,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction, InstructionIterator};
 
-use crate::bytecode_files::trailer::CODE_SECTION;
-use crate::bytecode_files::{ParseFileError, Trailer};
+use crate::bytecode_files::{trailer::CODE_SECTION, ParseFileError, Trailer};
 use std::fs::File;
 
 pub fn read_code_section(f: &mut File, trailer: &Trailer) -> Result<Vec<i32>, ParseFileError> {

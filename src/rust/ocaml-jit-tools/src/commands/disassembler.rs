@@ -1,11 +1,8 @@
-use std::collections::HashMap;
-use std::fs::File;
-use std::path::PathBuf;
+use std::{collections::HashMap, fs::File, path::PathBuf};
 
 use anyhow::{Context, Result};
 use colored::Colorize;
-use structopt::clap::arg_enum;
-use structopt::StructOpt;
+use structopt::{clap::arg_enum, StructOpt};
 
 use ocaml_jit_shared::{BytecodeRelativeOffset, Instruction};
 

@@ -1,7 +1,9 @@
-use std::ffi::{OsStr, OsString};
-use std::io::{BufRead, BufReader};
-use std::path::PathBuf;
-use std::process;
+use std::{
+    ffi::{OsStr, OsString},
+    io::{BufRead, BufReader},
+    path::PathBuf,
+    process,
+};
 
 use anyhow::{Context, Result};
 use colored::Colorize;
