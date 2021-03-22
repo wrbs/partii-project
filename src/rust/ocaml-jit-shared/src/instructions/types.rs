@@ -200,7 +200,7 @@ impl<L1> Instruction<L1> {
             }
             Instruction::PushTrap(l) => f(l),
 
-            _ => (),
+            _ => {}
         }
     }
 
@@ -223,7 +223,7 @@ impl<L1> Instruction<L1> {
             }
             Instruction::PushTrap(l) => f(l),
 
-            _ => (),
+            _ => {}
         }
     }
 }

@@ -4,8 +4,7 @@ use dynasmrt::ExecutableBuffer;
 
 use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
 
-use crate::caml::mlvalues::Value;
-use crate::compiler::emit_code::emit_longjmp_entrypoint;
+use crate::{caml::mlvalues::Value, compiler::emit_code::emit_longjmp_entrypoint};
 
 const CODE_SIZE: usize = 4; // i32
 

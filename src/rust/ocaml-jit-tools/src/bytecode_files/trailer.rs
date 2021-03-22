@@ -1,5 +1,7 @@
-use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
+use std::{
+    fs::File,
+    io::{Read, Seek, SeekFrom},
+};
 
 use byteorder::{BigEndian, ReadBytesExt};
 

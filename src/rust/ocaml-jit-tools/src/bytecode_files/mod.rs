@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use std::fs::File;
+use std::{collections::HashMap, fs::File};
 
 use anyhow::{Context, Result};
 

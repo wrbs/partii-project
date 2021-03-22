@@ -5,8 +5,7 @@ use std::rc::Rc;
 use ocaml_jit_shared::Instruction;
 use serde::{Deserialize, Serialize};
 
-use crate::bytecode_files::debug_events::Ident;
-use crate::bytecode_files::{MLValue, MLValueBlocks};
+use crate::bytecode_files::{debug_events::Ident, MLValue, MLValueBlocks};
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
@@ -38,11 +37,7 @@ pub struct Closure {
 fn lookup_ident(table: &[(i64, Ident)], wanted_id: i64) -> Option<&Ident> {
     table.iter().find_map(
         |(id, ident)| {
-            if *id == wanted_id {
-                Some(ident)
-            } else {
-                None
-            }
+            if *id == wanted_id { Some(ident) } else { None }
         },
     )
 }

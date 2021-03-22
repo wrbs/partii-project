@@ -1,5 +1,4 @@
-use std::collections::VecDeque;
-use std::iter::Peekable;
+use std::{collections::VecDeque, iter::Peekable};
 
 use thiserror::Error;
 

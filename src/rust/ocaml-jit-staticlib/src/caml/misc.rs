@@ -1,5 +1,4 @@
-use std::ffi::CString;
-use std::os::raw::c_char;
+use std::{ffi::CString, os::raw::c_char};
 
 extern "C" {
     fn caml_fatal_error(s: *const c_char, ...) -> !;

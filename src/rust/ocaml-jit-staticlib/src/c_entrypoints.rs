@@ -1,10 +1,7 @@
-use std::ffi::c_void;
-use std::panic;
-use std::slice;
+use std::{ffi::c_void, panic, slice};
 
-use crate::caml::misc::fatal_error;
-use crate::caml::mlvalues::Value;
 use crate::{
+    caml::{misc::fatal_error, mlvalues::Value},
     interpret_bytecode, old_interpreter_trace, on_bytecode_loaded, on_bytecode_released,
     on_shutdown,
 };

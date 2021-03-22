@@ -76,7 +76,7 @@ pub fn compile_closure<M: Module>(
         &mut codegen::binemit::NullTrapSink {},
         &mut stack_map_sink,
     ) {
-        Ok(_) => (),
+        Ok(_) => {}
         Err(ModuleError::Compilation(e)) => {
             bail!("{}", pretty_error(&ctx.func, Some(module.isa()), e))
         }

@@ -2,12 +2,16 @@ use anyhow::{bail, ensure, Result};
 
 use ocaml_jit_shared::{ArithOp, Instruction};
 
-use crate::commands::clever_dis::data::{Block, BlockExit, Closure};
-use crate::commands::clever_dis::ssa::data::{
-    ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement, SSASubstitutionTarget,
-    SSAVar, UnaryOp,
+use crate::commands::clever_dis::{
+    data::{Block, BlockExit, Closure},
+    ssa::{
+        data::{
+            ModifySSAVars, SSABlock, SSAClosure, SSAExit, SSAExpr, SSAStatement,
+            SSASubstitutionTarget, SSAVar, UnaryOp,
+        },
+        stack_state::SSAStackState,
+    },
 };
-use crate::commands::clever_dis::ssa::stack_state::SSAStackState;
 use std::collections::{HashMap, HashSet};
 
 mod stack_state;
@@ -399,7 +403,7 @@ fn process_body_instruction(
             state.set_accu(v);
             state.pop(1);
         }
-        Instruction::Break | Instruction::Event => (),
+        Instruction::Break | Instruction::Event => {}
     }
 
     Ok(())

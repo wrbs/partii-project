@@ -1,8 +1,9 @@
 // Demo with a while loop from "demo.ml"
 
-use crate::commands::clever_dis::data::Closure;
-use crate::commands::clever_dis::ssa::data::SSABlock;
-use crate::commands::clever_dis::ssa::{get_blocks, relocate_blocks};
+use crate::commands::clever_dis::{
+    data::Closure,
+    ssa::{data::SSABlock, get_blocks, relocate_blocks},
+};
 use anyhow::Result;
 use expect_test::{expect, Expect};
 use std::fmt::Write;

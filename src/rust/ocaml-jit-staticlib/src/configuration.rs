@@ -3,8 +3,10 @@
  * Options are set by setting the JIT_OPTIONS environment variable to an argument string which
  * is parsed to avoid impacting the runtime and OCaml program\*/
 
-use std::env;
-use std::path::{Path, PathBuf};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 
 use clap::arg_enum;
 use default_env::default_env;
