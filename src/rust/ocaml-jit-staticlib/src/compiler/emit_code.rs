@@ -1478,11 +1478,18 @@ impl CompilerContext {
             ; mov rsi, [rax]
             ; cmp rsi, 0
             ; jl >bytecall
+
             // for now just increment counter
             ; inc rsi
-
             ; mov [rax], rsi
 
+            ; cmp rsi, 10
+            ; jne >bytecall
+        );
+
+        self.emit_event(b"Closure is hot!\0");
+
+        oc_dynasm!(self.ops
             // Check signals - then jump to the PC saved in the closure
             ; bytecall:
             ; mov rax, [r_accu]
