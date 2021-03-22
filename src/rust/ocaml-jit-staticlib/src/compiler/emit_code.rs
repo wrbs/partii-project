@@ -69,7 +69,7 @@ pub fn compile_instructions(
         None
     };
 
-    let closures = process_closures(&mut ops, code);
+    let closures = scan_closures(&mut ops, code);
 
     let mut cc = CompilerContext {
         ops,
@@ -106,7 +106,7 @@ pub fn compile_instructions(
     (buf, entrypoint, first_instr, instrs)
 }
 
-fn process_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, ClosureData> {
+fn scan_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, ClosureData> {
     let mut closures = HashMap::new();
 
     let mut add_closure = |func: Closure| {
