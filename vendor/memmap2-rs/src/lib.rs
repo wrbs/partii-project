@@ -1,5 +1,6 @@
 //! A cross-platform Rust API for memory mapped buffers.
 
+#![allow(clippy::all)]
 #![doc(html_root_url = "https://docs.rs/memmap2/0.2.1")]
 
 #[cfg(windows)]
@@ -507,7 +508,9 @@ impl MmapRaw {
     /// To safely dereference this pointer, you need to make sure that the file has not been
     /// truncated since the memory map was created.
     #[inline]
-    pub fn as_ptr(&self) -> *const u8 { self.inner.ptr() }
+    pub fn as_ptr(&self) -> *const u8 {
+        self.inner.ptr()
+    }
 
     /// Returns an unsafe mutable pointer to the memory mapped file.
     ///
@@ -516,13 +519,17 @@ impl MmapRaw {
     /// To safely dereference this pointer, you need to make sure that the file has not been
     /// truncated since the memory map was created.
     #[inline]
-    pub fn as_mut_ptr(&self) -> *mut u8 { self.inner.ptr() as _ }
+    pub fn as_mut_ptr(&self) -> *mut u8 {
+        self.inner.ptr() as _
+    }
 
     /// Returns the length in bytes of the memory map.
     ///
     /// Note that truncating the file can cause the length to change (and render this value unusable).
     #[inline]
-    pub fn len(&self) -> usize { self.inner.len() }
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
 }
 
 impl fmt::Debug for MmapRaw {
@@ -777,6 +784,7 @@ impl fmt::Debug for MmapMut {
     }
 }
 
+/*
 #[cfg(test)]
 mod test {
     extern crate tempdir;
@@ -1197,3 +1205,4 @@ mod test {
         assert_eq!(unsafe { std::ptr::read(mmap.as_ptr()) }, b'a');
     }
 }
+*/
