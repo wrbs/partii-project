@@ -2,7 +2,6 @@ use std::{
     collections::HashMap,
     convert::TryInto,
     ffi::{c_void, CStr},
-    os::raw::c_char,
 };
 
 use dynasmrt::{
@@ -23,16 +22,22 @@ use crate::{
         mlvalues::{BlockValue, LongValue, Tag, Value},
     },
     compiler::{saved_data::LongjmpHandler, LongjmpEntryPoint},
-    global_data::GlobalData,
-    trace::{print_trace, PrintTraceType},
 };
 
-use super::{c_primitives::*, saved_data::EntryPoint};
+use super::{c_primitives::*, rust_primitives::*, saved_data::EntryPoint};
+
+pub const DEFAULT_HOT_CLOSURE_THRESHOLD: Option<usize> = Some(10);
+
+#[derive(Debug, Copy, Clone)]
+pub struct CompilerOptions {
+    pub print_traces: bool,
+    pub hot_closure_threshold: Option<usize>,
+}
 
 struct CompilerContext {
     ops: Assembler,
     labels: Vec<Option<DynamicLabel>>,
-    print_traces: bool,
+    compiler_options: CompilerOptions,
     section_number: usize,
     current_instruction_offset: BytecodeRelativeOffset,
     closures: HashMap<usize, ClosureData>,
@@ -42,6 +47,63 @@ struct ClosureData {
     label: DynamicLabel,
     bytecode_addr: usize,
     restart_label: Option<DynamicLabel>,
+}
+
+pub fn compile_instructions(
+    section_number: usize,
+    code: &[i32],
+    compiler_options: CompilerOptions,
+) -> (
+    ExecutableBuffer,
+    EntryPoint,
+    *const c_void,
+    Option<Vec<Instruction<BytecodeRelativeOffset>>>,
+) {
+    let mut ops = Assembler::new().unwrap();
+
+    let labels = vec![None; code.len()];
+
+    let mut instrs = if compiler_options.print_traces {
+        Some(Vec::new())
+    } else {
+        None
+    };
+
+    let closures = process_closures(&mut ops, code);
+
+    let mut cc = CompilerContext {
+        ops,
+        labels,
+        compiler_options,
+        section_number,
+        current_instruction_offset: BytecodeRelativeOffset(0),
+        closures,
+    };
+
+    let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
+    let code_base = code.as_ptr();
+
+    for (offset, instruction) in InstructionIterator::new(code.iter().copied()).enumerate() {
+        let instruction = instruction.unwrap();
+
+        cc.emit_instruction(&instruction, offset, code_base);
+
+        match &mut instrs {
+            Some(v) => v.push(instruction),
+            None => {}
+        }
+    }
+
+    cc.emit_shared_code();
+    cc.emit_closure_table();
+
+    let ops = cc.ops;
+    let buf = ops.finalize().unwrap();
+
+    let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
+    let first_instr = buf.ptr(first_instr_offset) as *const c_void;
+
+    (buf, entrypoint, first_instr, instrs)
 }
 
 fn process_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, ClosureData> {
@@ -78,59 +140,6 @@ fn process_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, Closure
     }
 
     closures
-}
-
-pub fn compile_instructions(
-    section_number: usize,
-    code: &[i32],
-    print_traces: bool,
-) -> (
-    ExecutableBuffer,
-    EntryPoint,
-    *const c_void,
-    Option<Vec<Instruction<BytecodeRelativeOffset>>>,
-) {
-    let mut ops = Assembler::new().unwrap();
-
-    let labels = vec![None; code.len()];
-
-    let mut instrs = if print_traces { Some(Vec::new()) } else { None };
-
-    let closures = process_closures(&mut ops, code);
-
-    let mut cc = CompilerContext {
-        ops,
-        labels,
-        print_traces,
-        section_number,
-        current_instruction_offset: BytecodeRelativeOffset(0),
-        closures,
-    };
-
-    let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
-    let code_base = code.as_ptr();
-
-    for (offset, instruction) in InstructionIterator::new(code.iter().copied()).enumerate() {
-        let instruction = instruction.unwrap();
-
-        cc.emit_instruction(&instruction, offset, code_base);
-
-        match &mut instrs {
-            Some(v) => v.push(instruction),
-            None => {}
-        }
-    }
-
-    cc.emit_shared_code();
-    cc.emit_closure_table();
-
-    let ops = cc.ops;
-    let buf = ops.finalize().unwrap();
-
-    let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
-    let first_instr = buf.ptr(first_instr_offset) as *const c_void;
-
-    (buf, entrypoint, first_instr, instrs)
 }
 
 // Define aliases for the abstract machine registers
@@ -196,7 +205,7 @@ macro_rules! oc_pushretaddr {
  */
 pub fn emit_callback_entrypoint(
     section_number: usize,
-    print_traces: bool,
+    compiler_options: CompilerOptions,
     code: &[i32],
 ) -> (ExecutableBuffer, EntryPoint, *const c_void) {
     // We don't actually use the labels, but we need it for a context
@@ -205,7 +214,7 @@ pub fn emit_callback_entrypoint(
     let mut cc = CompilerContext {
         ops,
         labels,
-        print_traces,
+        compiler_options,
         section_number,
         closures: HashMap::new(),
         current_instruction_offset: BytecodeRelativeOffset(0),
@@ -224,7 +233,7 @@ pub fn emit_callback_entrypoint(
     );
 
     // Emit a trace for the ACC - rbx won't be trashed
-    if print_traces {
+    if compiler_options.print_traces {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(0));
     }
     // Actually perform the acc - it's nargs + 3
@@ -235,7 +244,7 @@ pub fn emit_callback_entrypoint(
     );
 
     // Emit a trace for the apply
-    if print_traces {
+    if compiler_options.print_traces {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(2));
     }
     // Perform the apply - it's nargs - 1 for the new extra_args
@@ -250,14 +259,14 @@ pub fn emit_callback_entrypoint(
         ; return_after_callback:
     );
     // Emit a trace for the POP
-    if print_traces {
+    if compiler_options.print_traces {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(4));
     }
     oc_dynasm!(&mut cc.ops
         ; add r_sp, 8
     );
     // Emit a trace for the STOP
-    if print_traces {
+    if compiler_options.print_traces {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(6));
     }
     // Emit the actual stop
@@ -421,12 +430,12 @@ impl CompilerContext {
                 ; instr:
             );
 
-            if self.print_traces {
+            if self.compiler_options.print_traces {
                 self.emit_bytecode_trace(code_base, bytecode_offset);
             }
         }
 
-        if self.print_traces {
+        if self.compiler_options.print_traces {
             oc_dynasm!(self.ops
                 ; mov rdi, QWORD offset as i64
                 ; mov rsi, r_accu
@@ -1551,7 +1560,7 @@ impl CompilerContext {
             ; ->process_events:
         );
 
-        if self.print_traces {
+        if self.compiler_options.print_traces {
             self.emit_event(b"process_events\0");
         }
 
@@ -1638,71 +1647,4 @@ impl CompilerContext {
             ; pop rsi
         );
     }
-}
-
-extern "C" fn fatal_message(message: *const c_char) {
-    unsafe {
-        caml_fatal_error(message);
-    }
-}
-
-extern "C" fn event_trace(
-    message: *const c_char,
-    accu: u64,
-    env: u64,
-    extra_args: u64,
-    sp: *const Value,
-) {
-    let s = unsafe { CStr::from_ptr(message).to_string_lossy() };
-
-    let mut global_data = GlobalData::get();
-    print_trace(
-        &mut global_data,
-        PrintTraceType::Event(&s),
-        accu,
-        env,
-        extra_args,
-        sp,
-    );
-}
-
-extern "C" fn bytecode_trace(
-    pc: *const i32,
-    accu: u64,
-    env: u64,
-    extra_args: u64,
-    sp: *const Value,
-) {
-    let mut global_data = GlobalData::get();
-    print_trace(
-        &mut global_data,
-        PrintTraceType::BytecodePC(pc),
-        accu,
-        env,
-        extra_args,
-        sp,
-    );
-}
-
-extern "C" fn instruction_trace(
-    pc: i64,
-    accu: u64,
-    env: u64,
-    extra_args: u64,
-    sp: *const Value,
-    section_number: u64,
-) {
-    let mut global_data = GlobalData::get();
-    let section = global_data.compiler_data.sections[section_number as usize]
-        .as_ref()
-        .expect("Section already released");
-    let instruction = &section.instructions.as_ref().unwrap()[pc as usize].clone();
-    print_trace(
-        &mut global_data,
-        PrintTraceType::Instruction(instruction),
-        accu,
-        env,
-        extra_args,
-        sp,
-    );
 }

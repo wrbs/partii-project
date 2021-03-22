@@ -57,6 +57,12 @@ pub struct Options {
 
     #[structopt(long, requires_all = &["output-dir", "trace"])]
     pub save_instruction_counts: bool,
+
+    #[structopt(long, conflicts_with = "no-hot-threshold")]
+    pub hot_threshold: Option<usize>,
+
+    #[structopt(long, conflicts_with = "hot-threshold")]
+    pub no_hot_threshold: bool,
 }
 
 impl Options {
