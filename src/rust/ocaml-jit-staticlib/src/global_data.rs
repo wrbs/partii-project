@@ -7,10 +7,15 @@ use once_cell::sync::Lazy;
 
 use ocaml_jit_shared::Opcode;
 
-use crate::{compiler::CompilerData, configuration::Options, on_startup};
+use crate::{
+    compiler::{CompilerData, CompilerOptions, DEFAULT_HOT_CLOSURE_THRESHOLD},
+    configuration::Options,
+    on_startup,
+};
 
 pub struct GlobalData {
     pub options: Options,
+    pub compiler_options: CompilerOptions,
     pub compiler_data: CompilerData,
     pub instruction_counts: Option<HashMap<Opcode, usize>>,
 }
@@ -28,8 +33,20 @@ impl GlobalData {
             None
         };
 
+        let hot_closure_threshold = if options.no_hot_threshold {
+            None
+        } else {
+            options.hot_threshold.or(DEFAULT_HOT_CLOSURE_THRESHOLD)
+        };
+
+        let compiler_options = CompilerOptions {
+            print_traces: options.trace,
+            hot_closure_threshold,
+        };
+
         GlobalData {
             options,
+            compiler_options,
             compiler_data: CompilerData::initialise(),
             instruction_counts,
         }

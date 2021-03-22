@@ -40,10 +40,10 @@ pub fn on_startup() -> GlobalData {
 pub fn on_bytecode_loaded(code: &[i32]) -> *const c_void {
     let mut global_data = GlobalData::get();
 
-    let print_traces = global_data.options.trace;
+    let compiler_options = global_data.compiler_options;
 
     if global_data.options.use_compiler {
-        let section_number = compile(&mut global_data.compiler_data, code, print_traces);
+        let section_number = compile(&mut global_data.compiler_data, code, compiler_options);
         let section = global_data.compiler_data.sections[section_number]
             .as_ref()
             .unwrap();
@@ -82,11 +82,12 @@ extern "C" {
 pub fn interpret_bytecode(code: &[i32]) -> Value {
     let mut global_data = GlobalData::get();
     let use_jit = global_data.options.use_jit;
-    let print_traces = global_data.options.trace;
+    let compiler_options = global_data.compiler_options;
+    let print_traces = compiler_options.print_traces;
 
     if (use_jit || print_traces) && code.as_ptr() == unsafe { caml_callback_code.as_ptr() } {
         let maybe_section =
-            compile_callback_if_needed(&mut global_data.compiler_data, code, print_traces);
+            compile_callback_if_needed(&mut global_data.compiler_data, code, compiler_options);
         if let Some(section_number) = maybe_section {
             let section = global_data.compiler_data.sections[section_number]
                 .as_ref()
