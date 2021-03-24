@@ -4,15 +4,17 @@ use crate::basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, Bas
 use anyhow::{bail, Context, Result};
 use codegen::{
     binemit::{StackMap, StackMapSink},
+    ir::GlobalValue,
     print_errors::pretty_error,
 };
 use cranelift::prelude::*;
-use cranelift_module::{FuncId, Linkage, Module, ModuleError};
+use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
 
 #[cfg(test)]
 mod test;
 
 pub mod primitives;
+pub const EXTERN_SP_ADDR_IDENT: &str = "ocaml_extern_sp";
 
 #[derive(Debug, Default)]
 pub struct CompilerOutput {
@@ -25,8 +27,9 @@ pub struct CompilerOutput {
 pub struct CraneliftCompiler<M: Module> {
     pub module: M,
     ctx: codegen::Context,
-    // TODO - share the context, after I stop panics
-    // function_builder_context: FunctionBuilderContext,
+    declared_prims: HashMap<u32, CCall>,
+    extern_sp: DataId,
+    function_builder_context: FunctionBuilderContext,
 }
 
 #[derive(Debug, Default)]
@@ -39,20 +42,27 @@ impl StackMapSink for StackMaps {
         self.maps.insert(offset, map);
     }
 }
+pub fn format_c_call_name(id: usize) -> String {
+    format!("ocaml_primitive_{}", id)
+}
 
 impl<M> CraneliftCompiler<M>
 where
     M: Module,
 {
-    pub fn new(module: M) -> Self {
+    pub fn new(mut module: M) -> Result<Self> {
         let ctx = module.make_context();
         let function_builder_context = FunctionBuilderContext::new();
 
-        Self {
+        let extern_sp = module.declare_data(EXTERN_SP_ADDR_IDENT, Linkage::Import, true, false)?;
+
+        Ok(Self {
             module,
             ctx,
-            // function_builder_context,
-        }
+            function_builder_context,
+            declared_prims: HashMap::new(),
+            extern_sp,
+        })
     }
 
     pub fn compile_closure(
@@ -63,7 +73,10 @@ where
     ) -> Result<FuncId> {
         self.module.clear_context(&mut self.ctx);
 
-        // Takes one argument for the env, then as many arguments as it has OCaml ones
+        // Takes one argument - the env
+        // Returns two arguments (yes this is possible in System-V calling conv)
+        // Ret 1 = return value of closure / what closure to apply if tail-calling
+        // Ret 2 = new extra args after function (will turn into a tail call if > 0)
         self.ctx
             .func
             .signature
@@ -90,10 +103,8 @@ where
                 .declare_function(func_name, Linkage::Export, &self.ctx.func.signature)?;
 
         // TODO - share this once I stop having errors
-        let mut fbc = FunctionBuilderContext::new();
         // Compile the function
-        let mut translator =
-            FunctionTranslator::create(closure, &mut self.module, &mut self.ctx, &mut fbc);
+        let mut translator = self.create_translator(closure);
         for basic_block in &closure.blocks {
             translator.translate_block(basic_block).with_context(|| {
                 format!("Problem compiling basic block {}", basic_block.block_id)
@@ -159,52 +170,10 @@ where
 
         Ok(func_id)
     }
-}
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Arity {
-    N1,
-    N2,
-    N3,
-    N4,
-    N5,
-    VarArgs(u32),
-}
-
-struct CCall {
-    id: FuncId,
-    arity: Arity,
-}
-
-struct FunctionTranslator<'a, M>
-where
-    M: Module,
-{
-    builder: FunctionBuilder<'a>,
-    module: &'a mut M,
-    stack_size: usize,
-    stack_vars: Vec<Variable>,
-    env: Value,
-    acc: Variable,
-    return_var: Variable,
-    // Represents the blocks in my basic block translation
-    blocks: Vec<Block>,
-    return_block: Block,
-    // Represents the single return exit
-    declared_prims: HashMap<u32, CCall>,
-}
-
-impl<'a, M> FunctionTranslator<'a, M>
-where
-    M: Module,
-{
-    fn create(
-        closure: &'a BasicClosure,
-        module: &'a mut M,
-        ctx: &'a mut codegen::Context,
-        builder_context: &'a mut FunctionBuilderContext,
-    ) -> FunctionTranslator<'a, M> {
-        let mut builder = FunctionBuilder::new(&mut ctx.func, builder_context);
+    fn create_translator<'a>(&'a mut self, closure: &'a BasicClosure) -> FunctionTranslator<'a, M> {
+        let mut builder =
+            FunctionBuilder::new(&mut self.ctx.func, &mut self.function_builder_context);
         let blocks: Vec<_> = (0..closure.blocks.len())
             .map(|_| builder.create_block())
             .collect();
@@ -229,9 +198,25 @@ where
         // Declare the variables
         let env = builder.block_params(blocks[0])[0];
 
+        let extern_sp_glob = self
+            .module
+            .declare_data_in_func(self.extern_sp, &mut builder.func);
+        let extern_sp_addr = builder.ins().symbol_value(types::I64, extern_sp_glob);
+
+        let cur_sp = builder
+            .ins()
+            .load(types::I64, MemFlags::trusted(), extern_sp_addr, 0);
+
         for i in 0..closure.arity {
-            builder.def_var(stack_vars[i], builder.block_params(blocks[0])[i + 1])
+            let arg = builder
+                .ins()
+                .load(types::R64, MemFlags::trusted(), cur_sp, 8 * i as i32);
+            builder.def_var(stack_vars[i], arg);
         }
+        let new_sp = builder.ins().iadd_imm(cur_sp, 8 * closure.arity as i64);
+        builder
+            .ins()
+            .store(MemFlags::trusted(), new_sp, extern_sp_addr, 0);
         let stack_size = closure.arity;
 
         // Zero-initialise the other vars
@@ -244,18 +229,57 @@ where
 
         FunctionTranslator {
             builder,
-            module,
+            module: &mut self.module,
             stack_size,
             stack_vars,
             env,
             acc,
             blocks,
-            declared_prims: HashMap::new(),
+            declared_prims: &mut self.declared_prims,
+            extern_sp_addr,
             return_var,
             return_block,
         }
     }
+}
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Arity {
+    N1,
+    N2,
+    N3,
+    N4,
+    N5,
+    VarArgs(u32),
+}
+
+struct CCall {
+    id: FuncId,
+    arity: Arity,
+}
+
+struct FunctionTranslator<'a, M>
+where
+    M: Module,
+{
+    builder: FunctionBuilder<'a>,
+    module: &'a mut M,
+    declared_prims: &'a mut HashMap<u32, CCall>,
+    stack_size: usize,
+    stack_vars: Vec<Variable>,
+    extern_sp_addr: Value,
+    env: Value,
+    acc: Variable,
+    return_var: Variable,
+    // Represents the blocks in my basic block translation
+    blocks: Vec<Block>,
+    return_block: Block,
+}
+
+impl<'a, M> FunctionTranslator<'a, M>
+where
+    M: Module,
+{
     fn translate_block(&mut self, basic_block: &BasicBlock) -> Result<()> {
         // Start the block
         if basic_block.block_id != 0 {
@@ -359,11 +383,11 @@ where
             // } => {}
             // BasicBlockExit::Switch { ints, tags } => {}
             // BasicBlockExit::PushTrap { normal, trap } => {}
-            // BasicBlockExit::Return(to_pop) => {
-            //     let acc = self.get_acc_ref();
-            //     self.builder.def_var(self.return_var, acc);
-            //     self.builder.ins().jump(self.return_block, &[]);
-            // }
+            BasicBlockExit::Return(to_pop) => {
+                let acc = self.get_acc_ref();
+                self.builder.def_var(self.return_var, acc);
+                self.builder.ins().jump(self.return_block, &[]);
+            }
             // BasicBlockExit::TailCall { args, to_pop } => {}
             // BasicBlockExit::Raise(_) => {}
             // BasicBlockExit::Stop => {}
@@ -429,8 +453,11 @@ where
                     }
                 }
 
-                self.module
-                    .declare_function(&format!("ccall{}", id), Linkage::Import, &sig)?
+                self.module.declare_function(
+                    &format_c_call_name(id as usize),
+                    Linkage::Import,
+                    &sig,
+                )?
             }
         };
         let local_callee = self
