@@ -1,0 +1,8 @@
+0x3b: StackMap {
+    bitmap: [
+        BitSet(
+            3,
+        ),
+    ],
+    mapped_words: 2,
+}

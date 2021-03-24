@@ -98,6 +98,7 @@ macro_rules! test_case {
 }
 
 test_case!(stdlib_min);
+test_case!(output_char);
 
 #[test]
 fn test_demo() {

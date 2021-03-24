@@ -22,7 +22,7 @@ Disassembly of section .text:
   30:	4c 89 ee             	mov    %r13,%rsi
   33:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
   3a:	00 00 00 
-			35: R_X86_64_64	ocaml_primitive_233
+			35: R_X86_64_64	oc_prim233
   3d:	48 89 34 24          	mov    %rsi,(%rsp)
   41:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
   46:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
@@ -34,11 +34,12 @@ Disassembly of section .text:
   5f:	bf 01 00 00 00       	mov    $0x1,%edi
   64:	48 39 fe             	cmp    %rdi,%rsi
   67:	0f 84 03 00 00 00    	je     70 <stdlib_min+0x70>
-  6d:	4d 89 ec             	mov    %r13,%r12
-  70:	4c 89 e0             	mov    %r12,%rax
-  73:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
-  78:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
-  7d:	48 83 c4 30          	add    $0x30,%rsp
-  81:	48 89 ec             	mov    %rbp,%rsp
-  84:	5d                   	pop    %rbp
-  85:	c3                   	ret    
+  6d:	4d 89 e5             	mov    %r12,%r13
+  70:	48 31 d2             	xor    %rdx,%rdx
+  73:	4c 89 e8             	mov    %r13,%rax
+  76:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+  7b:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
+  80:	48 83 c4 30          	add    $0x30,%rsp
+  84:	48 89 ec             	mov    %rbp,%rsp
+  87:	5d                   	pop    %rbp
+  88:	c3                   	ret    
