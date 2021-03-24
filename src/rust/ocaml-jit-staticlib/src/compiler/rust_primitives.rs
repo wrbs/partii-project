@@ -76,5 +76,29 @@ pub extern "C" fn instruction_trace(
 
 pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEntry) {
     let closure = unsafe { closure.as_mut().unwrap() };
+    let section_number = closure.section as usize;
+    let entrypoint = closure.bytecode_offset as usize;
+
+    let mut global_data = GlobalData::get();
+    let section = global_data.compiler_data.sections[closure.section as usize]
+        .as_ref()
+        .expect("No such section");
+    let code = unsafe { section.get_code() };
+    match global_data
+        .compiler_data
+        .optimised_compiler
+        .optimise_closure(section_number, code, entrypoint)
+    {
+        Ok(_new_code) => {
+            // closure.compiled_location = new_code as u64;
+            closure.execution_count_status = -2; // optimised
+        }
+        Err(e) => {
+            eprintln!("{:?}", e);
+            closure.execution_count_status = -3; // Error, tells apply not to try again
+        }
+    }
+
+
     closure.execution_count_status = -2;
 }

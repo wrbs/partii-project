@@ -12,6 +12,7 @@ mod instructions;
 mod opcodes;
 mod trace;
 
+pub use anyhow;
 pub use cranelift;
 pub use cranelift_codegen;
 pub use cranelift_module;

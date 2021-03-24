@@ -47,7 +47,7 @@ impl GlobalData {
         GlobalData {
             options,
             compiler_options,
-            compiler_data: CompilerData::initialise(),
+            compiler_data: CompilerData::default(),
             instruction_counts,
         }
     }

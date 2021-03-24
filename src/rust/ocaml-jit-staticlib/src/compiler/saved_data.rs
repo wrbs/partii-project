@@ -6,6 +6,8 @@ use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
 
 use crate::{caml::mlvalues::Value, compiler::emit_code::emit_longjmp_entrypoint};
 
+use super::optimised_compiler::OptimisedCompiler;
+
 const CODE_SIZE: usize = 4; // i32
 
 pub type EntryPoint = extern "C" fn(initial_state: *const c_void) -> Value;
@@ -21,6 +23,7 @@ pub struct CompilerData {
     pub sections: Vec<Option<Section>>,
     pub longjmp_handler: Option<LongjmpHandler>,
     pub callback_compiled: bool,
+    pub optimised_compiler: OptimisedCompiler,
 }
 
 pub struct Section {
@@ -34,15 +37,18 @@ pub struct Section {
     pub first_instruction_location: usize,
 }
 
-impl CompilerData {
-    pub fn initialise() -> CompilerData {
-        CompilerData {
+impl Default for CompilerData {
+    fn default() -> Self {
+        Self {
             sections: Vec::new(),
             longjmp_handler: None,
             callback_compiled: false,
+            optimised_compiler: OptimisedCompiler::default(),
         }
     }
+}
 
+impl CompilerData {
     pub fn get_longjmp_handler(&mut self) -> LongjmpEntryPoint {
         self.longjmp_handler
             .get_or_insert_with(emit_longjmp_entrypoint)
@@ -108,5 +114,9 @@ impl Section {
             compiled_code,
             first_instruction_location,
         }
+    }
+
+    pub unsafe fn get_code<'a>(&self) -> &'a [i32] {
+        std::slice::from_raw_parts(self.base_address as *const i32, self.length)
     }
 }

@@ -91,17 +91,11 @@ fn execute(options: &Options) -> Result<TestResult> {
             println!();
         }
 
-        let mut ignore_failure = false;
-
         if compiled_output != interpreted_output {
             match (&compiled_output, &interpreted_output) {
                 (Output::Trace(compiled_trace), Output::Trace(interpreted_trace)) => {
-                    if should_mismatch_be_ignored(compiled_trace, interpreted_trace) {
-                        ignore_failure = true;
-                    } else {
-                        println!("{}", "Difference in outputs!".red().bold());
-                        compare_traces(interpreted_trace, compiled_trace);
-                    }
+                    println!("{}", "Difference in outputs!".red().bold());
+                    compare_traces(interpreted_trace, compiled_trace);
                 }
                 _ => {
                     println!("{}", interpreted_output.format().yellow().bold());
@@ -110,12 +104,10 @@ fn execute(options: &Options) -> Result<TestResult> {
                 }
             }
 
-            if !ignore_failure {
-                if first_line_passed {
-                    return Ok(TestResult::Fail);
-                } else {
-                    return Ok(TestResult::FailFirstLine);
-                }
+            if first_line_passed {
+                return Ok(TestResult::Fail);
+            } else {
+                return Ok(TestResult::FailFirstLine);
             }
         }
 
@@ -200,9 +192,16 @@ impl RunningProgram {
             } else if line.starts_with("!T!") {
                 let trace: TraceEntry =
                     serde_json::from_str(line.trim_start_matches("!T!")).unwrap();
-                if trace.location.is_bytecode() {
-                    return Ok(Output::Trace(trace));
-                } else if self.show_output {
+
+                if let TraceLocation::Bytecode { opcode, .. } = trace.location {
+                    if let Opcode::Restart | Opcode::Grab = opcode {
+                        // ignore
+                    } else {
+                        return Ok(Output::Trace(trace));
+                    }
+                }
+
+                if self.show_output {
                     trace.print();
                 }
             } else if self.show_output {
@@ -214,30 +213,5 @@ impl RunningProgram {
             }
             line.clear();
         }
-    }
-}
-
-// Because of changing semantics, there are certain cases I don't care about mismatches
-fn should_mismatch_be_ignored(first: &TraceEntry, second: &TraceEntry) -> bool {
-    match (first, second) {
-        (
-            TraceEntry {
-                location:
-                    TraceLocation::Bytecode {
-                        opcode: Opcode::Grab,
-                        ..
-                    },
-                ..
-            },
-            TraceEntry {
-                location:
-                    TraceLocation::Bytecode {
-                        opcode: Opcode::Grab,
-                        ..
-                    },
-                ..
-            },
-        ) => true,
-        _ => false,
     }
 }

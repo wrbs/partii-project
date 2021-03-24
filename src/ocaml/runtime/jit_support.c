@@ -208,7 +208,7 @@ void jit_support_restart(struct jit_state* state) {
     state->extra_args += num_args;
 }
 
-void* jit_support_grab_closure(struct jit_state* state, void* prev_restart) {
+void* jit_support_grab_closure(struct jit_state* state, void* restart_code) {
     mlsize_t num_args, i;
     void* next_pc;
 
@@ -216,7 +216,7 @@ void* jit_support_grab_closure(struct jit_state* state, void* prev_restart) {
     Alloc_small(state->accu, num_args + 2, Closure_tag);
     Field(state->accu, 1) = state->env;
     for (i = 0; i < num_args; i++) Field(state->accu, i + 2) = state->sp[i];
-    Code_val(state->accu) = prev_restart; /* Point to the preceding RESTART instr. */
+    Code_val(state->accu) = restart_code; /* Point to the code to handle a RESTART */
     state->sp += num_args;
     next_pc = (void*)(state->sp[0]);
     state->env = state->sp[1];

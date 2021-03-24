@@ -6,7 +6,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 source ./toolchain.env
 
-PROGRAMS="arrays exceptions factorial float_fields hello includestruct offsetref ppa strings_and_bytes vect arith_small"
+PROGRAMS="arrays exceptions factorial float_fields hello includestruct offsetref ppa strings_and_bytes vect arith_small extra_args_tests"
 
 make
 
