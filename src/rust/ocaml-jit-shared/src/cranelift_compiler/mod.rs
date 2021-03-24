@@ -9,6 +9,7 @@ use codegen::{
 };
 use cranelift::prelude::*;
 use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
+use types::{I32, I64, R64};
 
 #[cfg(test)]
 mod test;
@@ -43,7 +44,7 @@ impl StackMapSink for StackMaps {
     }
 }
 pub fn format_c_call_name(id: usize) -> String {
-    format!("ocaml_primitive_{}", id)
+    format!("oc_prim{}", id)
 }
 
 impl<M> CraneliftCompiler<M>
@@ -77,33 +78,19 @@ where
         // Returns two arguments (yes this is possible in System-V calling conv)
         // Ret 1 = return value of closure / what closure to apply if tail-calling
         // Ret 2 = new extra args after function (will turn into a tail call if > 0)
-        self.ctx
-            .func
-            .signature
-            .params
-            .push(AbiParam::new(types::R64));
+        self.ctx.func.signature.params.push(AbiParam::new(R64));
 
-        for _ in 0..closure.arity {
-            self.ctx
-                .func
-                .signature
-                .params
-                .push(AbiParam::new(types::R64));
-        }
-
-        // Returns one OCaml value
-        self.ctx
-            .func
-            .signature
-            .returns
-            .push(AbiParam::new(types::R64));
+        // Returns one OCaml value and one extra args
+        self.ctx.func.signature.returns.push(AbiParam::new(R64));
+        self.ctx.func.signature.returns.push(AbiParam::new(I64));
 
         let func_id =
             self.module
                 .declare_function(func_name, Linkage::Export, &self.ctx.func.signature)?;
 
-        // TODO - share this once I stop having errors
         // Compile the function
+        // TODO - share this once I stop having errors that stop it from being automatically cleared
+        self.function_builder_context = FunctionBuilderContext::new();
         let mut translator = self.create_translator(closure);
         for basic_block in &closure.blocks {
             translator.translate_block(basic_block).with_context(|| {
@@ -184,16 +171,17 @@ where
         builder.switch_to_block(entry_block);
 
         let mut var_count = 0;
-        let mut var = || {
+        let mut var = |typ| {
             let var = Variable::new(var_count);
             var_count += 1;
-            builder.declare_var(var, types::R64);
+            builder.declare_var(var, typ);
             var
         };
 
-        let acc = var();
-        let stack_vars: Vec<_> = (0..closure.max_stack_size).map(|_| var()).collect();
-        let return_var = var();
+        let acc = var(R64);
+        let stack_vars: Vec<_> = (0..closure.max_stack_size).map(|_| var(R64)).collect();
+        let return_var = var(R64);
+        let return_extra_args_var = var(I64);
 
         // Declare the variables
         let env = builder.block_params(blocks[0])[0];
@@ -201,17 +189,17 @@ where
         let extern_sp_glob = self
             .module
             .declare_data_in_func(self.extern_sp, &mut builder.func);
-        let extern_sp_addr = builder.ins().symbol_value(types::I64, extern_sp_glob);
+        let extern_sp_addr = builder.ins().symbol_value(I64, extern_sp_glob);
 
         let cur_sp = builder
             .ins()
-            .load(types::I64, MemFlags::trusted(), extern_sp_addr, 0);
+            .load(I64, MemFlags::trusted(), extern_sp_addr, 0);
 
         for i in 0..closure.arity {
             let arg = builder
                 .ins()
-                .load(types::R64, MemFlags::trusted(), cur_sp, 8 * i as i32);
-            builder.def_var(stack_vars[i], arg);
+                .load(R64, MemFlags::trusted(), cur_sp, 8 * i as i32);
+            builder.def_var(stack_vars[closure.arity - i - 1], arg);
         }
         let new_sp = builder.ins().iadd_imm(cur_sp, 8 * closure.arity as i64);
         builder
@@ -220,12 +208,14 @@ where
         let stack_size = closure.arity;
 
         // Zero-initialise the other vars
-        let zero = builder.ins().null(types::R64);
+        let zero = builder.ins().null(R64);
+        let zero_i = builder.ins().iconst(I64, 0);
         builder.def_var(acc, zero);
         for i in closure.arity..(closure.max_stack_size as usize) {
             builder.def_var(stack_vars[i], zero);
         }
         builder.def_var(return_var, zero);
+        builder.def_var(return_extra_args_var, zero_i);
 
         FunctionTranslator {
             builder,
@@ -238,6 +228,7 @@ where
             declared_prims: &mut self.declared_prims,
             extern_sp_addr,
             return_var,
+            return_extra_args_var,
             return_block,
         }
     }
@@ -271,6 +262,7 @@ where
     env: Value,
     acc: Variable,
     return_var: Variable,
+    return_extra_args_var: Variable,
     // Represents the blocks in my basic block translation
     blocks: Vec<Block>,
     return_block: Block,
@@ -401,7 +393,8 @@ where
         self.builder.switch_to_block(self.return_block);
         self.builder.seal_block(self.return_block);
         let retval = self.builder.use_var(self.return_var);
-        self.builder.ins().return_(&[retval]);
+        let ret_extra_args = self.builder.use_var(self.return_extra_args_var);
+        self.builder.ins().return_(&[retval, ret_extra_args]);
         self.builder.finalize();
     }
 
@@ -422,34 +415,34 @@ where
             }
             None => {
                 let mut sig = self.module.make_signature();
-                sig.returns.push(AbiParam::new(types::R64));
+                sig.returns.push(AbiParam::new(R64));
                 match arity {
                     Arity::N1 => {}
                     Arity::N2 => {
                         for _ in 0..2 {
-                            sig.params.push(AbiParam::new(types::R64));
+                            sig.params.push(AbiParam::new(R64));
                         }
                     }
                     Arity::N3 => {
-                        for _ in 0..2 {
-                            sig.params.push(AbiParam::new(types::R64));
+                        for _ in 0..3 {
+                            sig.params.push(AbiParam::new(R64));
                         }
                     }
                     Arity::N4 => {
-                        for _ in 0..2 {
-                            sig.params.push(AbiParam::new(types::R64));
+                        for _ in 0..4 {
+                            sig.params.push(AbiParam::new(R64));
                         }
                     }
                     Arity::N5 => {
-                        for _ in 0..2 {
-                            sig.params.push(AbiParam::new(types::R64));
+                        for _ in 0..5 {
+                            sig.params.push(AbiParam::new(R64));
                         }
                     }
                     Arity::VarArgs(_) => {
                         // Pointer to args
-                        sig.params.push(AbiParam::new(types::I64));
+                        sig.params.push(AbiParam::new(I64));
                         // Num args
-                        sig.params.push(AbiParam::new(types::I32));
+                        sig.params.push(AbiParam::new(I32));
                     }
                 }
 
@@ -485,15 +478,15 @@ where
                 args.push(self.get_acc_ref());
                 args.push(self.pick_ref(0)?);
                 args.push(self.pick_ref(1)?);
-                args.push(self.pick_ref(3)?);
+                args.push(self.pick_ref(2)?);
                 self.pop(3)?;
             }
             Arity::N5 => {
                 args.push(self.get_acc_ref());
                 args.push(self.pick_ref(0)?);
                 args.push(self.pick_ref(1)?);
+                args.push(self.pick_ref(2)?);
                 args.push(self.pick_ref(3)?);
-                args.push(self.pick_ref(4)?);
                 self.pop(4)?;
             }
             Arity::VarArgs(_) => {
@@ -516,12 +509,13 @@ where
 
         self.builder
             .def_var(self.stack_vars[self.stack_size], value);
+        self.stack_size += 1;
 
         Ok(())
     }
 
     fn push_int(&mut self, value: Value) -> Result<()> {
-        let ref_val = self.builder.ins().raw_bitcast(types::R64, value);
+        let ref_val = self.builder.ins().raw_bitcast(R64, value);
         self.push_ref(ref_val)
     }
 
@@ -538,7 +532,7 @@ where
 
     fn pick_int(&mut self, n: u32) -> Result<Value> {
         let ref_val = self.pick_ref(n)?;
-        Ok(self.builder.ins().raw_bitcast(types::I64, ref_val))
+        Ok(self.builder.ins().raw_bitcast(I64, ref_val))
     }
 
     fn pop(&mut self, n: u32) -> Result<()> {
@@ -557,7 +551,7 @@ where
     }
 
     fn set_acc_int(&mut self, value: Value) {
-        let ref_val = self.builder.ins().raw_bitcast(types::R64, value);
+        let ref_val = self.builder.ins().raw_bitcast(R64, value);
         self.set_acc_ref(ref_val);
     }
 
@@ -567,6 +561,6 @@ where
 
     fn get_acc_int(&mut self) -> Value {
         let ref_val = self.get_acc_ref();
-        self.builder.ins().raw_bitcast(types::I64, ref_val)
+        self.builder.ins().raw_bitcast(I64, ref_val)
     }
 }

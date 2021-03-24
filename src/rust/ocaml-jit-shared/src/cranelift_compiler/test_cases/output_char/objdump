@@ -1,0 +1,30 @@
+
+<input>:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <output_char>:
+   0:	55                   	push   %rbp
+   1:	48 89 e5             	mov    %rsp,%rbp
+   4:	48 83 ec 10          	sub    $0x10,%rsp
+   8:	48 be 00 00 00 00 00 	movabs $0x0,%rsi
+   f:	00 00 00 
+			a: R_X86_64_64	ocaml_extern_sp
+  12:	48 8b 0e             	mov    (%rsi),%rcx
+  15:	48 8b 39             	mov    (%rcx),%rdi
+  18:	48 8b 41 08          	mov    0x8(%rcx),%rax
+  1c:	48 83 c1 10          	add    $0x10,%rcx
+  20:	48 89 0e             	mov    %rcx,(%rsi)
+  23:	48 89 c6             	mov    %rax,%rsi
+  26:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  2d:	00 00 00 
+			28: R_X86_64_64	oc_prim264
+  30:	48 89 34 24          	mov    %rsi,(%rsp)
+  34:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
+  39:	ff d0                	call   *%rax
+  3b:	48 31 d2             	xor    %rdx,%rdx
+  3e:	48 83 c4 10          	add    $0x10,%rsp
+  42:	48 89 ec             	mov    %rbp,%rsp
+  45:	5d                   	pop    %rbp
+  46:	c3                   	ret    

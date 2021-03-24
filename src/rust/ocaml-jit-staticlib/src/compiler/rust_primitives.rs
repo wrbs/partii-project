@@ -89,16 +89,14 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
         .optimised_compiler
         .optimise_closure(section_number, code, entrypoint)
     {
-        Ok(_new_code) => {
-            // closure.compiled_location = new_code as u64;
+        Ok(new_code) => {
+            closure.compiled_location = new_code as u64;
             closure.execution_count_status = -2; // optimised
+            eprintln!("{:#016x?}", closure);
         }
         Err(e) => {
             eprintln!("{:?}", e);
             closure.execution_count_status = -3; // Error, tells apply not to try again
         }
     }
-
-
-    closure.execution_count_status = -2;
 }

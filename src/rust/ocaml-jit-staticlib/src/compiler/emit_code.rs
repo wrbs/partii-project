@@ -1477,9 +1477,12 @@ impl CompilerContext {
             oc_dynasm!(self.ops
                 ; check_opt:
                 // Check if the closure's already optimised
+                ; mov rax, [r_accu]
                 ; mov rsi, [rax]
                 ; cmp rsi, -2
                 ; je >optcall
+                // Check for errors
+                ; jl >bytecall
 
                 // Increment the counter
                 ; inc rsi
@@ -1498,15 +1501,45 @@ impl CompilerContext {
                 // Go back and try to re-run the closure
                 // If compilation failed, the status will reflect that
                 // and we'll no longer try to re-run
-                ; mov rax, [r_accu]
                 ; jmp <check_opt
+
+                ; optcall:
+                // Save extern sp
+                ; mov rsi, QWORD get_extern_sp_addr() as usize as i64
+                ; mov [rsi], r_sp           // Save extern sp
+                ; lea rsi, [>actually_call_opt]
+                // Check signals then call
+            );
+            self.emit_check_signals(NextInstruction::UseRSI);
+            oc_dynasm!(self.ops
+                ; actually_call_opt:
+                ; mov rax, [r_accu]
+                ; mov rdi, rax
+                ; mov rax, [rax + 8]
+                ; call rax
+
+                // Afterwards rax contains retval
+                // And rdx the extra_args offset
+                ; mov rsi, QWORD get_extern_sp_addr() as usize as i64
+                ; mov r_sp, [rsi]           // Save extern sp
+                ; mov r_accu, rax
+                ; add r_extra_args, rdx
+
+                // This is just the code for return
+                ; test r_extra_args, r_extra_args
+                ; jnz >tailcall
+                ; mov rax, [r_sp]
+                ; mov r_env, [r_sp + 8]
+                ; mov r_extra_args, [r_sp + 16]
+                ; sar r_extra_args, BYTE 1
+                ; add r_sp, 24
+                ; jmp rax
+                ; tailcall:
+                ; dec r_extra_args
+                ; jmp ->apply
             );
         }
-
         oc_dynasm!(self.ops
-            ; optcall:
-            // for now, we don't actually optimise
-
             ; bytecall:
             // Check signals - then jump to the PC saved in the closure
             ; mov rsi, [rax + 8]

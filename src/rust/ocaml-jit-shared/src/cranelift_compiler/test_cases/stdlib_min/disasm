@@ -52,16 +52,17 @@ Block 3:
 Block 4:
   (successor: Block 5)
   (instruction range: 32 .. 34)
-  Inst 32:   movq    %r13, %r12
+  Inst 32:   movq    %r12, %r13
   Inst 33:   jmp     label5
 Block 5:
   (original IR block: block3)
-  (instruction range: 34 .. 41)
-  Inst 34:   movq    %r12, %rax
-  Inst 35:   movq    32(%rsp), %r12
-  Inst 36:   movq    40(%rsp), %r13
-  Inst 37:   addq    $48, %rsp
-  Inst 38:   movq    %rbp, %rsp
-  Inst 39:   popq    %rbp
-  Inst 40:   ret
+  (instruction range: 34 .. 42)
+  Inst 34:   xorq    %rdx, %rdx
+  Inst 35:   movq    %r13, %rax
+  Inst 36:   movq    32(%rsp), %r12
+  Inst 37:   movq    40(%rsp), %r13
+  Inst 38:   addq    $48, %rsp
+  Inst 39:   movq    %rbp, %rsp
+  Inst 40:   popq    %rbp
+  Inst 41:   ret
 }}
