@@ -45,20 +45,36 @@ struct CompilerContext {
 
 struct ClosureData {
     label: DynamicLabel,
+    arity: usize,
     bytecode_addr: usize,
     restart_label: Option<DynamicLabel>,
+}
+
+pub struct CompilerResults {
+    pub buffer: ExecutableBuffer,
+    pub entrypoint: EntryPoint,
+    pub first_instruction: *const c_void,
+    pub instructions: Option<Vec<Instruction<BytecodeRelativeOffset>>>,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct ClosureMetadataTableEntry {
+    // Positive integer = execution count
+    // -1 = restart, don't optimise
+    // -2 = hash been optimised
+    pub execution_count_status: i64,
+    pub compiled_location: u64,
+    pub section: u32,
+    pub bytecode_offset: u32,
+    pub arity: u64,
 }
 
 pub fn compile_instructions(
     section_number: usize,
     code: &[i32],
     compiler_options: CompilerOptions,
-) -> (
-    ExecutableBuffer,
-    EntryPoint,
-    *const c_void,
-    Option<Vec<Instruction<BytecodeRelativeOffset>>>,
-) {
+) -> CompilerResults {
     let mut ops = Assembler::new().unwrap();
 
     let labels = vec![None; code.len()];
@@ -101,9 +117,14 @@ pub fn compile_instructions(
     let buf = ops.finalize().unwrap();
 
     let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
-    let first_instr = buf.ptr(first_instr_offset) as *const c_void;
+    let first_instruction = buf.ptr(first_instr_offset) as *const c_void;
 
-    (buf, entrypoint, first_instr, instrs)
+    CompilerResults {
+        buffer: buf,
+        entrypoint,
+        first_instruction,
+        instructions: instrs,
+    }
 }
 
 fn scan_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, ClosureData> {
@@ -120,6 +141,7 @@ fn scan_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, ClosureDat
             ClosureData {
                 label: ops.new_dynamic_label(),
                 bytecode_addr: func.code_offset,
+                arity: func.arity,
                 restart_label,
             },
         );
@@ -1487,27 +1509,37 @@ impl CompilerContext {
             ; mov rax, QWORD jit_support_check_stacks as i64
             ; call rax
             ; mov r_sp, rax
-
-            // Check count and perform actions
-            ; mov rax, [r_accu]
-            ; mov rsi, [rax]
-            ; cmp rsi, 0
-            ; jl >bytecall
-
-            // for now just increment counter
-            ; inc rsi
-            ; mov [rax], rsi
-
-            ; cmp rsi, 10
-            ; jne >bytecall
         );
 
-        self.emit_event(b"Closure is hot!\0");
+        if let Some(threshold) = self.compiler_options.hot_closure_threshold {
+            oc_dynasm!(self.ops
+                // Check if closure shouldn't be counted
+                ; mov rax, [r_accu]
+                ; mov rsi, [rax]
+                ; cmp rsi, 0
+                ; jl >bytecall
+
+                // Increment the counter
+                ; inc rsi
+                ; mov [rax], rsi
+
+                // Check if we're now above the threshold
+                ; cmp rsi, threshold as _
+                ; jl >bytecall
+            );
+            self.emit_event(b"Hot closure detected, compiling\0");
+            oc_dynasm!(self.ops
+                // Branch to the optimised compiler
+                ; mov rdi, [r_accu]
+                ; mov rax, QWORD compile_closure_optimised as i64
+                ; call rax
+                ; mov rax, [r_accu]
+            );
+        }
 
         oc_dynasm!(self.ops
             // Check signals - then jump to the PC saved in the closure
             ; bytecall:
-            ; mov rax, [r_accu]
             ; mov rsi, [rax + 8]
         );
         self.emit_check_signals(NextInstruction::UseRSI);
@@ -1522,10 +1554,11 @@ impl CompilerContext {
         // -2  = use optimised C version
         //
         // The fields are
-        // qword call count/status (see above)
-        // qword address to use (either bytecode/optimised)
-        // dword section number
-        // dword bytecode offset
+        // 0x00 qword call count/status (see above)
+        // 0x08 qword address to use (either bytecode/optimised)
+        // 0x10 dword section number
+        // 0x14 dword bytecode offset
+        // 0x18 qword arity
 
         // To make borrow checker happy, do a swap
         let mut closures = HashMap::new();
@@ -1540,6 +1573,7 @@ impl CompilerContext {
                     ; .qword =>restart_addr  // restart addr
                     ; .dword self.section_number as _
                     ; .dword (closure.bytecode_addr - 1) as _
+                    ; .qword closure.arity as _
                 );
             }
 
@@ -1550,6 +1584,7 @@ impl CompilerContext {
                 ; .qword =>bca   // bytecode addr
                 ; .dword self.section_number as _
                 ; .dword closure.bytecode_addr as _
+                ; .qword closure.arity as _
             );
         }
     }

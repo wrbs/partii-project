@@ -1,8 +1,10 @@
+use emit_code::CompilerResults;
 pub use emit_code::{CompilerOptions, DEFAULT_HOT_CLOSURE_THRESHOLD};
 pub use saved_data::{CompilerData, EntryPoint, LongjmpEntryPoint, LongjmpHandler, Section};
 
 mod c_primitives;
 mod emit_code;
+mod optimised_compiler;
 mod rust_primitives;
 mod saved_data;
 
@@ -13,16 +15,20 @@ pub fn compile(
 ) -> usize {
     let section_number = compiler_data.sections.len();
 
-    let (compiled_code, entrypoint, first_instr, parsed_instructions) =
-        emit_code::compile_instructions(section_number, bytecode, compiler_options);
+    let CompilerResults {
+        buffer,
+        entrypoint,
+        first_instruction,
+        instructions,
+    } = emit_code::compile_instructions(section_number, bytecode, compiler_options);
 
     compiler_data.sections.push(Some(Section::new(
         section_number,
         bytecode,
-        compiled_code,
+        buffer,
         entrypoint,
-        parsed_instructions,
-        first_instr as usize,
+        instructions,
+        first_instruction as usize,
     )));
 
     section_number

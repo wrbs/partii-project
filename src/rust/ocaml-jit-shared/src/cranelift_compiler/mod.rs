@@ -15,6 +15,8 @@ use cranelift_module::{FuncId, Linkage, Module, ModuleError};
 #[cfg(test)]
 mod test;
 
+pub mod primitives;
+
 #[derive(Debug, Default)]
 pub struct CompilerOutput {
     ir_after_codegen: String,
@@ -102,6 +104,9 @@ pub fn compile_closure<M: Module>(
             write!(co.disasm, "{}", disasm).unwrap();
         }
     }
+
+    module.clear_context(ctx);
+
 
     Ok(())
 }

@@ -1,6 +1,6 @@
 use std::{ffi::CStr, os::raw::c_char};
 
-use super::c_primitives::caml_fatal_error;
+use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry};
 use crate::{
     caml::mlvalues::Value,
     global_data::GlobalData,
@@ -72,4 +72,9 @@ pub extern "C" fn instruction_trace(
         extra_args,
         sp,
     );
+}
+
+pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEntry) {
+    let closure = unsafe { closure.as_mut().unwrap() };
+    closure.execution_count_status = -2;
 }
