@@ -10,29 +10,35 @@ Disassembly of section .text:
    4:	48 83 ec 30          	sub    $0x30,%rsp
    8:	4c 89 64 24 20       	mov    %r12,0x20(%rsp)
    d:	4c 89 6c 24 28       	mov    %r13,0x28(%rsp)
-  12:	49 89 f4             	mov    %rsi,%r12
-  15:	49 89 d5             	mov    %rdx,%r13
-  18:	4c 89 e7             	mov    %r12,%rdi
-  1b:	4c 89 ee             	mov    %r13,%rsi
-  1e:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  25:	00 00 00 
-			20: R_X86_64_64	ccall233
-  28:	48 89 34 24          	mov    %rsi,(%rsp)
-  2c:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
-  31:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
-  36:	4c 89 64 24 18       	mov    %r12,0x18(%rsp)
-  3b:	ff d0                	call   *%rax
-  3d:	4c 8b 64 24 18       	mov    0x18(%rsp),%r12
-  42:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
-  47:	48 89 c6             	mov    %rax,%rsi
-  4a:	bf 01 00 00 00       	mov    $0x1,%edi
-  4f:	48 39 fe             	cmp    %rdi,%rsi
-  52:	0f 84 03 00 00 00    	je     5b <stdlib_min+0x5b>
-  58:	4d 89 ec             	mov    %r13,%r12
-  5b:	4c 89 e0             	mov    %r12,%rax
-  5e:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
-  63:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
-  68:	48 83 c4 30          	add    $0x30,%rsp
-  6c:	48 89 ec             	mov    %rbp,%rsp
-  6f:	5d                   	pop    %rbp
-  70:	c3                   	ret    
+  12:	48 be 00 00 00 00 00 	movabs $0x0,%rsi
+  19:	00 00 00 
+			14: R_X86_64_64	ocaml_extern_sp
+  1c:	48 8b 3e             	mov    (%rsi),%rdi
+  1f:	4c 8b 27             	mov    (%rdi),%r12
+  22:	4c 8b 6f 08          	mov    0x8(%rdi),%r13
+  26:	48 83 c7 10          	add    $0x10,%rdi
+  2a:	48 89 3e             	mov    %rdi,(%rsi)
+  2d:	4c 89 e7             	mov    %r12,%rdi
+  30:	4c 89 ee             	mov    %r13,%rsi
+  33:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  3a:	00 00 00 
+			35: R_X86_64_64	ocaml_primitive_233
+  3d:	48 89 34 24          	mov    %rsi,(%rsp)
+  41:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
+  46:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
+  4b:	4c 89 64 24 18       	mov    %r12,0x18(%rsp)
+  50:	ff d0                	call   *%rax
+  52:	4c 8b 64 24 18       	mov    0x18(%rsp),%r12
+  57:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
+  5c:	48 89 c6             	mov    %rax,%rsi
+  5f:	bf 01 00 00 00       	mov    $0x1,%edi
+  64:	48 39 fe             	cmp    %rdi,%rsi
+  67:	0f 84 03 00 00 00    	je     70 <stdlib_min+0x70>
+  6d:	4d 89 ec             	mov    %r13,%r12
+  70:	4c 89 e0             	mov    %r12,%rax
+  73:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+  78:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
+  7d:	48 83 c4 30          	add    $0x30,%rsp
+  81:	48 89 ec             	mov    %rbp,%rsp
+  84:	5d                   	pop    %rbp
+  85:	c3                   	ret    

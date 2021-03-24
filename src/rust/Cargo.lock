@@ -596,6 +596,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "cranelift-jit",
+ "cranelift-native",
  "default-env",
  "dynasmrt",
  "ocaml-jit-shared",

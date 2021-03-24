@@ -9,18 +9,24 @@ pub fn fatal_error(message: &str) -> ! {
     unsafe { caml_fatal_error(msg.as_ptr()) }
 }
 
-/*
 #[repr(C)]
 pub struct ExtTable {
-    size: i32,
-    capacity: i32,
-    contents: *const *const c_void,
+    pub size: i32,
+    pub capacity: i32,
+    pub contents: *const usize,
 }
 
 impl ExtTable {
-    pub fn get(&self, index: usize) -> *const c_void {
+    pub fn get(&self, index: usize) -> usize {
         unsafe { *self.contents.add(index) }
+    }
+
+    pub fn as_slice(&self) -> &[usize] {
+        unsafe { std::slice::from_raw_parts(self.contents, self.size as usize) }
     }
 }
 
- */
+extern "C" {
+    #[link_name = "caml_prim_table"]
+    pub static CAML_PRIMITIVE_TABLE: ExtTable;
+}

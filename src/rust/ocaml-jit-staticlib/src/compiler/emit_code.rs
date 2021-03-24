@@ -1605,7 +1605,9 @@ impl CompilerContext {
             ; ->process_events:
         );
 
-        self.emit_event(b"process_events\0");
+        if self.compiler_options.print_traces {
+            self.emit_event(b"process_events\0");
+        }
 
         oc_dynasm!(self.ops
             // Setup_for_event
@@ -1674,22 +1676,20 @@ impl CompilerContext {
     }
 
     fn emit_event(&mut self, message: &'static [u8]) {
-        if self.compiler_options.print_traces {
-            let message = CStr::from_bytes_with_nul(message).unwrap();
+        let message = CStr::from_bytes_with_nul(message).unwrap();
 
-            oc_dynasm!(self.ops
-                ; push rsi
-                ; sub rsp, 8
-                ; mov rdi, QWORD message.as_ptr() as i64
-                ; mov rsi, r_accu
-                ; mov rdx, r_env
-                ; mov rcx, r_extra_args
-                ; mov r8, r_sp
-                ; mov rax, QWORD event_trace as i64
-                ; call rax
-                ; add rsp, 8
-                ; pop rsi
-            );
-        }
+        oc_dynasm!(self.ops
+            ; push rsi
+            ; sub rsp, 8
+            ; mov rdi, QWORD message.as_ptr() as i64
+            ; mov rsi, r_accu
+            ; mov rdx, r_env
+            ; mov rcx, r_extra_args
+            ; mov r8, r_sp
+            ; mov rax, QWORD event_trace as i64
+            ; call rax
+            ; add rsp, 8
+            ; pop rsi
+        );
     }
 }

@@ -2,11 +2,15 @@ use cranelift_jit::{JITBuilder, JITModule};
 use ocaml_jit_shared::{
     anyhow::{anyhow, Context, Result},
     basic_blocks::parse_to_basic_blocks,
-    cranelift_compiler::CraneliftCompiler,
+    cranelift::*,
+    cranelift_codegen::settings::{self, Configurable},
+    cranelift_compiler::{format_c_call_name, CraneliftCompiler, EXTERN_SP_ADDR_IDENT},
     cranelift_module,
 };
 use once_cell::unsync::OnceCell;
 use std::panic;
+
+use crate::caml::{domain_state::get_extern_sp_addr, misc::CAML_PRIMITIVE_TABLE};
 
 #[derive(Default)]
 pub struct OptimisedCompiler {
@@ -35,16 +39,17 @@ impl OptimisedCompiler {
             })
     }
 
+    // Uses a separate function to allow wrapping all anyhow errors with the section/offset in the context
     fn optimise_closure_impl(
         &mut self,
         section_number: usize,
         code: &[i32],
         entrypoint: usize,
     ) -> Result<usize> {
-        self.compiler.get_or_init(|| {
+        self.compiler.get_or_try_init(|| {
             let module = initialise_module();
             CraneliftCompiler::new(module)
-        });
+        })?;
 
         let compiler = self.compiler.get_mut().unwrap();
         let func_name = format!("closure_{}_{}", section_number, entrypoint);
@@ -69,7 +74,25 @@ impl OptimisedCompiler {
     }
 }
 
+fn get_isa() -> Box<dyn codegen::isa::TargetIsa> {
+    let mut flag_builder = settings::builder();
+    flag_builder.set("enable_safepoints", "true").unwrap();
+    flag_builder.set("opt_level", "speed").unwrap();
+    let isa_builder = cranelift_native::builder().unwrap();
+    isa_builder.finish(settings::Flags::new(flag_builder))
+}
+
 fn initialise_module() -> JITModule {
-    let builder = JITBuilder::new(cranelift_module::default_libcall_names());
+    let mut builder = JITBuilder::with_isa(get_isa(), cranelift_module::default_libcall_names());
+    define_ocaml_primitives(&mut builder);
     JITModule::new(builder)
+}
+
+fn define_ocaml_primitives(builder: &mut JITBuilder) {
+    builder.symbol(EXTERN_SP_ADDR_IDENT, get_extern_sp_addr() as *const u8);
+    unsafe {
+        for (prim_id, defn) in CAML_PRIMITIVE_TABLE.as_slice().iter().enumerate() {
+            builder.symbol(&format_c_call_name(prim_id), *defn as *const u8);
+        }
+    }
 }

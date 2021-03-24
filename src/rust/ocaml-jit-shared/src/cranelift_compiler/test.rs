@@ -26,7 +26,7 @@ fn run_test(
     let isa = get_isa();
     let object_builder = ObjectBuilder::new(isa, case_name, default_libcall_names()).unwrap();
     let module = ObjectModule::new(object_builder);
-    let mut compiler = CraneliftCompiler::new(module);
+    let mut compiler = CraneliftCompiler::new(module).unwrap();
 
     let mut compiler_output = CompilerOutput::default();
     let _ = compiler
