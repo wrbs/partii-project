@@ -426,6 +426,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       extra_args = *pc - 1;
       pc = Code_val(accu);
       env = accu;
+      accu = Val_unit;
       goto check_stacks;
     }
     Instruct(APPLY1): {
@@ -438,6 +439,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       pc = Code_val(accu);
       env = accu;
       extra_args = 0;
+      accu = Val_unit;
       goto check_stacks;
     }
     Instruct(APPLY2): {
@@ -452,6 +454,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       pc = Code_val(accu);
       env = accu;
       extra_args = 1;
+      accu = Val_unit;
       goto check_stacks;
     }
     Instruct(APPLY3): {
@@ -468,6 +471,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       pc = Code_val(accu);
       env = accu;
       extra_args = 2;
+      accu = Val_unit;
       goto check_stacks;
     }
 
@@ -484,6 +488,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       pc = Code_val(accu);
       env = accu;
       extra_args += nargs - 1;
+      accu = Val_unit;
       goto check_stacks;
     }
     Instruct(APPTERM1): {
@@ -492,6 +497,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       sp[0] = arg1;
       pc = Code_val(accu);
       env = accu;
+      accu = Val_unit;
       goto check_stacks;
     }
     Instruct(APPTERM2): {
@@ -503,6 +509,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       pc = Code_val(accu);
       env = accu;
       extra_args += 1;
+      accu = Val_unit;
       goto check_stacks;
     }
     Instruct(APPTERM3): {
@@ -516,6 +523,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       pc = Code_val(accu);
       env = accu;
       extra_args += 2;
+      accu = Val_unit;
       goto check_stacks;
     }
 
@@ -525,6 +533,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
         extra_args--;
         pc = Code_val(accu);
         env = accu;
+        accu = Val_unit;
       } else {
         pc = (code_t)(sp[0]);
         env = sp[1];

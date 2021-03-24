@@ -47,7 +47,6 @@ struct ClosureData {
     label: DynamicLabel,
     arity: usize,
     bytecode_addr: usize,
-    restart_label: Option<DynamicLabel>,
 }
 
 pub struct CompilerResults {
@@ -62,12 +61,13 @@ pub struct CompilerResults {
 pub struct ClosureMetadataTableEntry {
     // Positive integer = execution count
     // -1 = restart, don't optimise
-    // -2 = hash been optimised
+    // -2 = has been optimised
+    // -3 = error while optimising, ignore this closure
     pub execution_count_status: i64,
     pub compiled_location: u64,
     pub section: u32,
     pub bytecode_offset: u32,
-    pub arity: u64,
+    pub required_extra_args: u64,
 }
 
 pub fn compile_instructions(
@@ -131,18 +131,12 @@ fn scan_closures(ops: &mut Assembler, code: &[i32]) -> HashMap<usize, ClosureDat
     let mut closures = HashMap::new();
 
     let mut add_closure = |func: Closure| {
-        let restart_label = if func.arity > 1 {
-            Some(ops.new_dynamic_label())
-        } else {
-            None
-        };
         let old = closures.insert(
             func.code_offset,
             ClosureData {
                 label: ops.new_dynamic_label(),
                 bytecode_addr: func.code_offset,
                 arity: func.arity,
-                restart_label,
             },
         );
         assert!(old.is_none());
@@ -619,58 +613,8 @@ impl CompilerContext {
                 );
                 self.perform_apply();
             }
-            Instruction::Restart => {
-                oc_dynasm!(self.ops
-                    ; push r_extra_args
-                    ; push r_sp
-                    ; push r_env
-                    ; push r_accu
-                    ; mov rdi, rsp
-                    ; mov rax, QWORD jit_support_restart as i64
-                    ; call rax
-                    ; pop r_accu
-                    ; pop r_env
-                    ; pop r_sp
-                    ; pop r_extra_args
-                );
-                self.perform_apply();
-            }
-            Instruction::Grab(required_arg_count) => {
-                let restart_label = self
-                    .closures
-                    .get(&self.current_instruction_offset.0)
-                    .unwrap()
-                    .restart_label
-                    .unwrap();
-                oc_dynasm!(self.ops
-                    ; mov rax, *required_arg_count as i32
-                    // If extra_args >= required
-                    // emit a restart
-                    ; cmp r_extra_args, rax
-                    ; jl >re_closure
-
-                    // extra_args -= required
-                    ; sub r_extra_args, rax
-                    // accu = Val_unit
-                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
-                    ; jmp >next
-
-                    ; re_closure:
-                    ; push r_extra_args
-                    ; push r_sp
-                    ; push r_env
-                    ; push r_accu
-                    ; mov rdi, rsp
-                    ; lea rsi, [=>restart_label]
-                    ; mov rax, QWORD jit_support_grab_closure as i64
-                    ; call rax
-                    ; pop r_accu
-                    ; pop r_env
-                    ; pop r_sp
-                    ; pop r_extra_args
-                    ; jmp rax
-                    ; next:
-                );
+            Instruction::Restart | Instruction::Grab(_) => {
+                // Do nothing, we don't use them in the way the interpreter does
             }
             Instruction::Closure(codeval, nargs) => {
                 let nargs = *nargs as i32;
@@ -1514,15 +1458,28 @@ impl CompilerContext {
             ; mov rax, QWORD jit_support_check_stacks as i64
             ; call rax
             ; mov r_sp, rax
+
+            // Check if we're doing a restart
+            ; mov rax, [r_accu]
+            ; mov rsi, [rax]
+            ; cmp rsi, -1
+            ; je >bytecall             // If it's a restart, jump to call
+
+            // Check for extra args (performs GRAB, but at call time)
+            ; mov rsi, [rax + 0x18]    // load the required extra args from closure metadata
+            ; cmp r_extra_args, rsi
+            ; jl >make_restart_closure // make a closure instead if parital application
+            ; sub r_extra_args, rsi    // otherwise subtract required from extra_args
         );
 
+        // If we're enabling the JIT, do the counting/branching to compiler logic
         if let Some(threshold) = self.compiler_options.hot_closure_threshold {
             oc_dynasm!(self.ops
-                // Check if closure shouldn't be counted
-                ; mov rax, [r_accu]
+                ; check_opt:
+                // Check if the closure's already optimised
                 ; mov rsi, [rax]
-                ; cmp rsi, 0
-                ; jl >bytecall
+                ; cmp rsi, -2
+                ; je >optcall
 
                 // Increment the counter
                 ; inc rsi
@@ -1538,16 +1495,75 @@ impl CompilerContext {
                 ; mov rdi, [r_accu]
                 ; mov rax, QWORD compile_closure_optimised as i64
                 ; call rax
+                // Go back and try to re-run the closure
+                // If compilation failed, the status will reflect that
+                // and we'll no longer try to re-run
                 ; mov rax, [r_accu]
+                ; jmp <check_opt
             );
         }
 
         oc_dynasm!(self.ops
-            // Check signals - then jump to the PC saved in the closure
+            ; optcall:
+            // for now, we don't actually optimise
+
             ; bytecall:
+            // Check signals - then jump to the PC saved in the closure
             ; mov rsi, [rax + 8]
         );
+        if self.compiler_options.print_traces {
+            // Needed for the trace comparison code to be happy, but not needed when actually running
+            oc_dynasm!(self.ops
+                ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+            );
+        }
         self.emit_check_signals(NextInstruction::UseRSI);
+
+        // Code for making a new closure on partial application, replacing Grab
+        oc_dynasm!(self.ops
+
+            ; make_restart_closure:
+            ; mov r_env, r_accu   // set accu as if we're jumping
+            ; push r_extra_args
+            ; push r_sp
+            ; push r_env
+            ; push r_accu
+            ; mov rdi, rsp
+            ; lea rsi, [->restart_closure]
+            ; mov rax, QWORD jit_support_grab_closure as i64
+            ; call rax
+            ; pop r_accu
+            ; pop r_env
+            ; pop r_sp
+            ; pop r_extra_args
+            ; jmp rax
+        );
+
+        // Emit shared restart code
+        oc_dynasm!(self.ops
+            ; ->restart_code:
+            ; push r_extra_args
+            ; push r_sp
+            ; push r_env
+            ; push r_accu
+            ; mov rdi, rsp
+            ; mov rax, QWORD jit_support_restart as i64
+            ; call rax
+            ; pop r_accu
+            ; pop r_env
+            ; pop r_sp
+            ; pop r_extra_args
+            ; jmp ->apply
+        );
+
+        // Emit the restart closure (see emit_closure_table for format)
+        oc_dynasm!(self.ops
+            ; ->restart_closure:
+            ; .qword -1                // Tag for restart, don't try to optimise
+            ; .qword ->restart_code    // Point to above code
+            ; .qword 0                 // Ignored
+            ; .qword 0                 // Ignored
+        );
     }
 
     fn emit_closure_table(&mut self) {
@@ -1563,25 +1579,14 @@ impl CompilerContext {
         // 0x08 qword address to use (either bytecode/optimised)
         // 0x10 dword section number
         // 0x14 dword bytecode offset
-        // 0x18 qword arity
+        // 0x18 qword required extra args
+
+        let mut closures = HashMap::new();
 
         // To make borrow checker happy, do a swap
-        let mut closures = HashMap::new();
         std::mem::swap(&mut closures, &mut self.closures);
-        for closure in closures.values() {
-            if let Some(restart_label) = closure.restart_label {
-                let restart_addr =
-                    self.get_label(&BytecodeRelativeOffset(closure.bytecode_addr - 1));
-                oc_dynasm!(self.ops
-                    ; =>restart_label
-                    ; .qword -1              // not used/tag for restart?
-                    ; .qword =>restart_addr  // restart addr
-                    ; .dword self.section_number as _
-                    ; .dword (closure.bytecode_addr - 1) as _
-                    ; .qword closure.arity as _
-                );
-            }
 
+        for closure in closures.values() {
             let bca = self.get_label(&BytecodeRelativeOffset(closure.bytecode_addr));
             oc_dynasm!(self.ops
                 ; =>closure.label
@@ -1589,7 +1594,7 @@ impl CompilerContext {
                 ; .qword =>bca   // bytecode addr
                 ; .dword self.section_number as _
                 ; .dword closure.bytecode_addr as _
-                ; .qword closure.arity as _
+                ; .qword (closure.arity - 1) as _
             );
         }
     }
@@ -1600,9 +1605,7 @@ impl CompilerContext {
             ; ->process_events:
         );
 
-        if self.compiler_options.print_traces {
-            self.emit_event(b"process_events\0");
-        }
+        self.emit_event(b"process_events\0");
 
         oc_dynasm!(self.ops
             // Setup_for_event
@@ -1671,20 +1674,22 @@ impl CompilerContext {
     }
 
     fn emit_event(&mut self, message: &'static [u8]) {
-        let message = CStr::from_bytes_with_nul(message).unwrap();
+        if self.compiler_options.print_traces {
+            let message = CStr::from_bytes_with_nul(message).unwrap();
 
-        oc_dynasm!(self.ops
-            ; push rsi
-            ; sub rsp, 8
-            ; mov rdi, QWORD message.as_ptr() as i64
-            ; mov rsi, r_accu
-            ; mov rdx, r_env
-            ; mov rcx, r_extra_args
-            ; mov r8, r_sp
-            ; mov rax, QWORD event_trace as i64
-            ; call rax
-            ; add rsp, 8
-            ; pop rsi
-        );
+            oc_dynasm!(self.ops
+                ; push rsi
+                ; sub rsp, 8
+                ; mov rdi, QWORD message.as_ptr() as i64
+                ; mov rsi, r_accu
+                ; mov rdx, r_env
+                ; mov rcx, r_extra_args
+                ; mov r8, r_sp
+                ; mov rax, QWORD event_trace as i64
+                ; call rax
+                ; add rsp, 8
+                ; pop rsi
+            );
+        }
     }
 }

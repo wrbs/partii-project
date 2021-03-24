@@ -1,13 +1,10 @@
 use std::{collections::HashMap, fmt::Write};
 
-use crate::basic_blocks::{
-    BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicBlockType, BasicClosure,
-};
-use anyhow::{bail, Result};
+use crate::basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicClosure};
+use anyhow::{bail, Context, Result};
 use codegen::{
     binemit::{StackMap, StackMapSink},
     print_errors::pretty_error,
-    Context,
 };
 use cranelift::prelude::*;
 use cranelift_module::{FuncId, Linkage, Module, ModuleError};
@@ -25,6 +22,13 @@ pub struct CompilerOutput {
     stack_maps: String,
 }
 
+pub struct CraneliftCompiler<M: Module> {
+    pub module: M,
+    ctx: codegen::Context,
+    // TODO - share the context, after I stop panics
+    // function_builder_context: FunctionBuilderContext,
+}
+
 #[derive(Debug, Default)]
 struct StackMaps {
     maps: HashMap<u32, StackMap>,
@@ -36,79 +40,125 @@ impl StackMapSink for StackMaps {
     }
 }
 
-pub fn compile_closure<M: Module>(
-    func_name: &str,
-    closure: &BasicClosure,
-    module: &mut M,
-    ctx: &mut Context,
-    mut debug_output: Option<&mut CompilerOutput>,
-) -> Result<()> {
-    let mut builder_context = FunctionBuilderContext::new();
+impl<M> CraneliftCompiler<M>
+where
+    M: Module,
+{
+    pub fn new(module: M) -> Self {
+        let ctx = module.make_context();
+        let function_builder_context = FunctionBuilderContext::new();
 
-    // Takes one argument for the env, then as many arguments as it has OCaml ones
-    ctx.func.signature.params.push(AbiParam::new(types::R64));
-
-    for _ in 0..closure.arity {
-        ctx.func.signature.params.push(AbiParam::new(types::R64));
-    }
-
-    // Returns one OCaml value
-    ctx.func.signature.returns.push(AbiParam::new(types::R64));
-
-    let func_id = module.declare_function(func_name, Linkage::Export, &ctx.func.signature)?;
-
-    // Compile the function
-    let mut translator = FunctionTranslator::create(closure, module, ctx, &mut builder_context);
-    for basic_block in &closure.blocks {
-        translator.translate_block(basic_block)?;
-    }
-    translator.finalise();
-
-    if let Some(co) = debug_output.as_deref_mut() {
-        co.ir_after_codegen.clear();
-        write!(co.ir_after_codegen, "{}", ctx.func.display(module.isa())).unwrap();
-    }
-
-    // Finalise and compile
-    ctx.want_disasm = debug_output.is_some();
-    let mut stack_map_sink = StackMaps::default();
-    match module.define_function(
-        func_id,
-        ctx,
-        &mut codegen::binemit::NullTrapSink {},
-        &mut stack_map_sink,
-    ) {
-        Ok(_) => {}
-        Err(ModuleError::Compilation(e)) => {
-            bail!("{}", pretty_error(&ctx.func, Some(module.isa()), e))
-        }
-
-        Err(e) => return Err(e.into()),
-    };
-
-    if let Some(co) = debug_output {
-        co.ir_after_compile.clear();
-        co.stack_maps.clear();
-        co.disasm.clear();
-
-        write!(co.ir_after_compile, "{}", ctx.func.display(module.isa())).unwrap();
-        for (offset, map) in &stack_map_sink.maps {
-            writeln!(co.stack_maps, "0x{:x}: {:#?}", offset, map).unwrap();
-        }
-
-        if let Some(disasm) = ctx
-            .mach_compile_result
-            .as_ref()
-            .and_then(|d| d.disasm.as_ref())
-        {
-            write!(co.disasm, "{}", disasm).unwrap();
+        Self {
+            module,
+            ctx,
+            // function_builder_context,
         }
     }
 
-    module.clear_context(ctx);
+    pub fn compile_closure(
+        &mut self,
+        func_name: &str,
+        closure: &BasicClosure,
+        mut debug_output: Option<&mut CompilerOutput>,
+    ) -> Result<FuncId> {
+        self.module.clear_context(&mut self.ctx);
+
+        // Takes one argument for the env, then as many arguments as it has OCaml ones
+        self.ctx
+            .func
+            .signature
+            .params
+            .push(AbiParam::new(types::R64));
+
+        for _ in 0..closure.arity {
+            self.ctx
+                .func
+                .signature
+                .params
+                .push(AbiParam::new(types::R64));
+        }
+
+        // Returns one OCaml value
+        self.ctx
+            .func
+            .signature
+            .returns
+            .push(AbiParam::new(types::R64));
+
+        let func_id =
+            self.module
+                .declare_function(func_name, Linkage::Export, &self.ctx.func.signature)?;
+
+        // TODO - share this once I stop having errors
+        let mut fbc = FunctionBuilderContext::new();
+        // Compile the function
+        let mut translator =
+            FunctionTranslator::create(closure, &mut self.module, &mut self.ctx, &mut fbc);
+        for basic_block in &closure.blocks {
+            translator.translate_block(basic_block).with_context(|| {
+                format!("Problem compiling basic block {}", basic_block.block_id)
+            })?;
+        }
+        translator.finalise();
+
+        if let Some(co) = debug_output.as_deref_mut() {
+            co.ir_after_codegen.clear();
+            write!(
+                co.ir_after_codegen,
+                "{}",
+                self.ctx.func.display(self.module.isa())
+            )
+            .unwrap();
+        }
+
+        // Finalise and compile
+        self.ctx.want_disasm = debug_output.is_some();
+        let mut stack_map_sink = StackMaps::default();
+        match self.module.define_function(
+            func_id,
+            &mut self.ctx,
+            &mut codegen::binemit::NullTrapSink {},
+            &mut stack_map_sink,
+        ) {
+            Ok(_) => {}
+            Err(ModuleError::Compilation(e)) => {
+                bail!(
+                    "{}",
+                    pretty_error(&self.ctx.func, Some(self.module.isa()), e)
+                )
+            }
+
+            Err(e) => return Err(e.into()),
+        };
+
+        if let Some(co) = debug_output {
+            co.ir_after_compile.clear();
+            co.stack_maps.clear();
+            co.disasm.clear();
+
+            write!(
+                co.ir_after_compile,
+                "{}",
+                self.ctx.func.display(self.module.isa())
+            )
+            .unwrap();
+            for (offset, map) in &stack_map_sink.maps {
+                writeln!(co.stack_maps, "0x{:x}: {:#?}", offset, map).unwrap();
+            }
+
+            if let Some(disasm) = self
+                .ctx
+                .mach_compile_result
+                .as_ref()
+                .and_then(|d| d.disasm.as_ref())
+            {
+                write!(co.disasm, "{}", disasm).unwrap();
+            }
+        }
 
 
-    Ok(())
+        Ok(func_id)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -151,7 +201,7 @@ where
     fn create(
         closure: &'a BasicClosure,
         module: &'a mut M,
-        ctx: &'a mut Context,
+        ctx: &'a mut codegen::Context,
         builder_context: &'a mut FunctionBuilderContext,
     ) -> FunctionTranslator<'a, M> {
         let mut builder = FunctionBuilder::new(&mut ctx.func, builder_context);
@@ -179,10 +229,7 @@ where
         // Declare the variables
         let env = builder.block_params(blocks[0])[0];
 
-        dbg!(&stack_vars);
-        dbg!(builder.block_params(blocks[0]));
         for i in 0..closure.arity {
-            dbg!(i);
             builder.def_var(stack_vars[i], builder.block_params(blocks[0])[i + 1])
         }
         let stack_size = closure.arity;
@@ -210,7 +257,6 @@ where
     }
 
     fn translate_block(&mut self, basic_block: &BasicBlock) -> Result<()> {
-        dbg!(&basic_block);
         // Start the block
         if basic_block.block_id != 0 {
             self.builder
@@ -238,41 +284,41 @@ where
                 let v = self.pick_ref(i)?;
                 self.set_acc_ref(v);
             }
-            BasicBlockInstruction::EnvAcc(_) => {}
+            // BasicBlockInstruction::EnvAcc(_) => {}
             BasicBlockInstruction::Push => {
                 let v = self.get_acc_ref();
                 self.push_ref(v)?;
             }
-            BasicBlockInstruction::Pop(_) => {}
-            BasicBlockInstruction::Assign(_) => {}
-            BasicBlockInstruction::Apply1 => {}
-            BasicBlockInstruction::Apply2 => {}
-            BasicBlockInstruction::Apply3 => {}
-            BasicBlockInstruction::PushRetAddr => {}
-            BasicBlockInstruction::Apply(_) => {}
-            BasicBlockInstruction::Closure(_, _) => {}
-            BasicBlockInstruction::ClosureRec(_, _) => {}
-            BasicBlockInstruction::MakeBlock(_, _) => {}
-            BasicBlockInstruction::MakeFloatBlock(_) => {}
-            BasicBlockInstruction::OffsetClosure(_) => {}
-            BasicBlockInstruction::GetGlobal(_) => {}
-            BasicBlockInstruction::SetGlobal(_) => {}
-            BasicBlockInstruction::GetField(_) => {}
-            BasicBlockInstruction::SetField(_) => {}
-            BasicBlockInstruction::GetFloatField(_) => {}
-            BasicBlockInstruction::SetFloatField(_) => {}
-            BasicBlockInstruction::GetVecTItem => {}
-            BasicBlockInstruction::SetVecTItem => {}
-            BasicBlockInstruction::GetBytesChar => {}
-            BasicBlockInstruction::SetBytesChar => {}
-            BasicBlockInstruction::OffsetRef(_) => {}
-            BasicBlockInstruction::Const(_) => {}
-            BasicBlockInstruction::BoolNot => {}
-            BasicBlockInstruction::NegInt => {}
-            BasicBlockInstruction::ArithInt(_) => {}
-            BasicBlockInstruction::IsInt => {}
-            BasicBlockInstruction::IntCmp(_) => {}
-            BasicBlockInstruction::OffsetInt(_) => {}
+            // BasicBlockInstruction::Pop(_) => {}
+            // BasicBlockInstruction::Assign(_) => {}
+            // BasicBlockInstruction::Apply1 => {}
+            // BasicBlockInstruction::Apply2 => {}
+            // BasicBlockInstruction::Apply3 => {}
+            // BasicBlockInstruction::PushRetAddr => {}
+            // BasicBlockInstruction::Apply(_) => {}
+            // BasicBlockInstruction::Closure(_, _) => {}
+            // BasicBlockInstruction::ClosureRec(_, _) => {}
+            // BasicBlockInstruction::MakeBlock(_, _) => {}
+            // BasicBlockInstruction::MakeFloatBlock(_) => {}
+            // BasicBlockInstruction::OffsetClosure(_) => {}
+            // BasicBlockInstruction::GetGlobal(_) => {}
+            // BasicBlockInstruction::SetGlobal(_) => {}
+            // BasicBlockInstruction::GetField(_) => {}
+            // BasicBlockInstruction::SetField(_) => {}
+            // BasicBlockInstruction::GetFloatField(_) => {}
+            // BasicBlockInstruction::SetFloatField(_) => {}
+            // BasicBlockInstruction::GetVecTItem => {}
+            // BasicBlockInstruction::SetVecTItem => {}
+            // BasicBlockInstruction::GetBytesChar => {}
+            // BasicBlockInstruction::SetBytesChar => {}
+            // BasicBlockInstruction::OffsetRef(_) => {}
+            // BasicBlockInstruction::Const(_) => {}
+            // BasicBlockInstruction::BoolNot => {}
+            // BasicBlockInstruction::NegInt => {}
+            // BasicBlockInstruction::ArithInt(_) => {}
+            // BasicBlockInstruction::IsInt => {}
+            // BasicBlockInstruction::IntCmp(_) => {}
+            // BasicBlockInstruction::OffsetInt(_) => {}
             &BasicBlockInstruction::CCall1(id) => self.c_call(id, Arity::N1)?,
             &BasicBlockInstruction::CCall2(id) => self.c_call(id, Arity::N2)?,
             &BasicBlockInstruction::CCall3(id) => self.c_call(id, Arity::N3)?,
@@ -281,12 +327,13 @@ where
             &BasicBlockInstruction::CCallN { nargs, id } => {
                 self.c_call(id, Arity::VarArgs(nargs))?
             }
-            BasicBlockInstruction::VecTLength => {}
-            BasicBlockInstruction::CheckSignals => {}
-            BasicBlockInstruction::PopTrap => {}
-            BasicBlockInstruction::GetMethod => {}
-            BasicBlockInstruction::SetupForPubMet(_) => {}
-            BasicBlockInstruction::GetDynMet => {}
+            // BasicBlockInstruction::VecTLength => {}
+            // BasicBlockInstruction::CheckSignals => {}
+            // BasicBlockInstruction::PopTrap => {}
+            // BasicBlockInstruction::GetMethod => {}
+            // BasicBlockInstruction::SetupForPubMet(_) => {}
+            // BasicBlockInstruction::GetDynMet => {}
+            _ => bail!("Unimplemented instruction: {:?}", instruction),
         }
 
         Ok(())
@@ -294,7 +341,7 @@ where
 
     fn translate_exit(&mut self, exit: &BasicBlockExit) -> Result<()> {
         match exit {
-            BasicBlockExit::Branch(_) => {}
+            // BasicBlockExit::Branch(_) => {}
             BasicBlockExit::BranchIf {
                 then_block,
                 else_block,
@@ -304,22 +351,23 @@ where
                 self.builder.ins().brz(cond, self.blocks[*then_block], &[]);
                 self.builder.ins().jump(self.blocks[*else_block], &[]);
             }
-            BasicBlockExit::BranchCmp {
-                cmp,
-                constant,
-                then_block,
-                else_block,
-            } => {}
-            BasicBlockExit::Switch { ints, tags } => {}
-            BasicBlockExit::PushTrap { normal, trap } => {}
-            BasicBlockExit::Return(to_pop) => {
-                let acc = self.get_acc_ref();
-                self.builder.def_var(self.return_var, acc);
-                self.builder.ins().jump(self.return_block, &[]);
-            }
-            BasicBlockExit::TailCall { args, to_pop } => {}
-            BasicBlockExit::Raise(_) => {}
-            BasicBlockExit::Stop => {}
+            // BasicBlockExit::BranchCmp {
+            //     cmp,
+            //     constant,
+            //     then_block,
+            //     else_block,
+            // } => {}
+            // BasicBlockExit::Switch { ints, tags } => {}
+            // BasicBlockExit::PushTrap { normal, trap } => {}
+            // BasicBlockExit::Return(to_pop) => {
+            //     let acc = self.get_acc_ref();
+            //     self.builder.def_var(self.return_var, acc);
+            //     self.builder.ins().jump(self.return_block, &[]);
+            // }
+            // BasicBlockExit::TailCall { args, to_pop } => {}
+            // BasicBlockExit::Raise(_) => {}
+            // BasicBlockExit::Stop => {}
+            _ => bail!("Unimplemented exit: {:?}", exit),
         }
         Ok(())
     }
