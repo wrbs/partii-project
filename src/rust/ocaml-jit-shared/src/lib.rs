@@ -7,10 +7,14 @@ pub use opcodes::*;
 pub use trace::*;
 
 pub mod basic_blocks;
-mod cranelift_codegen;
+pub mod cranelift_compiler;
 mod instructions;
 mod opcodes;
 mod trace;
+
+pub use cranelift;
+pub use cranelift_codegen;
+pub use cranelift_module;
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct BytecodeLocation {
