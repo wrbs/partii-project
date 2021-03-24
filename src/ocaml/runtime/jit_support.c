@@ -204,7 +204,7 @@ void jit_support_restart(struct jit_state* state) {
     int i;
     state->sp -= num_args;
     for (i = 0; i < num_args; i++) state->sp[i] = Field(state->env, i + 2);
-    state->env = Field(state->env, 1);
+    state->accu = Field(state->env, 1);
     state->extra_args += num_args;
 }
 

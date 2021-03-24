@@ -633,6 +633,7 @@ impl CompilerContext {
                     ; pop r_sp
                     ; pop r_extra_args
                 );
+                self.perform_apply();
             }
             Instruction::Grab(required_arg_count) => {
                 let restart_label = self
@@ -644,10 +645,14 @@ impl CompilerContext {
                 oc_dynasm!(self.ops
                     ; mov rax, *required_arg_count as i32
                     // If extra_args >= required
+                    // emit a restart
                     ; cmp r_extra_args, rax
                     ; jl >re_closure
+
                     // extra_args -= required
                     ; sub r_extra_args, rax
+                    // accu = Val_unit
+                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
                     ; jmp >next
 
                     ; re_closure:

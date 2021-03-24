@@ -10,7 +10,7 @@ use colored::Colorize;
 use os_pipe::{pipe, PipeReader};
 use structopt::StructOpt;
 
-use ocaml_jit_shared::{compare_traces, TraceEntry};
+use ocaml_jit_shared::{compare_traces, Opcode, TraceEntry, TraceLocation};
 
 #[derive(StructOpt)]
 #[structopt(about = "compare traces between the interpreter and the JIT")]
@@ -91,11 +91,17 @@ fn execute(options: &Options) -> Result<TestResult> {
             println!();
         }
 
+        let mut ignore_failure = false;
+
         if compiled_output != interpreted_output {
             match (&compiled_output, &interpreted_output) {
                 (Output::Trace(compiled_trace), Output::Trace(interpreted_trace)) => {
-                    println!("{}", "Difference in outputs!".red().bold());
-                    compare_traces(interpreted_trace, compiled_trace);
+                    if should_mismatch_be_ignored(compiled_trace, interpreted_trace) {
+                        ignore_failure = true;
+                    } else {
+                        println!("{}", "Difference in outputs!".red().bold());
+                        compare_traces(interpreted_trace, compiled_trace);
+                    }
                 }
                 _ => {
                     println!("{}", interpreted_output.format().yellow().bold());
@@ -104,10 +110,12 @@ fn execute(options: &Options) -> Result<TestResult> {
                 }
             }
 
-            if first_line_passed {
-                return Ok(TestResult::Fail);
-            } else {
-                return Ok(TestResult::FailFirstLine);
+            if !ignore_failure {
+                if first_line_passed {
+                    return Ok(TestResult::Fail);
+                } else {
+                    return Ok(TestResult::FailFirstLine);
+                }
             }
         }
 
@@ -206,5 +214,30 @@ impl RunningProgram {
             }
             line.clear();
         }
+    }
+}
+
+// Because of changing semantics, there are certain cases I don't care about mismatches
+fn should_mismatch_be_ignored(first: &TraceEntry, second: &TraceEntry) -> bool {
+    match (first, second) {
+        (
+            TraceEntry {
+                location:
+                    TraceLocation::Bytecode {
+                        opcode: Opcode::Grab,
+                        ..
+                    },
+                ..
+            },
+            TraceEntry {
+                location:
+                    TraceLocation::Bytecode {
+                        opcode: Opcode::Grab,
+                        ..
+                    },
+                ..
+            },
+        ) => true,
+        _ => false,
     }
 }

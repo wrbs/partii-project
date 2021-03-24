@@ -548,6 +548,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       int required = *pc++;
       if (extra_args >= required) {
         extra_args -= required;
+        accu = Val_unit;
       } else {
         mlsize_t num_args, i;
         num_args = 1 + extra_args; /* arg1 + extra args */
