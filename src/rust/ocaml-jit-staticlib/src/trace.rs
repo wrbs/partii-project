@@ -129,7 +129,7 @@ pub fn print_call_trace(trace: &CallTrace, format: &TraceType) {
     match format {
         TraceType::Colorful => println!("{}", trace),
         TraceType::Plain => println!("{}", trace),
-        TraceType::JSON => println!("!T! {}", serde_json::to_string(&trace).unwrap()),
+        TraceType::JSON => println!("!C! {}", serde_json::to_string(&trace).unwrap()),
         TraceType::Debug => println!("{:?}", &trace),
         TraceType::DebugPretty => println!("{:#?}", &trace),
         TraceType::NoPrint => unreachable!(),

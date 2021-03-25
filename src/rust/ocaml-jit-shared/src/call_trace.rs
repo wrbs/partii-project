@@ -1,9 +1,11 @@
+use colored::Colorize;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Write};
 
 use crate::BytecodeLocation;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub enum CallTraceLocation {
     CCall(usize),
     Apply(BytecodeLocation),
@@ -22,13 +24,13 @@ impl fmt::Display for CallTraceLocation {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub enum CallTraceAction {
     Enter { needed: usize, provided: Vec<u64> },
     Return(u64),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct CallTrace {
     pub location: CallTraceLocation,
     pub action: CallTraceAction,
@@ -71,5 +73,32 @@ impl fmt::Display for CallTrace {
         }
 
         write!(f, "{:<20} {}", action, arg_s)
+    }
+}
+
+pub fn compare_call_traces(expected: &CallTrace, actual: &CallTrace) {
+    let expected_f = format!("{}", expected);
+    println!("{}", expected_f.yellow().bold());
+    let actual_f = format!("{}", actual);
+
+    for x in expected_f.chars().zip_longest(actual_f.chars()) {
+        let (error, c) = match x {
+            itertools::EitherOrBoth::Both(c1, c2) => {
+                if c1 == c2 {
+                    (false, c2)
+                } else {
+                    (true, c2)
+                }
+            }
+            itertools::EitherOrBoth::Left(_) => (true, '_'),
+            itertools::EitherOrBoth::Right(c) => (true, c),
+        };
+
+        if error {
+            let s = c.to_string();
+            print!("{}", s.red().bold());
+        } else {
+            print!("{}", c);
+        }
     }
 }
