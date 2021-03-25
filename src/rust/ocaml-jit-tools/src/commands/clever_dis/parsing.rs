@@ -27,24 +27,24 @@ pub fn process_bytecode(bcf: BytecodeFile) -> Result<Program> {
 
         let mut closures_todo = VecDeque::new();
         closures_todo.push_back(0);
-        let mut closure_nums = HashMap::new();
-        closure_nums.insert(0, 0);
+        let mut closures_added = HashSet::new();
+        closures_added.insert(0);
 
         GlobalCtx {
             instructions,
             label_to_index_map,
             referenced_labels,
             closures_todo,
-            closure_nums,
+            closures_added,
             debug_events: bcf.debug_info.map(|di| di.events),
             parent_closures: HashMap::new(),
         }
     };
 
-    let mut closures = Vec::new();
+    let mut closures = HashMap::new();
 
     while let Some(entrypoint) = ctx.closures_todo.pop_front() {
-        closures.push(process_closure(&mut ctx, entrypoint)?);
+        closures.insert(entrypoint, process_closure(&mut ctx, entrypoint)?);
     }
 
     let mut globals: Vec<GlobalTableEntry> = match bcf.global_data {
@@ -77,22 +77,19 @@ struct GlobalCtx {
     referenced_labels: HashSet<usize>,
     label_to_index_map: HashMap<usize, usize>,
     closures_todo: VecDeque<usize>,
-    closure_nums: HashMap<usize, usize>,
+    closures_added: HashSet<usize>,
     parent_closures: HashMap<usize, usize>,
     debug_events: Option<HashMap<usize, DebugEvent>>,
 }
 
 impl GlobalCtx {
     fn get_closure(&mut self, label: usize) -> usize {
-        match self.closure_nums.get(&label).copied() {
-            Some(n) => n,
-            None => {
-                self.closures_todo.push_back(label);
-                let new_closure_no = self.closure_nums.len();
-                self.closure_nums.insert(label, new_closure_no);
-                new_closure_no
-            }
+        if !self.closures_added.contains(&label) {
+            self.closures_todo.push_back(label);
+            self.closures_added.insert(label);
         }
+
+        label
     }
 
     fn lookup_label(&self, label: usize) -> Result<usize> {
@@ -162,6 +159,7 @@ fn process_closure(global_ctx: &mut GlobalCtx, entrypoint: usize) -> Result<Clos
     let is_root = closure_ctx.current_closure_id == 0;
 
     Ok(Closure {
+        entrypoint,
         is_root,
         blocks,
         position: closure_ctx.position,

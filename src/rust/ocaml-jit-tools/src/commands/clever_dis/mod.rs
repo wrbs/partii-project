@@ -1,4 +1,4 @@
-use std::{fs::File, path::PathBuf};
+use std::{collections::HashMap, fs::File, path::PathBuf};
 
 use anyhow::{Context, Result};
 use structopt::{clap::arg_enum, StructOpt};
@@ -79,11 +79,12 @@ pub fn run(options: Options) -> Result<()> {
 
     let use_relocations = !options.no_relocate;
 
-    let mut ssa_closures = vec![];
-    for (closure_id, closure) in program.closures.iter().enumerate() {
-        ssa_closures.push(
+    let mut ssa_closures = HashMap::new();
+    for (entrypoint, closure) in program.closures.iter() {
+        ssa_closures.insert(
+            *entrypoint,
             translate_closure(closure, use_relocations)
-                .with_context(|| format!("Problem translating closure {}", closure_id))?,
+                .with_context(|| format!("Problem translating closure {}", entrypoint))?,
         );
     }
 

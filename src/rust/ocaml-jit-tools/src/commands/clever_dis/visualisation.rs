@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     ffi::OsString,
     fs::{create_dir_all, File},
     io::Write,
@@ -33,7 +34,7 @@ struct VisContext<'a> {
 
 pub fn write_dot_graphs(
     program: &Program,
-    ssa_closures: &[SSAClosure],
+    ssa_closures: &HashMap<usize, SSAClosure>,
     options: Options,
 ) -> Result<()> {
     let ctx = VisContext { program, options };
@@ -52,17 +53,19 @@ pub fn write_dot_graphs(
         Some(bar)
     };
 
-    for (closure_id, closure) in ctx.program.closures.iter().enumerate() {
-        let ssa_closure = &ssa_closures[closure_id];
+    for (entrypoint, closure) in ctx.program.closures.iter() {
+        let ssa_closure = &ssa_closures.get(entrypoint).unwrap();
+        let entrypoint = *entrypoint;
+
         let dot_path = ctx
             .options
             .output_path
-            .join(ctx.closure_filename(closure_id, Extension::Dot));
+            .join(ctx.closure_filename(entrypoint, Extension::Dot));
 
         let svg_path = ctx
             .options
             .output_path
-            .join(ctx.closure_filename(closure_id, Extension::SVG));
+            .join(ctx.closure_filename(entrypoint, Extension::SVG));
 
         if ctx.options.verbose {
             eprintln!("Writing dot file: {}", dot_path.to_string_lossy());
@@ -77,14 +80,14 @@ pub fn write_dot_graphs(
             )
         })?;
 
-        ctx.output_closure_dot(closure_id, closure, ssa_closure, &mut dot_file)
-            .with_context(|| format!("Problem writing closure file for closure {}", closure_id))?;
+        ctx.output_closure_dot(closure, ssa_closure, &mut dot_file)
+            .with_context(|| format!("Problem writing closure file for closure {}", entrypoint))?;
 
         if ctx.options.output_closure_json {
             let json_path = ctx
                 .options
                 .output_path
-                .join(ctx.closure_filename(closure_id, Extension::JSON));
+                .join(ctx.closure_filename(entrypoint, Extension::JSON));
             let f = File::create(json_path).context("Cannot create output json file")?;
             serde_json::to_writer(f, &closure).context("Problem serializing output JSON")?;
         }
@@ -144,17 +147,16 @@ impl Extension {
 }
 
 impl<'a> VisContext<'a> {
-    pub fn closure_filename(&self, closure_id: usize, extension: Extension) -> String {
-        if closure_id == 0 {
+    pub fn closure_filename(&self, closure_entrypoint: usize, extension: Extension) -> String {
+        if closure_entrypoint == 0 {
             format!("root.{}", extension.as_str())
         } else {
-            format!("closure_{}.{}", closure_id, extension.as_str())
+            format!("closure_{}.{}", closure_entrypoint, extension.as_str())
         }
     }
 
     pub fn output_closure_dot<W: Write>(
         &self,
-        closure_no: usize,
         closure: &Closure,
         ssa_closure: &SSAClosure,
         f: &mut W,
@@ -169,7 +171,7 @@ impl<'a> VisContext<'a> {
         writeln!(
             f,
             r#"<TR><TD BORDER="1"><B>Closure {}</B></TD></TR>"#,
-            closure_no
+            closure.entrypoint
         )?;
 
         if let Some(PositionInfo {
@@ -374,8 +376,8 @@ impl<'a> VisContext<'a> {
         Ok(())
     }
 
-    fn format_closure_name(&self, closure_id: usize) -> String {
-        match &self.program.closures[closure_id].position {
+    fn format_closure_name(&self, entrypoint: usize) -> String {
+        match &self.program.closures.get(&entrypoint).unwrap().position {
             Some(PositionInfo { def_name, .. }) => {
                 format!(" # {}", def_name)
             }

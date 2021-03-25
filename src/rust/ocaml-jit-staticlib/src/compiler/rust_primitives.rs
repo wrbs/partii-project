@@ -112,7 +112,7 @@ pub extern "C" fn emit_enter_apply_trace(
     extra_args: usize,
 ) {
     let nargs = extra_args + 1;
-    let args = (0..nargs).rev().map(|i| unsafe { *(sp.add(i)) }).collect();
+    let args = (0..nargs).map(|i| unsafe { *(sp.add(i)) }).collect();
     do_call_trace(
         CallTraceLocation::Apply(get_bytecode_location_from_closure(closure)),
         CallTraceAction::Enter {
