@@ -12,7 +12,7 @@ use crate::{
     compiler::{
         compile, compile_callback_if_needed, get_entrypoint, EntryPoint, LongjmpEntryPoint, Section,
     },
-    trace::{print_trace, PrintTraceType},
+    trace::{print_instruction_trace, PrintTraceType},
 };
 
 // A side-effect of how we emit the JIT code means we have to cast functions to i64s not usizes
@@ -132,7 +132,7 @@ pub fn old_interpreter_trace(
 ) {
     let mut global_data = GlobalData::get();
 
-    print_trace(
+    print_instruction_trace(
         &mut global_data,
         PrintTraceType::BytecodePC(pc),
         accu,

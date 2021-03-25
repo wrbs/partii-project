@@ -2,15 +2,15 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
+pub use instruction_trace::*;
 pub use instructions::*;
 pub use opcodes::*;
-pub use trace::*;
 
 pub mod basic_blocks;
 pub mod cranelift_compiler;
+mod instruction_trace;
 mod instructions;
 mod opcodes;
-mod trace;
 
 pub use anyhow;
 pub use cranelift;

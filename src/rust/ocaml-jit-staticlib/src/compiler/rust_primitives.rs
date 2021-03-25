@@ -4,7 +4,7 @@ use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry
 use crate::{
     caml::mlvalues::Value,
     global_data::GlobalData,
-    trace::{print_trace, PrintTraceType},
+    trace::{print_instruction_trace, PrintTraceType},
 };
 
 pub extern "C" fn fatal_message(message: *const c_char) {
@@ -23,7 +23,7 @@ pub extern "C" fn event_trace(
     let s = unsafe { CStr::from_ptr(message).to_string_lossy() };
 
     let mut global_data = GlobalData::get();
-    print_trace(
+    print_instruction_trace(
         &mut global_data,
         PrintTraceType::Event(&s),
         accu,
@@ -41,7 +41,7 @@ pub extern "C" fn bytecode_trace(
     sp: *const Value,
 ) {
     let mut global_data = GlobalData::get();
-    print_trace(
+    print_instruction_trace(
         &mut global_data,
         PrintTraceType::BytecodePC(pc),
         accu,
@@ -64,7 +64,7 @@ pub extern "C" fn instruction_trace(
         .as_ref()
         .expect("Section already released");
     let instruction = &section.instructions.as_ref().unwrap()[pc as usize].clone();
-    print_trace(
+    print_instruction_trace(
         &mut global_data,
         PrintTraceType::Instruction(instruction),
         accu,
