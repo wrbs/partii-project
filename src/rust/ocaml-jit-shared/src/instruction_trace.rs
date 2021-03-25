@@ -33,7 +33,7 @@ impl PartialEq for ValueOrBytecodeLocation {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
-pub enum TraceLocation {
+pub enum InstructionTraceLocation {
     Bytecode {
         pc: BytecodeLocation,
         opcode: Opcode,
@@ -42,22 +42,24 @@ pub enum TraceLocation {
     Event(String),
 }
 
-impl TraceLocation {
+impl InstructionTraceLocation {
     pub fn format(&self) -> String {
         match self {
-            TraceLocation::Bytecode { pc, opcode } => format!("{} {}", pc, opcode),
-            TraceLocation::ParsedInstruction(i) => format!(" - {:?}", i.map_labels(|x| x.0)),
-            TraceLocation::Event(s) => format!(" E {}", s),
+            InstructionTraceLocation::Bytecode { pc, opcode } => format!("{} {}", pc, opcode),
+            InstructionTraceLocation::ParsedInstruction(i) => {
+                format!(" - {:?}", i.map_labels(|x| x.0))
+            }
+            InstructionTraceLocation::Event(s) => format!(" E {}", s),
         }
     }
 }
 
-impl TraceLocation {
+impl InstructionTraceLocation {
     pub fn is_bytecode(&self) -> bool {
         match self {
-            TraceLocation::Bytecode { .. } => true,
-            TraceLocation::ParsedInstruction(_) => false,
-            TraceLocation::Event(_) => false,
+            InstructionTraceLocation::Bytecode { .. } => true,
+            InstructionTraceLocation::ParsedInstruction(_) => false,
+            InstructionTraceLocation::Event(_) => false,
         }
     }
 
@@ -67,8 +69,8 @@ impl TraceLocation {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct TraceEntry {
-    pub location: TraceLocation,
+pub struct InstructionTraceEntry {
+    pub location: InstructionTraceLocation,
     pub accu: ValueOrBytecodeLocation,
     pub env: u64,
     pub extra_args: u64,
@@ -78,7 +80,7 @@ pub struct TraceEntry {
     pub top_of_stack: Vec<ValueOrBytecodeLocation>,
 }
 
-impl TraceEntry {
+impl InstructionTraceEntry {
     pub fn format(&self) -> String {
         format!(
             "{:<50} ACCU={} ENV={:016X} E_A={:<4} SP={:016X} TSP={:016X} SS={:<4} TOS={}",
@@ -138,7 +140,10 @@ impl TraceEntry {
     }
 }
 
-pub fn compare_traces(expected: &TraceEntry, actual: &TraceEntry) {
+pub fn compare_instruction_traces(
+    expected: &InstructionTraceEntry,
+    actual: &InstructionTraceEntry,
+) {
     println!("{}", expected.format().yellow().bold());
     if expected.location != actual.location {
         print!(

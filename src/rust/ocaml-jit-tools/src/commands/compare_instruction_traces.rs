@@ -10,7 +10,9 @@ use colored::Colorize;
 use os_pipe::{pipe, PipeReader};
 use structopt::StructOpt;
 
-use ocaml_jit_shared::{compare_traces, Opcode, TraceEntry, TraceLocation};
+use ocaml_jit_shared::{
+    compare_instruction_traces, InstructionTraceEntry, InstructionTraceLocation, Opcode,
+};
 
 #[derive(StructOpt)]
 #[structopt(about = "compare traces between the interpreter and the JIT")]
@@ -62,9 +64,10 @@ fn execute(options: &Options) -> Result<TestResult> {
         .ocaml_run_params
         .clone()
         .unwrap_or_else(OsString::new);
+
     let mut compiled = RunningProgram::new(
         path,
-        "-jt --trace-format JSON",
+        "-jt --no-hot-threshold --trace-format JSON",
         options.other_args.iter(),
         &ocaml_run_params,
         false,
@@ -73,7 +76,7 @@ fn execute(options: &Options) -> Result<TestResult> {
     .context("Problem starting jit program")?;
     let mut interpreted = RunningProgram::new(
         path,
-        "-t --trace-format JSON",
+        "-t --no-hot-threshold --trace-format JSON",
         options.other_args.iter(),
         &ocaml_run_params,
         true,
@@ -95,7 +98,7 @@ fn execute(options: &Options) -> Result<TestResult> {
             match (&compiled_output, &interpreted_output) {
                 (Output::Trace(compiled_trace), Output::Trace(interpreted_trace)) => {
                     println!("{}", "Difference in outputs!".red().bold());
-                    compare_traces(interpreted_trace, compiled_trace);
+                    compare_instruction_traces(interpreted_trace, compiled_trace);
                 }
                 _ => {
                     println!("{}", interpreted_output.format().yellow().bold());
@@ -134,7 +137,7 @@ fn execute(options: &Options) -> Result<TestResult> {
 
 #[derive(PartialEq, Debug)]
 enum Output {
-    Trace(TraceEntry),
+    Trace(InstructionTraceEntry),
     Exited,
 }
 
@@ -190,10 +193,10 @@ impl RunningProgram {
             if read == 0 {
                 return Ok(Output::Exited);
             } else if line.starts_with("!T!") {
-                let trace: TraceEntry =
+                let trace: InstructionTraceEntry =
                     serde_json::from_str(line.trim_start_matches("!T!")).unwrap();
 
-                if let TraceLocation::Bytecode { opcode, .. } = trace.location {
+                if let InstructionTraceLocation::Bytecode { opcode, .. } = trace.location {
                     if let Opcode::Restart | Opcode::Grab = opcode {
                         // ignore
                     } else {

@@ -5,7 +5,9 @@ use anyhow::{Context, Result};
 use structopt::StructOpt;
 
 use crate::commands::not_quite_so_clever_dis;
-use commands::{clever_dis, compare_traces, disassembler, hexdump, process_disassembly};
+use commands::{
+    clever_dis, compare_instruction_traces, disassembler, hexdump, process_disassembly,
+};
 
 mod bytecode_files;
 mod commands;
@@ -18,7 +20,7 @@ mod commands;
 enum BaseCli {
     Dis(disassembler::Options),
     Hexdump(hexdump::Options),
-    CompareTraces(compare_traces::Options),
+    CompareInstructionTraces(compare_instruction_traces::Options),
     ProcessDisassembly(process_disassembly::Options),
     CleverDis(clever_dis::Options),
     NotQuiteSoCleverDis(not_quite_so_clever_dis::Options),
@@ -31,7 +33,7 @@ fn main() -> Result<()> {
     match subcommand {
         BaseCli::Dis(opts) => disassembler::run(opts),
         BaseCli::Hexdump(opts) => hexdump::run(opts),
-        BaseCli::CompareTraces(opts) => compare_traces::run(opts),
+        BaseCli::CompareInstructionTraces(opts) => compare_instruction_traces::run(opts),
         BaseCli::ProcessDisassembly(opts) => process_disassembly::run(opts),
         BaseCli::CleverDis(opts) => clever_dis::run(opts),
         BaseCli::NotQuiteSoCleverDis(opts) => not_quite_so_clever_dis::run(opts),

@@ -1,5 +1,6 @@
 use ocaml_jit_shared::{
-    BytecodeRelativeOffset, Instruction, Opcode, TraceEntry, TraceLocation, ValueOrBytecodeLocation,
+    BytecodeRelativeOffset, Instruction, InstructionTraceEntry, InstructionTraceLocation, Opcode,
+    ValueOrBytecodeLocation,
 };
 
 use crate::{
@@ -20,7 +21,7 @@ pub enum PrintTraceType<'a> {
     Event(&'a str),
 }
 
-pub fn print_trace(
+pub fn print_instruction_trace(
     global_data: &mut GlobalData,
     trace_type: PrintTraceType,
     accu: u64,
@@ -63,7 +64,7 @@ fn get_trace(
     env: u64,
     extra_args: u64,
     sp: *const Value,
-) -> TraceEntry {
+) -> InstructionTraceEntry {
     let location = match trace_type {
         PrintTraceType::BytecodePC(pc) => {
             let bytecode_loc = global_data
@@ -74,13 +75,13 @@ fn get_trace(
             let opcode_val = unsafe { *pc };
             let opcode = Opcode::from_i32(opcode_val).expect("Invalid opcode");
 
-            TraceLocation::Bytecode {
+            InstructionTraceLocation::Bytecode {
                 pc: bytecode_loc,
                 opcode,
             }
         }
-        PrintTraceType::Instruction(i) => TraceLocation::ParsedInstruction(i.clone()),
-        PrintTraceType::Event(s) => TraceLocation::Event(String::from(s)),
+        PrintTraceType::Instruction(i) => InstructionTraceLocation::ParsedInstruction(i.clone()),
+        PrintTraceType::Event(s) => InstructionTraceLocation::Event(String::from(s)),
     };
 
     let compiler_data = &global_data.compiler_data;
@@ -99,7 +100,7 @@ fn get_trace(
 
     let trap_sp = get_trap_sp();
 
-    TraceEntry {
+    InstructionTraceEntry {
         location,
         accu: process_value(compiler_data, Value(accu as i64)),
         env,
