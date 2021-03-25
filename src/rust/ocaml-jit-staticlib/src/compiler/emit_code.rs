@@ -28,9 +28,15 @@ use super::{c_primitives::*, rust_primitives::*, saved_data::EntryPoint};
 
 pub const DEFAULT_HOT_CLOSURE_THRESHOLD: Option<usize> = Some(10);
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum PrintTraces {
+    Call,
+    Instruction,
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct CompilerOptions {
-    pub print_traces: bool,
+    pub print_traces: Option<PrintTraces>,
     pub hot_closure_threshold: Option<usize>,
 }
 
@@ -79,7 +85,7 @@ pub fn compile_instructions(
 
     let labels = vec![None; code.len()];
 
-    let mut instrs = if compiler_options.print_traces {
+    let mut instrs = if compiler_options.print_traces == Some(PrintTraces::Instruction) {
         Some(Vec::new())
     } else {
         None
@@ -249,7 +255,7 @@ pub fn emit_callback_entrypoint(
     );
 
     // Emit a trace for the ACC - rbx won't be trashed
-    if compiler_options.print_traces {
+    if compiler_options.print_traces == Some(PrintTraces::Instruction) {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(0));
     }
     // Actually perform the acc - it's nargs + 3
@@ -260,7 +266,7 @@ pub fn emit_callback_entrypoint(
     );
 
     // Emit a trace for the apply
-    if compiler_options.print_traces {
+    if compiler_options.print_traces == Some(PrintTraces::Instruction) {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(2));
     }
     // Perform the apply - it's nargs - 1 for the new extra_args
@@ -275,14 +281,14 @@ pub fn emit_callback_entrypoint(
         ; return_after_callback:
     );
     // Emit a trace for the POP
-    if compiler_options.print_traces {
+    if compiler_options.print_traces == Some(PrintTraces::Instruction) {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(4));
     }
     oc_dynasm!(&mut cc.ops
         ; add r_sp, 8
     );
     // Emit a trace for the STOP
-    if compiler_options.print_traces {
+    if compiler_options.print_traces == Some(PrintTraces::Instruction) {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(6));
     }
     // Emit the actual stop
@@ -446,12 +452,12 @@ impl CompilerContext {
                 ; instr:
             );
 
-            if self.compiler_options.print_traces {
+            if self.compiler_options.print_traces == Some(PrintTraces::Instruction) {
                 self.emit_bytecode_trace(code_base, bytecode_offset);
             }
         }
 
-        if self.compiler_options.print_traces {
+        if self.compiler_options.print_traces == Some(PrintTraces::Instruction) {
             oc_dynasm!(self.ops
                 ; mov rdi, QWORD offset as i64
                 ; mov rsi, r_accu
@@ -1464,7 +1470,21 @@ impl CompilerContext {
             ; mov rsi, [rax]
             ; cmp rsi, -1
             ; je >bytecall             // If it's a restart, jump to call
+        );
 
+        // Emit a call trace if we're doing that
+        if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+            oc_dynasm!(self.ops
+                ; mov rdi, rax
+                ; mov rsi, r_sp
+                ; mov rdx, r_extra_args
+                ; mov rax, QWORD emit_enter_apply_trace as i64
+                ; call rax
+                ; mov rax, [r_accu]
+            );
+        }
+
+        oc_dynasm!(self.ops
             // Check for extra args (performs GRAB, but at call time)
             ; mov rsi, [rax + 0x18]    // load the required extra args from closure metadata
             ; cmp r_extra_args, rsi
@@ -1544,7 +1564,7 @@ impl CompilerContext {
             // Check signals - then jump to the PC saved in the closure
             ; mov rsi, [rax + 8]
         );
-        if self.compiler_options.print_traces {
+        if self.compiler_options.print_traces == Some(PrintTraces::Instruction) {
             // Needed for the trace comparison code to be happy, but not needed when actually running
             oc_dynasm!(self.ops
                 ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
@@ -1638,7 +1658,7 @@ impl CompilerContext {
             ; ->process_events:
         );
 
-        if self.compiler_options.print_traces {
+        if self.compiler_options.print_traces == Some(PrintTraces::Instruction) {
             self.emit_event(b"process_events\0");
         }
 

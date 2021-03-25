@@ -7,6 +7,7 @@ pub use instructions::*;
 pub use opcodes::*;
 
 pub mod basic_blocks;
+pub mod call_trace;
 pub mod cranelift_compiler;
 mod instruction_trace;
 mod instructions;

@@ -41,8 +41,11 @@ pub struct Options {
     pub use_compiler: bool,
 
     /// Show a trace of every instruction executed
-    #[structopt(short, long)]
+    #[structopt(short, long, conflicts_with = "call-trace")]
     pub trace: bool,
+
+    #[structopt(short = "C", long, conflicts_with = "trace")]
+    pub call_trace: bool,
 
     /// The trace format to use if tracing is enabled
     #[structopt(long, default_value = "Colorful", possible_values = &TraceType::variants(), case_insensitive = true)]
