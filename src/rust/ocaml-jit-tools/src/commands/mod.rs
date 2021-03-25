@@ -1,4 +1,5 @@
 pub mod clever_dis;
+pub mod compare_call_traces;
 pub mod compare_instruction_traces;
 pub mod disassembler;
 pub mod hexdump;

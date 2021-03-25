@@ -582,6 +582,7 @@ dependencies = [
  "cranelift-module",
  "cranelift-object",
  "expect-test",
+ "itertools",
  "serde",
  "serde_json",
  "strum",

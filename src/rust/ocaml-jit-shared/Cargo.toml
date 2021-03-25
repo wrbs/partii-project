@@ -16,6 +16,7 @@ cranelift = { git = "https://github.com/bytecodealliance/wasmtime.git", branch =
 cranelift-codegen = { git = "https://github.com/bytecodealliance/wasmtime.git", branch = "main", features = ["x64"] }
 cranelift-module = { git = "https://github.com/bytecodealliance/wasmtime.git", branch = "main" }
 anyhow = "1.0"
+itertools = "0.10"
 
 [dev-dependencies]
 expect-test = "1.1"
