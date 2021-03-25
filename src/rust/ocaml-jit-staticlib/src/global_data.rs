@@ -8,7 +8,7 @@ use once_cell::sync::Lazy;
 use ocaml_jit_shared::Opcode;
 
 use crate::{
-    compiler::{CompilerData, CompilerOptions, DEFAULT_HOT_CLOSURE_THRESHOLD},
+    compiler::{CompilerData, CompilerOptions, PrintTraces, DEFAULT_HOT_CLOSURE_THRESHOLD},
     configuration::Options,
     on_startup,
 };
@@ -39,8 +39,16 @@ impl GlobalData {
             options.hot_threshold.or(DEFAULT_HOT_CLOSURE_THRESHOLD)
         };
 
+        let print_traces = if options.trace {
+            Some(PrintTraces::Instruction)
+        } else if options.call_trace {
+            Some(PrintTraces::Call)
+        } else {
+            None
+        };
+
         let compiler_options = CompilerOptions {
-            print_traces: options.trace,
+            print_traces,
             hot_closure_threshold,
         };
 

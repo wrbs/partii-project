@@ -5,6 +5,7 @@
 use std::{ffi::c_void, fs, io::Write};
 
 use caml::mlvalues::Value;
+use compiler::PrintTraces;
 use global_data::GlobalData;
 
 use crate::{
@@ -85,7 +86,9 @@ pub fn interpret_bytecode(code: &[i32]) -> Value {
     let compiler_options = global_data.compiler_options;
     let print_traces = compiler_options.print_traces;
 
-    if (use_jit || print_traces) && code.as_ptr() == unsafe { caml_callback_code.as_ptr() } {
+    if (use_jit || print_traces == Some(PrintTraces::Instruction))
+        && code.as_ptr() == unsafe { caml_callback_code.as_ptr() }
+    {
         let maybe_section =
             compile_callback_if_needed(&mut global_data.compiler_data, code, compiler_options);
         if let Some(section_number) = maybe_section {
@@ -112,7 +115,8 @@ pub fn interpret_bytecode(code: &[i32]) -> Value {
     } else {
         std::mem::drop(global_data);
 
-        unsafe { actual_caml_interprete(code.as_ptr(), code.len(), print_traces) }
+        let instruction_traces = print_traces == Some(PrintTraces::Instruction);
+        unsafe { actual_caml_interprete(code.as_ptr(), code.len(), instruction_traces) }
     }
 }
 

@@ -1,10 +1,15 @@
 use std::{ffi::CStr, os::raw::c_char};
 
+use ocaml_jit_shared::{
+    call_trace::{CallTrace, CallTraceAction, CallTraceLocation},
+    BytecodeLocation, BytecodeRelativeOffset,
+};
+
 use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry};
 use crate::{
     caml::mlvalues::Value,
     global_data::GlobalData,
-    trace::{print_instruction_trace, PrintTraceType},
+    trace::{print_call_trace, print_instruction_trace, PrintTraceType},
 };
 
 pub extern "C" fn fatal_message(message: *const c_char) {
@@ -99,4 +104,52 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
             closure.execution_count_status = -3; // Error, tells apply not to try again
         }
     }
+}
+
+pub extern "C" fn emit_enter_apply_trace(
+    closure: *const ClosureMetadataTableEntry,
+    sp: *const u64,
+    extra_args: usize,
+) {
+    let nargs = extra_args + 1;
+    let args = (0..nargs).rev().map(|i| unsafe { *(sp.add(i)) }).collect();
+    do_call_trace(
+        CallTraceLocation::Apply(get_bytecode_location_from_closure(closure)),
+        CallTraceAction::Enter {
+            needed: get_arity_from_closure(closure),
+            provided: args,
+        },
+    );
+}
+
+pub extern "C" fn emit_return_apply_trace(closure: *mut ClosureMetadataTableEntry, retval: u64) {
+    do_call_trace(
+        CallTraceLocation::Apply(get_bytecode_location_from_closure(closure)),
+        CallTraceAction::Return(retval),
+    );
+}
+
+fn do_call_trace(location: CallTraceLocation, action: CallTraceAction) {
+    let mut global_data = GlobalData::get();
+    let trace_format = global_data.options.trace_format;
+
+    print_call_trace(&CallTrace { location, action }, &trace_format)
+}
+
+fn get_bytecode_location_from_closure(
+    closure: *const ClosureMetadataTableEntry,
+) -> BytecodeLocation {
+    let closure = unsafe { closure.as_ref().unwrap() };
+    let section_number = closure.section as usize;
+    let entrypoint = closure.bytecode_offset as usize;
+
+    BytecodeLocation {
+        section_number,
+        offset: BytecodeRelativeOffset(entrypoint),
+    }
+}
+
+fn get_arity_from_closure(closure: *const ClosureMetadataTableEntry) -> usize {
+    let closure = unsafe { closure.as_ref().unwrap() };
+    closure.required_extra_args as usize + 1
 }

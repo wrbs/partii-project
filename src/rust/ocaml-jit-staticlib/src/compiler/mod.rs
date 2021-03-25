@@ -1,5 +1,5 @@
 use emit_code::CompilerResults;
-pub use emit_code::{CompilerOptions, DEFAULT_HOT_CLOSURE_THRESHOLD};
+pub use emit_code::{CompilerOptions, PrintTraces, DEFAULT_HOT_CLOSURE_THRESHOLD};
 pub use saved_data::{CompilerData, EntryPoint, LongjmpEntryPoint, LongjmpHandler, Section};
 
 mod c_primitives;

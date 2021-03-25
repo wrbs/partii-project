@@ -1,6 +1,6 @@
 use ocaml_jit_shared::{
-    BytecodeRelativeOffset, Instruction, InstructionTraceEntry, InstructionTraceLocation, Opcode,
-    ValueOrBytecodeLocation,
+    call_trace::CallTrace, BytecodeRelativeOffset, Instruction, InstructionTraceEntry,
+    InstructionTraceLocation, Opcode, ValueOrBytecodeLocation,
 };
 
 use crate::{
@@ -123,4 +123,15 @@ fn process_value(compiler_data: &CompilerData, value: Value) -> ValueOrBytecodeL
     }
 
     ValueOrBytecodeLocation::Value(value.0 as u64)
+}
+
+pub fn print_call_trace(trace: &CallTrace, format: &TraceType) {
+    match format {
+        TraceType::Colorful => println!("{}", trace),
+        TraceType::Plain => println!("{}", trace),
+        TraceType::JSON => println!("!T! {}", serde_json::to_string(&trace).unwrap()),
+        TraceType::Debug => println!("{:?}", &trace),
+        TraceType::DebugPretty => println!("{:#?}", &trace),
+        TraceType::NoPrint => unreachable!(),
+    }
 }
