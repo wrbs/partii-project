@@ -1,16 +1,18 @@
 // Data model for parsed instructions
 
-use std::rc::Rc;
+use std::{
+    collections::{HashMap, HashSet},
+    rc::Rc,
+};
 
 use ocaml_jit_shared::Instruction;
 use serde::{Deserialize, Serialize};
 
 use crate::bytecode_files::{debug_events::Ident, MLValue, MLValueBlocks};
-use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 pub struct Program {
-    pub closures: Vec<Closure>,
+    pub closures: HashMap<usize, Closure>,
     pub global_data_blocks: MLValueBlocks,
     pub globals: Vec<GlobalTableEntry>,
     pub primitives: Vec<String>,
@@ -28,6 +30,7 @@ pub struct PositionInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Closure {
+    pub entrypoint: usize,
     pub is_root: bool,
     pub blocks: Vec<Block>,
     pub position: Option<PositionInfo>,
