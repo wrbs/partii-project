@@ -6,73 +6,66 @@ use std::fmt::{self, Write};
 use crate::BytecodeLocation;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
-pub enum CallTraceLocation {
-    CCall(usize),
-    Apply(BytecodeLocation),
-}
-
-impl fmt::Display for CallTraceLocation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            CallTraceLocation::CCall(n) => {
-                write!(f, "c:{}", n)
-            }
-            CallTraceLocation::Apply(n) => {
-                write!(f, "{}", n)
-            }
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
-pub enum CallTraceAction {
-    Enter { needed: usize, provided: Vec<u64> },
+pub enum CallTrace {
+    Enter {
+        closure: BytecodeLocation,
+        needed: usize,
+        provided: Vec<u64>,
+    },
+    CCall {
+        id: usize,
+        args: Vec<u64>,
+    },
     Return(u64),
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
-pub struct CallTrace {
-    pub location: CallTraceLocation,
-    pub action: CallTraceAction,
+fn format_args(args: &[u64], needed: usize) -> String {
+    let mut arg_s = String::new();
+    for (i, arg) in args.iter().enumerate() {
+        if i != 0 {
+            write!(arg_s, ", ").unwrap();
+        }
+
+        if i == needed {
+            write!(arg_s, "[").unwrap();
+        } else {
+            write!(arg_s, " ").unwrap();
+        }
+
+        write!(arg_s, "{:#018X}", arg).unwrap();
+    }
+
+    if needed < args.len() {
+        write!(arg_s, "]").unwrap();
+    }
+
+    arg_s
 }
 
 impl fmt::Display for CallTrace {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let action = match self.action {
-            CallTraceAction::Enter { .. } => format!("enter {}", self.location),
-            CallTraceAction::Return(_) => format!("return {}", self.location),
-        };
-
-        let mut retargs = [0];
-
-        let (needed, args) = match &self.action {
-            CallTraceAction::Enter { needed, provided } => (*needed, &provided[..]),
-            CallTraceAction::Return(v) => {
-                retargs[0] = *v;
-                (1, &retargs[..])
+        let (loc, args) = match self {
+            CallTrace::Enter {
+                closure,
+                needed,
+                provided,
+            } => {
+                let loc = format!("apply {}", closure);
+                let args = format_args(provided, *needed);
+                (loc, args)
+            }
+            CallTrace::CCall { id, args } => {
+                let loc = format!("c_call {}", id);
+                let args = format_args(args, args.len());
+                (loc, args)
+            }
+            CallTrace::Return(val) => {
+                let loc = "return".to_string();
+                let args = format_args(&[*val], 1);
+                (loc, args)
             }
         };
-
-        let mut arg_s = String::new();
-        for (i, arg) in args.iter().enumerate() {
-            if i != 0 {
-                write!(arg_s, ", ").unwrap();
-            }
-
-            if i == needed {
-                write!(arg_s, "[").unwrap();
-            } else {
-                write!(arg_s, " ").unwrap();
-            }
-
-            write!(arg_s, "{:#018X}", arg).unwrap();
-        }
-
-        if needed < args.len() {
-            write!(arg_s, "]").unwrap();
-        }
-
-        write!(f, "{:<20} {}", action, arg_s)
+        write!(f, "{:<20} {}", loc, args)
     }
 }
 
