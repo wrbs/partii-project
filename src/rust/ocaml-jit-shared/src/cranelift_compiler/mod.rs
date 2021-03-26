@@ -1,10 +1,13 @@
-use std::{collections::HashMap, fmt::Write};
+use std::{
+    collections::{hash_map::VacantEntry, HashMap},
+    fmt::Write,
+};
 
 use crate::basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicClosure};
 use anyhow::{bail, Context, Result};
 use codegen::{
     binemit::{StackMap, StackMapSink},
-    ir::{FuncRef, GlobalValue},
+    ir::{FuncRef, GlobalValue, Inst},
     print_errors::pretty_error,
 };
 use cranelift::prelude::*;
@@ -434,20 +437,23 @@ where
 
         let mut args = vec![];
 
-        match arity {
+        let argcount = match arity {
             Arity::N1 => {
                 args.push(self.get_acc_ref());
+                1
             }
             Arity::N2 => {
                 args.push(self.get_acc_ref());
                 args.push(self.pick_ref(0)?);
                 self.pop(1)?;
+                2
             }
             Arity::N3 => {
                 args.push(self.get_acc_ref());
                 args.push(self.pick_ref(0)?);
                 args.push(self.pick_ref(1)?);
                 self.pop(2)?;
+                3
             }
             Arity::N4 => {
                 args.push(self.get_acc_ref());
@@ -455,6 +461,7 @@ where
                 args.push(self.pick_ref(1)?);
                 args.push(self.pick_ref(2)?);
                 self.pop(3)?;
+                4
             }
             Arity::N5 => {
                 args.push(self.get_acc_ref());
@@ -463,11 +470,32 @@ where
                 args.push(self.pick_ref(2)?);
                 args.push(self.pick_ref(3)?);
                 self.pop(4)?;
+                5
             }
-            Arity::VarArgs(_) => {
-                unimplemented!("VarArgs c_call")
+            Arity::VarArgs(n) => {
+                unimplemented!("VarArgs c_call");
+                n
             }
         };
+
+        if self.options.use_call_traces {
+            let extern_sp_addr =
+                self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
+            let old_sp = self
+                .builder
+                .ins()
+                .load(I64, MemFlags::trusted(), extern_sp_addr, 0);
+            let new_sp = self.push_to_ocaml_stack(old_sp, &args)?;
+
+            let id_val = self.builder.ins().iconst(I32, id as i64);
+            let num_args_val = self.builder.ins().iconst(I64, argcount as i64);
+            self.call_primitive(
+                CraneliftPrimitiveFunction::EmitCCallTrace,
+                &[id_val, new_sp, num_args_val],
+            )?;
+
+            // Note we're not saving the new_sp to extern_sp - which is equivalent here to a pop
+        }
 
         let call = self.builder.ins().call(local_callee, &args);
         let result = self.builder.inst_results(call)[0];
@@ -539,6 +567,24 @@ where
         self.builder.ins().raw_bitcast(I64, ref_val)
     }
 
+    // Interfacing with the OCaml interpreter stack
+    // Returns new sp
+    fn push_to_ocaml_stack(&mut self, sp: Value, values: &[Value]) -> Result<Value> {
+        let extern_sp_addr =
+            self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
+
+        let n = values.len() as i64;
+        let new_sp = self.builder.ins().iadd_imm(sp, -8 * n);
+
+        for (i, value) in values.iter().enumerate() {
+            self.builder
+                .ins()
+                .store(MemFlags::trusted(), *value, new_sp, 8 * i as i32);
+        }
+
+        Ok(new_sp)
+    }
+
     // Getting primitives
     fn get_global_variable(&mut self, typ: Type, value: CraneliftPrimitiveValue) -> Result<Value> {
         let gv = if let Some(gv) = self.used_values.get(&value) {
@@ -555,12 +601,33 @@ where
         };
         Ok(self.builder.ins().symbol_value(typ, gv))
     }
+
+    fn call_primitive(
+        &mut self,
+        function: CraneliftPrimitiveFunction,
+        args: &[Value],
+    ) -> Result<Inst> {
+        let func_ref = if let Some(func_ref) = self.used_funcs.get(&function) {
+            *func_ref
+        } else {
+            let func_id = self
+                .primitives
+                .get_or_initialize_function(self.module, function)?;
+            let func_ref = self
+                .module
+                .declare_func_in_func(func_id, &mut self.builder.func);
+            self.used_funcs.insert(function, func_ref);
+            func_ref
+        };
+
+        Ok(self.builder.ins().call(func_ref, args))
+    }
 }
 
 #[derive(Default)]
 struct Primitives {
     values: HashMap<CraneliftPrimitiveValue, DataId>,
-    functions: HashMap<CraneliftPrimitiveFunction, (FuncId, Signature)>,
+    functions: HashMap<CraneliftPrimitiveFunction, FuncId>,
     c_calls: HashMap<u32, CCall>,
 }
 
@@ -585,18 +652,17 @@ impl Primitives {
         &mut self,
         module: &mut M,
         function: CraneliftPrimitiveFunction,
-    ) -> Result<(FuncId, Signature)> {
+    ) -> Result<FuncId> {
         Ok(match self.functions.get(&function) {
-            Some((func_id, signature)) => (*func_id, signature.clone()),
+            Some(func_id) => *func_id,
             None => {
                 let name: &str = function.into();
                 let mut signature = module.make_signature();
                 create_function_signature(function, &mut signature);
 
                 let func_id = module.declare_function(name, Linkage::Import, &signature)?;
-                let clone = signature.clone();
-                self.functions.insert(function, (func_id, signature));
-                (func_id, clone)
+                self.functions.insert(function, func_id);
+                func_id
             }
         })
     }
@@ -667,5 +733,10 @@ impl Primitives {
 }
 
 fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Signature) {
-    match function {}
+    match function {
+        CraneliftPrimitiveFunction::EmitCCallTrace => {
+            sig.params
+                .extend(&[AbiParam::new(I32), AbiParam::new(I64), AbiParam::new(I64)]);
+        }
+    }
 }

@@ -153,7 +153,7 @@ fn get_arity_from_closure(closure: *const ClosureMetadataTableEntry) -> usize {
     closure.required_extra_args as usize + 1
 }
 
-pub fn emit_c_call_trace(id: u32, sp: *const u64, nargs: usize) {
+pub extern "C" fn emit_c_call_trace(id: u32, sp: *const u64, nargs: usize) {
     let args = (0..nargs).map(|i| unsafe { *(sp.add(i)) }).collect();
     do_call_trace(CallTrace::CCall {
         id: id as usize,

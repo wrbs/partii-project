@@ -18,28 +18,43 @@ Disassembly of section .text:
   22:	4c 8b 6f 08          	mov    0x8(%rdi),%r13
   26:	48 83 c7 10          	add    $0x10,%rdi
   2a:	48 89 3e             	mov    %rdi,(%rsi)
-  2d:	4c 89 e7             	mov    %r12,%rdi
-  30:	4c 89 ee             	mov    %r13,%rsi
-  33:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  3a:	00 00 00 
-			35: R_X86_64_64	oc_prim233
-  3d:	48 89 34 24          	mov    %rsi,(%rsp)
-  41:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
-  46:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
-  4b:	4c 89 64 24 18       	mov    %r12,0x18(%rsp)
-  50:	ff d0                	call   *%rax
-  52:	4c 8b 64 24 18       	mov    0x18(%rsp),%r12
-  57:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
-  5c:	48 89 c6             	mov    %rax,%rsi
-  5f:	bf 01 00 00 00       	mov    $0x1,%edi
-  64:	48 39 fe             	cmp    %rdi,%rsi
-  67:	0f 84 03 00 00 00    	je     70 <stdlib_min+0x70>
-  6d:	4d 89 e5             	mov    %r12,%r13
-  70:	48 31 d2             	xor    %rdx,%rdx
-  73:	4c 89 e8             	mov    %r13,%rax
-  76:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
-  7b:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
-  80:	48 83 c4 30          	add    $0x30,%rsp
-  84:	48 89 ec             	mov    %rbp,%rsp
-  87:	5d                   	pop    %rbp
-  88:	c3                   	ret    
+  2d:	48 8b 3e             	mov    (%rsi),%rdi
+  30:	48 89 fe             	mov    %rdi,%rsi
+  33:	48 83 c6 f0          	add    $0xfffffffffffffff0,%rsi
+  37:	4c 89 67 f0          	mov    %r12,-0x10(%rdi)
+  3b:	4c 89 6f f8          	mov    %r13,-0x8(%rdi)
+  3f:	bf e9 00 00 00       	mov    $0xe9,%edi
+  44:	ba 02 00 00 00       	mov    $0x2,%edx
+  49:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  50:	00 00 00 
+			4b: R_X86_64_64	emit_c_call_trace
+  53:	4c 89 24 24          	mov    %r12,(%rsp)
+  57:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
+  5c:	ff d0                	call   *%rax
+  5e:	4c 8b 24 24          	mov    (%rsp),%r12
+  62:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
+  67:	4c 89 e7             	mov    %r12,%rdi
+  6a:	4c 89 ee             	mov    %r13,%rsi
+  6d:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  74:	00 00 00 
+			6f: R_X86_64_64	oc_prim233
+  77:	48 89 34 24          	mov    %rsi,(%rsp)
+  7b:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
+  80:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
+  85:	4c 89 64 24 18       	mov    %r12,0x18(%rsp)
+  8a:	ff d0                	call   *%rax
+  8c:	4c 8b 64 24 18       	mov    0x18(%rsp),%r12
+  91:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
+  96:	48 89 c6             	mov    %rax,%rsi
+  99:	bf 01 00 00 00       	mov    $0x1,%edi
+  9e:	48 39 fe             	cmp    %rdi,%rsi
+  a1:	0f 84 03 00 00 00    	je     aa <stdlib_min+0xaa>
+  a7:	4d 89 e5             	mov    %r12,%r13
+  aa:	48 31 d2             	xor    %rdx,%rdx
+  ad:	4c 89 e8             	mov    %r13,%rax
+  b0:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+  b5:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
+  ba:	48 83 c4 30          	add    $0x30,%rsp
+  be:	48 89 ec             	mov    %rbp,%rsp
+  c1:	5d                   	pop    %rbp
+  c2:	c3                   	ret    
