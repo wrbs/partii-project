@@ -35,6 +35,7 @@ pub enum CraneliftPrimitiveValue {
 #[strum(serialize_all = "snake_case")]
 pub enum CraneliftPrimitiveFunction {
     EmitCCallTrace,
+    EmitReturnTrace,
 }
 
 pub trait CraneliftPrimitive: Sized {

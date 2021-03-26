@@ -124,7 +124,7 @@ pub extern "C" fn emit_enter_apply_trace(
     });
 }
 
-pub extern "C" fn emit_return_apply_trace(retval: u64) {
+pub extern "C" fn emit_return_trace(retval: u64) {
     do_call_trace(CallTrace::Return(retval));
 }
 

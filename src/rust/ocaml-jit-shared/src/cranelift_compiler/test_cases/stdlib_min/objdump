@@ -7,54 +7,68 @@ Disassembly of section .text:
 0000000000000000 <stdlib_min>:
    0:	55                   	push   %rbp
    1:	48 89 e5             	mov    %rsp,%rbp
-   4:	48 83 ec 30          	sub    $0x30,%rsp
+   4:	48 83 ec 40          	sub    $0x40,%rsp
    8:	4c 89 64 24 20       	mov    %r12,0x20(%rsp)
    d:	4c 89 6c 24 28       	mov    %r13,0x28(%rsp)
-  12:	48 be 00 00 00 00 00 	movabs $0x0,%rsi
-  19:	00 00 00 
-			14: R_X86_64_64	ocaml_extern_sp
-  1c:	48 8b 3e             	mov    (%rsi),%rdi
-  1f:	4c 8b 27             	mov    (%rdi),%r12
-  22:	4c 8b 6f 08          	mov    0x8(%rdi),%r13
-  26:	48 83 c7 10          	add    $0x10,%rdi
-  2a:	48 89 3e             	mov    %rdi,(%rsi)
-  2d:	48 8b 3e             	mov    (%rsi),%rdi
-  30:	48 89 fe             	mov    %rdi,%rsi
-  33:	48 83 c6 f0          	add    $0xfffffffffffffff0,%rsi
-  37:	4c 89 67 f0          	mov    %r12,-0x10(%rdi)
-  3b:	4c 89 6f f8          	mov    %r13,-0x8(%rdi)
-  3f:	bf e9 00 00 00       	mov    $0xe9,%edi
-  44:	ba 02 00 00 00       	mov    $0x2,%edx
-  49:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  50:	00 00 00 
-			4b: R_X86_64_64	emit_c_call_trace
-  53:	4c 89 24 24          	mov    %r12,(%rsp)
-  57:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
-  5c:	ff d0                	call   *%rax
-  5e:	4c 8b 24 24          	mov    (%rsp),%r12
-  62:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
-  67:	4c 89 e7             	mov    %r12,%rdi
-  6a:	4c 89 ee             	mov    %r13,%rsi
-  6d:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  74:	00 00 00 
-			6f: R_X86_64_64	oc_prim233
-  77:	48 89 34 24          	mov    %rsi,(%rsp)
-  7b:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
-  80:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
-  85:	4c 89 64 24 18       	mov    %r12,0x18(%rsp)
-  8a:	ff d0                	call   *%rax
-  8c:	4c 8b 64 24 18       	mov    0x18(%rsp),%r12
-  91:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
-  96:	48 89 c6             	mov    %rax,%rsi
-  99:	bf 01 00 00 00       	mov    $0x1,%edi
-  9e:	48 39 fe             	cmp    %rdi,%rsi
-  a1:	0f 84 03 00 00 00    	je     aa <stdlib_min+0xaa>
-  a7:	4d 89 e5             	mov    %r12,%r13
-  aa:	48 31 d2             	xor    %rdx,%rdx
-  ad:	4c 89 e8             	mov    %r13,%rax
-  b0:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
-  b5:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
-  ba:	48 83 c4 30          	add    $0x30,%rsp
-  be:	48 89 ec             	mov    %rbp,%rsp
-  c1:	5d                   	pop    %rbp
-  c2:	c3                   	ret    
+  12:	4c 89 74 24 30       	mov    %r14,0x30(%rsp)
+  17:	48 be 00 00 00 00 00 	movabs $0x0,%rsi
+  1e:	00 00 00 
+			19: R_X86_64_64	ocaml_extern_sp
+  21:	48 8b 3e             	mov    (%rsi),%rdi
+  24:	4c 8b 27             	mov    (%rdi),%r12
+  27:	4c 8b 6f 08          	mov    0x8(%rdi),%r13
+  2b:	48 83 c7 10          	add    $0x10,%rdi
+  2f:	48 89 3e             	mov    %rdi,(%rsi)
+  32:	48 8b 3e             	mov    (%rsi),%rdi
+  35:	48 89 fe             	mov    %rdi,%rsi
+  38:	48 83 c6 f0          	add    $0xfffffffffffffff0,%rsi
+  3c:	4c 89 67 f0          	mov    %r12,-0x10(%rdi)
+  40:	4c 89 6f f8          	mov    %r13,-0x8(%rdi)
+  44:	bf e9 00 00 00       	mov    $0xe9,%edi
+  49:	ba 02 00 00 00       	mov    $0x2,%edx
+  4e:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  55:	00 00 00 
+			50: R_X86_64_64	emit_c_call_trace
+  58:	4c 89 24 24          	mov    %r12,(%rsp)
+  5c:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
+  61:	ff d0                	call   *%rax
+  63:	4c 8b 24 24          	mov    (%rsp),%r12
+  67:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
+  6c:	4c 89 e7             	mov    %r12,%rdi
+  6f:	4c 89 ee             	mov    %r13,%rsi
+  72:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  79:	00 00 00 
+			74: R_X86_64_64	oc_prim233
+  7c:	48 89 34 24          	mov    %rsi,(%rsp)
+  80:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
+  85:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
+  8a:	4c 89 64 24 18       	mov    %r12,0x18(%rsp)
+  8f:	ff d0                	call   *%rax
+  91:	4c 8b 64 24 18       	mov    0x18(%rsp),%r12
+  96:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
+  9b:	49 89 c6             	mov    %rax,%r14
+  9e:	4c 89 f7             	mov    %r14,%rdi
+  a1:	48 be 00 00 00 00 00 	movabs $0x0,%rsi
+  a8:	00 00 00 
+			a3: R_X86_64_64	emit_return_trace
+  ab:	4c 89 2c 24          	mov    %r13,(%rsp)
+  af:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
+  b4:	4c 89 64 24 10       	mov    %r12,0x10(%rsp)
+  b9:	4c 89 74 24 18       	mov    %r14,0x18(%rsp)
+  be:	ff d6                	call   *%rsi
+  c0:	4c 8b 64 24 10       	mov    0x10(%rsp),%r12
+  c5:	4c 8b 2c 24          	mov    (%rsp),%r13
+  c9:	4c 8b 74 24 18       	mov    0x18(%rsp),%r14
+  ce:	be 01 00 00 00       	mov    $0x1,%esi
+  d3:	49 39 f6             	cmp    %rsi,%r14
+  d6:	0f 84 03 00 00 00    	je     df <stdlib_min+0xdf>
+  dc:	4d 89 e5             	mov    %r12,%r13
+  df:	48 31 d2             	xor    %rdx,%rdx
+  e2:	4c 89 e8             	mov    %r13,%rax
+  e5:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+  ea:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
+  ef:	4c 8b 74 24 30       	mov    0x30(%rsp),%r14
+  f4:	48 83 c4 40          	add    $0x40,%rsp
+  f8:	48 89 ec             	mov    %rbp,%rsp
+  fb:	5d                   	pop    %rbp
+  fc:	c3                   	ret    

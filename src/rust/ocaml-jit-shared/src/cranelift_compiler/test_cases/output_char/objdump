@@ -41,10 +41,20 @@ Disassembly of section .text:
   77:	48 89 34 24          	mov    %rsi,(%rsp)
   7b:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
   80:	ff d0                	call   *%rax
-  82:	48 31 d2             	xor    %rdx,%rdx
-  85:	4c 8b 64 24 10       	mov    0x10(%rsp),%r12
-  8a:	4c 8b 6c 24 18       	mov    0x18(%rsp),%r13
-  8f:	48 83 c4 20          	add    $0x20,%rsp
-  93:	48 89 ec             	mov    %rbp,%rsp
-  96:	5d                   	pop    %rbp
-  97:	c3                   	ret    
+  82:	49 89 c4             	mov    %rax,%r12
+  85:	4c 89 e7             	mov    %r12,%rdi
+  88:	48 be 00 00 00 00 00 	movabs $0x0,%rsi
+  8f:	00 00 00 
+			8a: R_X86_64_64	emit_return_trace
+  92:	48 89 3c 24          	mov    %rdi,(%rsp)
+  96:	4c 89 64 24 08       	mov    %r12,0x8(%rsp)
+  9b:	ff d6                	call   *%rsi
+  9d:	4c 8b 64 24 08       	mov    0x8(%rsp),%r12
+  a2:	48 31 d2             	xor    %rdx,%rdx
+  a5:	4c 89 e0             	mov    %r12,%rax
+  a8:	4c 8b 64 24 10       	mov    0x10(%rsp),%r12
+  ad:	4c 8b 6c 24 18       	mov    0x18(%rsp),%r13
+  b2:	48 83 c4 20          	add    $0x20,%rsp
+  b6:	48 89 ec             	mov    %rbp,%rsp
+  b9:	5d                   	pop    %rbp
+  ba:	c3                   	ret    
