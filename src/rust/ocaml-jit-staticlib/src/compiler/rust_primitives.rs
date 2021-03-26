@@ -1,8 +1,11 @@
 use std::{ffi::CStr, os::raw::c_char};
 
-use ocaml_jit_shared::{call_trace::CallTrace, BytecodeLocation, BytecodeRelativeOffset};
+use ocaml_jit_shared::{
+    call_trace::CallTrace, cranelift_compiler::CraneliftCompilerOptions, BytecodeLocation,
+    BytecodeRelativeOffset,
+};
 
-use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry};
+use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry, PrintTraces};
 use crate::{
     caml::mlvalues::Value,
     global_data::GlobalData,
@@ -86,10 +89,14 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
         .as_ref()
         .expect("No such section");
     let code = unsafe { section.get_code() };
+    let options = CraneliftCompilerOptions {
+        use_call_traces: global_data.compiler_options.print_traces == Some(PrintTraces::Call),
+    };
+
     match global_data
         .compiler_data
         .optimised_compiler
-        .optimise_closure(section_number, code, entrypoint)
+        .optimise_closure(section_number, code, entrypoint, &&options)
     {
         Ok(new_code) => {
             closure.compiled_location = new_code as u64;
@@ -144,4 +151,12 @@ fn get_bytecode_location_from_closure(
 fn get_arity_from_closure(closure: *const ClosureMetadataTableEntry) -> usize {
     let closure = unsafe { closure.as_ref().unwrap() };
     closure.required_extra_args as usize + 1
+}
+
+pub fn emit_c_call_trace(id: u32, sp: *const u64, nargs: usize) {
+    let args = (0..nargs).map(|i| unsafe { *(sp.add(i)) }).collect();
+    do_call_trace(CallTrace::CCall {
+        id: id as usize,
+        args,
+    });
 }

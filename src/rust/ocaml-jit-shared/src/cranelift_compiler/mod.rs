@@ -4,18 +4,19 @@ use crate::basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, Bas
 use anyhow::{bail, Context, Result};
 use codegen::{
     binemit::{StackMap, StackMapSink},
-    ir::GlobalValue,
+    ir::{FuncRef, GlobalValue},
     print_errors::pretty_error,
 };
 use cranelift::prelude::*;
 use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
 use types::{I32, I64, R64};
 
+use self::primitives::{CraneliftPrimitiveFunction, CraneliftPrimitiveValue};
+
 #[cfg(test)]
 mod test;
 
 pub mod primitives;
-pub const EXTERN_SP_ADDR_IDENT: &str = "ocaml_extern_sp";
 
 #[derive(Debug, Default)]
 pub struct CompilerOutput {
@@ -25,12 +26,16 @@ pub struct CompilerOutput {
     stack_maps: String,
 }
 
+pub struct CraneliftCompilerOptions {
+    pub use_call_traces: bool,
+}
+
 pub struct CraneliftCompiler<M: Module> {
     pub module: M,
     ctx: codegen::Context,
     declared_prims: HashMap<u32, CCall>,
-    extern_sp: DataId,
     function_builder_context: FunctionBuilderContext,
+    primitives: Primitives,
 }
 
 #[derive(Debug, Default)]
@@ -55,14 +60,13 @@ where
         let ctx = module.make_context();
         let function_builder_context = FunctionBuilderContext::new();
 
-        let extern_sp = module.declare_data(EXTERN_SP_ADDR_IDENT, Linkage::Import, true, false)?;
 
         Ok(Self {
             module,
             ctx,
             function_builder_context,
             declared_prims: HashMap::new(),
-            extern_sp,
+            primitives: Primitives::default(),
         })
     }
 
@@ -70,6 +74,7 @@ where
         &mut self,
         func_name: &str,
         closure: &BasicClosure,
+        options: &CraneliftCompilerOptions,
         mut debug_output: Option<&mut CompilerOutput>,
     ) -> Result<FuncId> {
         self.module.clear_context(&mut self.ctx);
@@ -91,7 +96,7 @@ where
         // Compile the function
         // TODO - share this once I stop having errors that stop it from being automatically cleared
         self.function_builder_context = FunctionBuilderContext::new();
-        let mut translator = self.create_translator(closure);
+        let mut translator = self.create_translator(closure, options)?;
         for basic_block in &closure.blocks {
             translator.translate_block(basic_block).with_context(|| {
                 format!("Problem compiling basic block {}", basic_block.block_id)
@@ -158,7 +163,11 @@ where
         Ok(func_id)
     }
 
-    fn create_translator<'a>(&'a mut self, closure: &'a BasicClosure) -> FunctionTranslator<'a, M> {
+    fn create_translator<'a>(
+        &'a mut self,
+        closure: &'a BasicClosure,
+        options: &'a CraneliftCompilerOptions,
+    ) -> Result<FunctionTranslator<'a, M>> {
         let mut builder =
             FunctionBuilder::new(&mut self.ctx.func, &mut self.function_builder_context);
         let blocks: Vec<_> = (0..closure.blocks.len())
@@ -182,42 +191,10 @@ where
         let stack_vars: Vec<_> = (0..closure.max_stack_size).map(|_| var(R64)).collect();
         let return_var = var(R64);
         let return_extra_args_var = var(I64);
-
-        // Declare the variables
+        let stack_size = closure.arity;
         let env = builder.block_params(blocks[0])[0];
 
-        let extern_sp_glob = self
-            .module
-            .declare_data_in_func(self.extern_sp, &mut builder.func);
-        let extern_sp_addr = builder.ins().symbol_value(I64, extern_sp_glob);
-
-        let cur_sp = builder
-            .ins()
-            .load(I64, MemFlags::trusted(), extern_sp_addr, 0);
-
-        for i in 0..closure.arity {
-            let arg = builder
-                .ins()
-                .load(R64, MemFlags::trusted(), cur_sp, 8 * i as i32);
-            builder.def_var(stack_vars[closure.arity - i - 1], arg);
-        }
-        let new_sp = builder.ins().iadd_imm(cur_sp, 8 * closure.arity as i64);
-        builder
-            .ins()
-            .store(MemFlags::trusted(), new_sp, extern_sp_addr, 0);
-        let stack_size = closure.arity;
-
-        // Zero-initialise the other vars
-        let zero = builder.ins().null(R64);
-        let zero_i = builder.ins().iconst(I64, 0);
-        builder.def_var(acc, zero);
-        for i in closure.arity..(closure.max_stack_size as usize) {
-            builder.def_var(stack_vars[i], zero);
-        }
-        builder.def_var(return_var, zero);
-        builder.def_var(return_extra_args_var, zero_i);
-
-        FunctionTranslator {
+        let mut ft = FunctionTranslator {
             builder,
             module: &mut self.module,
             stack_size,
@@ -225,12 +202,49 @@ where
             env,
             acc,
             blocks,
-            declared_prims: &mut self.declared_prims,
-            extern_sp_addr,
+            options,
             return_var,
             return_extra_args_var,
             return_block,
+            primitives: &mut self.primitives,
+            used_c_calls: HashMap::new(),
+            used_funcs: HashMap::new(),
+            used_values: HashMap::new(),
+        };
+
+        // Declare the variables
+        let extern_sp_addr = ft.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
+
+        let cur_sp = ft
+            .builder
+            .ins()
+            .load(I64, MemFlags::trusted(), extern_sp_addr, 0);
+
+        for i in 0..closure.arity {
+            let arg = ft
+                .builder
+                .ins()
+                .load(R64, MemFlags::trusted(), cur_sp, 8 * i as i32);
+            ft.builder
+                .def_var(ft.stack_vars[closure.arity - i - 1], arg);
         }
+        let new_sp = ft.builder.ins().iadd_imm(cur_sp, 8 * closure.arity as i64);
+        ft.builder
+            .ins()
+            .store(MemFlags::trusted(), new_sp, extern_sp_addr, 0);
+
+        // Zero-initialise the other vars
+        let zero = ft.builder.ins().null(R64);
+        let zero_i = ft.builder.ins().iconst(I64, 0);
+        ft.builder.def_var(acc, zero);
+        for i in closure.arity..(closure.max_stack_size as usize) {
+            ft.builder.def_var(ft.stack_vars[i], zero);
+        }
+        ft.builder.def_var(return_var, zero);
+        ft.builder.def_var(return_extra_args_var, zero_i);
+
+
+        Ok(ft)
     }
 }
 
@@ -255,10 +269,9 @@ where
 {
     builder: FunctionBuilder<'a>,
     module: &'a mut M,
-    declared_prims: &'a mut HashMap<u32, CCall>,
     stack_size: usize,
     stack_vars: Vec<Variable>,
-    extern_sp_addr: Value,
+    options: &'a CraneliftCompilerOptions,
     env: Value,
     acc: Variable,
     return_var: Variable,
@@ -266,6 +279,11 @@ where
     // Represents the blocks in my basic block translation
     blocks: Vec<Block>,
     return_block: Block,
+    // Primitives
+    primitives: &'a mut Primitives,
+    used_values: HashMap<CraneliftPrimitiveValue, GlobalValue>,
+    used_funcs: HashMap<CraneliftPrimitiveFunction, FuncRef>,
+    used_c_calls: HashMap<u32, FuncRef>,
 }
 
 impl<'a, M> FunctionTranslator<'a, M>
@@ -401,61 +419,18 @@ where
     // Helpers
 
     fn c_call(&mut self, id: u32, arity: Arity) -> Result<()> {
-        let func_id = match self.declared_prims.get(&id) {
-            Some(call) => {
-                if call.arity != arity {
-                    bail!(
-                        "Conflicting c-call arities: {:?} first then {:?}",
-                        call.arity,
-                        arity
-                    );
-                } else {
-                    call.id
-                }
-            }
-            None => {
-                let mut sig = self.module.make_signature();
-                sig.returns.push(AbiParam::new(R64));
-                match arity {
-                    Arity::N1 => {}
-                    Arity::N2 => {
-                        for _ in 0..2 {
-                            sig.params.push(AbiParam::new(R64));
-                        }
-                    }
-                    Arity::N3 => {
-                        for _ in 0..3 {
-                            sig.params.push(AbiParam::new(R64));
-                        }
-                    }
-                    Arity::N4 => {
-                        for _ in 0..4 {
-                            sig.params.push(AbiParam::new(R64));
-                        }
-                    }
-                    Arity::N5 => {
-                        for _ in 0..5 {
-                            sig.params.push(AbiParam::new(R64));
-                        }
-                    }
-                    Arity::VarArgs(_) => {
-                        // Pointer to args
-                        sig.params.push(AbiParam::new(I64));
-                        // Num args
-                        sig.params.push(AbiParam::new(I32));
-                    }
-                }
-
-                self.module.declare_function(
-                    &format_c_call_name(id as usize),
-                    Linkage::Import,
-                    &sig,
-                )?
-            }
+        let local_callee = if let Some(x) = self.used_c_calls.get(&id) {
+            *x
+        } else {
+            let func_id = self
+                .primitives
+                .get_or_initialise_c_call(self.module, id, arity)?;
+            let local_callee = self
+                .module
+                .declare_func_in_func(func_id, &mut self.builder.func);
+            self.used_c_calls.insert(id, local_callee);
+            local_callee
         };
-        let local_callee = self
-            .module
-            .declare_func_in_func(func_id, &mut self.builder.func);
 
         let mut args = vec![];
 
@@ -563,4 +538,134 @@ where
         let ref_val = self.get_acc_ref();
         self.builder.ins().raw_bitcast(I64, ref_val)
     }
+
+    // Getting primitives
+    fn get_global_variable(&mut self, typ: Type, value: CraneliftPrimitiveValue) -> Result<Value> {
+        let gv = if let Some(gv) = self.used_values.get(&value) {
+            *gv
+        } else {
+            let data_id = self
+                .primitives
+                .get_or_initialise_value(self.module, value)?;
+            let gv = self
+                .module
+                .declare_data_in_func(data_id, &mut self.builder.func);
+            self.used_values.insert(value, gv);
+            gv
+        };
+        Ok(self.builder.ins().symbol_value(typ, gv))
+    }
+}
+
+#[derive(Default)]
+struct Primitives {
+    values: HashMap<CraneliftPrimitiveValue, DataId>,
+    functions: HashMap<CraneliftPrimitiveFunction, (FuncId, Signature)>,
+    c_calls: HashMap<u32, CCall>,
+}
+
+impl Primitives {
+    fn get_or_initialise_value<M: Module>(
+        &mut self,
+        module: &mut M,
+        value: CraneliftPrimitiveValue,
+    ) -> Result<DataId> {
+        Ok(match self.values.get(&value) {
+            Some(data_id) => *data_id,
+            None => {
+                let name: &str = value.into();
+                let data_id = module.declare_data(name, Linkage::Import, true, false)?;
+                self.values.insert(value, data_id);
+                data_id
+            }
+        })
+    }
+
+    fn get_or_initialize_function<M: Module>(
+        &mut self,
+        module: &mut M,
+        function: CraneliftPrimitiveFunction,
+    ) -> Result<(FuncId, Signature)> {
+        Ok(match self.functions.get(&function) {
+            Some((func_id, signature)) => (*func_id, signature.clone()),
+            None => {
+                let name: &str = function.into();
+                let mut signature = module.make_signature();
+                create_function_signature(function, &mut signature);
+
+                let func_id = module.declare_function(name, Linkage::Import, &signature)?;
+                let clone = signature.clone();
+                self.functions.insert(function, (func_id, signature));
+                (func_id, clone)
+            }
+        })
+    }
+
+    fn get_or_initialise_c_call<M: Module>(
+        &mut self,
+        module: &mut M,
+        id: u32,
+        arity: Arity,
+    ) -> Result<FuncId> {
+        Ok(match self.c_calls.get(&id) {
+            Some(call) => {
+                if call.arity != arity {
+                    bail!(
+                        "Conflicting c-call arities: {:?} first then {:?}",
+                        call.arity,
+                        arity
+                    );
+                } else {
+                    call.id
+                }
+            }
+            None => {
+                let mut sig = module.make_signature();
+                sig.returns.push(AbiParam::new(R64));
+                match arity {
+                    Arity::N1 => {}
+                    Arity::N2 => {
+                        for _ in 0..2 {
+                            sig.params.push(AbiParam::new(R64));
+                        }
+                    }
+                    Arity::N3 => {
+                        for _ in 0..3 {
+                            sig.params.push(AbiParam::new(R64));
+                        }
+                    }
+                    Arity::N4 => {
+                        for _ in 0..4 {
+                            sig.params.push(AbiParam::new(R64));
+                        }
+                    }
+                    Arity::N5 => {
+                        for _ in 0..5 {
+                            sig.params.push(AbiParam::new(R64));
+                        }
+                    }
+                    Arity::VarArgs(_) => {
+                        // Pointer to args
+                        sig.params.push(AbiParam::new(I64));
+                        // Num args
+                        sig.params.push(AbiParam::new(I32));
+                    }
+                }
+
+                let func_id = module.declare_function(
+                    &format_c_call_name(id as usize),
+                    Linkage::Import,
+                    &sig,
+                )?;
+
+                self.c_calls.insert(id, CCall { id: func_id, arity });
+
+                func_id
+            }
+        })
+    }
+}
+
+fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Signature) {
+    match function {}
 }

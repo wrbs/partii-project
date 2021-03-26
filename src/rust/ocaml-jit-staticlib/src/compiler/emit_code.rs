@@ -949,6 +949,7 @@ impl CompilerContext {
             Instruction::CCall1(primno) => {
                 // TODO - possible optimisation, could load the static address
                 // if it's currently in the table
+                self.on_c_call(primno, 1);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -961,6 +962,7 @@ impl CompilerContext {
                 self.restore_after_c_call();
             }
             Instruction::CCall2(primno) => {
+                self.on_c_call(primno, 2);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -977,6 +979,7 @@ impl CompilerContext {
                 );
             }
             Instruction::CCall3(primno) => {
+                self.on_c_call(primno, 3);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -994,6 +997,7 @@ impl CompilerContext {
                 );
             }
             Instruction::CCall4(primno) => {
+                self.on_c_call(primno, 4);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -1012,6 +1016,7 @@ impl CompilerContext {
                 );
             }
             Instruction::CCall5(primno) => {
+                self.on_c_call(primno, 5);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -1031,6 +1036,7 @@ impl CompilerContext {
                 );
             }
             Instruction::CCallN(nargs, primno) => {
+                self.on_c_call(primno, *nargs as usize);
                 let nargs = *nargs as i32;
                 oc_dynasm!(self.ops
                     ; sub r_sp, BYTE 8
@@ -1399,6 +1405,27 @@ impl CompilerContext {
         }
 
         Some(())
+    }
+
+    // Emit a c call trace if we're tracing calls
+    fn on_c_call(&mut self, primno: &u32, nargs: usize) {
+        if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+            oc_dynasm!(self.ops
+                // Push r_accu
+                ; sub r_sp, 8
+                ; mov [r_sp], r_accu
+
+                // Call
+                ; mov rdi, *primno as _
+                ; mov rsi, r_sp
+                ; mov rdx, QWORD nargs as _
+                ; mov rax, QWORD emit_c_call_trace as _
+                ; call rax
+
+                // Undo push
+                ; add r_sp, 8
+            );
+        }
     }
 
     fn perform_apply(&mut self) {
