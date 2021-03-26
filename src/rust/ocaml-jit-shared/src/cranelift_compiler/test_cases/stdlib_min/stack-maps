@@ -1,4 +1,12 @@
-0x52: StackMap {
+0x5e: StackMap {
+    bitmap: [
+        BitSet(
+            3,
+        ),
+    ],
+    mapped_words: 4,
+}
+0x8c: StackMap {
     bitmap: [
         BitSet(
             15,

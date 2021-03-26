@@ -33,7 +33,9 @@ pub enum CraneliftPrimitiveValue {
     strum_macros::EnumCount,
 )]
 #[strum(serialize_all = "snake_case")]
-pub enum CraneliftPrimitiveFunction {}
+pub enum CraneliftPrimitiveFunction {
+    EmitCCallTrace,
+}
 
 pub trait CraneliftPrimitive: Sized {
     type Iter: Iterator<Item = Self>;
