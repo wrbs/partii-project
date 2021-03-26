@@ -4,7 +4,11 @@ use ocaml_jit_shared::{
     basic_blocks::parse_to_basic_blocks,
     cranelift::*,
     cranelift_codegen::settings::{self, Configurable},
-    cranelift_compiler::{format_c_call_name, CraneliftCompiler, EXTERN_SP_ADDR_IDENT},
+    cranelift_compiler::{
+        format_c_call_name,
+        primitives::{CraneliftPrimitive, CraneliftPrimitiveFunction, CraneliftPrimitiveValue},
+        CraneliftCompiler, CraneliftCompilerOptions,
+    },
     cranelift_module,
 };
 use once_cell::unsync::OnceCell;
@@ -29,8 +33,9 @@ impl OptimisedCompiler {
         section_number: usize,
         code: &[i32],
         entrypoint: usize,
+        options: &CraneliftCompilerOptions,
     ) -> Result<usize> {
-        self.optimise_closure_impl(section_number, code, entrypoint)
+        self.optimise_closure_impl(section_number, code, entrypoint, options)
             .with_context(|| {
                 format!(
                     "Problem compiling closure at section {} offset {}",
@@ -45,6 +50,7 @@ impl OptimisedCompiler {
         section_number: usize,
         code: &[i32],
         entrypoint: usize,
+        options: &CraneliftCompilerOptions,
     ) -> Result<usize> {
         self.compiler.get_or_try_init(|| {
             let module = initialise_module();
@@ -62,7 +68,7 @@ impl OptimisedCompiler {
 
         let comp_res = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             compiler
-                .compile_closure(&func_name, &closure, None)
+                .compile_closure(&func_name, &closure, options, None)
                 .context("Problem compiling with cranelift")
         }));
         panic::set_hook(old_hook);
@@ -88,9 +94,29 @@ fn initialise_module() -> JITModule {
     JITModule::new(builder)
 }
 
+fn get_prim_value_addr(primitive: CraneliftPrimitiveValue) -> *const u8 {
+    match primitive {
+        CraneliftPrimitiveValue::OcamlExternSp => get_extern_sp_addr() as *const u8,
+    }
+}
+
+fn get_prim_function_addr(primitive: CraneliftPrimitiveFunction) -> *const u8 {
+    match primitive {}
+}
+
 fn define_ocaml_primitives(builder: &mut JITBuilder) {
-    builder.symbol(EXTERN_SP_ADDR_IDENT, get_extern_sp_addr() as *const u8);
+    for prim in CraneliftPrimitiveValue::iter() {
+        let name: &str = prim.into();
+        builder.symbol(name, get_prim_value_addr(prim));
+    }
+
+    for prim in CraneliftPrimitiveFunction::iter() {
+        let name: &str = prim.into();
+        builder.symbol(name, get_prim_function_addr(prim));
+    }
+
     unsafe {
+        // Do CCalls
         for (prim_id, defn) in CAML_PRIMITIVE_TABLE.as_slice().iter().enumerate() {
             builder.symbol(&format_c_call_name(prim_id), *defn as *const u8);
         }

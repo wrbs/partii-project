@@ -2,7 +2,7 @@ use std::{io::Write, process::Command};
 
 use crate::basic_blocks::BasicClosure;
 
-use super::{CompilerOutput, CraneliftCompiler};
+use super::{CompilerOutput, CraneliftCompiler, CraneliftCompilerOptions};
 use cranelift_codegen::{
     isa::TargetIsa,
     settings::{self, Configurable},
@@ -26,11 +26,14 @@ fn run_test(
     let isa = get_isa();
     let object_builder = ObjectBuilder::new(isa, case_name, default_libcall_names()).unwrap();
     let module = ObjectModule::new(object_builder);
+    let options = CraneliftCompilerOptions {
+        use_call_traces: true,
+    };
     let mut compiler = CraneliftCompiler::new(module).unwrap();
 
     let mut compiler_output = CompilerOutput::default();
     let _ = compiler
-        .compile_closure(case_name, &closure, Some(&mut compiler_output))
+        .compile_closure(case_name, &closure, &options, Some(&mut compiler_output))
         .unwrap();
 
     let op = compiler.module.finish();
