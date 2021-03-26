@@ -949,7 +949,7 @@ impl CompilerContext {
             Instruction::CCall1(primno) => {
                 // TODO - possible optimisation, could load the static address
                 // if it's currently in the table
-                self.on_c_call(primno, 1);
+                self.c_call_enter_trace(primno, 1);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -960,9 +960,10 @@ impl CompilerContext {
                     ; mov r_accu, rax
                 );
                 self.restore_after_c_call();
+                self.c_call_exit_trace();
             }
             Instruction::CCall2(primno) => {
-                self.on_c_call(primno, 2);
+                self.c_call_enter_trace(primno, 2);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -977,9 +978,10 @@ impl CompilerContext {
                 oc_dynasm!(self.ops
                     ; add r_sp, 8
                 );
+                self.c_call_exit_trace();
             }
             Instruction::CCall3(primno) => {
-                self.on_c_call(primno, 3);
+                self.c_call_enter_trace(primno, 3);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -995,9 +997,10 @@ impl CompilerContext {
                 oc_dynasm!(self.ops
                     ; add r_sp, 16
                 );
+                self.c_call_exit_trace();
             }
             Instruction::CCall4(primno) => {
-                self.on_c_call(primno, 4);
+                self.c_call_enter_trace(primno, 4);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -1014,9 +1017,10 @@ impl CompilerContext {
                 oc_dynasm!(self.ops
                     ; add r_sp, 24
                 );
+                self.c_call_exit_trace();
             }
             Instruction::CCall5(primno) => {
-                self.on_c_call(primno, 5);
+                self.c_call_enter_trace(primno, 5);
                 self.setup_for_c_call();
                 oc_dynasm!(self.ops
                     ; mov rdi, *primno as i32
@@ -1034,9 +1038,10 @@ impl CompilerContext {
                 oc_dynasm!(self.ops
                     ; add r_sp, BYTE 32
                 );
+                self.c_call_exit_trace();
             }
             Instruction::CCallN(nargs, primno) => {
-                self.on_c_call(primno, *nargs as usize);
+                self.c_call_enter_trace(primno, *nargs as usize);
                 let nargs = *nargs as i32;
                 oc_dynasm!(self.ops
                     ; sub r_sp, BYTE 8
@@ -1056,6 +1061,7 @@ impl CompilerContext {
                 oc_dynasm!(self.ops
                     ; add r_sp, 8 * nargs
                 );
+                self.c_call_exit_trace();
             }
             Instruction::NegInt => {
                 oc_dynasm!(self.ops
@@ -1408,7 +1414,7 @@ impl CompilerContext {
     }
 
     // Emit a c call trace if we're tracing calls
-    fn on_c_call(&mut self, primno: &u32, nargs: usize) {
+    fn c_call_enter_trace(&mut self, primno: &u32, nargs: usize) {
         if self.compiler_options.print_traces == Some(PrintTraces::Call) {
             oc_dynasm!(self.ops
                 // Push r_accu
@@ -1428,6 +1434,16 @@ impl CompilerContext {
         }
     }
 
+    fn c_call_exit_trace(&mut self) {
+        if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+            oc_dynasm!(self.ops
+                // Call
+                ; mov rdi, r_accu
+                ; mov rax, QWORD emit_return_trace as _
+                ; call rax
+            );
+        }
+    }
     fn perform_apply(&mut self) {
         // This used to inline the stuff, but I'm changing it to jump to one apply function
         oc_dynasm!(self.ops
@@ -1440,7 +1456,7 @@ impl CompilerContext {
         if self.compiler_options.print_traces == Some(PrintTraces::Call) {
             oc_dynasm!(self.ops
                 ; mov rdi, r_accu
-                ; mov rax, QWORD emit_return_apply_trace as i64
+                ; mov rax, QWORD emit_return_trace as i64
                 ; call rax
             );
         }

@@ -3,7 +3,7 @@ VCode_ShowWithRRU {{
 Block 0:
   (original IR block: block0)
   (successor: Block 1)
-  (instruction range: 0 .. 35)
+  (instruction range: 0 .. 42)
   Inst 0:   pushq   %rbp
   Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
   Inst 2:   movq    %rsp, %rbp
@@ -40,15 +40,24 @@ Block 0:
   Inst 32:   movq    %rdi, rsp(8 + virtual offset)
       (safepoint: slots [S0, S1] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
   Inst 33:   call    *%rax
-  Inst 34:   jmp     label1
+  Inst 34:   movq    %rax, %r12
+  Inst 35:   movq    %r12, %rdi
+  Inst 36:   load_ext_name u0:3+0, %rsi
+  Inst 37:   movq    %rdi, rsp(0 + virtual offset)
+  Inst 38:   movq    %r12, rsp(8 + virtual offset)
+      (safepoint: slots [S0, S1] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 39:   call    *%rsi
+  Inst 40:   movq    rsp(8 + virtual offset), %r12
+  Inst 41:   jmp     label1
 Block 1:
   (original IR block: block1)
-  (instruction range: 35 .. 42)
-  Inst 35:   xorq    %rdx, %rdx
-  Inst 36:   movq    16(%rsp), %r12
-  Inst 37:   movq    24(%rsp), %r13
-  Inst 38:   addq    $32, %rsp
-  Inst 39:   movq    %rbp, %rsp
-  Inst 40:   popq    %rbp
-  Inst 41:   ret
+  (instruction range: 42 .. 50)
+  Inst 42:   xorq    %rdx, %rdx
+  Inst 43:   movq    %r12, %rax
+  Inst 44:   movq    16(%rsp), %r12
+  Inst 45:   movq    24(%rsp), %r13
+  Inst 46:   addq    $32, %rsp
+  Inst 47:   movq    %rbp, %rsp
+  Inst 48:   popq    %rbp
+  Inst 49:   ret
 }}

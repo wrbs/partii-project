@@ -14,3 +14,11 @@
     ],
     mapped_words: 2,
 }
+0x9d: StackMap {
+    bitmap: [
+        BitSet(
+            3,
+        ),
+    ],
+    mapped_words: 2,
+}

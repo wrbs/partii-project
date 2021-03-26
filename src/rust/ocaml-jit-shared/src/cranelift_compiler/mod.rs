@@ -501,6 +501,10 @@ where
         let result = self.builder.inst_results(call)[0];
         self.set_acc_ref(result);
 
+        if self.options.use_call_traces {
+            self.call_primitive(CraneliftPrimitiveFunction::EmitReturnTrace, &[result])?;
+        }
+
         Ok(())
     }
 
@@ -737,6 +741,9 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         CraneliftPrimitiveFunction::EmitCCallTrace => {
             sig.params
                 .extend(&[AbiParam::new(I32), AbiParam::new(I64), AbiParam::new(I64)]);
+        }
+        CraneliftPrimitiveFunction::EmitReturnTrace => {
+            sig.params.push(AbiParam::new(R64));
         }
     }
 }
