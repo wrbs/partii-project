@@ -1,9 +1,6 @@
 use std::{ffi::CStr, os::raw::c_char};
 
-use ocaml_jit_shared::{
-    call_trace::{CallTrace, CallTraceAction, CallTraceLocation},
-    BytecodeLocation, BytecodeRelativeOffset,
-};
+use ocaml_jit_shared::{call_trace::CallTrace, BytecodeLocation, BytecodeRelativeOffset};
 
 use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry};
 use crate::{
@@ -113,27 +110,22 @@ pub extern "C" fn emit_enter_apply_trace(
 ) {
     let nargs = extra_args + 1;
     let args = (0..nargs).map(|i| unsafe { *(sp.add(i)) }).collect();
-    do_call_trace(
-        CallTraceLocation::Apply(get_bytecode_location_from_closure(closure)),
-        CallTraceAction::Enter {
-            needed: get_arity_from_closure(closure),
-            provided: args,
-        },
-    );
+    do_call_trace(CallTrace::Enter {
+        closure: get_bytecode_location_from_closure(closure),
+        needed: get_arity_from_closure(closure),
+        provided: args,
+    });
 }
 
-pub extern "C" fn emit_return_apply_trace(closure: *mut ClosureMetadataTableEntry, retval: u64) {
-    do_call_trace(
-        CallTraceLocation::Apply(get_bytecode_location_from_closure(closure)),
-        CallTraceAction::Return(retval),
-    );
+pub extern "C" fn emit_return_apply_trace(retval: u64) {
+    do_call_trace(CallTrace::Return(retval));
 }
 
-fn do_call_trace(location: CallTraceLocation, action: CallTraceAction) {
+fn do_call_trace(trace: CallTrace) {
     let mut global_data = GlobalData::get();
     let trace_format = global_data.options.trace_format;
 
-    print_call_trace(&CallTrace { location, action }, &trace_format)
+    print_call_trace(&trace, &trace_format)
 }
 
 fn get_bytecode_location_from_closure(

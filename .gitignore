@@ -4,3 +4,4 @@ target
 dist/
 toolchain.env
 _opam
+*.code-workspace
