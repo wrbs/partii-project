@@ -606,18 +606,8 @@ impl CompilerContext {
             Instruction::Return(to_pop) => {
                 oc_dynasm!(self.ops
                     ; add r_sp, (*to_pop as i32) * 8
-                    ; test r_extra_args, r_extra_args
-                    ; jnz >tailcall
-                    ; mov rax, [r_sp]
-                    ; mov r_env, [r_sp + 8]
-                    ; mov r_extra_args, [r_sp + 16]
-                    ; sar r_extra_args, BYTE 1
-                    ; add r_sp, 24
-                    ; jmp rax
-                    ; tailcall:
-                    ; dec r_extra_args
                 );
-                self.perform_apply();
+                self.perform_return();
             }
             Instruction::Restart | Instruction::Grab(_) => {
                 // Do nothing, we don't use them in the way the interpreter does
@@ -1418,6 +1408,31 @@ impl CompilerContext {
         );
     }
 
+    fn perform_return(&mut self) {
+        // Emit a return trace if we're doing that
+        if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+            oc_dynasm!(self.ops
+                ; mov rdi, r_accu
+                ; mov rax, QWORD emit_return_apply_trace as i64
+                ; call rax
+            );
+        }
+
+        oc_dynasm!(self.ops
+            ; test r_extra_args, r_extra_args
+            ; jnz >tailcall
+            ; mov rax, [r_sp]
+            ; mov r_env, [r_sp + 8]
+            ; mov r_extra_args, [r_sp + 16]
+            ; sar r_extra_args, BYTE 1
+            ; add r_sp, 24
+            ; jmp rax
+            ; tailcall:
+            ; dec r_extra_args
+        );
+        self.perform_apply();
+    }
+
     fn emit_check_signals(&mut self, next_instr: NextInstruction) {
         oc_dynasm!(self.ops
             ; mov rax, QWORD get_something_to_do_addr()
@@ -1541,23 +1556,11 @@ impl CompilerContext {
                 // Afterwards rax contains retval
                 // And rdx the extra_args offset
                 ; mov rsi, QWORD get_extern_sp_addr() as usize as i64
-                ; mov r_sp, [rsi]           // Save extern sp
+                ; mov r_sp, [rsi]           // Restore extern sp
                 ; mov r_accu, rax
                 ; add r_extra_args, rdx
-
-                // This is just the code for return
-                ; test r_extra_args, r_extra_args
-                ; jnz >tailcall
-                ; mov rax, [r_sp]
-                ; mov r_env, [r_sp + 8]
-                ; mov r_extra_args, [r_sp + 16]
-                ; sar r_extra_args, BYTE 1
-                ; add r_sp, 24
-                ; jmp rax
-                ; tailcall:
-                ; dec r_extra_args
-                ; jmp ->apply
             );
+            self.perform_return();
         }
         oc_dynasm!(self.ops
             ; bytecall:
