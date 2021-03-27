@@ -4,9 +4,9 @@ use dynasmrt::ExecutableBuffer;
 
 use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
 
-use crate::{caml::mlvalues::Value, compiler::emit_code::emit_longjmp_entrypoint};
+use crate::caml::mlvalues::Value;
 
-use super::optimised_compiler::OptimisedCompiler;
+use super::{emit_code::emit_longjmp_entrypoint, optimised_compiler::OptimisedCompiler};
 
 const CODE_SIZE: usize = 4; // i32
 
@@ -14,14 +14,14 @@ pub type EntryPoint = extern "C" fn(initial_state: *const c_void) -> Value;
 pub type LongjmpEntryPoint =
     extern "C" fn(initial_state: *const c_void, initial_pc: Value) -> Value;
 
-pub struct LongjmpHandler {
+pub struct AsmCompiledPrimitive<T> {
     pub compiled_code: ExecutableBuffer,
-    pub entrypoint: LongjmpEntryPoint,
+    pub entrypoint: T,
 }
 
 pub struct CompilerData {
     pub sections: Vec<Option<Section>>,
-    pub longjmp_handler: Option<LongjmpHandler>,
+    pub longjmp_handler: Option<AsmCompiledPrimitive<LongjmpEntryPoint>>,
     pub callback_compiled: bool,
     pub optimised_compiler: OptimisedCompiler,
 }

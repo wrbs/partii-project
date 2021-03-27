@@ -1,35 +1,20 @@
 function u0:0(r64) -> r64, i64 system_v {
     gv0 = symbol u1:0
     sig0 = (r64, r64) -> r64 system_v
-    sig1 = (i32, i64, i64) system_v
-    sig2 = (r64) system_v
     fn0 = u0:1 sig0
-    fn1 = u0:2 sig1
-    fn2 = u0:3 sig2
 
 block0(v0: r64):
     v1 = symbol_value.i64 gv0
-    v8 -> v1
-    v10 -> v1
     v2 = load.i64 notrap aligned v1
     v3 = load.r64 notrap aligned v2
     v4 = load.r64 notrap aligned v2+8
-    v15 = iconst.i64 16
-    v5 = iadd v2, v15
+    v9 = iconst.i64 16
+    v5 = iadd v2, v9
     store notrap aligned v5, v1
     v7 = iconst.i64 0
-    v9 = load.i64 notrap aligned v1
-    v16 = iconst.i64 -16
-    v11 = iadd v9, v16
-    store notrap aligned v3, v11
-    store notrap aligned v4, v11+8
-    v12 = iconst.i32 264
-    v13 = iconst.i64 2
-    call fn1(v12, v11, v13)
-    v14 = call fn0(v3, v4)
-    call fn2(v14)
+    v8 = call fn0(v3, v4)
     jump block1
 
 block1:
-    return v14, v7
+    return v8, v7
 }

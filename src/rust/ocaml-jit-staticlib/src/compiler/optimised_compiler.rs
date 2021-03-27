@@ -16,7 +16,10 @@ use std::panic;
 
 use crate::caml::{domain_state::get_extern_sp_addr, misc::CAML_PRIMITIVE_TABLE};
 
-use super::rust_primitives::{emit_c_call_trace, emit_return_trace};
+use super::{
+    c_primitives::jit_support_cranelift_callback,
+    rust_primitives::{emit_c_call_trace, emit_return_trace},
+};
 
 #[derive(Default)]
 pub struct OptimisedCompiler {
@@ -106,6 +109,9 @@ fn get_prim_function_addr(primitive: CraneliftPrimitiveFunction) -> *const u8 {
     match primitive {
         CraneliftPrimitiveFunction::EmitCCallTrace => emit_c_call_trace as _,
         CraneliftPrimitiveFunction::EmitReturnTrace => emit_return_trace as _,
+        CraneliftPrimitiveFunction::JitSupportCraneliftCallback => {
+            jit_support_cranelift_callback as _
+        }
     }
 }
 

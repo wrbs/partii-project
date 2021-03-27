@@ -27,7 +27,7 @@ fn run_test(
     let object_builder = ObjectBuilder::new(isa, case_name, default_libcall_names()).unwrap();
     let module = ObjectModule::new(object_builder);
     let options = CraneliftCompilerOptions {
-        use_call_traces: true,
+        use_call_traces: false,
     };
     let mut compiler = CraneliftCompiler::new(module).unwrap();
 
@@ -102,6 +102,7 @@ macro_rules! test_case {
 
 test_case!(stdlib_min);
 test_case!(output_char);
+test_case!(format_convert_int);
 
 #[test]
 fn test_demo() {
