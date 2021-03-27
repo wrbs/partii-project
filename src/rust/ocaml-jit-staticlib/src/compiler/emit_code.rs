@@ -21,7 +21,7 @@ use crate::{
         mlvalues,
         mlvalues::{BlockValue, LongValue, Tag, Value},
     },
-    compiler::{saved_data::LongjmpHandler, LongjmpEntryPoint},
+    compiler::{saved_data::AsmCompiledPrimitive, LongjmpEntryPoint},
 };
 
 use super::{c_primitives::*, rust_primitives::*, saved_data::EntryPoint};
@@ -322,7 +322,7 @@ fn caml_i32_of_int(orig: i64) -> i32 {
     Value::from(LongValue::from_i64(orig)).0 as i32
 }
 
-pub fn emit_longjmp_entrypoint() -> LongjmpHandler {
+pub fn emit_longjmp_entrypoint() -> AsmCompiledPrimitive<LongjmpEntryPoint> {
     /* For handling exceptions raised by C primitives the existing runtime uses longjmp
      * The code for the interpreter just jumps to the raise code.
      *
@@ -362,7 +362,7 @@ pub fn emit_longjmp_entrypoint() -> LongjmpHandler {
 
     let buf = ops.finalize().unwrap();
     let entrypoint: LongjmpEntryPoint = unsafe { std::mem::transmute(buf.ptr(start_offset)) };
-    LongjmpHandler {
+    AsmCompiledPrimitive {
         compiled_code: buf,
         entrypoint,
     }
@@ -589,6 +589,13 @@ impl CompilerContext {
                 self.perform_apply();
             }
             Instruction::ApplyTerm(nargs, slotsize) => {
+                if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+                    oc_dynasm!(self.ops
+                        ; mov rdi, r_accu
+                        ; mov rax, QWORD emit_return_trace as i64
+                        ; call rax
+                    );
+                }
                 let nargs = *nargs as i32;
                 let slotsize = *slotsize as i32;
                 // for now we're calling into C for the offset
@@ -1591,8 +1598,8 @@ impl CompilerContext {
             self.emit_check_signals(NextInstruction::UseRSI);
             oc_dynasm!(self.ops
                 ; actually_call_opt:
+                ; mov rdi, r_accu
                 ; mov rax, [r_accu]
-                ; mov rdi, rax
                 ; mov rax, [rax + 8]
                 ; call rax
 

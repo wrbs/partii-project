@@ -80,6 +80,20 @@ CAMLexport value caml_callbackN_exn(value closure, int narg, value args[])
   return res;
 }
 
+CAMLexport value jit_support_cranelift_callback(value *sp, int narg) {
+  value res;
+
+  // This is called from cranelift under the assumption that the stack already has the args/closure copied
+  // + reserved space for the return frame
+  Caml_state->extern_sp = sp;
+  Caml_state->extern_sp[narg] = (value)(caml_callback_code + 4); /* return address */
+  caml_callback_code[3] = narg;
+
+  res = caml_interprete(caml_callback_code, sizeof(caml_callback_code));
+  if (Is_exception_result(res)) Caml_state->extern_sp += narg + 4; /* PR#3419 */
+  return res;
+}
+
 CAMLexport value caml_callback_exn(value closure, value arg1)
 {
   value arg[1];

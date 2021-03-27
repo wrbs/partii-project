@@ -36,6 +36,7 @@ pub enum CraneliftPrimitiveValue {
 pub enum CraneliftPrimitiveFunction {
     EmitCCallTrace,
     EmitReturnTrace,
+    JitSupportCraneliftCallback,
 }
 
 pub trait CraneliftPrimitive: Sized {
