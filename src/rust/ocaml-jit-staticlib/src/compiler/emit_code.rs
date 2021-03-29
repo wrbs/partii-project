@@ -117,7 +117,6 @@ pub fn compile_instructions(
     }
 
     cc.emit_shared_code();
-    cc.emit_closure_table();
 
     let ops = cc.ops;
     let buf = ops.finalize().unwrap();
@@ -368,6 +367,63 @@ pub fn emit_longjmp_entrypoint() -> AsmCompiledPrimitive<LongjmpEntryPoint> {
     }
 }
 
+// Returns (function call entrypoint, callback entrypoint (push this on the frame))
+pub fn emit_cranelift_callback_entrypoint(
+    compiler_options: CompilerOptions,
+) -> AsmCompiledPrimitive<(usize, usize)> {
+    // We don't actually use the labels, but we need it for a context
+    let labels = vec![None; 0];
+    let ops = Assembler::new().unwrap();
+    let mut cc = CompilerContext {
+        ops,
+        labels,
+        compiler_options,
+        section_number: 0, // don't need
+        closures: HashMap::new(),
+        current_instruction_offset: BytecodeRelativeOffset(0),
+    };
+
+    // The signature is
+    // (rdi: closure to apply, rsi: extra_args, rdx: initial_state, rcx: current sp) -> value
+    let start_offset = cc.ops.offset();
+    oc_dynasm!(cc.ops
+        ; push r_accu
+        ; push r_env
+        ; push r_extra_args
+        ; push r_sp
+        // Push initial state struct
+        ; push rdx
+        // Now aligned - set up initial state
+        ; mov r_accu, rdi
+        ; mov r_env, QWORD BlockValue::atom(Tag(0)).0
+        ; mov r_extra_args, rsi
+        ; mov r_sp, rcx
+    );
+    // Now we do the apply
+    cc.perform_apply();
+
+
+    let retaddr_offset = cc.ops.offset();
+    oc_dynasm!(cc.ops
+        // save the two return values
+        ; mov rax, r_accu // return value
+        ; mov rdx, r_sp   // new closure
+    );
+
+    cc.emit_return();
+    cc.emit_shared_code();
+
+    let buf = cc.ops.finalize().unwrap();
+
+    let start = buf.ptr(start_offset) as usize;
+    let ret = buf.ptr(retaddr_offset) as usize;
+
+    AsmCompiledPrimitive {
+        compiled_code: buf,
+        entrypoint: (start, ret),
+    }
+}
+
 impl CompilerContext {
     fn get_label(&mut self, offset: &BytecodeRelativeOffset) -> DynamicLabel {
         let label_ref = &mut self.labels[offset.0];
@@ -410,7 +466,7 @@ impl CompilerContext {
         // Clean up what the initial code did and return to the caller
         oc_dynasm!(self.ops
             // Undo push of initial state pointer
-            ; add rsp, 8
+            ; add rsp, 0x8
             // Undo original pushes
             ; pop r_sp
             ; pop r_extra_args
@@ -1517,6 +1573,7 @@ impl CompilerContext {
     fn emit_shared_code(&mut self) {
         self.emit_apply_shared();
         self.emit_process_events_shared();
+        self.emit_closure_table();
     }
 
     fn emit_apply_shared(&mut self) {
@@ -1599,14 +1656,16 @@ impl CompilerContext {
             oc_dynasm!(self.ops
                 ; actually_call_opt:
                 ; mov rdi, r_accu
+                ; mov rsi, r_sp
+                ; mov rdx, rsp
                 ; mov rax, [r_accu]
                 ; mov rax, [rax + 8]
                 ; call rax
 
                 // Afterwards rax contains retval
                 // And rdx the extra_args offset
-                ; mov rsi, QWORD get_extern_sp_addr() as usize as i64
-                ; mov r_sp, [rsi]           // Restore extern sp
+                // and the initial statle pointer (at top of stack) the new sp
+                ; mov r_sp, [rsp]
                 ; mov r_accu, rax
                 ; add r_extra_args, rdx
             );

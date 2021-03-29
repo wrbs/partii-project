@@ -82,14 +82,16 @@ where
     ) -> Result<FuncId> {
         self.module.clear_context(&mut self.ctx);
 
-        // Takes one argument - the env
-        // Returns two arguments (yes this is possible in System-V calling conv)
-        // Ret 1 = return value of closure / what closure to apply if tail-calling
-        // Ret 2 = new extra args after function (will turn into a tail call if > 0)
+        // First arg -env
         self.ctx.func.signature.params.push(AbiParam::new(R64));
+        // Second arg - current SP
+        self.ctx.func.signature.params.push(AbiParam::new(I64));
+        // Third arg - "initial state" (needed for returns)
+        self.ctx.func.signature.params.push(AbiParam::new(I64));
 
-        // Returns one OCaml value and one extra args
+        // Ret 1 = return value of closure / what closure to apply if tail-calling
         self.ctx.func.signature.returns.push(AbiParam::new(R64));
+        // Ret 2 = new extra args after function (will turn into a tail call if > 0)
         self.ctx.func.signature.returns.push(AbiParam::new(I64));
 
         let func_id =
@@ -105,7 +107,7 @@ where
                 format!("Problem compiling basic block {}", basic_block.block_id)
             })?;
         }
-        translator.finalise();
+        translator.finalise()?;
 
         if let Some(co) = debug_output.as_deref_mut() {
             co.ir_after_codegen.clear();
@@ -193,8 +195,15 @@ where
         let acc = var(R64);
         let stack_vars: Vec<_> = (0..closure.max_stack_size).map(|_| var(R64)).collect();
         let return_extra_args_var = var(I64);
+        let sp = var(I64);
+
         let stack_size = closure.arity;
         let env = builder.block_params(blocks[0])[0];
+        let initial_sp = builder.block_params(blocks[0])[1];
+        let initial_state_pointer = builder.block_params(blocks[0])[2];
+
+        builder.def_var(sp, initial_sp);
+
 
         let mut ft = FunctionTranslator {
             builder,
@@ -203,6 +212,8 @@ where
             stack_vars,
             env,
             acc,
+            sp,
+            initial_state_pointer,
             blocks,
             options,
             return_extra_args_var,
@@ -214,13 +225,7 @@ where
         };
 
         // Declare the variables
-        let extern_sp_addr = ft.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
-
-        let cur_sp = ft
-            .builder
-            .ins()
-            .load(I64, MemFlags::trusted(), extern_sp_addr, 0);
-
+        let cur_sp = ft.builder.use_var(ft.sp);
         for i in 0..closure.arity {
             let arg = ft
                 .builder
@@ -230,9 +235,7 @@ where
                 .def_var(ft.stack_vars[closure.arity - i - 1], arg);
         }
         let new_sp = ft.builder.ins().iadd_imm(cur_sp, 8 * closure.arity as i64);
-        ft.builder
-            .ins()
-            .store(MemFlags::trusted(), new_sp, extern_sp_addr, 0);
+        ft.builder.def_var(ft.sp, new_sp);
 
         // Zero-initialise the other vars
         let zero = ft.builder.ins().null(R64);
@@ -275,6 +278,8 @@ where
     env: Value,
     acc: Variable,
     return_extra_args_var: Variable,
+    sp: Variable,
+    initial_state_pointer: Value,
     // Represents the blocks in my basic block translation
     blocks: Vec<Block>,
     return_block: Block,
@@ -428,20 +433,28 @@ where
     }
 
     // Take self to consume the builder
-    fn finalise(mut self) {
+    fn finalise(mut self) -> Result<()> {
         self.builder.switch_to_block(self.return_block);
         self.builder.seal_block(self.return_block);
+
+        let sp = self.get_sp();
+        self.builder
+            .ins()
+            .store(MemFlags::trusted(), sp, self.initial_state_pointer, 0);
+
         let retval = self.get_acc_ref();
         let ret_extra_args = self.builder.use_var(self.return_extra_args_var);
         self.builder.ins().return_(&[retval, ret_extra_args]);
         self.builder.finalize();
+
+        Ok(())
     }
 
     // Helpers
 
     fn emit_apply(&mut self, num_args: usize) -> Result<()> {
         let closure = self.get_acc_ref();
-        let num_args_val = self.builder.ins().iconst(I64, num_args as i64);
+        let extra_args_val = self.builder.ins().iconst(I64, (num_args - 1) as i64);
 
         let mut closure_args = vec![];
         for i in 0..num_args {
@@ -450,25 +463,23 @@ where
         self.pop(num_args as u32)?;
 
         let one = self.builder.ins().iconst(I64, 1);
+        let ret_addr =
+            self.get_global_variable(I64, CraneliftPrimitiveValue::CallbackReturnAddr)?;
+        closure_args.push(ret_addr);
         closure_args.push(one);
         closure_args.push(one);
-        closure_args.push(one);
-        closure_args.push(closure);
 
-        let extern_sp_addr =
-            self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
-        let sp = self
-            .builder
-            .ins()
-            .load(I64, MemFlags::trusted(), extern_sp_addr, 0);
-        let sp = self.push_to_ocaml_stack(sp, &closure_args)?;
+        let cur_sp = self.get_sp();
+        let new_sp = self.push_to_ocaml_stack(cur_sp, &closure_args)?;
 
         let call = self.call_primitive(
-            CraneliftPrimitiveFunction::JitSupportCraneliftCallback,
-            &[sp, num_args_val],
+            CraneliftPrimitiveFunction::DoCallback,
+            &[closure, extra_args_val, self.initial_state_pointer, new_sp],
         )?;
         let result = self.builder.inst_results(call)[0];
+        let final_sp = self.builder.inst_results(call)[1];
         self.set_acc_ref(result);
+        self.set_sp(final_sp);
         Ok(())
     }
 
@@ -530,12 +541,7 @@ where
         };
 
         if self.options.use_call_traces {
-            let extern_sp_addr =
-                self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
-            let old_sp = self
-                .builder
-                .ins()
-                .load(I64, MemFlags::trusted(), extern_sp_addr, 0);
+            let old_sp = self.get_sp();
             let new_sp = self.push_to_ocaml_stack(old_sp, &args)?;
 
             let id_val = self.builder.ins().iconst(I32, id as i64);
@@ -548,13 +554,16 @@ where
             // Note we're not saving the new_sp to extern_sp - which is equivalent here to a pop
         }
 
+        self.save_extern_sp()?;
         let call = self.builder.ins().call(local_callee, &args);
         let result = self.builder.inst_results(call)[0];
         self.set_acc_ref(result);
+        self.load_extern_sp()?;
 
         if self.options.use_call_traces {
             self.call_primitive(CraneliftPrimitiveFunction::EmitReturnTrace, &[result])?;
         }
+
 
         Ok(())
     }
@@ -622,18 +631,41 @@ where
         self.builder.ins().raw_bitcast(I64, ref_val)
     }
 
+    // Mopdifying sp
+    fn set_sp(&mut self, value: Value) {
+        self.builder.def_var(self.sp, value)
+    }
+
+    fn get_sp(&mut self) -> Value {
+        self.builder.use_var(self.sp)
+    }
+
     // Interfacing with the OCaml interpreter stack
+
+    fn save_extern_sp(&mut self) -> Result<()> {
+        let sp_addr = self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
+        let cur_sp = self.get_sp();
+        self.builder
+            .ins()
+            .store(MemFlags::trusted(), cur_sp, sp_addr, 0);
+
+        Ok(())
+    }
+
+    fn load_extern_sp(&mut self) -> Result<()> {
+        let sp_addr = self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
+        let new_sp = self
+            .builder
+            .ins()
+            .load(I64, MemFlags::trusted(), sp_addr, 0);
+        self.set_sp(new_sp);
+
+        Ok(())
+    }
 
     // Pushes count items form the virtual stack to the real stack
     fn push_last_n_items_for_real(&mut self, count: usize) -> Result<Value> {
-        let extern_sp_addr =
-            self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
-
-        let sp = self
-            .builder
-            .ins()
-            .load(I64, MemFlags::trusted(), extern_sp_addr, 0);
-
+        let sp = self.get_sp();
         let count = count as i32;
 
         let new_sp = self.builder.ins().iadd_imm(sp, -8 * count as i64);
@@ -644,10 +676,7 @@ where
                 .ins()
                 .store(MemFlags::trusted(), val, new_sp, 8 * i);
         }
-
-        self.builder
-            .ins()
-            .store(MemFlags::trusted(), new_sp, extern_sp_addr, 0);
+        self.set_sp(new_sp);
         Ok(new_sp)
     }
 
@@ -822,9 +851,15 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         CraneliftPrimitiveFunction::EmitReturnTrace => {
             sig.params.push(AbiParam::new(R64));
         }
-        CraneliftPrimitiveFunction::JitSupportCraneliftCallback => {
-            sig.params.extend(&[AbiParam::new(I64), AbiParam::new(I64)]);
-            sig.returns.push(AbiParam::new(R64));
+        CraneliftPrimitiveFunction::DoCallback => {
+            sig.params.extend(&[
+                AbiParam::new(R64),
+                AbiParam::new(I64),
+                AbiParam::new(I64),
+                AbiParam::new(I64),
+            ]);
+            sig.returns
+                .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
         }
     }
 }

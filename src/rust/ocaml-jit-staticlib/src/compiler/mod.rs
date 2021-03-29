@@ -4,7 +4,7 @@ pub use saved_data::{AsmCompiledPrimitive, CompilerData, EntryPoint, LongjmpEntr
 
 mod c_primitives;
 mod emit_code;
-mod optimised_compiler;
+pub mod optimised_compiler;
 mod rust_primitives;
 mod saved_data;
 

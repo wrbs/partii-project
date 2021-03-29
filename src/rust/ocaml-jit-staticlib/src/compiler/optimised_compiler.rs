@@ -1,3 +1,4 @@
+use super::PrintTraces;
 use cranelift_jit::{JITBuilder, JITModule};
 use ocaml_jit_shared::{
     anyhow::{anyhow, Context, Result},
@@ -17,8 +18,8 @@ use std::panic;
 use crate::caml::{domain_state::get_extern_sp_addr, misc::CAML_PRIMITIVE_TABLE};
 
 use super::{
-    c_primitives::jit_support_cranelift_callback,
     rust_primitives::{emit_c_call_trace, emit_return_trace},
+    CompilerData,
 };
 
 #[derive(Default)]
@@ -38,9 +39,9 @@ impl OptimisedCompiler {
         section_number: usize,
         code: &[i32],
         entrypoint: usize,
-        options: &CraneliftCompilerOptions,
+        compiler_data: &mut CompilerData,
     ) -> Result<usize> {
-        self.optimise_closure_impl(section_number, code, entrypoint, options)
+        self.optimise_closure_impl(section_number, code, entrypoint, compiler_data)
             .with_context(|| {
                 format!(
                     "Problem compiling closure at section {} offset {}",
@@ -55,10 +56,10 @@ impl OptimisedCompiler {
         section_number: usize,
         code: &[i32],
         entrypoint: usize,
-        options: &CraneliftCompilerOptions,
+        compiler_data: &mut CompilerData,
     ) -> Result<usize> {
         self.compiler.get_or_try_init(|| {
-            let module = initialise_module();
+            let module = initialise_module(compiler_data);
             CraneliftCompiler::new(module)
         })?;
 
@@ -67,13 +68,17 @@ impl OptimisedCompiler {
         let closure =
             parse_to_basic_blocks(code, entrypoint).context("Problem parsing basic blocks")?;
 
+        let options = CraneliftCompilerOptions {
+            use_call_traces: compiler_data.compiler_options.print_traces == Some(PrintTraces::Call),
+        };
+
         // for now replace the hook, so we get better backtraces
         // as cranelift panics a lot
         let old_hook = panic::take_hook();
 
         let comp_res = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             compiler
-                .compile_closure(&func_name, &closure, options, None)
+                .compile_closure(&func_name, &closure, &options, None)
                 .context("Problem compiling with cranelift")
         }));
         panic::set_hook(old_hook);
@@ -93,37 +98,44 @@ fn get_isa() -> Box<dyn codegen::isa::TargetIsa> {
     isa_builder.finish(settings::Flags::new(flag_builder))
 }
 
-fn initialise_module() -> JITModule {
+fn initialise_module(compiler_data: &mut CompilerData) -> JITModule {
     let mut builder = JITBuilder::with_isa(get_isa(), cranelift_module::default_libcall_names());
-    define_ocaml_primitives(&mut builder);
+    define_ocaml_primitives(compiler_data, &mut builder);
     JITModule::new(builder)
 }
 
-fn get_prim_value_addr(primitive: CraneliftPrimitiveValue) -> *const u8 {
+fn get_prim_value_addr(
+    compiler_data: &mut CompilerData,
+    primitive: CraneliftPrimitiveValue,
+) -> *const u8 {
     match primitive {
         CraneliftPrimitiveValue::OcamlExternSp => get_extern_sp_addr() as _,
-    }
-}
-
-fn get_prim_function_addr(primitive: CraneliftPrimitiveFunction) -> *const u8 {
-    match primitive {
-        CraneliftPrimitiveFunction::EmitCCallTrace => emit_c_call_trace as _,
-        CraneliftPrimitiveFunction::EmitReturnTrace => emit_return_trace as _,
-        CraneliftPrimitiveFunction::JitSupportCraneliftCallback => {
-            jit_support_cranelift_callback as _
+        CraneliftPrimitiveValue::CallbackReturnAddr => {
+            compiler_data.get_cranelift_apply_return_addr()
         }
     }
 }
 
-fn define_ocaml_primitives(builder: &mut JITBuilder) {
+fn get_prim_function_addr(
+    compiler_data: &mut CompilerData,
+    primitive: CraneliftPrimitiveFunction,
+) -> *const u8 {
+    match primitive {
+        CraneliftPrimitiveFunction::EmitCCallTrace => emit_c_call_trace as _,
+        CraneliftPrimitiveFunction::EmitReturnTrace => emit_return_trace as _,
+        CraneliftPrimitiveFunction::DoCallback => compiler_data.get_cranelift_apply_addr(),
+    }
+}
+
+fn define_ocaml_primitives(compiler_data: &mut CompilerData, builder: &mut JITBuilder) {
     for prim in CraneliftPrimitiveValue::iter() {
         let name: &str = prim.into();
-        builder.symbol(name, get_prim_value_addr(prim));
+        builder.symbol(name, get_prim_value_addr(compiler_data, prim));
     }
 
     for prim in CraneliftPrimitiveFunction::iter() {
         let name: &str = prim.into();
-        builder.symbol(name, get_prim_function_addr(prim));
+        builder.symbol(name, get_prim_function_addr(compiler_data, prim));
     }
 
     unsafe {

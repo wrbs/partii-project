@@ -41,7 +41,7 @@ pub fn on_startup() -> GlobalData {
 pub fn on_bytecode_loaded(code: &[i32]) -> *const c_void {
     let mut global_data = GlobalData::get();
 
-    let compiler_options = global_data.compiler_options;
+    let compiler_options = global_data.compiler_data.compiler_options;
 
     if global_data.options.use_compiler {
         let section_number = compile(&mut global_data.compiler_data, code, compiler_options);
@@ -83,7 +83,7 @@ extern "C" {
 pub fn interpret_bytecode(code: &[i32]) -> Value {
     let mut global_data = GlobalData::get();
     let use_jit = global_data.options.use_jit;
-    let compiler_options = global_data.compiler_options;
+    let compiler_options = global_data.compiler_data.compiler_options;
     let print_traces = compiler_options.print_traces;
 
     if (use_jit || print_traces == Some(PrintTraces::Instruction))

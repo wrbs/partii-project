@@ -1,11 +1,8 @@
 use std::{ffi::CStr, os::raw::c_char};
 
-use ocaml_jit_shared::{
-    call_trace::CallTrace, cranelift_compiler::CraneliftCompilerOptions, BytecodeLocation,
-    BytecodeRelativeOffset,
-};
+use ocaml_jit_shared::{call_trace::CallTrace, BytecodeLocation, BytecodeRelativeOffset};
 
-use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry, PrintTraces};
+use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry};
 use crate::{
     caml::mlvalues::Value,
     global_data::GlobalData,
@@ -89,15 +86,13 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
         .as_ref()
         .expect("No such section");
     let code = unsafe { section.get_code() };
-    let options = CraneliftCompilerOptions {
-        use_call_traces: global_data.compiler_options.print_traces == Some(PrintTraces::Call),
-    };
 
-    match global_data
-        .compiler_data
-        .optimised_compiler
-        .optimise_closure(section_number, code, entrypoint, &&options)
-    {
+    let GlobalData {
+        compiler_data,
+        optimised_compiler,
+        ..
+    } = &mut *global_data;
+    match optimised_compiler.optimise_closure(section_number, code, entrypoint, compiler_data) {
         Ok(new_code) => {
             closure.compiled_location = new_code as u64;
             closure.execution_count_status = -2; // optimised
@@ -129,7 +124,7 @@ pub extern "C" fn emit_return_trace(retval: u64) {
 }
 
 fn do_call_trace(trace: CallTrace) {
-    let mut global_data = GlobalData::get();
+    let global_data = GlobalData::get();
     let trace_format = global_data.options.trace_format;
 
     print_call_trace(&trace, &trace_format)

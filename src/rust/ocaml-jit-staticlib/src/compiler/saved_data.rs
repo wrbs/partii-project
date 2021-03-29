@@ -6,7 +6,11 @@ use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
 
 use crate::caml::mlvalues::Value;
 
-use super::{emit_code::emit_longjmp_entrypoint, optimised_compiler::OptimisedCompiler};
+use super::{
+    emit_code::{emit_cranelift_callback_entrypoint, emit_longjmp_entrypoint},
+    optimised_compiler::OptimisedCompiler,
+    CompilerOptions,
+};
 
 const CODE_SIZE: usize = 4; // i32
 
@@ -22,8 +26,9 @@ pub struct AsmCompiledPrimitive<T> {
 pub struct CompilerData {
     pub sections: Vec<Option<Section>>,
     pub longjmp_handler: Option<AsmCompiledPrimitive<LongjmpEntryPoint>>,
+    pub cranelift_apply: Option<AsmCompiledPrimitive<(usize, usize)>>,
     pub callback_compiled: bool,
-    pub optimised_compiler: OptimisedCompiler,
+    pub compiler_options: CompilerOptions,
 }
 
 pub struct Section {
@@ -37,23 +42,43 @@ pub struct Section {
     pub first_instruction_location: usize,
 }
 
-impl Default for CompilerData {
-    fn default() -> Self {
+impl CompilerData {
+    pub fn new(compiler_options: CompilerOptions) -> Self {
         Self {
             sections: Vec::new(),
             longjmp_handler: None,
+            cranelift_apply: None,
             callback_compiled: false,
-            optimised_compiler: OptimisedCompiler::default(),
+            compiler_options,
         }
     }
-}
 
-impl CompilerData {
     pub fn get_longjmp_handler(&mut self) -> LongjmpEntryPoint {
         self.longjmp_handler
             .get_or_insert_with(emit_longjmp_entrypoint)
             .entrypoint
     }
+
+    pub fn get_cranelift_apply_addr(&mut self) -> *const u8 {
+        let options = self.compiler_options;
+        let (addr, _) = self
+            .cranelift_apply
+            .get_or_insert_with(|| emit_cranelift_callback_entrypoint(options))
+            .entrypoint;
+
+        addr as *const u8
+    }
+
+    pub fn get_cranelift_apply_return_addr(&mut self) -> *const u8 {
+        let options = self.compiler_options;
+        let (_, ret) = self
+            .cranelift_apply
+            .get_or_insert_with(|| emit_cranelift_callback_entrypoint(options))
+            .entrypoint;
+
+        ret as *const u8
+    }
+
 
     fn actual_sections(&self) -> impl Iterator<Item = &Section> {
         self.sections.iter().filter_map(|x| match x {

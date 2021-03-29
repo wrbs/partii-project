@@ -7,24 +7,30 @@ Disassembly of section .text:
 0000000000000000 <output_char>:
    0:	55                   	push   %rbp
    1:	48 89 e5             	mov    %rsp,%rbp
-   4:	48 83 ec 10          	sub    $0x10,%rsp
-   8:	48 be 00 00 00 00 00 	movabs $0x0,%rsi
-   f:	00 00 00 
-			a: R_X86_64_64	ocaml_extern_sp
-  12:	48 8b 0e             	mov    (%rsi),%rcx
-  15:	48 8b 39             	mov    (%rcx),%rdi
-  18:	48 8b 41 08          	mov    0x8(%rcx),%rax
-  1c:	48 83 c1 10          	add    $0x10,%rcx
-  20:	48 89 0e             	mov    %rcx,(%rsi)
-  23:	48 89 c6             	mov    %rax,%rsi
-  26:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  2d:	00 00 00 
-			28: R_X86_64_64	oc_prim264
-  30:	48 89 34 24          	mov    %rsi,(%rsp)
-  34:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
-  39:	ff d0                	call   *%rax
-  3b:	48 31 d2             	xor    %rdx,%rdx
-  3e:	48 83 c4 10          	add    $0x10,%rsp
-  42:	48 89 ec             	mov    %rbp,%rsp
-  45:	5d                   	pop    %rbp
-  46:	c3                   	ret    
+   4:	48 83 ec 20          	sub    $0x20,%rsp
+   8:	4c 89 64 24 10       	mov    %r12,0x10(%rsp)
+   d:	4c 89 6c 24 18       	mov    %r13,0x18(%rsp)
+  12:	49 89 d4             	mov    %rdx,%r12
+  15:	48 8b 3e             	mov    (%rsi),%rdi
+  18:	48 8b 46 08          	mov    0x8(%rsi),%rax
+  1c:	48 83 c6 10          	add    $0x10,%rsi
+  20:	49 bd 00 00 00 00 00 	movabs $0x0,%r13
+  27:	00 00 00 
+			22: R_X86_64_64	ocaml_extern_sp
+  2a:	49 89 75 00          	mov    %rsi,0x0(%r13)
+  2e:	48 89 c6             	mov    %rax,%rsi
+  31:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  38:	00 00 00 
+			33: R_X86_64_64	oc_prim264
+  3b:	48 89 34 24          	mov    %rsi,(%rsp)
+  3f:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
+  44:	ff d0                	call   *%rax
+  46:	49 8b 75 00          	mov    0x0(%r13),%rsi
+  4a:	49 89 34 24          	mov    %rsi,(%r12)
+  4e:	48 31 d2             	xor    %rdx,%rdx
+  51:	4c 8b 64 24 10       	mov    0x10(%rsp),%r12
+  56:	4c 8b 6c 24 18       	mov    0x18(%rsp),%r13
+  5b:	48 83 c4 20          	add    $0x20,%rsp
+  5f:	48 89 ec             	mov    %rbp,%rsp
+  62:	5d                   	pop    %rbp
+  63:	c3                   	ret    
