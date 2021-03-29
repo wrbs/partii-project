@@ -17,6 +17,7 @@ use strum_macros::{EnumIter, IntoStaticStr};
 #[strum(serialize_all = "snake_case")]
 pub enum CraneliftPrimitiveValue {
     OcamlExternSp,
+    CallbackReturnAddr,
 }
 
 #[derive(
@@ -36,7 +37,7 @@ pub enum CraneliftPrimitiveValue {
 pub enum CraneliftPrimitiveFunction {
     EmitCCallTrace,
     EmitReturnTrace,
-    JitSupportCraneliftCallback,
+    DoCallback,
 }
 
 pub trait CraneliftPrimitive: Sized {

@@ -32,8 +32,6 @@ extern "C" {
 
     pub fn jit_support_get_dyn_met(tag: i64, obj: i64) -> i64;
 
-    pub fn jit_support_cranelift_callback(sp: i64, nargs: i64) -> i64;
-
     #[link_name = "caml_global_data"]
     static CAML_GLOBAL_DATA: i64;
 

@@ -8,16 +8,19 @@ use once_cell::sync::Lazy;
 use ocaml_jit_shared::Opcode;
 
 use crate::{
-    compiler::{CompilerData, CompilerOptions, PrintTraces, DEFAULT_HOT_CLOSURE_THRESHOLD},
+    compiler::{
+        optimised_compiler::OptimisedCompiler, CompilerData, CompilerOptions, PrintTraces,
+        DEFAULT_HOT_CLOSURE_THRESHOLD,
+    },
     configuration::Options,
     on_startup,
 };
 
 pub struct GlobalData {
     pub options: Options,
-    pub compiler_options: CompilerOptions,
     pub compiler_data: CompilerData,
     pub instruction_counts: Option<HashMap<Opcode, usize>>,
+    pub optimised_compiler: OptimisedCompiler,
 }
 
 static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(on_startup()));
@@ -54,9 +57,9 @@ impl GlobalData {
 
         GlobalData {
             options,
-            compiler_options,
-            compiler_data: CompilerData::default(),
+            compiler_data: CompilerData::new(compiler_options),
             instruction_counts,
+            optimised_compiler: OptimisedCompiler::default(),
         }
     }
 
