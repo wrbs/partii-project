@@ -25,6 +25,7 @@ mod compiler;
 mod configuration;
 mod global_data;
 mod trace;
+mod unwinding;
 
 /* These are the hook points from the existing runtime to the JIT */
 
