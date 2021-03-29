@@ -654,6 +654,11 @@ CAMLexport CAMLweakdef void caml_initialize (value *fp, value val)
    block being changed is in the minor heap or the major heap. */
 /* PR#6084 workaround: define it as a weak symbol */
 
+#ifdef USE_RUST_JIT
+// Hooking this in here as caml_modify gets called a lot
+void rust_jit_walk_stack();
+#endif
+
 CAMLexport CAMLweakdef void caml_modify (value *fp, value val)
 {
   /* The write barrier implemented by [caml_modify] checks for the
@@ -671,6 +676,10 @@ CAMLexport CAMLweakdef void caml_modify (value *fp, value val)
      below changes!
   */
   value old;
+
+#ifdef USE_RUST_JIT
+  rust_jit_walk_stack();
+#endif
 
   if (Is_young((value)fp)) {
     /* The modified object resides in the minor heap.

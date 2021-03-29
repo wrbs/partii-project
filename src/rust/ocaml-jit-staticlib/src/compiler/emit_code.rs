@@ -202,6 +202,27 @@ macro_rules! oc_pushretaddr {
     }
 }
 
+fn emit_function_header(mut ops: &mut Assembler) {
+    oc_dynasm!(ops
+        // Push callee-save registers I use
+        ; push r_accu
+        ; push r_env
+        ; push r_extra_args
+        ; push r_sp
+    );
+}
+
+fn emit_function_footer(mut ops: &mut Assembler) {
+    oc_dynasm!(ops
+        // Undo original pushes
+        ; pop r_sp
+        ; pop r_extra_args
+        ; pop r_env
+        ; pop r_accu
+        ; ret
+    );
+}
+
 /*
  * Callbacks are very strange and slightly annoying
  *
@@ -332,11 +353,6 @@ pub fn emit_longjmp_entrypoint() -> AsmCompiledPrimitive<LongjmpEntryPoint> {
     let mut ops = Assembler::new().unwrap();
     let start_offset = ops.offset();
     oc_dynasm!(ops
-        // Push callee-save registers I use
-        ; push r_accu
-        ; push r_env
-        ; push r_extra_args
-        ; push r_sp
         // Push the pointer to the initial state struct
         ; push rdi
         // Store the initial accu
@@ -386,11 +402,8 @@ pub fn emit_cranelift_callback_entrypoint(
     // The signature is
     // (rdi: closure to apply, rsi: extra_args, rdx: initial_state, rcx: current sp) -> value
     let start_offset = cc.ops.offset();
+    emit_function_header(&mut cc.ops);
     oc_dynasm!(cc.ops
-        ; push r_accu
-        ; push r_env
-        ; push r_extra_args
-        ; push r_sp
         // Push initial state struct
         ; push rdx
         // Now aligned - set up initial state
@@ -439,12 +452,8 @@ impl CompilerContext {
 
     fn emit_entrypoint(&mut self) -> (AssemblyOffset, AssemblyOffset) {
         let offset = self.ops.offset();
+        emit_function_header(&mut self.ops);
         oc_dynasm!(self.ops
-            // Push callee-save registers I use
-            ; push r_accu
-            ; push r_env
-            ; push r_extra_args
-            ; push r_sp
             // Push the pointer to the initial state struct
             ; push rdi
             // We're now aligned for the C calling convention
@@ -467,13 +476,8 @@ impl CompilerContext {
         oc_dynasm!(self.ops
             // Undo push of initial state pointer
             ; add rsp, 0x8
-            // Undo original pushes
-            ; pop r_sp
-            ; pop r_extra_args
-            ; pop r_env
-            ; pop r_accu
-            ; ret
         );
+        emit_function_footer(&mut self.ops);
     }
 
     fn emit_bytecode_trace(

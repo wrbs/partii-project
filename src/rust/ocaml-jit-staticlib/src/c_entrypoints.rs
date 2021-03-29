@@ -4,6 +4,7 @@ use crate::{
     caml::{misc::fatal_error, mlvalues::Value},
     interpret_bytecode, old_interpreter_trace, on_bytecode_loaded, on_bytecode_released,
     on_shutdown,
+    unwinding::walk_stack,
 };
 
 // We need some way to convince Rust that the OCaml interpreter is single threaded
@@ -56,4 +57,9 @@ pub unsafe extern "C" fn rust_jit_trace(
 #[no_mangle]
 pub extern "C" fn rust_jit_at_shutdown() {
     on_shutdown();
+}
+
+#[no_mangle]
+pub extern "C" fn rust_jit_walk_stack() {
+    walk_stack();
 }
