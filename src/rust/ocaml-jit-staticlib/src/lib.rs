@@ -176,19 +176,18 @@ pub fn on_shutdown() {
     }
 }
 
-/*
 #[no_mangle]
-pub extern "C" fn resolve_ip(ip: *mut c_void) {
-    let mut found = false;
-    print!("{:?}", ip);
+pub unsafe extern "C" fn rust_jit_lookup_stack_maps(
+    ip: *const u64,
+    f: extern "C" fn(u64, *const u64),
+) {
+    let return_addr = *ip;
 
-    backtrace::resolve(ip, |symbol| {
-        println!(": {:?}", symbol);
-        found = true;
-    });
-
-    if !found {
-        println!();
-    }
+    let global_data = GlobalData::get();
+    global_data
+        .optimised_compiler
+        .lookup_stack_map(return_addr, |offset| {
+            let pointer = ip.add(offset);
+            f(*pointer, pointer);
+        });
 }
-*/

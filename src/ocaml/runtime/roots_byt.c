@@ -129,3 +129,26 @@ CAMLexport void caml_do_local_roots (scanning_action f, value *stack_low,
     }
   }
 }
+
+#ifdef USE_RUST_JIT
+
+// defined in lib.rs
+void rust_jit_lookup_stack_maps(uint64_t **ip, scanning_action f);
+
+CAMLexport void jit_support_scan_bp(scanning_action f) {
+  uint64_t **bp;
+  asm ("mov %%rbp, %0;" : "=r" (bp));
+
+  while(bp != 0) {
+    rust_jit_lookup_stack_maps(bp + 1, f);
+    bp = (uint64_t **) *bp;
+  }
+}
+
+void thing(value a, value *b) {}
+
+CAMLexport void jit_support_test_bp() {
+  jit_support_scan_bp(thing);
+}
+
+#endif

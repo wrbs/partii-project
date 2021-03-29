@@ -10,6 +10,7 @@ use cranelift_codegen::{
 use cranelift_module::{default_libcall_names, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use expect_test::{expect_file, ExpectFile};
+use std::fmt::Write as FmtWrite;
 use tempfile::NamedTempFile;
 
 fn run_test(
@@ -32,8 +33,15 @@ fn run_test(
     let mut compiler = CraneliftCompiler::new(module).unwrap();
 
     let mut compiler_output = CompilerOutput::default();
+    let mut stack_maps = vec![];
     let _ = compiler
-        .compile_closure(case_name, &closure, &options, Some(&mut compiler_output))
+        .compile_closure(
+            case_name,
+            &closure,
+            &options,
+            Some(&mut compiler_output),
+            &mut stack_maps,
+        )
         .unwrap();
 
     let op = compiler.module.finish();
@@ -59,7 +67,17 @@ fn run_test(
 
     expected_codegen.assert_eq(&compiler_output.ir_after_codegen);
     expected_compile.assert_eq(&compiler_output.ir_after_compile);
-    expected_stack_maps.assert_eq(&compiler_output.stack_maps);
+
+    let actual_stack_maps = {
+        let mut s = String::new();
+        for (offset, map) in stack_maps {
+            write!(s, "{}: {:#?}", offset, map).unwrap();
+        }
+        s
+    };
+
+    expected_stack_maps.assert_eq(&&actual_stack_maps);
+
     expected_disasm.assert_eq(&compiler_output.disasm);
     expected_objdump.assert_eq(&objdump_output);
 }
