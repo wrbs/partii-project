@@ -1,11 +1,11 @@
 [workspace]
 
 members = [
-    "ocaml-jit-staticlib",         # main static library
-    "ocaml-jit-shared",              # type definitions for OCaml bytecode
-    "ocaml-jit-tools"              # standalone tools (dissasembler, hex dump) for bytecode files and testing the JIT
-]
+    "ocaml-jit-staticlib",
+    "ocaml-jit-shared",
+    "ocaml-jit-tools",
+] # standalone tools (dissasembler, hex dump) for bytecode files and testing the JIT
 
 [profile.release]
 lto = true
-debug-assertions = true  # while testing
+debug-assertions = true # while testing

@@ -25,7 +25,6 @@ mod compiler;
 mod configuration;
 mod global_data;
 mod trace;
-mod unwinding;
 
 /* These are the hook points from the existing runtime to the JIT */
 
@@ -176,3 +175,20 @@ pub fn on_shutdown() {
         }
     }
 }
+
+/*
+#[no_mangle]
+pub extern "C" fn resolve_ip(ip: *mut c_void) {
+    let mut found = false;
+    print!("{:?}", ip);
+
+    backtrace::resolve(ip, |symbol| {
+        println!(": {:?}", symbol);
+        found = true;
+    });
+
+    if !found {
+        println!();
+    }
+}
+*/

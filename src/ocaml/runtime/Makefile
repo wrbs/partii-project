@@ -113,6 +113,8 @@ RUST_LIB = libocamljit.a
 libcamlrun_OBJECTS += jit_support_b.o
 
 RUST_JIT_CPPFLAGS += -DUSE_RUST_JIT
+
+OC_CFLAGS += -fno-omit-frame-pointer
 endif
 
 # General (non target-specific) assembler and compiler flags
