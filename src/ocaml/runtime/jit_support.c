@@ -87,7 +87,28 @@ value jit_support_vect_length(value ptr) {
     return Val_long(size);
 }
 
+/*
+void resolve_ip(uint64_t *val);
+#ifdef USE_RUST_JIT
+    uint64_t **bp;
+    asm ("mov %%rbp, %0;" : "=r" (bp));
+
+
+
+    while(bp != 0) {
+        printf("BP=%p\n", bp);
+        resolve_ip(*(bp + 1));
+        bp = (uint64_t **) *bp;
+
+    }
+
+    asm("int $3");
+
+#endif
+*/
+
 value *jit_support_check_stacks(value* sp) {
+
     if (sp < Caml_state->stack_threshold) {
         Caml_state->extern_sp = sp;
         caml_realloc_stack(Stack_threshold / sizeof(value));

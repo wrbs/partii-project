@@ -204,6 +204,11 @@ macro_rules! oc_pushretaddr {
 
 fn emit_function_header(mut ops: &mut Assembler) {
     oc_dynasm!(ops
+        // Push rbp + alignment
+        ; push rbp
+        ; mov rbp, rsp
+        ; sub rsp, 8
+
         // Push callee-save registers I use
         ; push r_accu
         ; push r_env
@@ -219,6 +224,10 @@ fn emit_function_footer(mut ops: &mut Assembler) {
         ; pop r_extra_args
         ; pop r_env
         ; pop r_accu
+
+        // Pop rbp + alignment
+        ; add rsp, 8
+        ; pop rbp
         ; ret
     );
 }

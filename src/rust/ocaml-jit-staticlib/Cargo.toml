@@ -19,4 +19,4 @@ serde_json = "1.0"
 default-env = "0.1.1"
 cranelift-jit = { git = "https://github.com/bytecodealliance/wasmtime.git", branch = "main" }
 cranelift-native = { git = "https://github.com/bytecodealliance/wasmtime.git", branch = "main" }
-backtrace = "0.3"
+# backtrace = "0.3"
