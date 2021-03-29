@@ -26,7 +26,6 @@ pub struct CompilerOutput {
     ir_after_codegen: String,
     ir_after_compile: String,
     disasm: String,
-    stack_maps: String,
 }
 
 pub struct CraneliftCompilerOptions {
@@ -41,14 +40,14 @@ pub struct CraneliftCompiler<M: Module> {
     primitives: Primitives,
 }
 
-#[derive(Debug, Default)]
-struct StackMaps {
-    maps: HashMap<u32, StackMap>,
+#[derive(Debug)]
+struct StackMaps<'a> {
+    maps: &'a mut Vec<(u32, StackMap)>,
 }
 
-impl StackMapSink for StackMaps {
+impl<'a> StackMapSink for StackMaps<'a> {
     fn add_stack_map(&mut self, offset: codegen::binemit::CodeOffset, map: StackMap) {
-        self.maps.insert(offset, map);
+        self.maps.push((offset, map));
     }
 }
 pub fn format_c_call_name(id: usize) -> String {
@@ -79,6 +78,7 @@ where
         closure: &BasicClosure,
         options: &CraneliftCompilerOptions,
         mut debug_output: Option<&mut CompilerOutput>,
+        stack_maps: &mut Vec<(u32, StackMap)>,
     ) -> Result<FuncId> {
         self.module.clear_context(&mut self.ctx);
 
@@ -121,7 +121,7 @@ where
 
         // Finalise and compile
         self.ctx.want_disasm = debug_output.is_some();
-        let mut stack_map_sink = StackMaps::default();
+        let mut stack_map_sink = StackMaps { maps: stack_maps };
         match self.module.define_function(
             func_id,
             &mut self.ctx,
@@ -141,7 +141,6 @@ where
 
         if let Some(co) = debug_output {
             co.ir_after_compile.clear();
-            co.stack_maps.clear();
             co.disasm.clear();
 
             write!(
@@ -150,9 +149,6 @@ where
                 self.ctx.func.display(self.module.isa())
             )
             .unwrap();
-            for (offset, map) in &stack_map_sink.maps {
-                writeln!(co.stack_maps, "0x{:x}: {:#?}", offset, map).unwrap();
-            }
 
             if let Some(disasm) = self
                 .ctx

@@ -4,7 +4,10 @@ use ocaml_jit_shared::{
     anyhow::{anyhow, Context, Result},
     basic_blocks::parse_to_basic_blocks,
     cranelift::*,
-    cranelift_codegen::settings::{self, Configurable},
+    cranelift_codegen::{
+        binemit::StackMap,
+        settings::{self, Configurable},
+    },
     cranelift_compiler::{
         format_c_call_name,
         primitives::{CraneliftPrimitive, CraneliftPrimitiveFunction, CraneliftPrimitiveValue},
@@ -13,7 +16,7 @@ use ocaml_jit_shared::{
     cranelift_module,
 };
 use once_cell::unsync::OnceCell;
-use std::panic;
+use std::{collections::HashMap, panic};
 
 use crate::caml::{domain_state::get_extern_sp_addr, misc::CAML_PRIMITIVE_TABLE};
 
@@ -25,6 +28,8 @@ use super::{
 #[derive(Default)]
 pub struct OptimisedCompiler {
     compiler: OnceCell<CraneliftCompiler<JITModule>>,
+    stack_maps: HashMap<u64, StackMap>,
+    stack_maps_todo: Vec<(u32, StackMap)>,
 }
 
 // JITModule isn't send, but the way I use it it's fine (stick it in a mutex)
@@ -63,6 +68,8 @@ impl OptimisedCompiler {
             CraneliftCompiler::new(module)
         })?;
 
+        self.stack_maps_todo.clear();
+
         let compiler = self.compiler.get_mut().unwrap();
         let func_name = format!("closure_{}_{}", section_number, entrypoint);
         let closure =
@@ -75,10 +82,11 @@ impl OptimisedCompiler {
         // for now replace the hook, so we get better backtraces
         // as cranelift panics a lot
         let old_hook = panic::take_hook();
+        let stack_maps = &mut self.stack_maps_todo;
 
         let comp_res = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             compiler
-                .compile_closure(&func_name, &closure, &options, None)
+                .compile_closure(&func_name, &closure, &options, None, stack_maps)
                 .context("Problem compiling with cranelift")
         }));
         panic::set_hook(old_hook);
@@ -86,7 +94,18 @@ impl OptimisedCompiler {
 
         compiler.module.finalize_definitions();
         let code = compiler.module.get_finalized_function(func_id);
+
+        for (offset, map) in self.stack_maps_todo.drain(..) {
+            self.stack_maps.insert(code as u64 + offset as u64, map);
+        }
         Ok(code as usize)
+    }
+
+    pub fn lookup_stack_map<F: FnMut(usize)>(&self, return_addr: u64, f: F) {
+        if let Some(map) = self.stack_maps.get(&return_addr) {
+            println!("Found map {:#?}", map);
+            // Todo iterate over the stackmap
+        }
     }
 }
 
