@@ -1,5 +1,7 @@
 use super::{
-    c_primitives::{caml_alloc_small_dispatch, get_global_data_addr},
+    c_primitives::{
+        caml_alloc_shr, caml_alloc_small_dispatch, caml_initialize, get_global_data_addr,
+    },
     rust_primitives::make_block_trace,
     PrintTraces,
 };
@@ -149,6 +151,8 @@ fn get_prim_function_addr(
         CraneliftPrimitiveFunction::EmitReturnTrace => emit_return_trace as _,
         CraneliftPrimitiveFunction::DoCallback => compiler_data.get_cranelift_apply_addr(),
         CraneliftPrimitiveFunction::CamlAllocSmallDispatch => caml_alloc_small_dispatch as _,
+        CraneliftPrimitiveFunction::CamlAllocShr => caml_alloc_shr as _,
+        CraneliftPrimitiveFunction::CamlInitialize => caml_initialize as _,
 
         CraneliftPrimitiveFunction::MakeBlockTrace => make_block_trace as _,
     }

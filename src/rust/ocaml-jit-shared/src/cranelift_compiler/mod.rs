@@ -378,7 +378,33 @@ where
 
                     block
                 } else {
-                    bail!("unimplemented: big makeblock");
+                    let wosize_val = self.builder.ins().iconst(I64, wosize as i64);
+                    let tag = self.builder.ins().iconst(I8, tag as i64);
+                    let call = self.call_primitive(
+                        CraneliftPrimitiveFunction::CamlAllocShr,
+                        &[wosize_val, tag],
+                    )?;
+
+                    let block = self.builder.inst_results(call)[0];
+
+                    let block_i = self.ref_to_int(block);
+
+                    let accu = self.get_acc_ref();
+                    self.call_primitive(
+                        CraneliftPrimitiveFunction::CamlInitialize,
+                        &[block_i, accu],
+                    )?;
+
+                    for i in 1..wosize {
+                        let val = self.pick_ref((i - 1) as u32)?;
+                        let addr = self.builder.ins().iadd_imm(block_i, i as i64 * 8);
+                        self.call_primitive(
+                            CraneliftPrimitiveFunction::CamlInitialize,
+                            &[addr, val],
+                        )?;
+                    }
+
+                    block
                 };
 
                 self.set_acc_ref(block);
@@ -1043,6 +1069,13 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         }
         CraneliftPrimitiveFunction::MakeBlockTrace => {
             sig.params.extend(&[AbiParam::new(R64)]);
+        }
+        CraneliftPrimitiveFunction::CamlAllocShr => {
+            sig.params.extend(&[AbiParam::new(I64), AbiParam::new(I8)]);
+            sig.returns.push(AbiParam::new(R64));
+        }
+        CraneliftPrimitiveFunction::CamlInitialize => {
+            sig.params.extend(&[AbiParam::new(I64), AbiParam::new(R64)]);
         }
     }
 }
