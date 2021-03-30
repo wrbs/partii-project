@@ -5,65 +5,65 @@
 Disassembly of section .text:
 
 0000000000000000 <min_fun>:
-   0:	55                   	push   %rbp
-   1:	48 89 e5             	mov    %rsp,%rbp
-   4:	48 83 ec 40          	sub    $0x40,%rsp
-   8:	4c 89 64 24 20       	mov    %r12,0x20(%rsp)
-   d:	4c 89 6c 24 28       	mov    %r13,0x28(%rsp)
-  12:	4c 89 74 24 30       	mov    %r14,0x30(%rsp)
-  17:	48 89 5c 24 38       	mov    %rbx,0x38(%rsp)
-  1c:	49 89 d4             	mov    %rdx,%r12
-  1f:	48 8b 3e             	mov    (%rsi),%rdi
-  22:	4c 8b 6f 08          	mov    0x8(%rdi),%r13
-  26:	4c 8b 37             	mov    (%rdi),%r14
-  29:	48 bb 00 00 00 00 00 	movabs $0x0,%rbx
+   0:	55                   	push   rbp
+   1:	48 89 e5             	mov    rbp,rsp
+   4:	48 83 ec 40          	sub    rsp,0x40
+   8:	4c 89 64 24 20       	mov    QWORD PTR [rsp+0x20],r12
+   d:	4c 89 6c 24 28       	mov    QWORD PTR [rsp+0x28],r13
+  12:	4c 89 74 24 30       	mov    QWORD PTR [rsp+0x30],r14
+  17:	48 89 5c 24 38       	mov    QWORD PTR [rsp+0x38],rbx
+  1c:	49 89 d4             	mov    r12,rdx
+  1f:	48 8b 3e             	mov    rdi,QWORD PTR [rsi]
+  22:	4c 8b 6f 08          	mov    r13,QWORD PTR [rdi+0x8]
+  26:	4c 8b 37             	mov    r14,QWORD PTR [rdi]
+  29:	48 bb 00 00 00 00 00 	movabs rbx,0x0
   30:	00 00 00 
 			2b: R_X86_64_64	global_data_addr
-  33:	48 8b 3b             	mov    (%rbx),%rdi
-  36:	48 8b bf 68 01 00 00 	mov    0x168(%rdi),%rdi
-  3d:	48 8b 7f 78          	mov    0x78(%rdi),%rdi
-  41:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  33:	48 8b 3b             	mov    rdi,QWORD PTR [rbx]
+  36:	48 8b bf 68 01 00 00 	mov    rdi,QWORD PTR [rdi+0x168]
+  3d:	48 8b 7f 78          	mov    rdi,QWORD PTR [rdi+0x78]
+  41:	48 b8 00 00 00 00 00 	movabs rax,0x0
   48:	00 00 00 
 			43: R_X86_64_64	callback_return_addr
-  4b:	48 89 f1             	mov    %rsi,%rcx
-  4e:	48 83 c1 e0          	add    $0xffffffffffffffe0,%rcx
-  52:	4c 89 76 e0          	mov    %r14,-0x20(%rsi)
-  56:	4c 89 6e e8          	mov    %r13,-0x18(%rsi)
-  5a:	48 89 46 f0          	mov    %rax,-0x10(%rsi)
-  5e:	b8 01 00 00 00       	mov    $0x1,%eax
-  63:	48 89 46 f8          	mov    %rax,-0x8(%rsi)
-  67:	b8 01 00 00 00       	mov    $0x1,%eax
-  6c:	48 89 06             	mov    %rax,(%rsi)
-  6f:	be 01 00 00 00       	mov    $0x1,%esi
-  74:	4c 89 e2             	mov    %r12,%rdx
-  77:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  4b:	48 89 f1             	mov    rcx,rsi
+  4e:	48 83 c1 e0          	add    rcx,0xffffffffffffffe0
+  52:	4c 89 76 e0          	mov    QWORD PTR [rsi-0x20],r14
+  56:	4c 89 6e e8          	mov    QWORD PTR [rsi-0x18],r13
+  5a:	48 89 46 f0          	mov    QWORD PTR [rsi-0x10],rax
+  5e:	b8 01 00 00 00       	mov    eax,0x1
+  63:	48 89 46 f8          	mov    QWORD PTR [rsi-0x8],rax
+  67:	b8 01 00 00 00       	mov    eax,0x1
+  6c:	48 89 06             	mov    QWORD PTR [rsi],rax
+  6f:	be 01 00 00 00       	mov    esi,0x1
+  74:	4c 89 e2             	mov    rdx,r12
+  77:	48 b8 00 00 00 00 00 	movabs rax,0x0
   7e:	00 00 00 
 			79: R_X86_64_64	do_callback
-  81:	48 89 3c 24          	mov    %rdi,(%rsp)
-  85:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
-  8a:	4c 89 74 24 10       	mov    %r14,0x10(%rsp)
-  8f:	ff d0                	call   *%rax
-  91:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
-  96:	4c 8b 74 24 10       	mov    0x10(%rsp),%r14
-  9b:	48 8b 33             	mov    (%rbx),%rsi
-  9e:	48 8b 8e e0 09 00 00 	mov    0x9e0(%rsi),%rcx
-  a5:	48 8b 33             	mov    (%rbx),%rsi
-  a8:	48 8b b6 d8 09 00 00 	mov    0x9d8(%rsi),%rsi
-  af:	48 8b 76 08          	mov    0x8(%rsi),%rsi
-  b3:	48 89 d7             	mov    %rdx,%rdi
-  b6:	48 83 c7 e0          	add    $0xffffffffffffffe0,%rdi
-  ba:	48 89 4a e0          	mov    %rcx,-0x20(%rdx)
-  be:	4c 89 72 e8          	mov    %r14,-0x18(%rdx)
-  c2:	4c 89 6a f0          	mov    %r13,-0x10(%rdx)
-  c6:	48 89 42 f8          	mov    %rax,-0x8(%rdx)
-  ca:	49 89 3c 24          	mov    %rdi,(%r12)
-  ce:	ba 04 00 00 00       	mov    $0x4,%edx
-  d3:	48 89 f0             	mov    %rsi,%rax
-  d6:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
-  db:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
-  e0:	4c 8b 74 24 30       	mov    0x30(%rsp),%r14
-  e5:	48 8b 5c 24 38       	mov    0x38(%rsp),%rbx
-  ea:	48 83 c4 40          	add    $0x40,%rsp
-  ee:	48 89 ec             	mov    %rbp,%rsp
-  f1:	5d                   	pop    %rbp
+  81:	48 89 3c 24          	mov    QWORD PTR [rsp],rdi
+  85:	4c 89 6c 24 08       	mov    QWORD PTR [rsp+0x8],r13
+  8a:	4c 89 74 24 10       	mov    QWORD PTR [rsp+0x10],r14
+  8f:	ff d0                	call   rax
+  91:	4c 8b 6c 24 08       	mov    r13,QWORD PTR [rsp+0x8]
+  96:	4c 8b 74 24 10       	mov    r14,QWORD PTR [rsp+0x10]
+  9b:	48 8b 33             	mov    rsi,QWORD PTR [rbx]
+  9e:	48 8b 8e e0 09 00 00 	mov    rcx,QWORD PTR [rsi+0x9e0]
+  a5:	48 8b 33             	mov    rsi,QWORD PTR [rbx]
+  a8:	48 8b b6 d8 09 00 00 	mov    rsi,QWORD PTR [rsi+0x9d8]
+  af:	48 8b 76 08          	mov    rsi,QWORD PTR [rsi+0x8]
+  b3:	48 89 d7             	mov    rdi,rdx
+  b6:	48 83 c7 e0          	add    rdi,0xffffffffffffffe0
+  ba:	48 89 4a e0          	mov    QWORD PTR [rdx-0x20],rcx
+  be:	4c 89 72 e8          	mov    QWORD PTR [rdx-0x18],r14
+  c2:	4c 89 6a f0          	mov    QWORD PTR [rdx-0x10],r13
+  c6:	48 89 42 f8          	mov    QWORD PTR [rdx-0x8],rax
+  ca:	49 89 3c 24          	mov    QWORD PTR [r12],rdi
+  ce:	ba 04 00 00 00       	mov    edx,0x4
+  d3:	48 89 f0             	mov    rax,rsi
+  d6:	4c 8b 64 24 20       	mov    r12,QWORD PTR [rsp+0x20]
+  db:	4c 8b 6c 24 28       	mov    r13,QWORD PTR [rsp+0x28]
+  e0:	4c 8b 74 24 30       	mov    r14,QWORD PTR [rsp+0x30]
+  e5:	48 8b 5c 24 38       	mov    rbx,QWORD PTR [rsp+0x38]
+  ea:	48 83 c4 40          	add    rsp,0x40
+  ee:	48 89 ec             	mov    rsp,rbp
+  f1:	5d                   	pop    rbp
   f2:	c3                   	ret    

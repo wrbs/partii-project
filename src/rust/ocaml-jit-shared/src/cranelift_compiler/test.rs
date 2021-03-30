@@ -53,7 +53,7 @@ fn run_test(
 
     let stdout = Command::new("objdump")
         .arg("-M")
-        .arg("-intel")
+        .arg("intel")
         .arg("-D")
         .arg("-r")
         .arg("-g")
