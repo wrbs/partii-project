@@ -12,6 +12,7 @@ use codegen::{
 };
 use cranelift::prelude::*;
 use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
+use primitives::MAX_YOUNG_WOSIZE;
 use types::{I32, I64, R64};
 
 use self::primitives::{CraneliftPrimitiveFunction, CraneliftPrimitiveValue};
@@ -349,7 +350,35 @@ where
             // BasicBlockInstruction::Apply(_) => {}
             // BasicBlockInstruction::Closure(_, _) => {}
             // BasicBlockInstruction::ClosureRec(_, _) => {}
-            // BasicBlockInstruction::MakeBlock(_, _) => {}
+            BasicBlockInstruction::MakeBlock(0, tag) => {
+                bail!("unimplemented: atom");
+            }
+            BasicBlockInstruction::MakeBlock(wosize, tag) => {
+                let wosize = *wosize as usize;
+                let tag = *tag;
+
+                let block = if wosize <= MAX_YOUNG_WOSIZE {
+                    let block = self.alloc_small(wosize, tag)?;
+                    let accu = self.get_acc_ref();
+                    self.builder
+                        .ins()
+                        .store(MemFlags::trusted(), accu, block, 0);
+
+                    for i in 1..wosize {
+                        let val = self.pick_ref(i as u32)?;
+                        self.builder
+                            .ins()
+                            .store(MemFlags::trusted(), accu, block, i as i32 * 8);
+                    }
+
+                    block
+                } else {
+                    bail!("unimplemented: big makeblock");
+                };
+
+                self.set_acc_ref(block);
+                self.pop(wosize as u32 - 1);
+            }
             // BasicBlockInstruction::MakeFloatBlock(_) => {}
             BasicBlockInstruction::OffsetClosure(i) => {
                 let env_i = self.ref_to_int(self.env);
@@ -767,6 +796,15 @@ where
         };
 
         Ok(self.builder.ins().call(func_ref, args))
+    }
+
+    // Inlining of stuff
+
+    fn alloc_small(&mut self, wosize: usize, tag: u8) -> Result<Value> {
+        debug_assert!(wosize >= 1);
+        debug_assert!(wosize <= MAX_YOUNG_WOSIZE);
+
+        bail!("unimplemented: alloc_small");
     }
 }
 

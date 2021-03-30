@@ -1,6 +1,8 @@
 use strum::{EnumCount, IntoEnumIterator};
 use strum_macros::{EnumIter, IntoStaticStr};
 
+pub const MAX_YOUNG_WOSIZE: usize = 256;
+
 #[derive(
     Copy,
     Clone,
@@ -59,5 +61,65 @@ where
 
     fn iter() -> Self::Iter {
         <Self as IntoEnumIterator>::iter()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CamlStateField {
+    YoungPtr,
+    YoungLimit,
+    ExceptionPointer,
+    YoungBase,
+    YoungStart,
+    YoungEnd,
+    YoungAllocStart,
+    YoungAllocEnd,
+    YoungAllocMid,
+    YoungTrigger,
+    MinorHeapWsz,
+    InMinorCollection,
+    ExtraHeapResourcesMinor,
+    RefTable,
+    EpheRefTable,
+    CustomTable,
+    StackLow,
+    StackHigh,
+    StackThreshold,
+    ExternSp,
+    TrapSp,
+    TrapBarrier,
+    ExternalRaise,
+    ExnBucket,
+    TopOfStack,
+    BottomOfStack,
+    LastReturnAddress,
+    GcRegs,
+    BacktraceActive,
+    BacktracePos,
+    BacktraceBuffer,
+    BacktraceLastExn,
+    CompareUnordered,
+    RequestedMajorSlice,
+    RequestedMinorGc,
+    LocalRoots,
+    StatMinorWords,
+    StatPromotedWords,
+    StatMajorWords,
+    StatMinorCollections,
+    StatMajorCollections,
+    StatHeapWsz,
+    StatTopHeapWsz,
+    StatCompactions,
+    StatHeapChunks,
+    EventlogStartupTimestamp,
+    EventlogStartupPid,
+    EventlogPaused,
+    EventlogEnabled,
+    EventlogOut,
+}
+
+impl CamlStateField {
+    fn get_offset(&self) -> i32 {
+        *self as i32 * 8
     }
 }
