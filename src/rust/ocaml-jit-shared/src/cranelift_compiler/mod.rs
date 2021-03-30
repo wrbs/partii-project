@@ -15,7 +15,7 @@ use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
 use primitives::MAX_YOUNG_WOSIZE;
 use types::{I32, I64, R64};
 
-use self::primitives::{CraneliftPrimitiveFunction, CraneliftPrimitiveValue};
+use self::primitives::{CamlStateField, CraneliftPrimitiveFunction, CraneliftPrimitiveValue};
 
 #[cfg(test)]
 mod test;
@@ -201,6 +201,8 @@ where
 
         builder.def_var(sp, initial_sp);
 
+        let zero = builder.ins().null(R64);
+        let zero_i = builder.ins().iconst(I64, 0);
 
         let mut ft = FunctionTranslator {
             builder,
@@ -216,10 +218,16 @@ where
             return_extra_args_var,
             return_block,
             primitives: &mut self.primitives,
+            caml_state_addr: zero, // patched later - but we need a ft for the context of the primitive lookup
             used_c_calls: HashMap::new(),
             used_funcs: HashMap::new(),
             used_values: HashMap::new(),
         };
+
+        // This is where we patch it
+        let caml_state_addr =
+            ft.get_global_variable(I64, CraneliftPrimitiveValue::CamlStateAddr)?;
+        ft.caml_state_addr = caml_state_addr;
 
         // Declare the variables
         let cur_sp = ft.builder.use_var(ft.sp);
@@ -235,8 +243,6 @@ where
         ft.builder.def_var(ft.sp, new_sp);
 
         // Zero-initialise the other vars
-        let zero = ft.builder.ins().null(R64);
-        let zero_i = ft.builder.ins().iconst(I64, 0);
         ft.builder.def_var(acc, zero);
         for i in closure.arity..(closure.max_stack_size as usize) {
             ft.builder.def_var(ft.stack_vars[i], zero);
@@ -281,6 +287,7 @@ where
     blocks: Vec<Block>,
     return_block: Block,
     // Primitives
+    caml_state_addr: Value,
     primitives: &'a mut Primitives,
     used_values: HashMap<CraneliftPrimitiveValue, GlobalValue>,
     used_funcs: HashMap<CraneliftPrimitiveFunction, FuncRef>,
@@ -708,21 +715,14 @@ where
     // Interfacing with the OCaml interpreter stack
 
     fn save_extern_sp(&mut self) -> Result<()> {
-        let sp_addr = self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
         let cur_sp = self.get_sp();
-        self.builder
-            .ins()
-            .store(MemFlags::trusted(), cur_sp, sp_addr, 0);
+        self.set_caml_state_field(CamlStateField::ExternSp, cur_sp);
 
         Ok(())
     }
 
     fn load_extern_sp(&mut self) -> Result<()> {
-        let sp_addr = self.get_global_variable(I64, CraneliftPrimitiveValue::OcamlExternSp)?;
-        let new_sp = self
-            .builder
-            .ins()
-            .load(I64, MemFlags::trusted(), sp_addr, 0);
+        let new_sp = self.get_caml_state_field(CamlStateField::ExternSp, I64);
         self.set_sp(new_sp);
 
         Ok(())
@@ -796,6 +796,25 @@ where
         };
 
         Ok(self.builder.ins().call(func_ref, args))
+    }
+
+    // OCaml state
+    fn get_caml_state_field(&mut self, field: CamlStateField, typ: Type) -> Value {
+        self.builder.ins().load(
+            typ,
+            MemFlags::trusted(),
+            self.caml_state_addr,
+            field.get_offset(),
+        )
+    }
+
+    fn set_caml_state_field(&mut self, field: CamlStateField, value: Value) {
+        self.builder.ins().store(
+            MemFlags::trusted(),
+            value,
+            self.caml_state_addr,
+            field.get_offset(),
+        );
     }
 
     // Inlining of stuff

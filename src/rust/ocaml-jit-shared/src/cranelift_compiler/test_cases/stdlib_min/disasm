@@ -19,11 +19,11 @@ Block 0:
   Inst 11:   movq    %rbx, 56(%rsp)
   Inst 12:   unwind SaveReg { clobber_offset: 24, reg: r28J }
   Inst 13:   movq    %rdx, %r12
-  Inst 14:   movq    0(%rsi), %r13
-  Inst 15:   movq    8(%rsi), %r14
-  Inst 16:   addq    $16, %rsi
-  Inst 17:   load_ext_name u1:0+0, %rbx
-  Inst 18:   movq    %rsi, 0(%rbx)
+  Inst 14:   load_ext_name u1:0+0, %rbx
+  Inst 15:   movq    0(%rsi), %r13
+  Inst 16:   movq    8(%rsi), %r14
+  Inst 17:   addq    $16, %rsi
+  Inst 18:   movq    %rsi, 152(%rbx)
   Inst 19:   movq    %r13, %rdi
   Inst 20:   movq    %r14, %rsi
   Inst 21:   load_ext_name u0:1+0, %rax
@@ -35,7 +35,7 @@ Block 0:
   Inst 26:   call    *%rax
   Inst 27:   movq    rsp(8 + virtual offset), %r13
   Inst 28:   movq    rsp(24 + virtual offset), %r14
-  Inst 29:   movq    0(%rbx), %rsi
+  Inst 29:   movq    152(%rbx), %rsi
   Inst 30:   movl    $1, %edi
   Inst 31:   cmpq    %rdi, %rax
   Inst 32:   jz      label1; j label3

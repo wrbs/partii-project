@@ -21,34 +21,34 @@ Block 0:
   Inst 14:   unwind SaveReg { clobber_offset: 32, reg: r29J }
   Inst 15:   movq    %rdi, %r13
   Inst 16:   movq    %rdx, %r12
-  Inst 17:   movq    0(%rsi), %r14
-  Inst 18:   movq    8(%rsi), %rbx
-  Inst 19:   movq    8(%r13), %rdi
-  Inst 20:   load_ext_name u1:0+0, %rax
-  Inst 21:   movq    %rsi, %rcx
-  Inst 22:   addq    $-16, %rcx
-  Inst 23:   movq    %r14, -16(%rsi)
-  Inst 24:   movq    %rax, -8(%rsi)
-  Inst 25:   movl    $1, %eax
-  Inst 26:   movq    %rax, 0(%rsi)
-  Inst 27:   movl    $1, %eax
-  Inst 28:   movq    %rax, 8(%rsi)
-  Inst 29:   xorq    %rsi, %rsi
-  Inst 30:   movq    %r12, %rdx
-  Inst 31:   load_ext_name u0:1+0, %rax
-  Inst 32:   movq    %r13, rsp(0 + virtual offset)
-  Inst 33:   movq    %rbx, rsp(8 + virtual offset)
-  Inst 34:   movq    %rdi, rsp(16 + virtual offset)
-  Inst 35:   movq    %r14, rsp(24 + virtual offset)
+  Inst 17:   load_ext_name u1:0+0, %rbx
+  Inst 18:   movq    0(%rsi), %r14
+  Inst 19:   movq    8(%rsi), %r15
+  Inst 20:   movq    8(%r13), %rdi
+  Inst 21:   load_ext_name u1:1+0, %rax
+  Inst 22:   movq    %rsi, %rcx
+  Inst 23:   addq    $-16, %rcx
+  Inst 24:   movq    %r14, -16(%rsi)
+  Inst 25:   movq    %rax, -8(%rsi)
+  Inst 26:   movl    $1, %eax
+  Inst 27:   movq    %rax, 0(%rsi)
+  Inst 28:   movl    $1, %eax
+  Inst 29:   movq    %rax, 8(%rsi)
+  Inst 30:   xorq    %rsi, %rsi
+  Inst 31:   movq    %r12, %rdx
+  Inst 32:   load_ext_name u0:1+0, %rax
+  Inst 33:   movq    %r15, rsp(0 + virtual offset)
+  Inst 34:   movq    %r13, rsp(8 + virtual offset)
+  Inst 35:   movq    %rdi, rsp(16 + virtual offset)
+  Inst 36:   movq    %r14, rsp(24 + virtual offset)
       (safepoint: slots [S0, S1, S2, S3] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
-  Inst 36:   call    *%rax
-  Inst 37:   movq    rsp(8 + virtual offset), %rbx
-  Inst 38:   movq    rsp(0 + virtual offset), %r13
-  Inst 39:   movq    rsp(24 + virtual offset), %r14
-  Inst 40:   load_ext_name u1:1+0, %r15
-  Inst 41:   movq    %rdx, 0(%r15)
+  Inst 37:   call    *%rax
+  Inst 38:   movq    rsp(0 + virtual offset), %r15
+  Inst 39:   movq    rsp(8 + virtual offset), %r13
+  Inst 40:   movq    rsp(24 + virtual offset), %r14
+  Inst 41:   movq    %rdx, 152(%rbx)
   Inst 42:   movq    %rax, %rdi
-  Inst 43:   movq    %rbx, %rsi
+  Inst 43:   movq    %r15, %rsi
   Inst 44:   load_ext_name u0:2+0, %rax
   Inst 45:   movq    %rsi, rsp(0 + virtual offset)
   Inst 46:   movq    %r13, rsp(8 + virtual offset)
@@ -58,7 +58,7 @@ Block 0:
   Inst 49:   call    *%rax
   Inst 50:   movq    rsp(8 + virtual offset), %r13
   Inst 51:   movq    rsp(24 + virtual offset), %r14
-  Inst 52:   movq    0(%r15), %rdi
+  Inst 52:   movq    152(%rbx), %rdi
   Inst 53:   movq    16(%r13), %rsi
   Inst 54:   movq    %rdi, %rcx
   Inst 55:   addq    $-16, %rcx

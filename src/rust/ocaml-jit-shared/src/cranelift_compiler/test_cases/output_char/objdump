@@ -11,26 +11,26 @@ Disassembly of section .text:
    8:	4c 89 64 24 10       	mov    %r12,0x10(%rsp)
    d:	4c 89 6c 24 18       	mov    %r13,0x18(%rsp)
   12:	49 89 d4             	mov    %rdx,%r12
-  15:	48 8b 3e             	mov    (%rsi),%rdi
-  18:	48 8b 46 08          	mov    0x8(%rsi),%rax
-  1c:	48 83 c6 10          	add    $0x10,%rsi
-  20:	49 bd 00 00 00 00 00 	movabs $0x0,%r13
-  27:	00 00 00 
-			22: R_X86_64_64	ocaml_extern_sp
-  2a:	49 89 75 00          	mov    %rsi,0x0(%r13)
-  2e:	48 89 c6             	mov    %rax,%rsi
-  31:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  38:	00 00 00 
-			33: R_X86_64_64	oc_prim264
-  3b:	48 89 34 24          	mov    %rsi,(%rsp)
-  3f:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
-  44:	ff d0                	call   *%rax
-  46:	49 8b 75 00          	mov    0x0(%r13),%rsi
-  4a:	49 89 34 24          	mov    %rsi,(%r12)
-  4e:	48 31 d2             	xor    %rdx,%rdx
-  51:	4c 8b 64 24 10       	mov    0x10(%rsp),%r12
-  56:	4c 8b 6c 24 18       	mov    0x18(%rsp),%r13
-  5b:	48 83 c4 20          	add    $0x20,%rsp
-  5f:	48 89 ec             	mov    %rbp,%rsp
-  62:	5d                   	pop    %rbp
-  63:	c3                   	ret    
+  15:	49 bd 00 00 00 00 00 	movabs $0x0,%r13
+  1c:	00 00 00 
+			17: R_X86_64_64	caml_state_addr
+  1f:	48 8b 3e             	mov    (%rsi),%rdi
+  22:	48 8b 46 08          	mov    0x8(%rsi),%rax
+  26:	48 83 c6 10          	add    $0x10,%rsi
+  2a:	49 89 b5 98 00 00 00 	mov    %rsi,0x98(%r13)
+  31:	48 89 c6             	mov    %rax,%rsi
+  34:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  3b:	00 00 00 
+			36: R_X86_64_64	oc_prim264
+  3e:	48 89 34 24          	mov    %rsi,(%rsp)
+  42:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
+  47:	ff d0                	call   *%rax
+  49:	49 8b b5 98 00 00 00 	mov    0x98(%r13),%rsi
+  50:	49 89 34 24          	mov    %rsi,(%r12)
+  54:	48 31 d2             	xor    %rdx,%rdx
+  57:	4c 8b 64 24 10       	mov    0x10(%rsp),%r12
+  5c:	4c 8b 6c 24 18       	mov    0x18(%rsp),%r13
+  61:	48 83 c4 20          	add    $0x20,%rsp
+  65:	48 89 ec             	mov    %rbp,%rsp
+  68:	5d                   	pop    %rbp
+  69:	c3                   	ret    

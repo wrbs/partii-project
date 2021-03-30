@@ -14,18 +14,18 @@ Block 0:
   Inst 7:   movq    %r13, 24(%rsp)
   Inst 8:   unwind SaveReg { clobber_offset: 8, reg: r26J }
   Inst 9:   movq    %rdx, %r12
-  Inst 10:   movq    0(%rsi), %rdi
-  Inst 11:   movq    8(%rsi), %rax
-  Inst 12:   addq    $16, %rsi
-  Inst 13:   load_ext_name u1:0+0, %r13
-  Inst 14:   movq    %rsi, 0(%r13)
+  Inst 10:   load_ext_name u1:0+0, %r13
+  Inst 11:   movq    0(%rsi), %rdi
+  Inst 12:   movq    8(%rsi), %rax
+  Inst 13:   addq    $16, %rsi
+  Inst 14:   movq    %rsi, 152(%r13)
   Inst 15:   movq    %rax, %rsi
   Inst 16:   load_ext_name u0:1+0, %rax
   Inst 17:   movq    %rsi, rsp(0 + virtual offset)
   Inst 18:   movq    %rdi, rsp(8 + virtual offset)
       (safepoint: slots [S0, S1] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
   Inst 19:   call    *%rax
-  Inst 20:   movq    0(%r13), %rsi
+  Inst 20:   movq    152(%r13), %rsi
   Inst 21:   jmp     label1
 Block 1:
   (original IR block: block1)

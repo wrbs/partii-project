@@ -15,64 +15,64 @@ Disassembly of section .text:
   1c:	4c 89 7c 24 40       	mov    %r15,0x40(%rsp)
   21:	49 89 fd             	mov    %rdi,%r13
   24:	49 89 d4             	mov    %rdx,%r12
-  27:	4c 8b 36             	mov    (%rsi),%r14
-  2a:	48 8b 5e 08          	mov    0x8(%rsi),%rbx
-  2e:	49 8b 7d 08          	mov    0x8(%r13),%rdi
-  32:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  39:	00 00 00 
-			34: R_X86_64_64	callback_return_addr
-  3c:	48 89 f1             	mov    %rsi,%rcx
-  3f:	48 83 c1 f0          	add    $0xfffffffffffffff0,%rcx
-  43:	4c 89 76 f0          	mov    %r14,-0x10(%rsi)
-  47:	48 89 46 f8          	mov    %rax,-0x8(%rsi)
-  4b:	b8 01 00 00 00       	mov    $0x1,%eax
-  50:	48 89 06             	mov    %rax,(%rsi)
-  53:	b8 01 00 00 00       	mov    $0x1,%eax
-  58:	48 89 46 08          	mov    %rax,0x8(%rsi)
-  5c:	48 31 f6             	xor    %rsi,%rsi
-  5f:	4c 89 e2             	mov    %r12,%rdx
-  62:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  69:	00 00 00 
-			64: R_X86_64_64	do_callback
-  6c:	4c 89 2c 24          	mov    %r13,(%rsp)
-  70:	48 89 5c 24 08       	mov    %rbx,0x8(%rsp)
-  75:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
-  7a:	4c 89 74 24 18       	mov    %r14,0x18(%rsp)
-  7f:	ff d0                	call   *%rax
-  81:	48 8b 5c 24 08       	mov    0x8(%rsp),%rbx
-  86:	4c 8b 2c 24          	mov    (%rsp),%r13
-  8a:	4c 8b 74 24 18       	mov    0x18(%rsp),%r14
-  8f:	49 bf 00 00 00 00 00 	movabs $0x0,%r15
-  96:	00 00 00 
-			91: R_X86_64_64	ocaml_extern_sp
-  99:	49 89 17             	mov    %rdx,(%r15)
-  9c:	48 89 c7             	mov    %rax,%rdi
-  9f:	48 89 de             	mov    %rbx,%rsi
-  a2:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  a9:	00 00 00 
-			a4: R_X86_64_64	oc_prim129
-  ac:	48 89 34 24          	mov    %rsi,(%rsp)
-  b0:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
-  b5:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
-  ba:	4c 89 74 24 18       	mov    %r14,0x18(%rsp)
-  bf:	ff d0                	call   *%rax
-  c1:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
-  c6:	4c 8b 74 24 18       	mov    0x18(%rsp),%r14
-  cb:	49 8b 3f             	mov    (%r15),%rdi
-  ce:	49 8b 75 10          	mov    0x10(%r13),%rsi
-  d2:	48 89 f9             	mov    %rdi,%rcx
-  d5:	48 83 c1 f0          	add    $0xfffffffffffffff0,%rcx
-  d9:	4c 89 77 f0          	mov    %r14,-0x10(%rdi)
-  dd:	48 89 47 f8          	mov    %rax,-0x8(%rdi)
-  e1:	49 89 0c 24          	mov    %rcx,(%r12)
-  e5:	ba 02 00 00 00       	mov    $0x2,%edx
-  ea:	48 89 f0             	mov    %rsi,%rax
-  ed:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
-  f2:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
-  f7:	4c 8b 74 24 30       	mov    0x30(%rsp),%r14
-  fc:	48 8b 5c 24 38       	mov    0x38(%rsp),%rbx
- 101:	4c 8b 7c 24 40       	mov    0x40(%rsp),%r15
- 106:	48 83 c4 50          	add    $0x50,%rsp
- 10a:	48 89 ec             	mov    %rbp,%rsp
- 10d:	5d                   	pop    %rbp
- 10e:	c3                   	ret    
+  27:	48 bb 00 00 00 00 00 	movabs $0x0,%rbx
+  2e:	00 00 00 
+			29: R_X86_64_64	caml_state_addr
+  31:	4c 8b 36             	mov    (%rsi),%r14
+  34:	4c 8b 7e 08          	mov    0x8(%rsi),%r15
+  38:	49 8b 7d 08          	mov    0x8(%r13),%rdi
+  3c:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  43:	00 00 00 
+			3e: R_X86_64_64	callback_return_addr
+  46:	48 89 f1             	mov    %rsi,%rcx
+  49:	48 83 c1 f0          	add    $0xfffffffffffffff0,%rcx
+  4d:	4c 89 76 f0          	mov    %r14,-0x10(%rsi)
+  51:	48 89 46 f8          	mov    %rax,-0x8(%rsi)
+  55:	b8 01 00 00 00       	mov    $0x1,%eax
+  5a:	48 89 06             	mov    %rax,(%rsi)
+  5d:	b8 01 00 00 00       	mov    $0x1,%eax
+  62:	48 89 46 08          	mov    %rax,0x8(%rsi)
+  66:	48 31 f6             	xor    %rsi,%rsi
+  69:	4c 89 e2             	mov    %r12,%rdx
+  6c:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  73:	00 00 00 
+			6e: R_X86_64_64	do_callback
+  76:	4c 89 3c 24          	mov    %r15,(%rsp)
+  7a:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
+  7f:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
+  84:	4c 89 74 24 18       	mov    %r14,0x18(%rsp)
+  89:	ff d0                	call   *%rax
+  8b:	4c 8b 3c 24          	mov    (%rsp),%r15
+  8f:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
+  94:	4c 8b 74 24 18       	mov    0x18(%rsp),%r14
+  99:	48 89 93 98 00 00 00 	mov    %rdx,0x98(%rbx)
+  a0:	48 89 c7             	mov    %rax,%rdi
+  a3:	4c 89 fe             	mov    %r15,%rsi
+  a6:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  ad:	00 00 00 
+			a8: R_X86_64_64	oc_prim129
+  b0:	48 89 34 24          	mov    %rsi,(%rsp)
+  b4:	4c 89 6c 24 08       	mov    %r13,0x8(%rsp)
+  b9:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
+  be:	4c 89 74 24 18       	mov    %r14,0x18(%rsp)
+  c3:	ff d0                	call   *%rax
+  c5:	4c 8b 6c 24 08       	mov    0x8(%rsp),%r13
+  ca:	4c 8b 74 24 18       	mov    0x18(%rsp),%r14
+  cf:	48 8b bb 98 00 00 00 	mov    0x98(%rbx),%rdi
+  d6:	49 8b 75 10          	mov    0x10(%r13),%rsi
+  da:	48 89 f9             	mov    %rdi,%rcx
+  dd:	48 83 c1 f0          	add    $0xfffffffffffffff0,%rcx
+  e1:	4c 89 77 f0          	mov    %r14,-0x10(%rdi)
+  e5:	48 89 47 f8          	mov    %rax,-0x8(%rdi)
+  e9:	49 89 0c 24          	mov    %rcx,(%r12)
+  ed:	ba 02 00 00 00       	mov    $0x2,%edx
+  f2:	48 89 f0             	mov    %rsi,%rax
+  f5:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+  fa:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
+  ff:	4c 8b 74 24 30       	mov    0x30(%rsp),%r14
+ 104:	48 8b 5c 24 38       	mov    0x38(%rsp),%rbx
+ 109:	4c 8b 7c 24 40       	mov    0x40(%rsp),%r15
+ 10e:	48 83 c4 50          	add    $0x50,%rsp
+ 112:	48 89 ec             	mov    %rbp,%rsp
+ 115:	5d                   	pop    %rbp
+ 116:	c3                   	ret    
