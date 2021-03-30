@@ -355,7 +355,14 @@ where
             // BasicBlockInstruction::OffsetClosure(_) => {}
             // BasicBlockInstruction::GetGlobal(_) => {}
             // BasicBlockInstruction::SetGlobal(_) => {}
-            // BasicBlockInstruction::GetField(_) => {}
+            BasicBlockInstruction::GetField(i) => {
+                let accu = self.get_acc_int();
+                let res = self
+                    .builder
+                    .ins()
+                    .load(R64, MemFlags::trusted(), accu, *i as i32 * 8);
+                self.set_acc_ref(res);
+            }
             // BasicBlockInstruction::SetField(_) => {}
             // BasicBlockInstruction::GetFloatField(_) => {}
             // BasicBlockInstruction::SetFloatField(_) => {}
