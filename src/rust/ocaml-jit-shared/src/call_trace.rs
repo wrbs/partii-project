@@ -17,6 +17,7 @@ pub enum CallTrace {
         args: Vec<u64>,
     },
     Return(u64),
+    Custom(String),
 }
 
 fn format_args(args: &[u64], needed: usize) -> String {
@@ -64,6 +65,7 @@ impl fmt::Display for CallTrace {
                 let args = format_args(&[*val], 1);
                 (loc, args)
             }
+            CallTrace::Custom(message) => ("custom".to_string(), message.clone()),
         };
         write!(f, "{:<20} {}", loc, args)
     }

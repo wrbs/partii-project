@@ -42,6 +42,7 @@ pub enum CraneliftPrimitiveFunction {
     EmitReturnTrace,
     DoCallback,
     CamlAllocSmallDispatch,
+    MakeBlockTrace,
 }
 
 pub trait CraneliftPrimitive: Sized {

@@ -807,6 +807,14 @@ impl CompilerContext {
                     ; pop r_sp
                     ; pop r_extra_args
                 );
+
+                if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+                    oc_dynasm!(self.ops
+                        ; mov rdi, r_accu
+                        ; mov rax, QWORD make_block_trace as i64
+                        ; call rax
+                    );
+                }
             }
             Instruction::MakeFloatBlock(size) => {
                 oc_dynasm!(self.ops

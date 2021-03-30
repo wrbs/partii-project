@@ -4,12 +4,12 @@
             6,
         ),
     ],
-    mapped_words: 4,
-}0xe7: StackMap {
+    mapped_words: 6,
+}0xef: StackMap {
     bitmap: [
         BitSet(
-            14,
+            30,
         ),
     ],
-    mapped_words: 4,
+    mapped_words: 6,
 }

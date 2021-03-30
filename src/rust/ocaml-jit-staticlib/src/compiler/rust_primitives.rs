@@ -155,3 +155,12 @@ pub extern "C" fn emit_c_call_trace(id: u32, sp: *const u64, nargs: usize) {
         args,
     });
 }
+
+fn do_custom_trace(message: String) {
+    do_call_trace(CallTrace::Custom(message));
+}
+
+pub unsafe extern "C" fn make_block_trace(loc: u64) {
+    let header = *(loc as *const u64).offset(-1);
+    do_custom_trace(format!("Make block: header={:#x} loc={:#x}", header, loc));
+}
