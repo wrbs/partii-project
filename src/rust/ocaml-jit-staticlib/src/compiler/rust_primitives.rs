@@ -96,7 +96,7 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
         Ok(new_code) => {
             closure.compiled_location = new_code as u64;
             closure.execution_count_status = -2; // optimised
-            eprintln!("{:#016x?}", closure);
+            eprintln!("{}: {:#016x?}", entrypoint, closure);
         }
         Err(e) => {
             eprintln!("{:?}", e);

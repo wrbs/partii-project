@@ -5,6 +5,13 @@ extern "C" {
     pub fn caml_modify(ptr: i64, value: i64);
     pub fn caml_process_pending_actions();
     pub fn caml_fatal_error(s: *const c_char, ...) -> !;
+    pub fn caml_raise_zero_divide();
+    pub fn caml_alloc_small_dispatch(
+        wosize: i64,
+        flags: i32,
+        nallocs: i32,
+        encoded_alloc_lens: i64,
+    );
 
     // Our new ones
     pub fn jit_support_get_float_field(state: i64, field: i64) -> i64;
@@ -21,8 +28,6 @@ extern "C" {
     pub fn jit_support_make_float_block(state: i64, size: i64);
 
     pub fn jit_support_get_primitive(primno: i64) -> i64;
-
-    pub fn caml_raise_zero_divide();
 
     pub fn jit_support_restart(state: i64);
     pub fn jit_support_grab_closure(state: i64, prev_restart: i64) -> i64;

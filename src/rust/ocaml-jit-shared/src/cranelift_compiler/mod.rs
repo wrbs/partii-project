@@ -13,7 +13,7 @@ use codegen::{
 use cranelift::prelude::*;
 use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
 use primitives::MAX_YOUNG_WOSIZE;
-use types::{I32, I64, R64};
+use types::{I8, I32, I64, R64};
 
 use self::primitives::{CamlStateField, CraneliftPrimitiveFunction, CraneliftPrimitiveValue};
 
@@ -36,7 +36,6 @@ pub struct CraneliftCompilerOptions {
 pub struct CraneliftCompiler<M: Module> {
     pub module: M,
     ctx: codegen::Context,
-    declared_prims: HashMap<u32, CCall>,
     function_builder_context: FunctionBuilderContext,
     primitives: Primitives,
 }
@@ -68,7 +67,6 @@ where
             module,
             ctx,
             function_builder_context,
-            declared_prims: HashMap::new(),
             primitives: Primitives::default(),
         })
     }
@@ -375,7 +373,7 @@ where
                         let val = self.pick_ref(i as u32)?;
                         self.builder
                             .ins()
-                            .store(MemFlags::trusted(), accu, block, i as i32 * 8);
+                            .store(MemFlags::trusted(), val, block, i as i32 * 8);
                     }
 
                     block
@@ -820,10 +818,85 @@ where
     // Inlining of stuff
 
     fn alloc_small(&mut self, wosize: usize, tag: u8) -> Result<Value> {
+        // From Memory.h
+        // Note in our setup profinfo = 0 and track = CAML_DO_TRACK = 1
+        // Alloc_small_origin = CAML_FROM_CAML = 2
+
+        // #define Alloc_small_aux(result, wosize, tag, profinfo, track) do {     \
+        //   CAMLassert ((wosize) >= 1);                                          \
+        //   CAMLassert ((tag_t) (tag) < 256);                                    \
+        //   CAMLassert ((wosize) <= Max_young_wosize);                           \
         debug_assert!(wosize >= 1);
         debug_assert!(wosize <= MAX_YOUNG_WOSIZE);
 
-        bail!("unimplemented: alloc_small");
+        //   Caml_state_field(young_ptr) -= Whsize_wosize (wosize);               \
+        let whsize = wosize + 1;
+        let old_young_ptr = self.get_caml_state_field(CamlStateField::YoungPtr, I64);
+        let new_young_ptr = self
+            .builder
+            .ins()
+            .iadd_imm(old_young_ptr, -8 * whsize as i64);
+        self.set_caml_state_field(CamlStateField::YoungPtr, new_young_ptr);
+
+        //   if (Caml_state_field(young_ptr) < Caml_state_field(young_limit)) {   \
+        let young_limit = self.get_caml_state_field(CamlStateField::YoungLimit, I64);
+        let call_block = self.builder.create_block();
+        let after_block = self.builder.create_block();
+        self.builder.append_block_param(after_block, I64); // block param = young_ptr after
+
+        self.builder.ins().br_icmp(
+            IntCC::UnsignedLessThan,
+            new_young_ptr,
+            young_limit,
+            call_block,
+            &[],
+        );
+        self.builder.seal_block(call_block);
+        self.builder.ins().jump(after_block, &[new_young_ptr]);
+
+        // {
+        self.builder.switch_to_block(call_block);
+
+        //     Setup_for_gc;                                                      \
+        //     caml_alloc_small_dispatch((wosize), (track) | Alloc_small_origin,  \
+        //                               1, NULL);                                \
+        //     Restore_after_gc;                                                  \
+
+        let wosize_val = self.builder.ins().iconst(I64, wosize as i64);
+        let flags = self.builder.ins().iconst(I32, 0x11); // CAML_DO_TRACK | CAML_FROM_CAML
+        let nallocs = self.builder.ins().iconst(I32, 1);
+        let encoded_alloc_lens = self.builder.ins().iconst(I64, 0); // null ptr
+        self.call_primitive(
+            CraneliftPrimitiveFunction::CamlAllocSmallDispatch,
+            &[wosize_val, flags, nallocs, encoded_alloc_lens],
+        )?;
+
+        // Young ptr has changed likely
+        let newest_young_ptr = self.get_caml_state_field(CamlStateField::YoungPtr, I64);
+        self.builder.ins().jump(after_block, &[newest_young_ptr]);
+
+        // }
+
+        // We join them together
+        self.builder.seal_block(after_block);
+        self.builder.switch_to_block(after_block);
+        let header_ptr = self.builder.block_params(after_block)[0];
+
+        //   Hd_hp (Caml_state_field(young_ptr)) =                                \
+        //     Make_header_with_profinfo ((wosize), (tag), 0, profinfo);          \
+
+        // This goes to Make_header(wosize, tag, color) as we don't use profinfo
+        // here color is 0
+        let header = ((wosize as u64) << 10) + (tag as u64);
+        let header_val = self.builder.ins().iconst(I64, header as i64);
+        self.builder
+            .ins()
+            .store(MemFlags::trusted(), header_val, header_ptr, 0);
+
+        //  (result) = Val_hp (Caml_state_field(young_ptr));                     \
+        let result_int = self.builder.ins().iadd_imm(header_ptr, 8);
+
+        Ok(self.int_to_ref(result_int))
     }
 }
 
@@ -892,7 +965,9 @@ impl Primitives {
                 let mut sig = module.make_signature();
                 sig.returns.push(AbiParam::new(R64));
                 match arity {
-                    Arity::N1 => {}
+                    Arity::N1 => {
+                        sig.params.push(AbiParam::new(R64));
+                    }
                     Arity::N2 => {
                         for _ in 0..2 {
                             sig.params.push(AbiParam::new(R64));
@@ -954,6 +1029,12 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
             sig.returns
                 .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
         }
+        CraneliftPrimitiveFunction::CamlAllocSmallDispatch => sig.params.extend(&[
+            AbiParam::new(I64),
+            AbiParam::new(I32),
+            AbiParam::new(I32),
+            AbiParam::new(I64),
+        ]),
     }
 }
 
