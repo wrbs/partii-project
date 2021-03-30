@@ -1,0 +1,15 @@
+0x90: StackMap {
+    bitmap: [
+        BitSet(
+            6,
+        ),
+    ],
+    mapped_words: 4,
+}0xe7: StackMap {
+    bitmap: [
+        BitSet(
+            14,
+        ),
+    ],
+    mapped_words: 4,
+}

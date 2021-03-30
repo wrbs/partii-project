@@ -1,4 +1,7 @@
-use super::{c_primitives::get_global_data_addr, PrintTraces};
+use super::{
+    c_primitives::{caml_alloc_small_dispatch, get_global_data_addr},
+    PrintTraces,
+};
 use cranelift_jit::{JITBuilder, JITModule};
 use ocaml_jit_shared::{
     anyhow::{anyhow, Context, Result},
@@ -144,6 +147,7 @@ fn get_prim_function_addr(
         CraneliftPrimitiveFunction::EmitCCallTrace => emit_c_call_trace as _,
         CraneliftPrimitiveFunction::EmitReturnTrace => emit_return_trace as _,
         CraneliftPrimitiveFunction::DoCallback => compiler_data.get_cranelift_apply_addr(),
+        CraneliftPrimitiveFunction::CamlAllocSmallDispatch => caml_alloc_small_dispatch as _,
     }
 }
 
