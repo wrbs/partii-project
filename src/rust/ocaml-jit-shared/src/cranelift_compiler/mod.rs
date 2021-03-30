@@ -362,7 +362,7 @@ where
             // BasicBlockInstruction::GetGlobal(_) => {}
             // BasicBlockInstruction::SetGlobal(_) => {}
             BasicBlockInstruction::GetField(i) => {
-                let accu = self.get_acc_int();
+                let accu = self.get_acc_ref();
                 let res = self
                     .builder
                     .ins()
