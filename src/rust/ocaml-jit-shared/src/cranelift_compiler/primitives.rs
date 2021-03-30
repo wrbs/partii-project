@@ -42,6 +42,8 @@ pub enum CraneliftPrimitiveFunction {
     EmitReturnTrace,
     DoCallback,
     CamlAllocSmallDispatch,
+    CamlAllocShr,
+    CamlInitialize,
     MakeBlockTrace,
 }
 
