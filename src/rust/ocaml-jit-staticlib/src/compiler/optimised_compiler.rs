@@ -1,4 +1,4 @@
-use super::PrintTraces;
+use super::{c_primitives::get_global_data_addr, PrintTraces};
 use cranelift_jit::{JITBuilder, JITModule};
 use ocaml_jit_shared::{
     anyhow::{anyhow, Context, Result},
@@ -132,6 +132,7 @@ fn get_prim_value_addr(
         CraneliftPrimitiveValue::CallbackReturnAddr => {
             compiler_data.get_cranelift_apply_return_addr()
         }
+        CraneliftPrimitiveValue::GlobalDataAddr => get_global_data_addr() as _,
     }
 }
 

@@ -336,12 +336,9 @@ where
             BasicBlockInstruction::Apply1 => {
                 self.emit_apply(1)?;
             }
-            // BasicBlockInstruction::Apply2 => {
-            //     let closure = self.get_acc_ref();
-            //     let args = &[self.pick_ref(0)?, self.pick_ref(1)?];
-            //     self.pop(2)?;
-            //     self.emit_apply(closure, args)?;
-            // }
+            BasicBlockInstruction::Apply2 => {
+                self.emit_apply(2)?;
+            }
             // BasicBlockInstruction::Apply3 => {
             //     let closure = self.get_acc_ref();
             //     let args = &[self.pick_ref(0)?, self.pick_ref(1)?, self.pick_ref(2)?];
@@ -359,7 +356,21 @@ where
                 let result = self.builder.ins().iadd_imm(env_i, *i as i64 * 8);
                 self.set_acc_int(result);
             }
-            // BasicBlockInstruction::GetGlobal(_) => {}
+            BasicBlockInstruction::GetGlobal(field_no) => {
+                let glob_data_addr =
+                    self.get_global_variable(I64, CraneliftPrimitiveValue::GlobalDataAddr)?;
+                let glob_val = self
+                    .builder
+                    .ins()
+                    .load(I64, MemFlags::trusted(), glob_data_addr, 0);
+                let result = self.builder.ins().load(
+                    R64,
+                    MemFlags::trusted(),
+                    glob_val,
+                    *field_no as i32 * 8,
+                );
+                self.set_acc_ref(result);
+            }
             // BasicBlockInstruction::SetGlobal(_) => {}
             BasicBlockInstruction::GetField(i) => {
                 let accu = self.get_acc_ref();
