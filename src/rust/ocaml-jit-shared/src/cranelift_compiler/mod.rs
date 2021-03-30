@@ -370,7 +370,7 @@ where
                         .store(MemFlags::trusted(), accu, block, 0);
 
                     for i in 1..wosize {
-                        let val = self.pick_ref(i as u32)?;
+                        let val = self.pick_ref((i - 1) as u32)?;
                         self.builder
                             .ins()
                             .store(MemFlags::trusted(), val, block, i as i32 * 8);
@@ -382,7 +382,11 @@ where
                 };
 
                 self.set_acc_ref(block);
-                self.pop(wosize as u32 - 1);
+                self.pop(wosize as u32 - 1)?;
+
+                if self.options.use_call_traces {
+                    self.call_primitive(CraneliftPrimitiveFunction::MakeBlockTrace, &[block])?;
+                }
             }
             // BasicBlockInstruction::MakeFloatBlock(_) => {}
             BasicBlockInstruction::OffsetClosure(i) => {
@@ -1029,12 +1033,17 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
             sig.returns
                 .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
         }
-        CraneliftPrimitiveFunction::CamlAllocSmallDispatch => sig.params.extend(&[
-            AbiParam::new(I64),
-            AbiParam::new(I32),
-            AbiParam::new(I32),
-            AbiParam::new(I64),
-        ]),
+        CraneliftPrimitiveFunction::CamlAllocSmallDispatch => {
+            sig.params.extend(&[
+                AbiParam::new(I64),
+                AbiParam::new(I32),
+                AbiParam::new(I32),
+                AbiParam::new(I64),
+            ]);
+        }
+        CraneliftPrimitiveFunction::MakeBlockTrace => {
+            sig.params.extend(&[AbiParam::new(R64)]);
+        }
     }
 }
 

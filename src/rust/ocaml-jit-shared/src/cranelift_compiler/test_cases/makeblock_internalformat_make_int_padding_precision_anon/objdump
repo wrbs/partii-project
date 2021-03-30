@@ -7,12 +7,12 @@ Disassembly of section .text:
 0000000000000000 <makeblock_internalformat_make_int_padding_precision_anon>:
    0:	55                   	push   %rbp
    1:	48 89 e5             	mov    %rsp,%rbp
-   4:	48 83 ec 50          	sub    $0x50,%rsp
-   8:	4c 89 64 24 20       	mov    %r12,0x20(%rsp)
-   d:	4c 89 6c 24 28       	mov    %r13,0x28(%rsp)
-  12:	4c 89 74 24 30       	mov    %r14,0x30(%rsp)
-  17:	48 89 5c 24 38       	mov    %rbx,0x38(%rsp)
-  1c:	4c 89 7c 24 40       	mov    %r15,0x40(%rsp)
+   4:	48 83 ec 60          	sub    $0x60,%rsp
+   8:	4c 89 64 24 30       	mov    %r12,0x30(%rsp)
+   d:	4c 89 6c 24 38       	mov    %r13,0x38(%rsp)
+  12:	4c 89 74 24 40       	mov    %r14,0x40(%rsp)
+  17:	48 89 5c 24 48       	mov    %rbx,0x48(%rsp)
+  1c:	4c 89 7c 24 50       	mov    %r15,0x50(%rsp)
   21:	49 89 fd             	mov    %rdi,%r13
   24:	48 89 d7             	mov    %rdx,%rdi
   27:	48 89 3c 24          	mov    %rdi,(%rsp)
@@ -44,52 +44,55 @@ Disassembly of section .text:
   89:	4c 89 6c 24 10       	mov    %r13,0x10(%rsp)
   8e:	ff d0                	call   *%rax
   90:	4c 8b 6c 24 10       	mov    0x10(%rsp),%r13
-  95:	48 89 d3             	mov    %rdx,%rbx
-  98:	4d 8b 7d 20          	mov    0x20(%r13),%r15
-  9c:	4d 8b 65 18          	mov    0x18(%r13),%r12
-  a0:	48 c7 c6 e8 ff ff ff 	mov    $0xffffffffffffffe8,%rsi
-  a7:	49 03 36             	add    (%r14),%rsi
-  aa:	49 89 36             	mov    %rsi,(%r14)
-  ad:	49 8b 7e 08          	mov    0x8(%r14),%rdi
-  b1:	48 39 fe             	cmp    %rdi,%rsi
-  b4:	0f 83 3f 00 00 00    	jae    f9 <makeblock_internalformat_make_int_padding_precision_anon+0xf9>
-  ba:	bf 02 00 00 00       	mov    $0x2,%edi
-  bf:	be 11 00 00 00       	mov    $0x11,%esi
-  c4:	ba 01 00 00 00       	mov    $0x1,%edx
-  c9:	48 31 c9             	xor    %rcx,%rcx
-  cc:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
-  d3:	00 00 00 
-			ce: R_X86_64_64	caml_alloc_small_dispatch
-  d6:	4c 89 64 24 08       	mov    %r12,0x8(%rsp)
-  db:	4c 89 6c 24 10       	mov    %r13,0x10(%rsp)
-  e0:	4c 89 7c 24 18       	mov    %r15,0x18(%rsp)
-  e5:	ff d0                	call   *%rax
-  e7:	4c 8b 64 24 08       	mov    0x8(%rsp),%r12
-  ec:	4c 8b 6c 24 10       	mov    0x10(%rsp),%r13
-  f1:	4c 8b 7c 24 18       	mov    0x18(%rsp),%r15
-  f6:	49 8b 36             	mov    (%r14),%rsi
-  f9:	bf 04 08 00 00       	mov    $0x804,%edi
-  fe:	48 89 3e             	mov    %rdi,(%rsi)
- 101:	48 83 c6 01          	add    $0x1,%rsi
- 105:	4c 89 26             	mov    %r12,(%rsi)
- 108:	4c 89 66 08          	mov    %r12,0x8(%rsi)
- 10c:	49 8b 4d 10          	mov    0x10(%r13),%rcx
- 110:	49 8b 7d 08          	mov    0x8(%r13),%rdi
- 114:	48 89 d8             	mov    %rbx,%rax
- 117:	48 83 c0 e8          	add    $0xffffffffffffffe8,%rax
- 11b:	48 89 4b e8          	mov    %rcx,-0x18(%rbx)
- 11f:	48 89 73 f0          	mov    %rsi,-0x10(%rbx)
- 123:	4c 89 7b f8          	mov    %r15,-0x8(%rbx)
- 127:	48 8b 34 24          	mov    (%rsp),%rsi
- 12b:	48 89 06             	mov    %rax,(%rsi)
- 12e:	ba 03 00 00 00       	mov    $0x3,%edx
- 133:	48 89 f8             	mov    %rdi,%rax
- 136:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
- 13b:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
- 140:	4c 8b 74 24 30       	mov    0x30(%rsp),%r14
- 145:	48 8b 5c 24 38       	mov    0x38(%rsp),%rbx
- 14a:	4c 8b 7c 24 40       	mov    0x40(%rsp),%r15
- 14f:	48 83 c4 50          	add    $0x50,%rsp
- 153:	48 89 ec             	mov    %rbp,%rsp
- 156:	5d                   	pop    %rbp
- 157:	c3                   	ret    
+  95:	49 89 c4             	mov    %rax,%r12
+  98:	48 89 d3             	mov    %rdx,%rbx
+  9b:	49 8b 75 20          	mov    0x20(%r13),%rsi
+  9f:	48 89 74 24 08       	mov    %rsi,0x8(%rsp)
+  a4:	4d 8b 7d 18          	mov    0x18(%r13),%r15
+  a8:	48 c7 c6 e8 ff ff ff 	mov    $0xffffffffffffffe8,%rsi
+  af:	49 03 36             	add    (%r14),%rsi
+  b2:	49 89 36             	mov    %rsi,(%r14)
+  b5:	49 8b 7e 08          	mov    0x8(%r14),%rdi
+  b9:	48 39 fe             	cmp    %rdi,%rsi
+  bc:	0f 83 3f 00 00 00    	jae    101 <makeblock_internalformat_make_int_padding_precision_anon+0x101>
+  c2:	bf 02 00 00 00       	mov    $0x2,%edi
+  c7:	be 11 00 00 00       	mov    $0x11,%esi
+  cc:	ba 01 00 00 00       	mov    $0x1,%edx
+  d1:	48 31 c9             	xor    %rcx,%rcx
+  d4:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  db:	00 00 00 
+			d6: R_X86_64_64	caml_alloc_small_dispatch
+  de:	4c 89 64 24 10       	mov    %r12,0x10(%rsp)
+  e3:	4c 89 6c 24 18       	mov    %r13,0x18(%rsp)
+  e8:	4c 89 7c 24 20       	mov    %r15,0x20(%rsp)
+  ed:	ff d0                	call   *%rax
+  ef:	4c 8b 64 24 10       	mov    0x10(%rsp),%r12
+  f4:	4c 8b 6c 24 18       	mov    0x18(%rsp),%r13
+  f9:	4c 8b 7c 24 20       	mov    0x20(%rsp),%r15
+  fe:	49 8b 36             	mov    (%r14),%rsi
+ 101:	bf 04 08 00 00       	mov    $0x804,%edi
+ 106:	48 89 3e             	mov    %rdi,(%rsi)
+ 109:	48 83 c6 08          	add    $0x8,%rsi
+ 10d:	4c 89 3e             	mov    %r15,(%rsi)
+ 110:	4c 89 66 08          	mov    %r12,0x8(%rsi)
+ 114:	49 8b 4d 10          	mov    0x10(%r13),%rcx
+ 118:	49 8b 7d 08          	mov    0x8(%r13),%rdi
+ 11c:	48 89 d8             	mov    %rbx,%rax
+ 11f:	48 83 c0 e8          	add    $0xffffffffffffffe8,%rax
+ 123:	48 89 4b e8          	mov    %rcx,-0x18(%rbx)
+ 127:	48 89 73 f0          	mov    %rsi,-0x10(%rbx)
+ 12b:	48 8b 74 24 08       	mov    0x8(%rsp),%rsi
+ 130:	48 89 73 f8          	mov    %rsi,-0x8(%rbx)
+ 134:	48 8b 34 24          	mov    (%rsp),%rsi
+ 138:	48 89 06             	mov    %rax,(%rsi)
+ 13b:	ba 03 00 00 00       	mov    $0x3,%edx
+ 140:	48 89 f8             	mov    %rdi,%rax
+ 143:	4c 8b 64 24 30       	mov    0x30(%rsp),%r12
+ 148:	4c 8b 6c 24 38       	mov    0x38(%rsp),%r13
+ 14d:	4c 8b 74 24 40       	mov    0x40(%rsp),%r14
+ 152:	48 8b 5c 24 48       	mov    0x48(%rsp),%rbx
+ 157:	4c 8b 7c 24 50       	mov    0x50(%rsp),%r15
+ 15c:	48 83 c4 60          	add    $0x60,%rsp
+ 160:	48 89 ec             	mov    %rbp,%rsp
+ 163:	5d                   	pop    %rbp
+ 164:	c3                   	ret    

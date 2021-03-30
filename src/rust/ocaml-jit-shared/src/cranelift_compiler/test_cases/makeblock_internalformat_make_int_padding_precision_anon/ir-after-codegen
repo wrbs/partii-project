@@ -24,9 +24,10 @@ block0(v0: r64, v1: i64, v2: i64):
     store notrap aligned v11, v13+24
     store notrap aligned v11, v13+32
     v14, v15 = call fn0(v9, v10, v2, v13)
+    v31 -> v14
     v34 -> v15
     v16 = load.r64 notrap aligned v0+32
-    v31 -> v16
+    v36 -> v16
     v17 = load.r64 notrap aligned v0+24
     v30 -> v17
     v18 = load.i64 notrap aligned v5
@@ -48,20 +49,20 @@ block2:
 block3(v21: i64):
     v27 = iconst.i64 2052
     store notrap aligned v27, v21
-    v28 = iadd_imm v21, 1
+    v28 = iadd_imm v21, 8
     v29 = raw_bitcast.r64 v28
     store.r64 notrap aligned v17, v29
-    store.r64 notrap aligned v17, v29+8
+    store.r64 notrap aligned v14, v29+8
     v32 = load.r64 notrap aligned v0+16
     v33 = load.r64 notrap aligned v0+8
     v35 = iadd_imm.i64 v15, -24
     store notrap aligned v32, v35
     store notrap aligned v29, v35+8
-    store.r64 notrap aligned v31, v35+16
-    v36 = iconst.i64 3
+    store.r64 notrap aligned v16, v35+16
+    v37 = iconst.i64 3
     jump block1
 
 block1:
     store.i64 notrap aligned v35, v2
-    return v33, v36
+    return v33, v37
 }
