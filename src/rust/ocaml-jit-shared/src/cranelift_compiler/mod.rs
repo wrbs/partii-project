@@ -354,7 +354,11 @@ where
             // BasicBlockInstruction::ClosureRec(_, _) => {}
             // BasicBlockInstruction::MakeBlock(_, _) => {}
             // BasicBlockInstruction::MakeFloatBlock(_) => {}
-            // BasicBlockInstruction::OffsetClosure(_) => {}
+            BasicBlockInstruction::OffsetClosure(i) => {
+                let env_i = self.ref_to_int(self.env);
+                let result = self.builder.ins().iadd_imm(env_i, *i as i64 * 8);
+                self.set_acc_int(result);
+            }
             // BasicBlockInstruction::GetGlobal(_) => {}
             // BasicBlockInstruction::SetGlobal(_) => {}
             BasicBlockInstruction::GetField(i) => {
@@ -373,7 +377,12 @@ where
             // BasicBlockInstruction::GetBytesChar => {}
             // BasicBlockInstruction::SetBytesChar => {}
             // BasicBlockInstruction::OffsetRef(_) => {}
-            // BasicBlockInstruction::Const(_) => {}
+            BasicBlockInstruction::Const(i) => {
+                let ml_value = i64_to_value(*i as i64);
+                let int_value = self.builder.ins().iconst(I64, ml_value);
+                let ref_value = self.int_to_ref(int_value);
+                self.set_acc_ref(ref_value);
+            }
             // BasicBlockInstruction::BoolNot => {}
             // BasicBlockInstruction::NegInt => {}
             // BasicBlockInstruction::ArithInt(_) => {}
@@ -575,6 +584,15 @@ where
         Ok(())
     }
 
+    // Casting
+    fn int_to_ref(&mut self, value: Value) -> Value {
+        self.builder.ins().raw_bitcast(R64, value)
+    }
+
+    fn ref_to_int(&mut self, value: Value) -> Value {
+        self.builder.ins().raw_bitcast(I64, value)
+    }
+
     // Stack operations
     fn push_ref(&mut self, value: Value) -> Result<()> {
         if self.stack_size >= self.stack_vars.len() {
@@ -589,7 +607,7 @@ where
     }
 
     fn push_int(&mut self, value: Value) -> Result<()> {
-        let ref_val = self.builder.ins().raw_bitcast(R64, value);
+        let ref_val = self.int_to_ref(value);
         self.push_ref(ref_val)
     }
 
@@ -606,7 +624,7 @@ where
 
     fn pick_int(&mut self, n: u32) -> Result<Value> {
         let ref_val = self.pick_ref(n)?;
-        Ok(self.builder.ins().raw_bitcast(I64, ref_val))
+        Ok(self.ref_to_int(ref_val))
     }
 
     fn pop(&mut self, n: u32) -> Result<()> {
@@ -625,7 +643,7 @@ where
     }
 
     fn set_acc_int(&mut self, value: Value) {
-        let ref_val = self.builder.ins().raw_bitcast(R64, value);
+        let ref_val = self.int_to_ref(value);
         self.set_acc_ref(ref_val);
     }
 
@@ -635,7 +653,7 @@ where
 
     fn get_acc_int(&mut self) -> Value {
         let ref_val = self.get_acc_ref();
-        self.builder.ins().raw_bitcast(I64, ref_val)
+        self.ref_to_int(ref_val)
     }
 
     // Mopdifying sp
@@ -869,4 +887,8 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
                 .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
         }
     }
+}
+
+fn i64_to_value(i: i64) -> i64 {
+    (((i as u64) << 1) as i64) + 1
 }

@@ -1,0 +1,8 @@
+0xa5: StackMap {
+    bitmap: [
+        BitSet(
+            15,
+        ),
+    ],
+    mapped_words: 4,
+}
