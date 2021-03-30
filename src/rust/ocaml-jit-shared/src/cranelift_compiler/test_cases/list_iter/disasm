@@ -45,7 +45,7 @@ Block 3:
   (instruction range: 27 .. 55)
   Inst 27:   movq    8(%rax), %rbx
   Inst 28:   movq    0(%rax), %rdi
-  Inst 29:   load_ext_name u1:0+0, %rax
+  Inst 29:   load_ext_name u1:1+0, %rax
   Inst 30:   movq    %rsi, %rcx
   Inst 31:   addq    $-16, %rcx
   Inst 32:   movq    %rdi, -16(%rsi)

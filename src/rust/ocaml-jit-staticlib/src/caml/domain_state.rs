@@ -70,6 +70,10 @@ extern "C" {
     static Caml_state: *mut DomainState;
 }
 
+pub fn get_caml_state_addr() -> *const u8 {
+    unsafe { Caml_state as *const u8 }
+}
+
 /*
 pub fn get_sp() -> *mut Value {
     unsafe { (*Caml_state).extern_sp }

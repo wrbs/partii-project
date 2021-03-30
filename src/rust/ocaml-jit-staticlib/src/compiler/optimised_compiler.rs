@@ -18,7 +18,7 @@ use ocaml_jit_shared::{
 use once_cell::unsync::OnceCell;
 use std::{collections::HashMap, panic};
 
-use crate::caml::{domain_state::get_extern_sp_addr, misc::CAML_PRIMITIVE_TABLE};
+use crate::caml::{domain_state::get_caml_state_addr, misc::CAML_PRIMITIVE_TABLE};
 
 use super::{
     rust_primitives::{emit_c_call_trace, emit_return_trace},
@@ -128,7 +128,7 @@ fn get_prim_value_addr(
     primitive: CraneliftPrimitiveValue,
 ) -> *const u8 {
     match primitive {
-        CraneliftPrimitiveValue::OcamlExternSp => get_extern_sp_addr() as _,
+        CraneliftPrimitiveValue::CamlStateAddr => get_caml_state_addr(),
         CraneliftPrimitiveValue::CallbackReturnAddr => {
             compiler_data.get_cranelift_apply_return_addr()
         }

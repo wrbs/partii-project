@@ -21,11 +21,11 @@ Block 0:
   Inst 14:   movq    0(%rsi), %rdi
   Inst 15:   movq    8(%rdi), %r13
   Inst 16:   movq    0(%rdi), %r14
-  Inst 17:   load_ext_name u1:0+0, %rbx
+  Inst 17:   load_ext_name u1:1+0, %rbx
   Inst 18:   movq    0(%rbx), %rdi
   Inst 19:   movq    360(%rdi), %rdi
   Inst 20:   movq    120(%rdi), %rdi
-  Inst 21:   load_ext_name u1:1+0, %rax
+  Inst 21:   load_ext_name u1:2+0, %rax
   Inst 22:   movq    %rsi, %rcx
   Inst 23:   addq    $-32, %rcx
   Inst 24:   movq    %r14, -32(%rsi)

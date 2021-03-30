@@ -18,7 +18,7 @@ pub const MAX_YOUNG_WOSIZE: usize = 256;
 )]
 #[strum(serialize_all = "snake_case")]
 pub enum CraneliftPrimitiveValue {
-    OcamlExternSp,
+    CamlStateAddr,
     CallbackReturnAddr,
     GlobalDataAddr,
 }
@@ -119,7 +119,7 @@ pub enum CamlStateField {
 }
 
 impl CamlStateField {
-    fn get_offset(&self) -> i32 {
+    pub fn get_offset(&self) -> i32 {
         *self as i32 * 8
     }
 }
