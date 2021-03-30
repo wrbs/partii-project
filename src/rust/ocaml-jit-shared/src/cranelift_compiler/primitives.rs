@@ -18,6 +18,7 @@ use strum_macros::{EnumIter, IntoStaticStr};
 pub enum CraneliftPrimitiveValue {
     OcamlExternSp,
     CallbackReturnAddr,
+    GlobalDataAddr,
 }
 
 #[derive(

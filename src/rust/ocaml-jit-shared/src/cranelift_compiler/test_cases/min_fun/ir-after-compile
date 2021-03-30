@@ -1,0 +1,45 @@
+function u0:0(r64, i64, i64) -> r64, i64 system_v {
+    gv0 = symbol u1:0
+    gv1 = symbol u1:1
+    sig0 = (r64, i64, i64, i64) -> r64, i64 system_v
+    fn0 = u0:1 sig0
+
+block0(v0: r64, v1: i64, v2: i64):
+    v3 = load.r64 notrap aligned v1
+    v7 = load.r64 notrap aligned v3+8
+    v8 = load.r64 notrap aligned v3
+    v9 = symbol_value.i64 gv0
+    v19 -> v9
+    v22 -> v9
+    v10 = load.i64 notrap aligned v9
+    v11 = load.r64 notrap aligned v10+360
+    v12 = load.r64 notrap aligned v11+120
+    v13 = iconst.i64 1
+    v14 -> v13
+    v15 = symbol_value.i64 gv1
+    v29 = iconst.i64 -32
+    v30 -> v29
+    v16 = iadd v1, v29
+    store notrap aligned v8, v16
+    store notrap aligned v7, v16+8
+    store notrap aligned v15, v16+16
+    store notrap aligned v13, v16+24
+    store notrap aligned v13, v16+32
+    v17, v18 = call fn0(v12, v13, v2, v16)
+    v20 = load.i64 notrap aligned v9
+    v21 = load.r64 notrap aligned v20+2528
+    v23 = load.i64 notrap aligned v9
+    v24 = load.r64 notrap aligned v23+2520
+    v25 = load.r64 notrap aligned v24+8
+    v26 = iadd v18, v29
+    store notrap aligned v21, v26
+    store notrap aligned v8, v26+8
+    store notrap aligned v7, v26+16
+    store notrap aligned v17, v26+24
+    v27 = iconst.i64 4
+    jump block1
+
+block1:
+    store.i64 notrap aligned v26, v2
+    return v25, v27
+}

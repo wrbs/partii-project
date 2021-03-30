@@ -122,3 +122,4 @@ test_case!(stdlib_min);
 test_case!(output_char);
 test_case!(format_convert_int);
 test_case!(list_iter);
+test_case!(min_fun);
