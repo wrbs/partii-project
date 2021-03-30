@@ -121,8 +121,4 @@ macro_rules! test_case {
 test_case!(stdlib_min);
 test_case!(output_char);
 test_case!(format_convert_int);
-
-#[test]
-fn test_demo() {
-    assert_eq!(1 + 1, 2);
-}
+test_case!(list_iter);

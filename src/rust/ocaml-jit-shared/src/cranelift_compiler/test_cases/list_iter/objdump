@@ -1,0 +1,69 @@
+
+<input>:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <list_iter>:
+   0:	55                   	push   %rbp
+   1:	48 89 e5             	mov    %rsp,%rbp
+   4:	48 83 ec 40          	sub    $0x40,%rsp
+   8:	4c 89 64 24 20       	mov    %r12,0x20(%rsp)
+   d:	4c 89 6c 24 28       	mov    %r13,0x28(%rsp)
+  12:	4c 89 74 24 30       	mov    %r14,0x30(%rsp)
+  17:	48 89 5c 24 38       	mov    %rbx,0x38(%rsp)
+  1c:	49 89 fe             	mov    %rdi,%r14
+  1f:	49 89 d4             	mov    %rdx,%r12
+  22:	4c 8b 2e             	mov    (%rsi),%r13
+  25:	48 8b 46 08          	mov    0x8(%rsi),%rax
+  29:	48 89 f7             	mov    %rsi,%rdi
+  2c:	48 83 c7 10          	add    $0x10,%rdi
+  30:	b9 01 00 00 00       	mov    $0x1,%ecx
+  35:	48 39 c8             	cmp    %rcx,%rax
+  38:	0f 85 0e 00 00 00    	jne    4c <list_iter+0x4c>
+  3e:	41 be 01 00 00 00    	mov    $0x1,%r14d
+  44:	48 31 f6             	xor    %rsi,%rsi
+  47:	e9 7b 00 00 00       	jmp    c7 <list_iter+0xc7>
+  4c:	48 8b 58 08          	mov    0x8(%rax),%rbx
+  50:	48 8b 38             	mov    (%rax),%rdi
+  53:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  5a:	00 00 00 
+			55: R_X86_64_64	callback_return_addr
+  5d:	48 89 f1             	mov    %rsi,%rcx
+  60:	48 83 c1 f0          	add    $0xfffffffffffffff0,%rcx
+  64:	48 89 7e f0          	mov    %rdi,-0x10(%rsi)
+  68:	48 89 46 f8          	mov    %rax,-0x8(%rsi)
+  6c:	bf 01 00 00 00       	mov    $0x1,%edi
+  71:	48 89 3e             	mov    %rdi,(%rsi)
+  74:	bf 01 00 00 00       	mov    $0x1,%edi
+  79:	48 89 7e 08          	mov    %rdi,0x8(%rsi)
+  7d:	4c 89 ef             	mov    %r13,%rdi
+  80:	48 31 f6             	xor    %rsi,%rsi
+  83:	4c 89 e2             	mov    %r12,%rdx
+  86:	48 b8 00 00 00 00 00 	movabs $0x0,%rax
+  8d:	00 00 00 
+			88: R_X86_64_64	do_callback
+  90:	4c 89 2c 24          	mov    %r13,(%rsp)
+  94:	48 89 5c 24 08       	mov    %rbx,0x8(%rsp)
+  99:	48 89 7c 24 10       	mov    %rdi,0x10(%rsp)
+  9e:	4c 89 74 24 18       	mov    %r14,0x18(%rsp)
+  a3:	ff d0                	call   *%rax
+  a5:	48 8b 5c 24 08       	mov    0x8(%rsp),%rbx
+  aa:	4c 8b 2c 24          	mov    (%rsp),%r13
+  ae:	4c 8b 74 24 18       	mov    0x18(%rsp),%r14
+  b3:	48 89 d7             	mov    %rdx,%rdi
+  b6:	48 83 c7 f0          	add    $0xfffffffffffffff0,%rdi
+  ba:	4c 89 6a f0          	mov    %r13,-0x10(%rdx)
+  be:	48 89 5a f8          	mov    %rbx,-0x8(%rdx)
+  c2:	be 02 00 00 00       	mov    $0x2,%esi
+  c7:	49 89 3c 24          	mov    %rdi,(%r12)
+  cb:	4c 89 f0             	mov    %r14,%rax
+  ce:	48 89 f2             	mov    %rsi,%rdx
+  d1:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+  d6:	4c 8b 6c 24 28       	mov    0x28(%rsp),%r13
+  db:	4c 8b 74 24 30       	mov    0x30(%rsp),%r14
+  e0:	48 8b 5c 24 38       	mov    0x38(%rsp),%rbx
+  e5:	48 83 c4 40          	add    $0x40,%rsp
+  e9:	48 89 ec             	mov    %rbp,%rsp
+  ec:	5d                   	pop    %rbp
+  ed:	c3                   	ret    
