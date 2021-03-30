@@ -5,8 +5,7 @@
         ),
     ],
     mapped_words: 4,
-}
-0xc1: StackMap {
+}0xc1: StackMap {
     bitmap: [
         BitSet(
             15,

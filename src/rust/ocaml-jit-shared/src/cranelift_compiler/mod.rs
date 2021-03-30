@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicClosure};
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use codegen::{
     binemit::{StackMap, StackMapSink},
     ir::{FuncRef, GlobalValue, Inst},
@@ -304,6 +304,8 @@ where
 
         self.translate_exit(&basic_block.exit)?;
 
+        ensure!(self.stack_size == basic_block.end_stack_size as usize);
+
         // Seal any blocks this current block is the last predecessor of
         for sealed_block in &basic_block.sealed_blocks {
             self.builder.seal_block(self.blocks[*sealed_block]);
@@ -420,13 +422,15 @@ where
             // BasicBlockExit::PushTrap { normal, trap } => {}
             BasicBlockExit::Return(to_pop) => {
                 self.builder.ins().jump(self.return_block, &[]);
+                self.pop(*to_pop)?;
             }
-            BasicBlockExit::TailCall { args, to_pop: _ } => {
+            BasicBlockExit::TailCall { args, to_pop } => {
                 let args = *args as usize;
                 self.push_last_n_items_for_real(args)?;
                 let extra_args = self.builder.ins().iconst(I64, args as i64);
                 self.builder.def_var(self.return_extra_args_var, extra_args);
                 self.builder.ins().jump(self.return_block, &[]);
+                self.pop(*to_pop)?;
             }
             // BasicBlockExit::Raise(_) => {}
             // BasicBlockExit::Stop => {}
