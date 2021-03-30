@@ -71,7 +71,7 @@ fn run_test(
     let actual_stack_maps = {
         let mut s = String::new();
         for (offset, map) in stack_maps {
-            write!(s, "{}: {:#?}", offset, map).unwrap();
+            write!(s, "{:#x}: {:#?}", offset, map).unwrap();
         }
         s
     };
