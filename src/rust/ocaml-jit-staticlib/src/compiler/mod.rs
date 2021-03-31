@@ -1,6 +1,6 @@
 use emit_code::CompilerResults;
 pub use emit_code::{CompilerOptions, PrintTraces, DEFAULT_HOT_CLOSURE_THRESHOLD};
-pub use saved_data::{AsmCompiledPrimitive, CompilerData, EntryPoint, LongjmpEntryPoint, Section};
+pub use saved_data::{AsmCompiledPrimitive, CompilerData, EntryPoint, Section};
 
 mod c_primitives;
 mod emit_code;

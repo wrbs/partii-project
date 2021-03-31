@@ -33,11 +33,6 @@
   { state->sp = Caml_state->extern_sp; state->accu = state->sp[0]; state->env = state->sp[1]; state->sp += 3; }
 
 
-value jit_support_main_wrapper(value (*compiled_function)(), value (*longjmp_handler)(struct initial_state*, value init_accu)) {
-
-    return compiled_function();
-}
-
 value jit_support_get_float_field(struct jit_state* state, int64_t fieldno) {
     value x;
     double d = Double_flat_field(state->accu, fieldno);
@@ -214,25 +209,6 @@ void* jit_support_grab_closure(struct jit_state* state, void* restart_code) {
     state->sp += 3;
 
     return next_pc;
-}
-
-void jit_support_stop(struct initial_state* is, value *sp) {
-    Caml_state->external_raise = is->initial_external_raise;
-    Caml_state->extern_sp = sp;
-    caml_callback_depth--;
-}
-
-long jit_support_raise_check(struct initial_state* is) {
-    if ((char *) Caml_state->trapsp
-        >= (char *) Caml_state->stack_high - is->initial_sp_offset) {
-        Caml_state->external_raise = is->initial_external_raise;
-        Caml_state->extern_sp = (value *) ((char *) Caml_state->stack_high
-                                           - is->initial_sp_offset);
-        caml_callback_depth--;
-        return 1;
-    } else {
-        return 0;
-    }
 }
 
 value jit_support_get_dyn_met(value tag, value obj) {
