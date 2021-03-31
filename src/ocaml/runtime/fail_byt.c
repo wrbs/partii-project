@@ -36,7 +36,18 @@ CAMLexport void caml_raise(value v)
   Unlock_exn();
   Caml_state->exn_bucket = v;
   if (Caml_state->external_raise == NULL) caml_fatal_uncaught_exception(v);
+
+#ifdef USE_RUST_JIT
+  switch (Caml_state->external_raise->tag) {
+    case LONGJMP_BUFFER_SIGSETJMP:
+      siglongjmp(*Caml_state->external_raise->data.buf, 1);
+      break;
+    default:
+      caml_fatal_error("Wrong tag");
+  }
+#else
   siglongjmp(Caml_state->external_raise->buf, 1);
+#endif
 }
 
 CAMLexport void caml_raise_constant(value tag)

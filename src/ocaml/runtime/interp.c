@@ -245,6 +245,9 @@ value caml_interprete(code_t prog, asize_t prog_size)
   /* volatile ensures that initial_local_roots
      will keep correct value across longjmp */
   struct caml__roots_block * volatile initial_local_roots;
+#ifdef USE_RUST_JIT
+  sigjmp_buf actual_raise_buf;
+#endif
   struct longjmp_buffer raise_buf;
 #ifndef THREADED_CODE
   opcode_t curr_instr;
@@ -273,7 +276,13 @@ value caml_interprete(code_t prog, asize_t prog_size)
   initial_external_raise = Caml_state->external_raise;
   caml_callback_depth++;
 
+#ifdef USE_RUST_JIT
+  raise_buf.tag = LONGJMP_BUFFER_SIGSETJMP;
+  raise_buf.data.buf = &actual_raise_buf;
+  if (sigsetjmp(actual_raise_buf, 0)) {
+#else
   if (sigsetjmp(raise_buf.buf, 0)) {
+#endif
     Caml_state->local_roots = initial_local_roots;
     sp = Caml_state->extern_sp;
     accu = Caml_state->exn_bucket;
