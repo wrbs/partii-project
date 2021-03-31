@@ -31,6 +31,26 @@
 #include "caml/signals.h"
 #include "caml/stacks.h"
 
+
+#ifdef USE_RUST_JIT
+CAMLexport void jit_support_perform_longjmp(struct longjmp_buffer *buf) {
+  switch (buf->tag) {
+    case LONGJMP_BUFFER_SIGSETJMP:
+      siglongjmp(*buf->data.buf, 1);
+      break;
+    default:
+      asm (
+        "movq %0, %%rbp\n"
+        "jmp %1"
+        :
+        : "r" (buf->data.asm_saved.bp)
+        , "r" (buf->data.asm_saved.pc)
+      );
+      __builtin_unreachable();
+  }
+}
+#endif
+
 CAMLexport void caml_raise(value v)
 {
   Unlock_exn();
@@ -38,17 +58,12 @@ CAMLexport void caml_raise(value v)
   if (Caml_state->external_raise == NULL) caml_fatal_uncaught_exception(v);
 
 #ifdef USE_RUST_JIT
-  switch (Caml_state->external_raise->tag) {
-    case LONGJMP_BUFFER_SIGSETJMP:
-      siglongjmp(*Caml_state->external_raise->data.buf, 1);
-      break;
-    default:
-      caml_fatal_error("Wrong tag");
-  }
+  jit_support_perform_longjmp(Caml_state->external_raise);
 #else
   siglongjmp(Caml_state->external_raise->buf, 1);
 #endif
 }
+
 
 CAMLexport void caml_raise_constant(value tag)
 {
