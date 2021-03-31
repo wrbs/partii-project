@@ -1,21 +1,21 @@
-function u0:0(r64, i64, i64) -> r64, i64 system_v {
+function u0:0(r64, i64) -> r64, i64 system_v {
     gv0 = symbol u1:0
     sig0 = (r64, r64) -> r64 system_v
     fn0 = u0:1 sig0
 
-block0(v0: r64, v1: i64, v2: i64):
-    v4 = iconst.i64 0
-    v5 = symbol_value.i64 gv0
-    v6 = load.r64 notrap aligned v1
-    v7 = load.r64 notrap aligned v1+8
-    v11 = iconst.i64 16
-    v8 = iadd v1, v11
-    store notrap aligned v8, v5+152
-    v9 = call fn0(v6, v7)
-    v10 = load.i64 notrap aligned v5+152
+block0(v0: r64, v1: i64):
+    v3 = iconst.i64 0
+    v4 = symbol_value.i64 gv0
+    v5 = load.r64 notrap aligned v1
+    v6 = load.r64 notrap aligned v1+8
+    v10 = iconst.i64 16
+    v7 = iadd v1, v10
+    store notrap aligned v7, v4+152
+    v8 = call fn0(v5, v6)
+    v9 = load.i64 notrap aligned v4+152
     jump block1
 
 block1:
-    store.i64 notrap aligned v10, v2
-    return v9, v4
+    store.i64 notrap aligned v9, v4+152
+    return v8, v3
 }

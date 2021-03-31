@@ -8,7 +8,7 @@ use super::{emit_code::emit_cranelift_callback_entrypoint, CompilerOptions};
 
 const CODE_SIZE: usize = 4; // i32
 
-pub type EntryPoint = extern "C" fn() -> Value;
+pub type EntryPoint = unsafe extern "C" fn() -> Value;
 
 pub struct AsmCompiledPrimitive<T> {
     pub compiled_code: ExecutableBuffer,

@@ -1,50 +1,53 @@
-function u0:0(r64, i64, i64) -> r64, i64 system_v {
+function u0:0(r64, i64) -> r64, i64 system_v {
     gv0 = symbol u1:0
     gv1 = symbol u1:1
-    sig0 = (r64, i64, i64, i64) -> r64, i64 system_v
+    sig0 = (r64, i64) -> r64, i64 system_v
     fn0 = u0:1 sig0
 
-block0(v0: r64, v1: i64, v2: i64):
-    v4 = iconst.i64 0
-    v13 -> v4
-    v6 = load.r64 notrap aligned v1
-    v7 = load.r64 notrap aligned v1+8
+block0(v0: r64, v1: i64):
+    v3 = iconst.i64 0
+    v12 -> v3
+    v4 = symbol_value.i64 gv0
+    v5 = load.r64 notrap aligned v1
+    v6 = load.r64 notrap aligned v1+8
     v29 = iconst.i64 16
-    v8 = iadd v1, v29
-    v9 = raw_bitcast.i64 v7
+    v7 = iadd v1, v29
+    v8 = raw_bitcast.i64 v6
     v30 = iconst.i64 1
-    v14 -> v30
+    v13 -> v30
     v24 -> v30
-    v10 = icmp eq v9, v30
-    brnz v10, block2
+    v9 = icmp eq v8, v30
+    brnz v9, block2
     jump block1
 
 block1:
-    v11 = load.r64 notrap aligned v7+8
-    v12 = load.r64 notrap aligned v7
-    v15 = symbol_value.i64 gv1
+    v10 = load.r64 notrap aligned v6+8
+    v11 = load.r64 notrap aligned v6
+    v14 = symbol_value.i64 gv1
     v31 = iconst.i64 -16
     v32 -> v31
-    v16 = iadd.i64 v1, v31
-    store notrap aligned v12, v16
-    store notrap aligned v15, v16+8
-    store.i64 notrap aligned v30, v16+16
-    store.i64 notrap aligned v30, v16+24
-    v17, v18 = call fn0(v6, v4, v2, v16)
+    v15 = iadd.i64 v1, v31
+    store notrap aligned v11, v15
+    store notrap aligned v14, v15+8
+    store.i64 notrap aligned v30, v15+16
+    store.i64 notrap aligned v30, v15+24
+    store notrap aligned v15, v4+152
+    v16, v17 = call fn0(v5, v3)
+    v18 = load.i64 notrap aligned v4+152
     v19 = raw_bitcast.i64 v0
     v20 -> v19
     v21 = raw_bitcast.r64 v19
     v22 = iadd v18, v31
-    store.r64 notrap aligned v6, v22
-    store notrap aligned v11, v22+8
+    store.r64 notrap aligned v5, v22
+    store notrap aligned v10, v22+8
     v23 = iconst.i64 2
     jump block3(v22, v21, v23)
 
 block2:
     v25 = raw_bitcast.r64 v30
-    jump block3(v8, v25, v4)
+    jump block3(v7, v25, v3)
 
 block3(v26: i64, v27: r64, v28: i64):
-    store notrap aligned v26, v2
+    store notrap aligned v26, v4+152
     return v27, v28
 }
