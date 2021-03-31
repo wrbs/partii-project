@@ -24,7 +24,7 @@ use crate::{
         mlvalues,
         mlvalues::{BlockValue, LongValue, Tag, Value},
     },
-    compiler::{saved_data::AsmCompiledPrimitive, LongjmpEntryPoint},
+    compiler::saved_data::AsmCompiledPrimitive,
 };
 
 use super::{c_primitives::*, rust_primitives::*, saved_data::EntryPoint};
@@ -372,48 +372,6 @@ enum NextInstruction {
 
 fn caml_i32_of_int(orig: i64) -> i32 {
     Value::from(LongValue::from_i64(orig)).0 as i32
-}
-
-pub fn emit_longjmp_entrypoint() -> AsmCompiledPrimitive<LongjmpEntryPoint> {
-    /* For handling exceptions raised by C primitives the existing runtime uses longjmp
-     * The code for the interpreter just jumps to the raise code.
-     *
-     * To replicate this with the jit, we push a function that sets up the C stack in
-     * the same way as emit_entrypoint and also does the things that happens when we call
-     * raise - see jit_support_main_wrapper in the C primitives for how this gets used
-     */
-    let mut ops = Assembler::new().unwrap();
-    let start_offset = ops.offset();
-    emit_function_header(&mut ops);
-    oc_dynasm!(ops
-        // Push the pointer to the initial state struct
-        ; push rdi
-        // Store the initial accu
-        ; mov r_accu, rsi
-        // Get the trapsp address
-        ; mov rsi, QWORD domain_state::get_trap_sp_addr() as usize as i64
-        // Set the sp from it
-        ; mov r_sp, [rsi]
-        // Set the new trap sp to the next one in the link
-        ; mov rax, [r_sp + 8]
-        ; mov [rsi], rax
-        // Restore the env
-        ; mov r_env, [r_sp + 16]
-        // Restore the extra args - un-Val_long it
-        ; mov r_extra_args, [r_sp + 24]
-        ; shr r_extra_args, 1
-        // Save location to jump, increment sp and go to it
-        ; mov rax, [r_sp]
-        ; add r_sp, 32
-        ; jmp rax
-    );
-
-    let buf = ops.finalize().unwrap();
-    let entrypoint: LongjmpEntryPoint = unsafe { std::mem::transmute(buf.ptr(start_offset)) };
-    AsmCompiledPrimitive {
-        compiled_code: buf,
-        entrypoint,
-    }
 }
 
 // Returns (function call entrypoint, callback entrypoint (push this on the frame))
