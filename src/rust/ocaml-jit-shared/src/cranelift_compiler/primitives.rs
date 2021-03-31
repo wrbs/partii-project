@@ -123,7 +123,7 @@ pub enum CamlStateField {
 }
 
 impl CamlStateField {
-    pub fn get_offset(&self) -> i32 {
+    pub const fn offset(&self) -> i32 {
         *self as i32 * 8
     }
 }

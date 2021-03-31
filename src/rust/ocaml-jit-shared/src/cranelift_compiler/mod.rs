@@ -832,7 +832,7 @@ where
             typ,
             MemFlags::trusted(),
             self.caml_state_addr,
-            field.get_offset(),
+            field.offset(),
         )
     }
 
@@ -841,7 +841,7 @@ where
             MemFlags::trusted(),
             value,
             self.caml_state_addr,
-            field.get_offset(),
+            field.offset(),
         );
     }
 

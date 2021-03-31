@@ -43,21 +43,43 @@
 #ifdef POSIX_SIGNALS
 
 #ifdef USE_RUST_JIT
+
+// The existing scheme using (sig)longjmp
+
 #define LONGJMP_BUFFER_SIGSETJMP 0
+
+// The other (non-longjmp) scheme is simpler and crucially
+// much lighter-weight in terms of stack frames
+
+// For the old interpreter the cost was only for callbacks
+// The optimised JIT uses callbacks *all the time* so it's
+// important to get this right
+
+// Limitiation: it doesn't deal with signals but
+// hopefully that doesn't break anything
+
+#define LONGJMP_BUFFER_ASM 1
+
+struct asm_saved_state
+{
+    int64_t pc;
+    int64_t bp; // used to derive sp
+};
 
 struct longjmp_buffer
 {
-  intnat tag;
-  union
-  {
-    sigjmp_buf *buf;
-  } data;
+    intnat tag;
+    union
+    {
+        sigjmp_buf *buf; // Indirection so we don't make the union too big
+        struct asm_saved_state asm_saved;
+    } data;
 };
 
 #else
 struct longjmp_buffer
 {
-  sigjmp_buf buf;
+    sigjmp_buf buf;
 };
 #endif
 
@@ -65,14 +87,14 @@ struct longjmp_buffer
 /* MPR#7638: issues with setjmp/longjmp in Mingw64, use GCC builtins instead */
 struct longjmp_buffer
 {
-  intptr_t buf[5];
+    intptr_t buf[5];
 };
 #define sigsetjmp(buf, save) __builtin_setjmp(buf)
 #define siglongjmp(buf, val) __builtin_longjmp(buf, val)
 #else
 struct longjmp_buffer
 {
-  jmp_buf buf;
+    jmp_buf buf;
 };
 #define sigsetjmp(buf, save) setjmp(buf)
 #define siglongjmp(buf, val) longjmp(buf, val)
@@ -93,89 +115,97 @@ extern "C"
 {
 #endif
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise(value bucket)
-          CAMLnoreturn_end;
+#ifdef USE_RUST_JIT
+    CAMLnoreturn_start
+        CAMLextern void
+        jit_support_perform_longjmp(struct longjmp_buffer *buf)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_constant(value tag)
-          CAMLnoreturn_end;
+#endif
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_with_arg(value tag, value arg)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise(value bucket)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_with_args(value tag, int nargs, value arg[])
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_constant(value tag)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_with_string(value tag, char const *msg)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_with_arg(value tag, value arg)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_failwith(char const *msg)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_with_args(value tag, int nargs, value arg[])
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_failwith_value(value msg)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_with_string(value tag, char const *msg)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_invalid_argument(char const *msg)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_failwith(char const *msg)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_invalid_argument_value(value msg)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_failwith_value(value msg)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_out_of_memory(void)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_invalid_argument(char const *msg)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_stack_overflow(void)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_invalid_argument_value(value msg)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void caml_raise_sys_error(value)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_out_of_memory(void)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_end_of_file(void)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_stack_overflow(void)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_zero_divide(void)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void caml_raise_sys_error(value)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_not_found(void)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_end_of_file(void)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_array_bound_error(void)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_zero_divide(void)
+            CAMLnoreturn_end;
 
-  CAMLnoreturn_start
-      CAMLextern void
-      caml_raise_sys_blocked_io(void)
-          CAMLnoreturn_end;
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_not_found(void)
+            CAMLnoreturn_end;
+
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_array_bound_error(void)
+            CAMLnoreturn_end;
+
+    CAMLnoreturn_start
+        CAMLextern void
+        caml_raise_sys_blocked_io(void)
+            CAMLnoreturn_end;
 
 #ifdef __cplusplus
 }

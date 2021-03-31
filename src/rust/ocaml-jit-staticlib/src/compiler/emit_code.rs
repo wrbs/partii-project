@@ -4,6 +4,7 @@ use std::{
     ffi::{c_void, CStr},
 };
 
+use domain_state::get_caml_state_addr;
 use dynasmrt::{
     dynasm, x64::Assembler, AssemblyOffset, DynamicLabel, DynasmApi, DynasmLabelApi,
     ExecutableBuffer,
@@ -13,6 +14,8 @@ use ocaml_jit_shared::{
     ArithOp, BytecodeRelativeOffset, Closure, ClosureIterator, Comp, FoundClosure, Instruction,
     InstructionIterator,
 };
+
+use ocaml_jit_shared::cranelift_compiler::primitives::CamlStateField as CS;
 
 use crate::{
     caml::{
@@ -63,6 +66,32 @@ pub struct CompilerResults {
     pub instructions: Option<Vec<Instruction<BytecodeRelativeOffset>>>,
 }
 
+// The stack frame for the interpreter state
+// SF = StackFrame
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[allow(dead_code)]
+enum SF {
+    SavedBp,
+    SavedAccu,
+    SavedEnv,
+    SavedExtraArgs,
+    SavedSp,
+    SavedCS,
+    InitialExternalRaise,
+    InitialSpOffset,
+    InitialLocalRoots,
+    JmpbufBp,
+    JmpbufPc,
+    JmpbufTag,
+    EmptyForAlignment,
+}
+
+impl SF {
+    const fn offset(&self) -> i8 {
+        *self as i8 * -8
+    }
+}
+
 #[repr(C)]
 #[derive(Debug)]
 pub struct ClosureMetadataTableEntry {
@@ -103,7 +132,8 @@ pub fn compile_instructions(
         closures,
     };
 
-    let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
+    let entrypoint_offset = cc.emit_entrypoint();
+    let first_instr_offset = cc.initialise();
     let code_base = code.as_ptr();
 
     for (offset, instruction) in InstructionIterator::new(code.iter().copied()).enumerate() {
@@ -174,6 +204,7 @@ macro_rules! oc_dynasm {
             ; .alias r_accu, r13
             ; .alias r_extra_args, r14
             ; .alias r_sp, r15
+            ; .alias r_cs, rbx
             ; $($t)*
         )
     }
@@ -218,21 +249,6 @@ fn emit_function_header(mut ops: &mut Assembler) {
     );
 }
 
-fn emit_function_footer(mut ops: &mut Assembler) {
-    oc_dynasm!(ops
-        // Undo original pushes
-        ; pop r_sp
-        ; pop r_extra_args
-        ; pop r_env
-        ; pop r_accu
-
-        // Pop rbp + alignment
-        ; add rsp, 8
-        ; pop rbp
-        ; ret
-    );
-}
-
 /*
  * Callbacks are very strange and slightly annoying
  *
@@ -272,7 +288,8 @@ pub fn emit_callback_entrypoint(
         current_instruction_offset: BytecodeRelativeOffset(0),
     };
 
-    let (entrypoint_offset, first_instr_offset) = cc.emit_entrypoint();
+    let entrypoint_offset = cc.emit_entrypoint();
+    let first_instr_offset = cc.initialise();
     let code_base = code.as_ptr();
 
     oc_dynasm!(&mut cc.ops
@@ -284,13 +301,13 @@ pub fn emit_callback_entrypoint(
         ; mov [r_sp + rbx * 8], rdi
     );
 
-    // Emit a trace for the ACC - rbx won't be trashed
+    // Emit a trace for the ACC - temporarily take over r_cs as won't be trashed
     if compiler_options.print_traces == Some(PrintTraces::Instruction) {
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(0));
     }
     // Actually perform the acc - it's nargs + 3
     oc_dynasm!(&mut cc.ops
-        ; mov rax, rbx
+        ; mov rax, r_cs
         ; add rax, 3
         ; mov r_accu, [r_sp + rax * 8]
     );
@@ -301,8 +318,10 @@ pub fn emit_callback_entrypoint(
     }
     // Perform the apply - it's nargs - 1 for the new extra_args
     oc_dynasm!(&mut cc.ops
-        ; mov r_extra_args, rbx
+        ; mov r_extra_args, r_cs
         ; dec r_extra_args
+        // Restore r_cs here now we no longer need it
+        ; mov r_cs, QWORD get_caml_state_addr() as _
     );
     cc.perform_apply();
 
@@ -322,15 +341,18 @@ pub fn emit_callback_entrypoint(
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(6));
     }
     // Emit the actual stop
-    oc_dynasm!(&mut cc.ops
-        ; mov rax, QWORD jit_support_stop as i64
-        ; mov rdi, [rsp]
-        ; mov rsi, r_sp
-        ; call rax
+    oc_dynasm!(cc.ops
+        // Restore initial external raise and sp
+        ; mov rsi, [BYTE rbp + SF::InitialExternalRaise.offset()]
+        ; mov [r_cs + CS::ExternalRaise.offset()], rsi
+        ; mov [r_cs + CS::ExternSp.offset()], r_sp
+
         // Set the return value
         ; mov rax, r_accu
     );
     cc.emit_return();
+
+    // Finish up
     cc.emit_shared_code();
 
     let ops = cc.ops;
@@ -461,34 +483,71 @@ impl CompilerContext {
         }
     }
 
-    fn emit_entrypoint(&mut self) -> (AssemblyOffset, AssemblyOffset) {
+    fn emit_entrypoint(&mut self) -> AssemblyOffset {
         let offset = self.ops.offset();
-        emit_function_header(&mut self.ops);
         oc_dynasm!(self.ops
-            // Push the pointer to the initial state struct
-            ; push rdi
-            // We're now aligned for the C calling convention
+            // Push rbp
+            ; push rbp // SavedBp
+            ; mov rbp, rsp
+            // Push callee-save
+            ; push r_accu  // SavedAccu
+            ; push r_env // SavedEnv
+            ; push r_extra_args  // SavedExtraArgs
+            ; push r_sp  // SavedSp
+            ; push r_cs // SavedCS
+
+            // Load caml_state
+            ; mov r_cs, QWORD get_caml_state_addr() as _
+            ; push QWORD [r_cs + CS::ExternalRaise.offset()]  // InitialExternalRaise
+            ; mov r_sp, [r_cs + CS::ExternSp.offset()] // Load sp
+            ; mov rdi, [r_cs + CS::StackHigh.offset()]
+            ; sub rdi, r_sp
+            ; push rdi // InitialSpOffset
+            ; push QWORD [r_cs + CS::LocalRoots.offset()] // InitialLocalRoots
+
+            ; push rbp // JmpbufBp
+            ; lea rdi, [->longjmp_handler]
+            ; push rdi // JmpbufPc
+            ; mov edi, BYTE 1
+            ; push rdi // JmpbufTag
+            ; mov [r_cs + CS::ExternalRaise.offset()], rsp  // save external raise pointer
+
+            ; xor rax, rax
+            ; push rax // EmptyForAlignment
+
+
+        );
+
+        offset
+    }
+
+    fn initialise(&mut self) -> AssemblyOffset {
+        oc_dynasm!(self.ops
             // Set up initial register values
             ; mov r_accu, caml_i32_of_int(0)
             ; mov r_env, QWORD BlockValue::atom(Tag(0)).0
             ; mov r_extra_args, 0
-            // The first field in the initial state struct is the initial sp value to use
-            // That's the thing on the top of the stack
-            ; mov rax, [rsp]
-            ; mov r_sp, [rax]
         );
-
         let first_instr_offset = self.ops.offset();
-        (offset, first_instr_offset)
+        first_instr_offset
     }
 
     fn emit_return(&mut self) {
         // Clean up what the initial code did and return to the caller
+        let to_pop = SF::EmptyForAlignment as usize - SF::SavedCS as usize;
         oc_dynasm!(self.ops
-            // Undo push of initial state pointer
-            ; add rsp, 0x8
+            // Undo most original pushes
+            ; add rsp, BYTE to_pop as i8 * 8
+
+            // Restore callee-saved
+            ; pop r_cs
+            ; pop r_sp
+            ; pop r_extra_args
+            ; pop r_env
+            ; pop r_accu
+            ; pop rbp
+            ; ret
         );
-        emit_function_footer(&mut self.ops);
     }
 
     fn emit_bytecode_trace(
@@ -996,25 +1055,21 @@ impl CompilerContext {
                 );
             }
             Instruction::Raise(_kind) => {
-                let trap_sp = domain_state::get_trap_sp_addr();
-                // TODO backtraces, checking if the trapsp is above initial sp offest
+                // TODO backtraces, checking if the trapsp is above initial sp offset
                 oc_dynasm!(self.ops
                     // Check if we've gone too high in the stack
-                    ; mov rdi, [rsp]  // Initial state pointer
-                    ; mov rsi, r_sp   // Current sp
-                    ; mov rax, QWORD jit_support_raise_check as i64
-                    ; call rax
-                    ; cmp rax, 0
-                    ; jne >return_exception_result
+                    ; mov rsi, [r_cs + CS::TrapSp.offset()]
+                    ; mov rdi, [r_cs + CS::StackHigh.offset()]
+                    ; sub rdi, [BYTE rbp + SF::InitialSpOffset.offset()]
+                    ; cmp rsi, rdi
+                    ; jge >return_exception_result
 
                     // Ok, not too high, can do the link stuff
-                    // Get the current trap sp
-                    ; mov rsi, QWORD (trap_sp as usize) as i64
-                    // Set the sp from it
-                    ; mov r_sp, [rsi]
+                    // Set the sp to the new trap sp
+                    ; mov r_sp, rsi
                     // Set the new trap sp to the next one in the link
                     ; mov rax, [r_sp + 8]
-                    ; mov [rsi], rax
+                    ; mov [r_cs + CS::TrapSp.offset()], rax
                     // Restore the env
                     ; mov r_env, [r_sp + 16]
                     // Restore the extra args - un-Val_long it
@@ -1027,6 +1082,12 @@ impl CompilerContext {
 
                     // Otherwise
                     ; return_exception_result:
+
+                    // Restore initial external raise and sp (in rdi)
+                    ; mov rsi, [BYTE rbp + SF::InitialExternalRaise.offset()]
+                    ; mov [r_cs + CS::ExternalRaise.offset()], rsi
+                    ; mov [r_cs + CS::ExternSp.offset()], rdi
+
                     ; mov rax, r_accu
                     ; or rax, 2
                 );
@@ -1445,10 +1506,11 @@ impl CompilerContext {
                 // Call the function so that the entrypoint and code that uses it is visually nearby
                 // for easier changes
                 oc_dynasm!(self.ops
-                    ; mov rax, QWORD jit_support_stop as i64
-                    ; mov rdi, [rsp]
-                    ; mov rsi, r_sp
-                    ; call rax
+                    // Restore initial external raise and sp
+                    ; mov rsi, [BYTE rbp + SF::InitialExternalRaise.offset()]
+                    ; mov [r_cs + CS::ExternalRaise.offset()], rsi
+                    ; mov [r_cs + CS::ExternSp.offset()], r_sp
+
                     // Set the return value
                     ; mov rax, r_accu
                 );
@@ -1596,6 +1658,7 @@ impl CompilerContext {
     fn emit_shared_code(&mut self) {
         self.emit_apply_shared();
         self.emit_process_events_shared();
+        self.emit_longjmp_handler();
         self.emit_closure_table();
     }
 
@@ -1827,6 +1890,39 @@ impl CompilerContext {
             ; shr r_extra_args, 1                // Long_val(extra_args)
             ; add r_sp, 6 * 8                    // Pop frame
             ; jmp rax                            // Jump to the next pc
+        );
+    }
+
+    fn emit_longjmp_handler(&mut self) {
+        oc_dynasm!(self.ops
+            ; ->longjmp_handler:
+            // Restore the sp using the restored bp
+            ; mov rsp, rbp
+            ; add rsp, BYTE SF::EmptyForAlignment.offset()
+            // Restore caml_state
+            ; mov r_cs, QWORD get_caml_state_addr() as _
+
+            // Restore the initial accu
+            ; mov r_accu, [r_cs + CS::ExnBucket.offset()]
+
+            // Set the sp from the trapsp
+            ; mov r_sp, [r_cs + CS::TrapSp.offset()]
+
+            // Set the new trap sp to the next one in the link
+            ; mov rax, [r_sp + 8]
+            ; mov [r_cs + CS::TrapSp.offset()], rax
+
+            // Restore the env
+            ; mov r_env, [r_sp + 16]
+
+            // Restore the extra args - un-Val_long it
+            ; mov r_extra_args, [r_sp + 24]
+            ; shr r_extra_args, 1
+
+            // Save location to jump, increment sp and go to it
+            ; mov rax, [r_sp]
+            ; add r_sp, 32
+            ; jmp rax
         );
     }
 
