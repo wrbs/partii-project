@@ -553,9 +553,10 @@ where
         closure_args.push(one);
 
         let cur_sp = self.get_sp();
-        let new_sp = self.push_to_ocaml_stack(cur_sp, &closure_args)?;
-        self.set_sp(new_sp);
         self.save_extern_sp()?;
+        let _new_sp = self.push_to_ocaml_stack(cur_sp, &closure_args)?;
+        // We don't save the newsp - this is due to interactions with exception handling
+        // and callbacks
 
         let call = self.call_primitive(
             CraneliftPrimitiveFunction::DoCallback,

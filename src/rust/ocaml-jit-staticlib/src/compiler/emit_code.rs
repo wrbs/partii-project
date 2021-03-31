@@ -376,6 +376,9 @@ pub fn emit_cranelift_callback_entrypoint(
         ; mov r_accu, rdi
         ; mov r_env, QWORD BlockValue::atom(Tag(0)).0
         ; mov r_extra_args, rsi
+        ; shl rsi, 3
+        ; sub r_sp, rsi
+        ; sub r_sp, 8 * 4
     );
     // Now we do the apply
     cc.perform_apply();
