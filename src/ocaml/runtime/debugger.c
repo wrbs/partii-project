@@ -267,6 +267,10 @@ static void putval(struct channel *chan, value val)
 
 static void safe_output_value(struct channel *chan, value val)
 {
+  #ifdef USE_RUST_JIT
+  // We don't use the debugger on rust jit mode, so no point fixing this to work
+  // with new raise scheme
+  #else
   struct longjmp_buffer raise_buf, * saved_external_raise;
 
   /* Catch exceptions raised by [caml_output_val] */
@@ -279,6 +283,7 @@ static void safe_output_value(struct channel *chan, value val)
     caml_really_putblock(chan, "\000\000\000\000", 4);
   }
   Caml_state->external_raise = saved_external_raise;
+  #endif
 }
 
 struct breakpoint {

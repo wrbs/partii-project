@@ -35,7 +35,11 @@
 
 value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*), value (*longjmp_handler)(struct initial_state*, value init_accu)) {
     struct longjmp_buffer raise_buf;
+    sigjmp_buf actual_raise_buf;
     struct initial_state is;
+
+    raise_buf.tag = LONGJMP_BUFFER_SIGSETJMP;
+    raise_buf.data.buf = &actual_raise_buf;
 
     is.initial_local_roots = Caml_state->local_roots;
     is.initial_sp_offset = (char *) Caml_state->stack_high - (char *) Caml_state->extern_sp;
@@ -43,7 +47,7 @@ value jit_support_main_wrapper(value (*compiled_function)(struct initial_state*)
     is.initial_external_raise = Caml_state->external_raise;
     caml_callback_depth++;
 
-    if (sigsetjmp(raise_buf.buf, 0)) {
+    if (sigsetjmp(actual_raise_buf, 0)) {
         Caml_state->local_roots = is.initial_local_roots;
         // Check_trap_barrier;
         // if (Caml_state->backtrace_active) {
