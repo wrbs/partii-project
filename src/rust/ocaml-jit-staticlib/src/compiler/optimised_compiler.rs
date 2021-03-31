@@ -107,10 +107,14 @@ impl OptimisedCompiler {
         Ok(code as usize)
     }
 
-    pub fn lookup_stack_map<F: FnMut(usize)>(&self, return_addr: u64, f: F) {
+    pub fn lookup_stack_map<F: FnMut(usize)>(&self, return_addr: u64, mut f: F) {
         if let Some(map) = self.stack_maps.get(&return_addr) {
-            println!("Found map {:#?}", map);
-            // Todo iterate over the stackmap
+            for x in 0..map.mapped_words() {
+                let bit = x as usize;
+                if map.get_bit(bit) {
+                    f(bit + 1);
+                }
+            }
         }
     }
 }

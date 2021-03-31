@@ -30,6 +30,9 @@
 #include "caml/eventlog.h"
 
 CAMLexport void (*caml_scan_roots_hook) (scanning_action f) = NULL;
+#ifdef USE_RUST_JIT
+CAMLexport void jit_support_scan_bp(scanning_action f);
+#endif
 
 /* FIXME should rename to [caml_oldify_minor_roots] and synchronise with
    roots_nat.c */
@@ -54,6 +57,11 @@ void caml_oldify_local_roots (void)
       }
     }
   }
+
+#ifdef USE_RUST_JIT
+  jit_support_scan_bp(caml_oldify_one);
+#endif
+
   /* Global C roots */
   caml_scan_global_young_roots(&caml_oldify_one);
   /* Finalised values */
@@ -128,6 +136,9 @@ CAMLexport void caml_do_local_roots (scanning_action f, value *stack_low,
       }
     }
   }
+#ifdef USE_RUST_JIT
+  jit_support_scan_bp(f);
+#endif
 }
 
 #ifdef USE_RUST_JIT
