@@ -87,6 +87,11 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
         .expect("No such section");
     let code = unsafe { section.get_code() };
 
+    // TEMPORARILY DISABLE
+
+    closure.execution_count_status = -3;
+    return;
+
     let GlobalData {
         compiler_data,
         optimised_compiler,

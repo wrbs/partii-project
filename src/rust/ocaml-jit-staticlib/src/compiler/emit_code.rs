@@ -26,7 +26,8 @@ use crate::{
 
 use super::{c_primitives::*, rust_primitives::*, saved_data::EntryPoint};
 
-pub const DEFAULT_HOT_CLOSURE_THRESHOLD: Option<usize> = Some(10);
+// TODO change back
+pub const DEFAULT_HOT_CLOSURE_THRESHOLD: Option<usize> = Some(0);
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum PrintTraces {
@@ -361,6 +362,7 @@ pub fn emit_longjmp_entrypoint() -> AsmCompiledPrimitive<LongjmpEntryPoint> {
      */
     let mut ops = Assembler::new().unwrap();
     let start_offset = ops.offset();
+    emit_function_header(&mut ops);
     oc_dynasm!(ops
         // Push the pointer to the initial state struct
         ; push rdi
