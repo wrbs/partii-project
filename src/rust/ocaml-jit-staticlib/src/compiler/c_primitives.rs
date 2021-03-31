@@ -14,6 +14,7 @@ extern "C" {
     );
     pub fn caml_alloc_shr(wosize: i64, tag: i8);
     pub fn caml_initialize(pointer: i64, value: i64);
+    pub fn caml_raise(value: i64);
 
     // Our new ones
     pub fn jit_support_get_float_field(state: i64, field: i64) -> i64;

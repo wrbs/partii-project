@@ -85,8 +85,6 @@ where
         self.ctx.func.signature.params.push(AbiParam::new(R64));
         // Second arg - current SP
         self.ctx.func.signature.params.push(AbiParam::new(I64));
-        // Third arg - "initial state" (needed for returns)
-        self.ctx.func.signature.params.push(AbiParam::new(I64));
 
         // Ret 1 = return value of closure / what closure to apply if tail-calling
         self.ctx.func.signature.returns.push(AbiParam::new(R64));
@@ -195,7 +193,6 @@ where
         let stack_size = closure.arity;
         let env = builder.block_params(blocks[0])[0];
         let initial_sp = builder.block_params(blocks[0])[1];
-        let initial_state_pointer = builder.block_params(blocks[0])[2];
 
         builder.def_var(sp, initial_sp);
 
@@ -210,7 +207,6 @@ where
             env,
             acc,
             sp,
-            initial_state_pointer,
             blocks,
             options,
             return_extra_args_var,
@@ -280,7 +276,6 @@ where
     acc: Variable,
     return_extra_args_var: Variable,
     sp: Variable,
-    initial_state_pointer: Value,
     // Represents the blocks in my basic block translation
     blocks: Vec<Block>,
     return_block: Block,
@@ -528,10 +523,7 @@ where
         self.builder.switch_to_block(self.return_block);
         self.builder.seal_block(self.return_block);
 
-        let sp = self.get_sp();
-        self.builder
-            .ins()
-            .store(MemFlags::trusted(), sp, self.initial_state_pointer, 0);
+        self.save_extern_sp()?;
 
         let retval = self.get_acc_ref();
         let ret_extra_args = self.builder.use_var(self.return_extra_args_var);
@@ -562,15 +554,16 @@ where
 
         let cur_sp = self.get_sp();
         let new_sp = self.push_to_ocaml_stack(cur_sp, &closure_args)?;
+        self.set_sp(new_sp);
+        self.save_extern_sp()?;
 
         let call = self.call_primitive(
             CraneliftPrimitiveFunction::DoCallback,
-            &[closure, extra_args_val, self.initial_state_pointer, new_sp],
+            &[closure, extra_args_val],
         )?;
         let result = self.builder.inst_results(call)[0];
-        let final_sp = self.builder.inst_results(call)[1];
         self.set_acc_ref(result);
-        self.set_sp(final_sp);
+        self.load_extern_sp()?;
         Ok(())
     }
 
@@ -1050,12 +1043,7 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
             sig.params.push(AbiParam::new(R64));
         }
         CraneliftPrimitiveFunction::DoCallback => {
-            sig.params.extend(&[
-                AbiParam::new(R64),
-                AbiParam::new(I64),
-                AbiParam::new(I64),
-                AbiParam::new(I64),
-            ]);
+            sig.params.extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
             sig.returns
                 .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
         }

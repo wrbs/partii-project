@@ -29,8 +29,7 @@ use crate::{
 
 use super::{c_primitives::*, rust_primitives::*, saved_data::EntryPoint};
 
-// TODO change back
-pub const DEFAULT_HOT_CLOSURE_THRESHOLD: Option<usize> = Some(0);
+pub const DEFAULT_HOT_CLOSURE_THRESHOLD: Option<usize> = Some(10);
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum PrintTraces {
@@ -83,13 +82,16 @@ enum SF {
     JmpbufBp,
     JmpbufPc,
     JmpbufTag,
-    EmptyForAlignment,
+    ShouldReraise,
 }
 
 impl SF {
     const fn offset(&self) -> i8 {
         *self as i8 * -8
     }
+
+    const LOCAL_VARS_SIZE: i8 = (Self::ShouldReraise as i8 - Self::SavedCS as i8) * 8;
+    const LAST_VAR: Self = Self::ShouldReraise;
 }
 
 #[repr(C)]
@@ -132,7 +134,7 @@ pub fn compile_instructions(
         closures,
     };
 
-    let entrypoint_offset = cc.emit_entrypoint();
+    let entrypoint_offset = cc.emit_entrypoint(false);
     let first_instr_offset = cc.initialise();
     let code_base = code.as_ptr();
 
@@ -234,21 +236,6 @@ macro_rules! oc_pushretaddr {
     }
 }
 
-fn emit_function_header(mut ops: &mut Assembler) {
-    oc_dynasm!(ops
-        // Push rbp + alignment
-        ; push rbp
-        ; mov rbp, rsp
-        ; sub rsp, 8
-
-        // Push callee-save registers I use
-        ; push r_accu
-        ; push r_env
-        ; push r_extra_args
-        ; push r_sp
-    );
-}
-
 /*
  * Callbacks are very strange and slightly annoying
  *
@@ -288,7 +275,7 @@ pub fn emit_callback_entrypoint(
         current_instruction_offset: BytecodeRelativeOffset(0),
     };
 
-    let entrypoint_offset = cc.emit_entrypoint();
+    let entrypoint_offset = cc.emit_entrypoint(false);
     let first_instr_offset = cc.initialise();
     let code_base = code.as_ptr();
 
@@ -341,16 +328,7 @@ pub fn emit_callback_entrypoint(
         cc.emit_bytecode_trace(code_base, &BytecodeRelativeOffset(6));
     }
     // Emit the actual stop
-    oc_dynasm!(cc.ops
-        // Restore initial external raise and sp
-        ; mov rsi, [BYTE rbp + SF::InitialExternalRaise.offset()]
-        ; mov [r_cs + CS::ExternalRaise.offset()], rsi
-        ; mov [r_cs + CS::ExternSp.offset()], r_sp
-
-        // Set the return value
-        ; mov rax, r_accu
-    );
-    cc.emit_return();
+    cc.emit_stop();
 
     // Finish up
     cc.emit_shared_code();
@@ -391,30 +369,20 @@ pub fn emit_cranelift_callback_entrypoint(
     };
 
     // The signature is
-    // (rdi: closure to apply, rsi: extra_args, rdx: initial_state, rcx: current sp) -> value
-    let start_offset = cc.ops.offset();
-    emit_function_header(&mut cc.ops);
+    // (rdi: closure to apply, rsi: extra_args) -> value
+    let start_offset = cc.emit_entrypoint(true);
     oc_dynasm!(cc.ops
-        // Push initial state struct
-        ; push rdx
         // Now aligned - set up initial state
         ; mov r_accu, rdi
         ; mov r_env, QWORD BlockValue::atom(Tag(0)).0
         ; mov r_extra_args, rsi
-        ; mov r_sp, rcx
     );
     // Now we do the apply
     cc.perform_apply();
 
 
     let retaddr_offset = cc.ops.offset();
-    oc_dynasm!(cc.ops
-        // save the two return values
-        ; mov rax, r_accu // return value
-        ; mov rdx, r_sp   // new closure
-    );
-
-    cc.emit_return();
+    cc.emit_stop();
     cc.emit_shared_code();
 
     let buf = cc.ops.finalize().unwrap();
@@ -441,7 +409,8 @@ impl CompilerContext {
         }
     }
 
-    fn emit_entrypoint(&mut self) -> AssemblyOffset {
+    // clobbers r8 and all the special regs
+    fn emit_entrypoint(&mut self, should_reraise: bool) -> AssemblyOffset {
         let offset = self.ops.offset();
         oc_dynasm!(self.ops
             // Push rbp
@@ -458,23 +427,31 @@ impl CompilerContext {
             ; mov r_cs, QWORD get_caml_state_addr() as _
             ; push QWORD [r_cs + CS::ExternalRaise.offset()]  // InitialExternalRaise
             ; mov r_sp, [r_cs + CS::ExternSp.offset()] // Load sp
-            ; mov rdi, [r_cs + CS::StackHigh.offset()]
-            ; sub rdi, r_sp
-            ; push rdi // InitialSpOffset
+            ; mov r8, [r_cs + CS::StackHigh.offset()]
+            ; sub r8, r_sp
+            ; push r8 // InitialSpOffset
             ; push QWORD [r_cs + CS::LocalRoots.offset()] // InitialLocalRoots
 
             ; push rbp // JmpbufBp
-            ; lea rdi, [->longjmp_handler]
-            ; push rdi // JmpbufPc
-            ; mov edi, BYTE 1
-            ; push rdi // JmpbufTag
+            ; lea r8, [->longjmp_handler]
+            ; push r8 // JmpbufPc
+            ; mov r8, BYTE 1
+            ; push r8 // JmpbufTag
             ; mov [r_cs + CS::ExternalRaise.offset()], rsp  // save external raise pointer
 
-            ; xor rax, rax
-            ; push rax // EmptyForAlignment
-
-
         );
+
+        if should_reraise {
+            oc_dynasm!(self.ops
+                ; mov r8, 1
+                ; push r8 // ShouldReraise
+            );
+        } else {
+            oc_dynasm!(self.ops
+                ; xor r8, r8
+                ; push r8 // ShouldReraise
+            );
+        }
 
         offset
     }
@@ -490,12 +467,26 @@ impl CompilerContext {
         first_instr_offset
     }
 
+    fn emit_stop(&mut self) {
+        // Call the function so that the entrypoint and code that uses it is visually nearby
+        // for easier changes
+        oc_dynasm!(self.ops
+            // Restore initial external raise and sp
+            ; mov rsi, [BYTE rbp + SF::InitialExternalRaise.offset()]
+            ; mov [r_cs + CS::ExternalRaise.offset()], rsi
+            ; mov [r_cs + CS::ExternSp.offset()], r_sp
+
+            // Set the return value
+            ; mov rax, r_accu
+        );
+        self.emit_return();
+    }
+
     fn emit_return(&mut self) {
         // Clean up what the initial code did and return to the caller
-        let to_pop = SF::EmptyForAlignment as usize - SF::SavedCS as usize;
         oc_dynasm!(self.ops
             // Undo most original pushes
-            ; add rsp, BYTE to_pop as i8 * 8
+            ; add rsp, BYTE SF::LOCAL_VARS_SIZE
 
             // Restore callee-saved
             ; pop r_cs
@@ -1046,6 +1037,15 @@ impl CompilerContext {
                     ; mov [r_cs + CS::ExternalRaise.offset()], rsi
                     ; mov [r_cs + CS::ExternSp.offset()], rdi
 
+                    ; cmp [BYTE rbp + SF::ShouldReraise.offset()], 0
+                    ; je >act_ret
+                    ; int 3
+                    ; mov rdi, r_accu
+                    ; mov rax, QWORD caml_raise as _
+                    ; call rax
+
+                    ; act_ret:
+
                     ; mov rax, r_accu
                     ; or rax, 2
                 );
@@ -1461,18 +1461,7 @@ impl CompilerContext {
                 );
             }
             Instruction::Stop => {
-                // Call the function so that the entrypoint and code that uses it is visually nearby
-                // for easier changes
-                oc_dynasm!(self.ops
-                    // Restore initial external raise and sp
-                    ; mov rsi, [BYTE rbp + SF::InitialExternalRaise.offset()]
-                    ; mov [r_cs + CS::ExternalRaise.offset()], rsi
-                    ; mov [r_cs + CS::ExternSp.offset()], r_sp
-
-                    // Set the return value
-                    ; mov rax, r_accu
-                );
-                self.emit_return();
+                self.emit_stop();
             }
             Instruction::CheckSignals => {
                 self.emit_check_signals(NextInstruction::GoToNext);
@@ -1691,8 +1680,7 @@ impl CompilerContext {
 
                 ; optcall:
                 // Save extern sp
-                ; mov rsi, QWORD get_extern_sp_addr() as usize as i64
-                ; mov [rsi], r_sp           // Save extern sp
+                ; mov [r_cs + CS::ExternSp.offset()], r_sp
                 ; lea rsi, [>actually_call_opt]
                 // Check signals then call
             );
@@ -1701,7 +1689,6 @@ impl CompilerContext {
                 ; actually_call_opt:
                 ; mov rdi, r_accu
                 ; mov rsi, r_sp
-                ; mov rdx, rsp
                 ; mov rax, [r_accu]
                 ; mov rax, [rax + 8]
                 ; call rax
@@ -1709,7 +1696,7 @@ impl CompilerContext {
                 // Afterwards rax contains retval
                 // And rdx the extra_args offset
                 // and the initial statle pointer (at top of stack) the new sp
-                ; mov r_sp, [rsp]
+                ; mov r_sp, [r_cs + CS::ExternSp.offset()]
                 ; mov r_accu, rax
                 ; add r_extra_args, rdx
             );
@@ -1856,7 +1843,7 @@ impl CompilerContext {
             ; ->longjmp_handler:
             // Restore the sp using the restored bp
             ; mov rsp, rbp
-            ; add rsp, BYTE SF::EmptyForAlignment.offset()
+            ; add rsp, BYTE SF::LAST_VAR.offset()
             // Restore caml_state
             ; mov r_cs, QWORD get_caml_state_addr() as _
 
