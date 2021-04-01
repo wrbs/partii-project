@@ -482,8 +482,20 @@ where
                         let rl = self.builder.ins().imul(al, bl);
                         self.long_to_value(rl)
                     }
-                    // ArithOp::Div => {}
-                    // ArithOp::Mod => {}
+                    ArithOp::Div => {
+                        self.check_div_zero(b)?;
+                        let al = self.value_to_long(a);
+                        let bl = self.value_to_long(b);
+                        let rl = self.builder.ins().sdiv(al, bl);
+                        self.long_to_value(rl)
+                    }
+                    ArithOp::Mod => {
+                        self.check_div_zero(b)?;
+                        let al = self.value_to_long(a);
+                        let bl = self.value_to_long(b);
+                        let rl = self.builder.ins().srem(al, bl);
+                        self.long_to_value(rl)
+                    }
                     ArithOp::And => self.builder.ins().band(a, b),
                     ArithOp::Or => self.builder.ins().bor(a, b),
                     ArithOp::Xor => {
@@ -509,7 +521,6 @@ where
                         let shifted = self.builder.ins().sshr(a, shift);
                         self.builder.ins().bor_imm(shifted, 1)
                     }
-                    _ => bail!("Unimplemented arith_op: {:?}", op),
                 };
                 self.set_acc_int(result);
             }
@@ -599,6 +610,24 @@ where
     fn long_to_value(&mut self, lval: Value) -> Value {
         let doubled = self.builder.ins().iadd(lval, lval);
         self.builder.ins().iadd_imm(doubled, 1)
+    }
+
+    fn check_div_zero(&mut self, divisor: Value) -> Result<()> {
+        let raise_block = self.builder.create_block();
+        let noraise_block = self.builder.create_block();
+
+        let res = self.builder.ins().icmp_imm(IntCC::Equal, divisor, 1); // Val_long(0)
+        self.builder.ins().brnz(res, raise_block, &[]);
+        self.builder.ins().jump(noraise_block, &[]);
+        self.builder.seal_block(raise_block);
+        self.builder.seal_block(noraise_block);
+
+        self.builder.switch_to_block(raise_block);
+        self.call_primitive(CraneliftPrimitiveFunction::CamlRaiseZeroDivide, &[])?;
+        self.unreachable();
+
+        self.builder.switch_to_block(noraise_block);
+        Ok(())
     }
 
 
@@ -718,6 +747,10 @@ where
 
 
         Ok(())
+    }
+
+    fn unreachable(&mut self) {
+        self.builder.ins().trap(TrapCode::UnreachableCodeReached);
     }
 
     // Casting
@@ -1132,6 +1165,9 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         }
         CraneliftPrimitiveFunction::CamlInitialize => {
             sig.params.extend(&[AbiParam::new(I64), AbiParam::new(R64)]);
+        }
+        CraneliftPrimitiveFunction::CamlRaiseZeroDivide => {
+            // no params/returns
         }
     }
 }
