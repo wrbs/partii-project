@@ -576,12 +576,23 @@ where
                 self.builder.ins().brz(cond, self.blocks[*then_block], &[]);
                 self.builder.ins().jump(self.blocks[*else_block], &[]);
             }
-            // BasicBlockExit::BranchCmp {
-            //     cmp,
-            //     constant,
-            //     then_block,
-            //     else_block,
-            // } => {}
+            BasicBlockExit::BranchCmp {
+                cmp,
+                constant,
+                then_block,
+                else_block,
+            } => {
+                let a = self
+                    .builder
+                    .ins()
+                    .iconst(I64, i64_to_value(*constant as i64));
+                let b = self.get_acc_int();
+                let cc = comp_to_cc(cmp);
+                self.builder
+                    .ins()
+                    .br_icmp(cc, a, b, self.blocks[*then_block], &[]);
+                self.builder.ins().jump(self.blocks[*else_block], &[]);
+            }
             // BasicBlockExit::Switch { ints, tags } => {}
             // BasicBlockExit::PushTrap { normal, trap } => {}
             BasicBlockExit::Return(to_pop) => {

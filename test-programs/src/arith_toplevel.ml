@@ -26,3 +26,6 @@ let t x =
         5
     else
         7
+
+
+let _ = t 5
