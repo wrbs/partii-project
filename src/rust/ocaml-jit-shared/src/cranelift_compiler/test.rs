@@ -129,3 +129,4 @@ test_case!(arith_add);
 test_case!(arith_sub);
 test_case!(arith_mod);
 test_case!(arith_div);
+test_case!(arith_le);

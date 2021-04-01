@@ -5,7 +5,7 @@ use std::{
 
 use crate::{
     basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicClosure},
-    instructions::ArithOp,
+    instructions::{ArithOp, Comp},
 };
 use anyhow::{bail, ensure, Context, Result};
 use codegen::{
@@ -525,7 +525,24 @@ where
                 self.set_acc_int(result);
             }
             // BasicBlockInstruction::IsInt => {}
-            // BasicBlockInstruction::IntCmp(_) => {}
+            BasicBlockInstruction::IntCmp(cmp) => {
+                let x = self.get_acc_int();
+                let y = self.pick_int(0)?;
+                self.pop(1)?;
+
+                let flags = self.builder.ins().ifcmp(x, y);
+                let cc = comp_to_cc(cmp);
+
+                let val_true = self.builder.ins().iconst(I64, 3);
+                let val_false = self.builder.ins().iconst(I64, 1);
+
+                // This translates to a cmov which is nice!
+                let res = self
+                    .builder
+                    .ins()
+                    .selectif(I64, cc, flags, val_true, val_false);
+                self.set_acc_int(res);
+            }
             // BasicBlockInstruction::OffsetInt(_) => {}
             &BasicBlockInstruction::CCall1(id) => self.c_call(id, Arity::N1)?,
             &BasicBlockInstruction::CCall2(id) => self.c_call(id, Arity::N2)?,
@@ -1174,4 +1191,17 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
 
 fn i64_to_value(i: i64) -> i64 {
     (((i as u64) << 1) as i64) + 1
+}
+
+fn comp_to_cc(comp: &Comp) -> IntCC {
+    match comp {
+        Comp::Eq => IntCC::Equal,
+        Comp::Ne => IntCC::NotEqual,
+        Comp::Lt => IntCC::SignedLessThan,
+        Comp::Le => IntCC::SignedLessThanOrEqual,
+        Comp::Gt => IntCC::SignedGreaterThan,
+        Comp::Ge => IntCC::SignedGreaterThanOrEqual,
+        Comp::ULt => IntCC::UnsignedLessThan,
+        Comp::UGe => IntCC::UnsignedGreaterThanOrEqual,
+    }
 }
