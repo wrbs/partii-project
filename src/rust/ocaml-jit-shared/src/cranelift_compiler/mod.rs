@@ -456,7 +456,11 @@ where
                 let ref_value = self.int_to_ref(int_value);
                 self.set_acc_ref(ref_value);
             }
-            // BasicBlockInstruction::BoolNot => {}
+            BasicBlockInstruction::BoolNot => {
+                let val = self.get_acc_int();
+                let res = self.builder.ins().bxor_imm(val, 2);
+                self.set_acc_int(res);
+            }
             // BasicBlockInstruction::NegInt => {}
             BasicBlockInstruction::ArithInt(op) => {
                 let a = self.get_acc_int();
