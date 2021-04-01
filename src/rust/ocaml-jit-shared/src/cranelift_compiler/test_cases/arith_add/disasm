@@ -1,0 +1,28 @@
+VCode_ShowWithRRU {{
+  Entry block: 0
+Block 0:
+  (original IR block: block0)
+  (successor: Block 1)
+  (instruction range: 0 .. 12)
+  Inst 0:   pushq   %rbp
+  Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
+  Inst 2:   movq    %rsp, %rbp
+  Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 0 }
+  Inst 4:   load_ext_name u1:0+0, %rax
+  Inst 5:   movq    0(%rsi), %rcx
+  Inst 6:   movq    8(%rsi), %rdx
+  Inst 7:   movq    %rsi, %rdi
+  Inst 8:   addq    $16, %rdi
+  Inst 9:   addq    %rdx, %rcx
+  Inst 10:   addq    $-1, %rcx
+  Inst 11:   jmp     label1
+Block 1:
+  (original IR block: block1)
+  (instruction range: 12 .. 18)
+  Inst 12:   movq    %rdi, 152(%rax)
+  Inst 13:   xorq    %rdx, %rdx
+  Inst 14:   movq    %rcx, %rax
+  Inst 15:   movq    %rbp, %rsp
+  Inst 16:   popq    %rbp
+  Inst 17:   ret
+}}
