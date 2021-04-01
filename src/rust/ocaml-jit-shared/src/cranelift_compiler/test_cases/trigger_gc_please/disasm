@@ -1,0 +1,2358 @@
+VCode_ShowWithRRU {{
+  Entry block: 0
+Block 0:
+  (original IR block: block0)
+  (successor: Block 1)
+  (successor: Block 10)
+  (instruction range: 0 .. 27)
+  Inst 0:   pushq   %rbp
+  Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
+  Inst 2:   movq    %rsp, %rbp
+  Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 48 }
+  Inst 4:   subq    $896, %rsp
+  Inst 5:   movq    %r12, 848(%rsp)
+  Inst 6:   unwind SaveReg { clobber_offset: 0, reg: r25J }
+  Inst 7:   movq    %r13, 856(%rsp)
+  Inst 8:   unwind SaveReg { clobber_offset: 8, reg: r26J }
+  Inst 9:   movq    %r14, 864(%rsp)
+  Inst 10:   unwind SaveReg { clobber_offset: 16, reg: r27J }
+  Inst 11:   movq    %rbx, 872(%rsp)
+  Inst 12:   unwind SaveReg { clobber_offset: 24, reg: r28J }
+  Inst 13:   movq    %r15, 880(%rsp)
+  Inst 14:   unwind SaveReg { clobber_offset: 32, reg: r29J }
+  Inst 15:   movq    %rdi, %r13
+  Inst 16:   load_ext_name u1:0+0, %r12
+  Inst 17:   movq    0(%rsi), %rdi
+  Inst 18:   movq    %rdi, rsp(16 + virtual offset)
+  Inst 19:   movq    8(%rsi), %rdi
+  Inst 20:   movq    %rdi, rsp(0 + virtual offset)
+  Inst 21:   movq    %rsi, %rdi
+  Inst 22:   addq    $16, %rdi
+  Inst 23:   movq    rsp(16 + virtual offset), %rax
+  Inst 24:   movl    $1, %ecx
+  Inst 25:   cmpq    %rax, %rcx
+  Inst 26:   jnz     label1; j label10
+Block 1:
+  (original IR block: block2)
+  (successor: Block 2)
+  (successor: Block 3)
+  (instruction range: 27 .. 1935)
+  Inst 27:   movl    $1, %ebx
+  Inst 28:   movq    8(%r13), %rax
+  Inst 29:   load_ext_name u1:1+0, %r15
+  Inst 30:   movq    %rdi, 152(%r12)
+  Inst 31:   movq    %rbx, -16(%rsi)
+  Inst 32:   movq    %r15, -8(%rsi)
+  Inst 33:   movl    $1, %edi
+  Inst 34:   movq    %rdi, 0(%rsi)
+  Inst 35:   movl    $1, %edi
+  Inst 36:   movq    %rdi, 8(%rsi)
+  Inst 37:   movq    %rax, %rdi
+  Inst 38:   xorq    %rsi, %rsi
+  Inst 39:   load_ext_name u0:1+0, %rax
+  Inst 40:   movq    %rbx, rsp(24 + virtual offset)
+  Inst 41:   movq    %rdi, rsp(32 + virtual offset)
+  Inst 42:   movq    %r13, rsp(40 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 43:   call    *%rax
+  Inst 44:   movq    rsp(24 + virtual offset), %rbx
+  Inst 45:   movq    rsp(40 + virtual offset), %r13
+  Inst 46:   movq    %rax, %rsi
+  Inst 47:   movq    %rsi, rsp(24 + virtual offset)
+  Inst 48:   movq    152(%r12), %rsi
+  Inst 49:   movq    8(%r13), %rdi
+  Inst 50:   movq    %rsi, 152(%r12)
+  Inst 51:   movq    %rbx, -32(%rsi)
+  Inst 52:   movq    %r15, -24(%rsi)
+  Inst 53:   movl    $1, %eax
+  Inst 54:   movq    %rax, -16(%rsi)
+  Inst 55:   movl    $1, %eax
+  Inst 56:   movq    %rax, -8(%rsi)
+  Inst 57:   xorq    %rsi, %rsi
+  Inst 58:   load_ext_name u0:1+0, %rax
+  Inst 59:   movq    %rbx, rsp(32 + virtual offset)
+  Inst 60:   movq    %rdi, rsp(40 + virtual offset)
+  Inst 61:   movq    %r13, rsp(48 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 62:   call    *%rax
+  Inst 63:   movq    rsp(32 + virtual offset), %rbx
+  Inst 64:   movq    rsp(48 + virtual offset), %r13
+  Inst 65:   movq    %rax, %rsi
+  Inst 66:   movq    %rsi, rsp(32 + virtual offset)
+  Inst 67:   movq    152(%r12), %rsi
+  Inst 68:   movq    8(%r13), %rdi
+  Inst 69:   movq    %rsi, 152(%r12)
+  Inst 70:   movq    %rbx, -32(%rsi)
+  Inst 71:   movq    %r15, -24(%rsi)
+  Inst 72:   movl    $1, %eax
+  Inst 73:   movq    %rax, -16(%rsi)
+  Inst 74:   movl    $1, %eax
+  Inst 75:   movq    %rax, -8(%rsi)
+  Inst 76:   xorq    %rsi, %rsi
+  Inst 77:   load_ext_name u0:1+0, %rax
+  Inst 78:   movq    %rbx, rsp(40 + virtual offset)
+  Inst 79:   movq    %rdi, rsp(48 + virtual offset)
+  Inst 80:   movq    %r13, rsp(56 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 81:   call    *%rax
+  Inst 82:   movq    rsp(40 + virtual offset), %rbx
+  Inst 83:   movq    rsp(56 + virtual offset), %r13
+  Inst 84:   movq    %rax, %rsi
+  Inst 85:   movq    %rsi, rsp(40 + virtual offset)
+  Inst 86:   movq    152(%r12), %rsi
+  Inst 87:   movq    8(%r13), %rdi
+  Inst 88:   movq    %rsi, 152(%r12)
+  Inst 89:   movq    %rbx, -32(%rsi)
+  Inst 90:   movq    %r15, -24(%rsi)
+  Inst 91:   movl    $1, %eax
+  Inst 92:   movq    %rax, -16(%rsi)
+  Inst 93:   movl    $1, %eax
+  Inst 94:   movq    %rax, -8(%rsi)
+  Inst 95:   xorq    %rsi, %rsi
+  Inst 96:   load_ext_name u0:1+0, %rax
+  Inst 97:   movq    %rbx, rsp(48 + virtual offset)
+  Inst 98:   movq    %rdi, rsp(56 + virtual offset)
+  Inst 99:   movq    %r13, rsp(64 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 100:   call    *%rax
+  Inst 101:   movq    rsp(48 + virtual offset), %rbx
+  Inst 102:   movq    rsp(64 + virtual offset), %r13
+  Inst 103:   movq    %rax, %rsi
+  Inst 104:   movq    %rsi, rsp(48 + virtual offset)
+  Inst 105:   movq    152(%r12), %rsi
+  Inst 106:   movq    8(%r13), %rdi
+  Inst 107:   movq    %rsi, 152(%r12)
+  Inst 108:   movq    %rbx, -32(%rsi)
+  Inst 109:   movq    %r15, -24(%rsi)
+  Inst 110:   movl    $1, %eax
+  Inst 111:   movq    %rax, -16(%rsi)
+  Inst 112:   movl    $1, %eax
+  Inst 113:   movq    %rax, -8(%rsi)
+  Inst 114:   xorq    %rsi, %rsi
+  Inst 115:   load_ext_name u0:1+0, %rax
+  Inst 116:   movq    %rbx, rsp(56 + virtual offset)
+  Inst 117:   movq    %rdi, rsp(64 + virtual offset)
+  Inst 118:   movq    %r13, rsp(72 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 119:   call    *%rax
+  Inst 120:   movq    rsp(56 + virtual offset), %rbx
+  Inst 121:   movq    rsp(72 + virtual offset), %r13
+  Inst 122:   movq    %rax, %rsi
+  Inst 123:   movq    %rsi, rsp(56 + virtual offset)
+  Inst 124:   movq    152(%r12), %rsi
+  Inst 125:   movq    8(%r13), %rdi
+  Inst 126:   movq    %rsi, 152(%r12)
+  Inst 127:   movq    %rbx, -32(%rsi)
+  Inst 128:   movq    %r15, -24(%rsi)
+  Inst 129:   movl    $1, %eax
+  Inst 130:   movq    %rax, -16(%rsi)
+  Inst 131:   movl    $1, %eax
+  Inst 132:   movq    %rax, -8(%rsi)
+  Inst 133:   xorq    %rsi, %rsi
+  Inst 134:   load_ext_name u0:1+0, %rax
+  Inst 135:   movq    %rbx, rsp(64 + virtual offset)
+  Inst 136:   movq    %rdi, rsp(72 + virtual offset)
+  Inst 137:   movq    %r13, rsp(80 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 138:   call    *%rax
+  Inst 139:   movq    rsp(64 + virtual offset), %rbx
+  Inst 140:   movq    rsp(80 + virtual offset), %r13
+  Inst 141:   movq    %rax, %rsi
+  Inst 142:   movq    %rsi, rsp(64 + virtual offset)
+  Inst 143:   movq    152(%r12), %rsi
+  Inst 144:   movq    8(%r13), %rdi
+  Inst 145:   movq    %rsi, 152(%r12)
+  Inst 146:   movq    %rbx, -32(%rsi)
+  Inst 147:   movq    %r15, -24(%rsi)
+  Inst 148:   movl    $1, %eax
+  Inst 149:   movq    %rax, -16(%rsi)
+  Inst 150:   movl    $1, %eax
+  Inst 151:   movq    %rax, -8(%rsi)
+  Inst 152:   xorq    %rsi, %rsi
+  Inst 153:   load_ext_name u0:1+0, %rax
+  Inst 154:   movq    %rbx, rsp(72 + virtual offset)
+  Inst 155:   movq    %rdi, rsp(80 + virtual offset)
+  Inst 156:   movq    %r13, rsp(88 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 157:   call    *%rax
+  Inst 158:   movq    rsp(72 + virtual offset), %rbx
+  Inst 159:   movq    rsp(88 + virtual offset), %r13
+  Inst 160:   movq    %rax, %rsi
+  Inst 161:   movq    %rsi, rsp(72 + virtual offset)
+  Inst 162:   movq    152(%r12), %rsi
+  Inst 163:   movq    8(%r13), %rdi
+  Inst 164:   movq    %rsi, 152(%r12)
+  Inst 165:   movq    %rbx, -32(%rsi)
+  Inst 166:   movq    %r15, -24(%rsi)
+  Inst 167:   movl    $1, %eax
+  Inst 168:   movq    %rax, -16(%rsi)
+  Inst 169:   movl    $1, %eax
+  Inst 170:   movq    %rax, -8(%rsi)
+  Inst 171:   xorq    %rsi, %rsi
+  Inst 172:   load_ext_name u0:1+0, %rax
+  Inst 173:   movq    %rbx, rsp(80 + virtual offset)
+  Inst 174:   movq    %rdi, rsp(88 + virtual offset)
+  Inst 175:   movq    %r13, rsp(96 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 176:   call    *%rax
+  Inst 177:   movq    rsp(80 + virtual offset), %rbx
+  Inst 178:   movq    rsp(96 + virtual offset), %r13
+  Inst 179:   movq    %rax, %rsi
+  Inst 180:   movq    %rsi, rsp(80 + virtual offset)
+  Inst 181:   movq    152(%r12), %rsi
+  Inst 182:   movq    8(%r13), %rdi
+  Inst 183:   movq    %rsi, 152(%r12)
+  Inst 184:   movq    %rbx, -32(%rsi)
+  Inst 185:   movq    %r15, -24(%rsi)
+  Inst 186:   movl    $1, %eax
+  Inst 187:   movq    %rax, -16(%rsi)
+  Inst 188:   movl    $1, %eax
+  Inst 189:   movq    %rax, -8(%rsi)
+  Inst 190:   xorq    %rsi, %rsi
+  Inst 191:   load_ext_name u0:1+0, %rax
+  Inst 192:   movq    %rbx, rsp(88 + virtual offset)
+  Inst 193:   movq    %rdi, rsp(96 + virtual offset)
+  Inst 194:   movq    %r13, rsp(104 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 195:   call    *%rax
+  Inst 196:   movq    rsp(88 + virtual offset), %rbx
+  Inst 197:   movq    rsp(104 + virtual offset), %r13
+  Inst 198:   movq    %rax, %rsi
+  Inst 199:   movq    %rsi, rsp(88 + virtual offset)
+  Inst 200:   movq    152(%r12), %rsi
+  Inst 201:   movq    8(%r13), %rdi
+  Inst 202:   movq    %rsi, 152(%r12)
+  Inst 203:   movq    %rbx, -32(%rsi)
+  Inst 204:   movq    %r15, -24(%rsi)
+  Inst 205:   movl    $1, %eax
+  Inst 206:   movq    %rax, -16(%rsi)
+  Inst 207:   movl    $1, %eax
+  Inst 208:   movq    %rax, -8(%rsi)
+  Inst 209:   xorq    %rsi, %rsi
+  Inst 210:   load_ext_name u0:1+0, %rax
+  Inst 211:   movq    %rbx, rsp(96 + virtual offset)
+  Inst 212:   movq    %rdi, rsp(104 + virtual offset)
+  Inst 213:   movq    %r13, rsp(112 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 214:   call    *%rax
+  Inst 215:   movq    rsp(96 + virtual offset), %rbx
+  Inst 216:   movq    rsp(112 + virtual offset), %r13
+  Inst 217:   movq    %rax, %rsi
+  Inst 218:   movq    %rsi, rsp(96 + virtual offset)
+  Inst 219:   movq    152(%r12), %rsi
+  Inst 220:   movq    8(%r13), %rdi
+  Inst 221:   movq    %rsi, 152(%r12)
+  Inst 222:   movq    %rbx, -32(%rsi)
+  Inst 223:   movq    %r15, -24(%rsi)
+  Inst 224:   movl    $1, %eax
+  Inst 225:   movq    %rax, -16(%rsi)
+  Inst 226:   movl    $1, %eax
+  Inst 227:   movq    %rax, -8(%rsi)
+  Inst 228:   xorq    %rsi, %rsi
+  Inst 229:   load_ext_name u0:1+0, %rax
+  Inst 230:   movq    %rbx, rsp(104 + virtual offset)
+  Inst 231:   movq    %rdi, rsp(112 + virtual offset)
+  Inst 232:   movq    %r13, rsp(120 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 233:   call    *%rax
+  Inst 234:   movq    rsp(104 + virtual offset), %rbx
+  Inst 235:   movq    rsp(120 + virtual offset), %r13
+  Inst 236:   movq    %rax, %rsi
+  Inst 237:   movq    %rsi, rsp(104 + virtual offset)
+  Inst 238:   movq    152(%r12), %rsi
+  Inst 239:   movq    8(%r13), %rdi
+  Inst 240:   movq    %rsi, 152(%r12)
+  Inst 241:   movq    %rbx, -32(%rsi)
+  Inst 242:   movq    %r15, -24(%rsi)
+  Inst 243:   movl    $1, %eax
+  Inst 244:   movq    %rax, -16(%rsi)
+  Inst 245:   movl    $1, %eax
+  Inst 246:   movq    %rax, -8(%rsi)
+  Inst 247:   xorq    %rsi, %rsi
+  Inst 248:   load_ext_name u0:1+0, %rax
+  Inst 249:   movq    %rbx, rsp(112 + virtual offset)
+  Inst 250:   movq    %rdi, rsp(120 + virtual offset)
+  Inst 251:   movq    %r13, rsp(128 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 252:   call    *%rax
+  Inst 253:   movq    rsp(112 + virtual offset), %rbx
+  Inst 254:   movq    rsp(128 + virtual offset), %r13
+  Inst 255:   movq    %rax, %rsi
+  Inst 256:   movq    %rsi, rsp(112 + virtual offset)
+  Inst 257:   movq    152(%r12), %rsi
+  Inst 258:   movq    8(%r13), %rdi
+  Inst 259:   movq    %rsi, 152(%r12)
+  Inst 260:   movq    %rbx, -32(%rsi)
+  Inst 261:   movq    %r15, -24(%rsi)
+  Inst 262:   movl    $1, %eax
+  Inst 263:   movq    %rax, -16(%rsi)
+  Inst 264:   movl    $1, %eax
+  Inst 265:   movq    %rax, -8(%rsi)
+  Inst 266:   xorq    %rsi, %rsi
+  Inst 267:   load_ext_name u0:1+0, %rax
+  Inst 268:   movq    %rbx, rsp(120 + virtual offset)
+  Inst 269:   movq    %rdi, rsp(128 + virtual offset)
+  Inst 270:   movq    %r13, rsp(136 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 271:   call    *%rax
+  Inst 272:   movq    rsp(120 + virtual offset), %rbx
+  Inst 273:   movq    rsp(136 + virtual offset), %r13
+  Inst 274:   movq    %rax, %rsi
+  Inst 275:   movq    %rsi, rsp(120 + virtual offset)
+  Inst 276:   movq    152(%r12), %rsi
+  Inst 277:   movq    8(%r13), %rdi
+  Inst 278:   movq    %rsi, 152(%r12)
+  Inst 279:   movq    %rbx, -32(%rsi)
+  Inst 280:   movq    %r15, -24(%rsi)
+  Inst 281:   movl    $1, %eax
+  Inst 282:   movq    %rax, -16(%rsi)
+  Inst 283:   movl    $1, %eax
+  Inst 284:   movq    %rax, -8(%rsi)
+  Inst 285:   xorq    %rsi, %rsi
+  Inst 286:   load_ext_name u0:1+0, %rax
+  Inst 287:   movq    %rbx, rsp(128 + virtual offset)
+  Inst 288:   movq    %rdi, rsp(136 + virtual offset)
+  Inst 289:   movq    %r13, rsp(144 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 290:   call    *%rax
+  Inst 291:   movq    rsp(128 + virtual offset), %rbx
+  Inst 292:   movq    rsp(144 + virtual offset), %r13
+  Inst 293:   movq    %rax, %rsi
+  Inst 294:   movq    %rsi, rsp(128 + virtual offset)
+  Inst 295:   movq    152(%r12), %rsi
+  Inst 296:   movq    8(%r13), %rdi
+  Inst 297:   movq    %rsi, 152(%r12)
+  Inst 298:   movq    %rbx, -32(%rsi)
+  Inst 299:   movq    %r15, -24(%rsi)
+  Inst 300:   movl    $1, %eax
+  Inst 301:   movq    %rax, -16(%rsi)
+  Inst 302:   movl    $1, %eax
+  Inst 303:   movq    %rax, -8(%rsi)
+  Inst 304:   xorq    %rsi, %rsi
+  Inst 305:   load_ext_name u0:1+0, %rax
+  Inst 306:   movq    %rbx, rsp(136 + virtual offset)
+  Inst 307:   movq    %rdi, rsp(144 + virtual offset)
+  Inst 308:   movq    %r13, rsp(152 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 309:   call    *%rax
+  Inst 310:   movq    rsp(136 + virtual offset), %rbx
+  Inst 311:   movq    rsp(152 + virtual offset), %r13
+  Inst 312:   movq    %rax, %rsi
+  Inst 313:   movq    %rsi, rsp(136 + virtual offset)
+  Inst 314:   movq    152(%r12), %rsi
+  Inst 315:   movq    8(%r13), %rdi
+  Inst 316:   movq    %rsi, 152(%r12)
+  Inst 317:   movq    %rbx, -32(%rsi)
+  Inst 318:   movq    %r15, -24(%rsi)
+  Inst 319:   movl    $1, %eax
+  Inst 320:   movq    %rax, -16(%rsi)
+  Inst 321:   movl    $1, %eax
+  Inst 322:   movq    %rax, -8(%rsi)
+  Inst 323:   xorq    %rsi, %rsi
+  Inst 324:   load_ext_name u0:1+0, %rax
+  Inst 325:   movq    %rbx, rsp(144 + virtual offset)
+  Inst 326:   movq    %rdi, rsp(152 + virtual offset)
+  Inst 327:   movq    %r13, rsp(160 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 328:   call    *%rax
+  Inst 329:   movq    rsp(144 + virtual offset), %rbx
+  Inst 330:   movq    rsp(160 + virtual offset), %r13
+  Inst 331:   movq    %rax, %rsi
+  Inst 332:   movq    %rsi, rsp(144 + virtual offset)
+  Inst 333:   movq    152(%r12), %rsi
+  Inst 334:   movq    8(%r13), %rdi
+  Inst 335:   movq    %rsi, 152(%r12)
+  Inst 336:   movq    %rbx, -32(%rsi)
+  Inst 337:   movq    %r15, -24(%rsi)
+  Inst 338:   movl    $1, %eax
+  Inst 339:   movq    %rax, -16(%rsi)
+  Inst 340:   movl    $1, %eax
+  Inst 341:   movq    %rax, -8(%rsi)
+  Inst 342:   xorq    %rsi, %rsi
+  Inst 343:   load_ext_name u0:1+0, %rax
+  Inst 344:   movq    %rbx, rsp(152 + virtual offset)
+  Inst 345:   movq    %rdi, rsp(160 + virtual offset)
+  Inst 346:   movq    %r13, rsp(168 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 347:   call    *%rax
+  Inst 348:   movq    rsp(152 + virtual offset), %rbx
+  Inst 349:   movq    rsp(168 + virtual offset), %r13
+  Inst 350:   movq    %rax, %rsi
+  Inst 351:   movq    %rsi, rsp(152 + virtual offset)
+  Inst 352:   movq    152(%r12), %rsi
+  Inst 353:   movq    8(%r13), %rdi
+  Inst 354:   movq    %rsi, 152(%r12)
+  Inst 355:   movq    %rbx, -32(%rsi)
+  Inst 356:   movq    %r15, -24(%rsi)
+  Inst 357:   movl    $1, %eax
+  Inst 358:   movq    %rax, -16(%rsi)
+  Inst 359:   movl    $1, %eax
+  Inst 360:   movq    %rax, -8(%rsi)
+  Inst 361:   xorq    %rsi, %rsi
+  Inst 362:   load_ext_name u0:1+0, %rax
+  Inst 363:   movq    %rbx, rsp(160 + virtual offset)
+  Inst 364:   movq    %rdi, rsp(168 + virtual offset)
+  Inst 365:   movq    %r13, rsp(176 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 366:   call    *%rax
+  Inst 367:   movq    rsp(160 + virtual offset), %rbx
+  Inst 368:   movq    rsp(176 + virtual offset), %r13
+  Inst 369:   movq    %rax, %rsi
+  Inst 370:   movq    %rsi, rsp(160 + virtual offset)
+  Inst 371:   movq    152(%r12), %rsi
+  Inst 372:   movq    8(%r13), %rdi
+  Inst 373:   movq    %rsi, 152(%r12)
+  Inst 374:   movq    %rbx, -32(%rsi)
+  Inst 375:   movq    %r15, -24(%rsi)
+  Inst 376:   movl    $1, %eax
+  Inst 377:   movq    %rax, -16(%rsi)
+  Inst 378:   movl    $1, %eax
+  Inst 379:   movq    %rax, -8(%rsi)
+  Inst 380:   xorq    %rsi, %rsi
+  Inst 381:   load_ext_name u0:1+0, %rax
+  Inst 382:   movq    %rbx, rsp(168 + virtual offset)
+  Inst 383:   movq    %rdi, rsp(176 + virtual offset)
+  Inst 384:   movq    %r13, rsp(184 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 385:   call    *%rax
+  Inst 386:   movq    rsp(168 + virtual offset), %rbx
+  Inst 387:   movq    rsp(184 + virtual offset), %r13
+  Inst 388:   movq    %rax, %rsi
+  Inst 389:   movq    %rsi, rsp(168 + virtual offset)
+  Inst 390:   movq    152(%r12), %rsi
+  Inst 391:   movq    8(%r13), %rdi
+  Inst 392:   movq    %rsi, 152(%r12)
+  Inst 393:   movq    %rbx, -32(%rsi)
+  Inst 394:   movq    %r15, -24(%rsi)
+  Inst 395:   movl    $1, %eax
+  Inst 396:   movq    %rax, -16(%rsi)
+  Inst 397:   movl    $1, %eax
+  Inst 398:   movq    %rax, -8(%rsi)
+  Inst 399:   xorq    %rsi, %rsi
+  Inst 400:   load_ext_name u0:1+0, %rax
+  Inst 401:   movq    %rbx, rsp(176 + virtual offset)
+  Inst 402:   movq    %rdi, rsp(184 + virtual offset)
+  Inst 403:   movq    %r13, rsp(192 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 404:   call    *%rax
+  Inst 405:   movq    rsp(176 + virtual offset), %rbx
+  Inst 406:   movq    rsp(192 + virtual offset), %r13
+  Inst 407:   movq    %rax, %rsi
+  Inst 408:   movq    %rsi, rsp(176 + virtual offset)
+  Inst 409:   movq    152(%r12), %rsi
+  Inst 410:   movq    8(%r13), %rdi
+  Inst 411:   movq    %rsi, 152(%r12)
+  Inst 412:   movq    %rbx, -32(%rsi)
+  Inst 413:   movq    %r15, -24(%rsi)
+  Inst 414:   movl    $1, %eax
+  Inst 415:   movq    %rax, -16(%rsi)
+  Inst 416:   movl    $1, %eax
+  Inst 417:   movq    %rax, -8(%rsi)
+  Inst 418:   xorq    %rsi, %rsi
+  Inst 419:   load_ext_name u0:1+0, %rax
+  Inst 420:   movq    %rbx, rsp(184 + virtual offset)
+  Inst 421:   movq    %rdi, rsp(192 + virtual offset)
+  Inst 422:   movq    %r13, rsp(200 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 423:   call    *%rax
+  Inst 424:   movq    rsp(184 + virtual offset), %rbx
+  Inst 425:   movq    rsp(200 + virtual offset), %r13
+  Inst 426:   movq    %rax, %rsi
+  Inst 427:   movq    %rsi, rsp(184 + virtual offset)
+  Inst 428:   movq    152(%r12), %rsi
+  Inst 429:   movq    8(%r13), %rdi
+  Inst 430:   movq    %rsi, 152(%r12)
+  Inst 431:   movq    %rbx, -32(%rsi)
+  Inst 432:   movq    %r15, -24(%rsi)
+  Inst 433:   movl    $1, %eax
+  Inst 434:   movq    %rax, -16(%rsi)
+  Inst 435:   movl    $1, %eax
+  Inst 436:   movq    %rax, -8(%rsi)
+  Inst 437:   xorq    %rsi, %rsi
+  Inst 438:   load_ext_name u0:1+0, %rax
+  Inst 439:   movq    %rbx, rsp(192 + virtual offset)
+  Inst 440:   movq    %rdi, rsp(200 + virtual offset)
+  Inst 441:   movq    %r13, rsp(208 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 442:   call    *%rax
+  Inst 443:   movq    rsp(192 + virtual offset), %rbx
+  Inst 444:   movq    rsp(208 + virtual offset), %r13
+  Inst 445:   movq    %rax, %rsi
+  Inst 446:   movq    %rsi, rsp(192 + virtual offset)
+  Inst 447:   movq    152(%r12), %rsi
+  Inst 448:   movq    8(%r13), %rdi
+  Inst 449:   movq    %rsi, 152(%r12)
+  Inst 450:   movq    %rbx, -32(%rsi)
+  Inst 451:   movq    %r15, -24(%rsi)
+  Inst 452:   movl    $1, %eax
+  Inst 453:   movq    %rax, -16(%rsi)
+  Inst 454:   movl    $1, %eax
+  Inst 455:   movq    %rax, -8(%rsi)
+  Inst 456:   xorq    %rsi, %rsi
+  Inst 457:   load_ext_name u0:1+0, %rax
+  Inst 458:   movq    %rbx, rsp(200 + virtual offset)
+  Inst 459:   movq    %rdi, rsp(208 + virtual offset)
+  Inst 460:   movq    %r13, rsp(216 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 461:   call    *%rax
+  Inst 462:   movq    rsp(200 + virtual offset), %rbx
+  Inst 463:   movq    rsp(216 + virtual offset), %r13
+  Inst 464:   movq    %rax, %rsi
+  Inst 465:   movq    %rsi, rsp(200 + virtual offset)
+  Inst 466:   movq    152(%r12), %rsi
+  Inst 467:   movq    8(%r13), %rdi
+  Inst 468:   movq    %rsi, 152(%r12)
+  Inst 469:   movq    %rbx, -32(%rsi)
+  Inst 470:   movq    %r15, -24(%rsi)
+  Inst 471:   movl    $1, %eax
+  Inst 472:   movq    %rax, -16(%rsi)
+  Inst 473:   movl    $1, %eax
+  Inst 474:   movq    %rax, -8(%rsi)
+  Inst 475:   xorq    %rsi, %rsi
+  Inst 476:   load_ext_name u0:1+0, %rax
+  Inst 477:   movq    %rbx, rsp(208 + virtual offset)
+  Inst 478:   movq    %rdi, rsp(216 + virtual offset)
+  Inst 479:   movq    %r13, rsp(224 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 480:   call    *%rax
+  Inst 481:   movq    rsp(208 + virtual offset), %rbx
+  Inst 482:   movq    rsp(224 + virtual offset), %r13
+  Inst 483:   movq    %rax, %rsi
+  Inst 484:   movq    %rsi, rsp(208 + virtual offset)
+  Inst 485:   movq    152(%r12), %rsi
+  Inst 486:   movq    8(%r13), %rdi
+  Inst 487:   movq    %rsi, 152(%r12)
+  Inst 488:   movq    %rbx, -32(%rsi)
+  Inst 489:   movq    %r15, -24(%rsi)
+  Inst 490:   movl    $1, %eax
+  Inst 491:   movq    %rax, -16(%rsi)
+  Inst 492:   movl    $1, %eax
+  Inst 493:   movq    %rax, -8(%rsi)
+  Inst 494:   xorq    %rsi, %rsi
+  Inst 495:   load_ext_name u0:1+0, %rax
+  Inst 496:   movq    %rbx, rsp(216 + virtual offset)
+  Inst 497:   movq    %rdi, rsp(224 + virtual offset)
+  Inst 498:   movq    %r13, rsp(232 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 499:   call    *%rax
+  Inst 500:   movq    rsp(216 + virtual offset), %rbx
+  Inst 501:   movq    rsp(232 + virtual offset), %r13
+  Inst 502:   movq    %rax, %rsi
+  Inst 503:   movq    %rsi, rsp(216 + virtual offset)
+  Inst 504:   movq    152(%r12), %rsi
+  Inst 505:   movq    8(%r13), %rdi
+  Inst 506:   movq    %rsi, 152(%r12)
+  Inst 507:   movq    %rbx, -32(%rsi)
+  Inst 508:   movq    %r15, -24(%rsi)
+  Inst 509:   movl    $1, %eax
+  Inst 510:   movq    %rax, -16(%rsi)
+  Inst 511:   movl    $1, %eax
+  Inst 512:   movq    %rax, -8(%rsi)
+  Inst 513:   xorq    %rsi, %rsi
+  Inst 514:   load_ext_name u0:1+0, %rax
+  Inst 515:   movq    %rbx, rsp(224 + virtual offset)
+  Inst 516:   movq    %rdi, rsp(232 + virtual offset)
+  Inst 517:   movq    %r13, rsp(240 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 518:   call    *%rax
+  Inst 519:   movq    rsp(224 + virtual offset), %rbx
+  Inst 520:   movq    rsp(240 + virtual offset), %r13
+  Inst 521:   movq    %rax, %rsi
+  Inst 522:   movq    %rsi, rsp(224 + virtual offset)
+  Inst 523:   movq    152(%r12), %rsi
+  Inst 524:   movq    8(%r13), %rdi
+  Inst 525:   movq    %rsi, 152(%r12)
+  Inst 526:   movq    %rbx, -32(%rsi)
+  Inst 527:   movq    %r15, -24(%rsi)
+  Inst 528:   movl    $1, %eax
+  Inst 529:   movq    %rax, -16(%rsi)
+  Inst 530:   movl    $1, %eax
+  Inst 531:   movq    %rax, -8(%rsi)
+  Inst 532:   xorq    %rsi, %rsi
+  Inst 533:   load_ext_name u0:1+0, %rax
+  Inst 534:   movq    %rbx, rsp(232 + virtual offset)
+  Inst 535:   movq    %rdi, rsp(240 + virtual offset)
+  Inst 536:   movq    %r13, rsp(248 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 537:   call    *%rax
+  Inst 538:   movq    rsp(232 + virtual offset), %rbx
+  Inst 539:   movq    rsp(248 + virtual offset), %r13
+  Inst 540:   movq    %rax, %rsi
+  Inst 541:   movq    %rsi, rsp(232 + virtual offset)
+  Inst 542:   movq    152(%r12), %rsi
+  Inst 543:   movq    8(%r13), %rdi
+  Inst 544:   movq    %rsi, 152(%r12)
+  Inst 545:   movq    %rbx, -32(%rsi)
+  Inst 546:   movq    %r15, -24(%rsi)
+  Inst 547:   movl    $1, %eax
+  Inst 548:   movq    %rax, -16(%rsi)
+  Inst 549:   movl    $1, %eax
+  Inst 550:   movq    %rax, -8(%rsi)
+  Inst 551:   xorq    %rsi, %rsi
+  Inst 552:   load_ext_name u0:1+0, %rax
+  Inst 553:   movq    %rbx, rsp(240 + virtual offset)
+  Inst 554:   movq    %rdi, rsp(248 + virtual offset)
+  Inst 555:   movq    %r13, rsp(256 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 556:   call    *%rax
+  Inst 557:   movq    rsp(240 + virtual offset), %rbx
+  Inst 558:   movq    rsp(256 + virtual offset), %r13
+  Inst 559:   movq    %rax, %rsi
+  Inst 560:   movq    %rsi, rsp(240 + virtual offset)
+  Inst 561:   movq    152(%r12), %rsi
+  Inst 562:   movq    8(%r13), %rdi
+  Inst 563:   movq    %rsi, 152(%r12)
+  Inst 564:   movq    %rbx, -32(%rsi)
+  Inst 565:   movq    %r15, -24(%rsi)
+  Inst 566:   movl    $1, %eax
+  Inst 567:   movq    %rax, -16(%rsi)
+  Inst 568:   movl    $1, %eax
+  Inst 569:   movq    %rax, -8(%rsi)
+  Inst 570:   xorq    %rsi, %rsi
+  Inst 571:   load_ext_name u0:1+0, %rax
+  Inst 572:   movq    %rbx, rsp(248 + virtual offset)
+  Inst 573:   movq    %rdi, rsp(256 + virtual offset)
+  Inst 574:   movq    %r13, rsp(264 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 575:   call    *%rax
+  Inst 576:   movq    rsp(248 + virtual offset), %rbx
+  Inst 577:   movq    rsp(264 + virtual offset), %r13
+  Inst 578:   movq    %rax, %rsi
+  Inst 579:   movq    %rsi, rsp(248 + virtual offset)
+  Inst 580:   movq    152(%r12), %rsi
+  Inst 581:   movq    8(%r13), %rdi
+  Inst 582:   movq    %rsi, 152(%r12)
+  Inst 583:   movq    %rbx, -32(%rsi)
+  Inst 584:   movq    %r15, -24(%rsi)
+  Inst 585:   movl    $1, %eax
+  Inst 586:   movq    %rax, -16(%rsi)
+  Inst 587:   movl    $1, %eax
+  Inst 588:   movq    %rax, -8(%rsi)
+  Inst 589:   xorq    %rsi, %rsi
+  Inst 590:   load_ext_name u0:1+0, %rax
+  Inst 591:   movq    %rbx, rsp(256 + virtual offset)
+  Inst 592:   movq    %rdi, rsp(264 + virtual offset)
+  Inst 593:   movq    %r13, rsp(272 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 594:   call    *%rax
+  Inst 595:   movq    rsp(256 + virtual offset), %rbx
+  Inst 596:   movq    rsp(272 + virtual offset), %r13
+  Inst 597:   movq    %rax, %rsi
+  Inst 598:   movq    %rsi, rsp(256 + virtual offset)
+  Inst 599:   movq    152(%r12), %rsi
+  Inst 600:   movq    8(%r13), %rdi
+  Inst 601:   movq    %rsi, 152(%r12)
+  Inst 602:   movq    %rbx, -32(%rsi)
+  Inst 603:   movq    %r15, -24(%rsi)
+  Inst 604:   movl    $1, %eax
+  Inst 605:   movq    %rax, -16(%rsi)
+  Inst 606:   movl    $1, %eax
+  Inst 607:   movq    %rax, -8(%rsi)
+  Inst 608:   xorq    %rsi, %rsi
+  Inst 609:   load_ext_name u0:1+0, %rax
+  Inst 610:   movq    %rbx, rsp(264 + virtual offset)
+  Inst 611:   movq    %rdi, rsp(272 + virtual offset)
+  Inst 612:   movq    %r13, rsp(280 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 613:   call    *%rax
+  Inst 614:   movq    rsp(264 + virtual offset), %rbx
+  Inst 615:   movq    rsp(280 + virtual offset), %r13
+  Inst 616:   movq    %rax, %rsi
+  Inst 617:   movq    %rsi, rsp(264 + virtual offset)
+  Inst 618:   movq    152(%r12), %rsi
+  Inst 619:   movq    8(%r13), %rdi
+  Inst 620:   movq    %rsi, 152(%r12)
+  Inst 621:   movq    %rbx, -32(%rsi)
+  Inst 622:   movq    %r15, -24(%rsi)
+  Inst 623:   movl    $1, %eax
+  Inst 624:   movq    %rax, -16(%rsi)
+  Inst 625:   movl    $1, %eax
+  Inst 626:   movq    %rax, -8(%rsi)
+  Inst 627:   xorq    %rsi, %rsi
+  Inst 628:   load_ext_name u0:1+0, %rax
+  Inst 629:   movq    %rbx, rsp(272 + virtual offset)
+  Inst 630:   movq    %rdi, rsp(280 + virtual offset)
+  Inst 631:   movq    %r13, rsp(288 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 632:   call    *%rax
+  Inst 633:   movq    rsp(272 + virtual offset), %rbx
+  Inst 634:   movq    rsp(288 + virtual offset), %r13
+  Inst 635:   movq    %rax, %rsi
+  Inst 636:   movq    %rsi, rsp(272 + virtual offset)
+  Inst 637:   movq    152(%r12), %rsi
+  Inst 638:   movq    8(%r13), %rdi
+  Inst 639:   movq    %rsi, 152(%r12)
+  Inst 640:   movq    %rbx, -32(%rsi)
+  Inst 641:   movq    %r15, -24(%rsi)
+  Inst 642:   movl    $1, %eax
+  Inst 643:   movq    %rax, -16(%rsi)
+  Inst 644:   movl    $1, %eax
+  Inst 645:   movq    %rax, -8(%rsi)
+  Inst 646:   xorq    %rsi, %rsi
+  Inst 647:   load_ext_name u0:1+0, %rax
+  Inst 648:   movq    %rbx, rsp(280 + virtual offset)
+  Inst 649:   movq    %rdi, rsp(288 + virtual offset)
+  Inst 650:   movq    %r13, rsp(296 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 651:   call    *%rax
+  Inst 652:   movq    rsp(280 + virtual offset), %rbx
+  Inst 653:   movq    rsp(296 + virtual offset), %r13
+  Inst 654:   movq    %rax, %rsi
+  Inst 655:   movq    %rsi, rsp(280 + virtual offset)
+  Inst 656:   movq    152(%r12), %rsi
+  Inst 657:   movq    8(%r13), %rdi
+  Inst 658:   movq    %rsi, 152(%r12)
+  Inst 659:   movq    %rbx, -32(%rsi)
+  Inst 660:   movq    %r15, -24(%rsi)
+  Inst 661:   movl    $1, %eax
+  Inst 662:   movq    %rax, -16(%rsi)
+  Inst 663:   movl    $1, %eax
+  Inst 664:   movq    %rax, -8(%rsi)
+  Inst 665:   xorq    %rsi, %rsi
+  Inst 666:   load_ext_name u0:1+0, %rax
+  Inst 667:   movq    %rbx, rsp(288 + virtual offset)
+  Inst 668:   movq    %rdi, rsp(296 + virtual offset)
+  Inst 669:   movq    %r13, rsp(304 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 670:   call    *%rax
+  Inst 671:   movq    rsp(288 + virtual offset), %rbx
+  Inst 672:   movq    rsp(304 + virtual offset), %r13
+  Inst 673:   movq    %rax, %rsi
+  Inst 674:   movq    %rsi, rsp(288 + virtual offset)
+  Inst 675:   movq    152(%r12), %rsi
+  Inst 676:   movq    8(%r13), %rdi
+  Inst 677:   movq    %rsi, 152(%r12)
+  Inst 678:   movq    %rbx, -32(%rsi)
+  Inst 679:   movq    %r15, -24(%rsi)
+  Inst 680:   movl    $1, %eax
+  Inst 681:   movq    %rax, -16(%rsi)
+  Inst 682:   movl    $1, %eax
+  Inst 683:   movq    %rax, -8(%rsi)
+  Inst 684:   xorq    %rsi, %rsi
+  Inst 685:   load_ext_name u0:1+0, %rax
+  Inst 686:   movq    %rbx, rsp(296 + virtual offset)
+  Inst 687:   movq    %rdi, rsp(304 + virtual offset)
+  Inst 688:   movq    %r13, rsp(312 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 689:   call    *%rax
+  Inst 690:   movq    rsp(296 + virtual offset), %rbx
+  Inst 691:   movq    rsp(312 + virtual offset), %r13
+  Inst 692:   movq    %rax, %rsi
+  Inst 693:   movq    %rsi, rsp(296 + virtual offset)
+  Inst 694:   movq    152(%r12), %rsi
+  Inst 695:   movq    8(%r13), %rdi
+  Inst 696:   movq    %rsi, 152(%r12)
+  Inst 697:   movq    %rbx, -32(%rsi)
+  Inst 698:   movq    %r15, -24(%rsi)
+  Inst 699:   movl    $1, %eax
+  Inst 700:   movq    %rax, -16(%rsi)
+  Inst 701:   movl    $1, %eax
+  Inst 702:   movq    %rax, -8(%rsi)
+  Inst 703:   xorq    %rsi, %rsi
+  Inst 704:   load_ext_name u0:1+0, %rax
+  Inst 705:   movq    %rbx, rsp(304 + virtual offset)
+  Inst 706:   movq    %rdi, rsp(312 + virtual offset)
+  Inst 707:   movq    %r13, rsp(320 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 708:   call    *%rax
+  Inst 709:   movq    rsp(304 + virtual offset), %rbx
+  Inst 710:   movq    rsp(320 + virtual offset), %r13
+  Inst 711:   movq    %rax, %rsi
+  Inst 712:   movq    %rsi, rsp(304 + virtual offset)
+  Inst 713:   movq    152(%r12), %rsi
+  Inst 714:   movq    8(%r13), %rdi
+  Inst 715:   movq    %rsi, 152(%r12)
+  Inst 716:   movq    %rbx, -32(%rsi)
+  Inst 717:   movq    %r15, -24(%rsi)
+  Inst 718:   movl    $1, %eax
+  Inst 719:   movq    %rax, -16(%rsi)
+  Inst 720:   movl    $1, %eax
+  Inst 721:   movq    %rax, -8(%rsi)
+  Inst 722:   xorq    %rsi, %rsi
+  Inst 723:   load_ext_name u0:1+0, %rax
+  Inst 724:   movq    %rbx, rsp(312 + virtual offset)
+  Inst 725:   movq    %rdi, rsp(320 + virtual offset)
+  Inst 726:   movq    %r13, rsp(328 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 727:   call    *%rax
+  Inst 728:   movq    rsp(312 + virtual offset), %rbx
+  Inst 729:   movq    rsp(328 + virtual offset), %r13
+  Inst 730:   movq    %rax, %rsi
+  Inst 731:   movq    %rsi, rsp(312 + virtual offset)
+  Inst 732:   movq    152(%r12), %rsi
+  Inst 733:   movq    8(%r13), %rdi
+  Inst 734:   movq    %rsi, 152(%r12)
+  Inst 735:   movq    %rbx, -32(%rsi)
+  Inst 736:   movq    %r15, -24(%rsi)
+  Inst 737:   movl    $1, %eax
+  Inst 738:   movq    %rax, -16(%rsi)
+  Inst 739:   movl    $1, %eax
+  Inst 740:   movq    %rax, -8(%rsi)
+  Inst 741:   xorq    %rsi, %rsi
+  Inst 742:   load_ext_name u0:1+0, %rax
+  Inst 743:   movq    %rbx, rsp(320 + virtual offset)
+  Inst 744:   movq    %rdi, rsp(328 + virtual offset)
+  Inst 745:   movq    %r13, rsp(336 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 746:   call    *%rax
+  Inst 747:   movq    rsp(320 + virtual offset), %rbx
+  Inst 748:   movq    rsp(336 + virtual offset), %r13
+  Inst 749:   movq    %rax, %rsi
+  Inst 750:   movq    %rsi, rsp(320 + virtual offset)
+  Inst 751:   movq    152(%r12), %rsi
+  Inst 752:   movq    8(%r13), %rdi
+  Inst 753:   movq    %rsi, 152(%r12)
+  Inst 754:   movq    %rbx, -32(%rsi)
+  Inst 755:   movq    %r15, -24(%rsi)
+  Inst 756:   movl    $1, %eax
+  Inst 757:   movq    %rax, -16(%rsi)
+  Inst 758:   movl    $1, %eax
+  Inst 759:   movq    %rax, -8(%rsi)
+  Inst 760:   xorq    %rsi, %rsi
+  Inst 761:   load_ext_name u0:1+0, %rax
+  Inst 762:   movq    %rbx, rsp(328 + virtual offset)
+  Inst 763:   movq    %rdi, rsp(336 + virtual offset)
+  Inst 764:   movq    %r13, rsp(344 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 765:   call    *%rax
+  Inst 766:   movq    rsp(328 + virtual offset), %rbx
+  Inst 767:   movq    rsp(344 + virtual offset), %r13
+  Inst 768:   movq    %rax, %rsi
+  Inst 769:   movq    %rsi, rsp(328 + virtual offset)
+  Inst 770:   movq    152(%r12), %rsi
+  Inst 771:   movq    8(%r13), %rdi
+  Inst 772:   movq    %rsi, 152(%r12)
+  Inst 773:   movq    %rbx, -32(%rsi)
+  Inst 774:   movq    %r15, -24(%rsi)
+  Inst 775:   movl    $1, %eax
+  Inst 776:   movq    %rax, -16(%rsi)
+  Inst 777:   movl    $1, %eax
+  Inst 778:   movq    %rax, -8(%rsi)
+  Inst 779:   xorq    %rsi, %rsi
+  Inst 780:   load_ext_name u0:1+0, %rax
+  Inst 781:   movq    %rbx, rsp(336 + virtual offset)
+  Inst 782:   movq    %rdi, rsp(344 + virtual offset)
+  Inst 783:   movq    %r13, rsp(352 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 784:   call    *%rax
+  Inst 785:   movq    rsp(336 + virtual offset), %rbx
+  Inst 786:   movq    rsp(352 + virtual offset), %r13
+  Inst 787:   movq    %rax, %rsi
+  Inst 788:   movq    %rsi, rsp(336 + virtual offset)
+  Inst 789:   movq    152(%r12), %rsi
+  Inst 790:   movq    8(%r13), %rdi
+  Inst 791:   movq    %rsi, 152(%r12)
+  Inst 792:   movq    %rbx, -32(%rsi)
+  Inst 793:   movq    %r15, -24(%rsi)
+  Inst 794:   movl    $1, %eax
+  Inst 795:   movq    %rax, -16(%rsi)
+  Inst 796:   movl    $1, %eax
+  Inst 797:   movq    %rax, -8(%rsi)
+  Inst 798:   xorq    %rsi, %rsi
+  Inst 799:   load_ext_name u0:1+0, %rax
+  Inst 800:   movq    %rbx, rsp(344 + virtual offset)
+  Inst 801:   movq    %rdi, rsp(352 + virtual offset)
+  Inst 802:   movq    %r13, rsp(360 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 803:   call    *%rax
+  Inst 804:   movq    rsp(344 + virtual offset), %rbx
+  Inst 805:   movq    rsp(360 + virtual offset), %r13
+  Inst 806:   movq    %rax, %rsi
+  Inst 807:   movq    %rsi, rsp(344 + virtual offset)
+  Inst 808:   movq    152(%r12), %rsi
+  Inst 809:   movq    8(%r13), %rdi
+  Inst 810:   movq    %rsi, 152(%r12)
+  Inst 811:   movq    %rbx, -32(%rsi)
+  Inst 812:   movq    %r15, -24(%rsi)
+  Inst 813:   movl    $1, %eax
+  Inst 814:   movq    %rax, -16(%rsi)
+  Inst 815:   movl    $1, %eax
+  Inst 816:   movq    %rax, -8(%rsi)
+  Inst 817:   xorq    %rsi, %rsi
+  Inst 818:   load_ext_name u0:1+0, %rax
+  Inst 819:   movq    %rbx, rsp(352 + virtual offset)
+  Inst 820:   movq    %rdi, rsp(360 + virtual offset)
+  Inst 821:   movq    %r13, rsp(368 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 822:   call    *%rax
+  Inst 823:   movq    rsp(352 + virtual offset), %rbx
+  Inst 824:   movq    rsp(368 + virtual offset), %r13
+  Inst 825:   movq    %rax, %rsi
+  Inst 826:   movq    %rsi, rsp(352 + virtual offset)
+  Inst 827:   movq    152(%r12), %rsi
+  Inst 828:   movq    8(%r13), %rdi
+  Inst 829:   movq    %rsi, 152(%r12)
+  Inst 830:   movq    %rbx, -32(%rsi)
+  Inst 831:   movq    %r15, -24(%rsi)
+  Inst 832:   movl    $1, %eax
+  Inst 833:   movq    %rax, -16(%rsi)
+  Inst 834:   movl    $1, %eax
+  Inst 835:   movq    %rax, -8(%rsi)
+  Inst 836:   xorq    %rsi, %rsi
+  Inst 837:   load_ext_name u0:1+0, %rax
+  Inst 838:   movq    %rbx, rsp(360 + virtual offset)
+  Inst 839:   movq    %rdi, rsp(368 + virtual offset)
+  Inst 840:   movq    %r13, rsp(376 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 841:   call    *%rax
+  Inst 842:   movq    rsp(360 + virtual offset), %rbx
+  Inst 843:   movq    rsp(376 + virtual offset), %r13
+  Inst 844:   movq    %rax, %rsi
+  Inst 845:   movq    %rsi, rsp(360 + virtual offset)
+  Inst 846:   movq    152(%r12), %rsi
+  Inst 847:   movq    8(%r13), %rdi
+  Inst 848:   movq    %rsi, 152(%r12)
+  Inst 849:   movq    %rbx, -32(%rsi)
+  Inst 850:   movq    %r15, -24(%rsi)
+  Inst 851:   movl    $1, %eax
+  Inst 852:   movq    %rax, -16(%rsi)
+  Inst 853:   movl    $1, %eax
+  Inst 854:   movq    %rax, -8(%rsi)
+  Inst 855:   xorq    %rsi, %rsi
+  Inst 856:   load_ext_name u0:1+0, %rax
+  Inst 857:   movq    %rbx, rsp(368 + virtual offset)
+  Inst 858:   movq    %rdi, rsp(376 + virtual offset)
+  Inst 859:   movq    %r13, rsp(384 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 860:   call    *%rax
+  Inst 861:   movq    rsp(368 + virtual offset), %rbx
+  Inst 862:   movq    rsp(384 + virtual offset), %r13
+  Inst 863:   movq    %rax, %rsi
+  Inst 864:   movq    %rsi, rsp(368 + virtual offset)
+  Inst 865:   movq    152(%r12), %rsi
+  Inst 866:   movq    8(%r13), %rdi
+  Inst 867:   movq    %rsi, 152(%r12)
+  Inst 868:   movq    %rbx, -32(%rsi)
+  Inst 869:   movq    %r15, -24(%rsi)
+  Inst 870:   movl    $1, %eax
+  Inst 871:   movq    %rax, -16(%rsi)
+  Inst 872:   movl    $1, %eax
+  Inst 873:   movq    %rax, -8(%rsi)
+  Inst 874:   xorq    %rsi, %rsi
+  Inst 875:   load_ext_name u0:1+0, %rax
+  Inst 876:   movq    %rbx, rsp(376 + virtual offset)
+  Inst 877:   movq    %rdi, rsp(384 + virtual offset)
+  Inst 878:   movq    %r13, rsp(392 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 879:   call    *%rax
+  Inst 880:   movq    rsp(376 + virtual offset), %rbx
+  Inst 881:   movq    rsp(392 + virtual offset), %r13
+  Inst 882:   movq    %rax, %rsi
+  Inst 883:   movq    %rsi, rsp(376 + virtual offset)
+  Inst 884:   movq    152(%r12), %rsi
+  Inst 885:   movq    8(%r13), %rdi
+  Inst 886:   movq    %rsi, 152(%r12)
+  Inst 887:   movq    %rbx, -32(%rsi)
+  Inst 888:   movq    %r15, -24(%rsi)
+  Inst 889:   movl    $1, %eax
+  Inst 890:   movq    %rax, -16(%rsi)
+  Inst 891:   movl    $1, %eax
+  Inst 892:   movq    %rax, -8(%rsi)
+  Inst 893:   xorq    %rsi, %rsi
+  Inst 894:   load_ext_name u0:1+0, %rax
+  Inst 895:   movq    %rbx, rsp(384 + virtual offset)
+  Inst 896:   movq    %rdi, rsp(392 + virtual offset)
+  Inst 897:   movq    %r13, rsp(400 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 898:   call    *%rax
+  Inst 899:   movq    rsp(384 + virtual offset), %rbx
+  Inst 900:   movq    rsp(400 + virtual offset), %r13
+  Inst 901:   movq    %rax, %rsi
+  Inst 902:   movq    %rsi, rsp(384 + virtual offset)
+  Inst 903:   movq    152(%r12), %rsi
+  Inst 904:   movq    8(%r13), %rdi
+  Inst 905:   movq    %rsi, 152(%r12)
+  Inst 906:   movq    %rbx, -32(%rsi)
+  Inst 907:   movq    %r15, -24(%rsi)
+  Inst 908:   movl    $1, %eax
+  Inst 909:   movq    %rax, -16(%rsi)
+  Inst 910:   movl    $1, %eax
+  Inst 911:   movq    %rax, -8(%rsi)
+  Inst 912:   xorq    %rsi, %rsi
+  Inst 913:   load_ext_name u0:1+0, %rax
+  Inst 914:   movq    %rbx, rsp(392 + virtual offset)
+  Inst 915:   movq    %rdi, rsp(400 + virtual offset)
+  Inst 916:   movq    %r13, rsp(408 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 917:   call    *%rax
+  Inst 918:   movq    rsp(392 + virtual offset), %rbx
+  Inst 919:   movq    rsp(408 + virtual offset), %r13
+  Inst 920:   movq    %rax, %rsi
+  Inst 921:   movq    %rsi, rsp(392 + virtual offset)
+  Inst 922:   movq    152(%r12), %rsi
+  Inst 923:   movq    8(%r13), %rdi
+  Inst 924:   movq    %rsi, 152(%r12)
+  Inst 925:   movq    %rbx, -32(%rsi)
+  Inst 926:   movq    %r15, -24(%rsi)
+  Inst 927:   movl    $1, %eax
+  Inst 928:   movq    %rax, -16(%rsi)
+  Inst 929:   movl    $1, %eax
+  Inst 930:   movq    %rax, -8(%rsi)
+  Inst 931:   xorq    %rsi, %rsi
+  Inst 932:   load_ext_name u0:1+0, %rax
+  Inst 933:   movq    %rbx, rsp(400 + virtual offset)
+  Inst 934:   movq    %rdi, rsp(408 + virtual offset)
+  Inst 935:   movq    %r13, rsp(416 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 936:   call    *%rax
+  Inst 937:   movq    rsp(400 + virtual offset), %rbx
+  Inst 938:   movq    rsp(416 + virtual offset), %r13
+  Inst 939:   movq    %rax, %rsi
+  Inst 940:   movq    %rsi, rsp(400 + virtual offset)
+  Inst 941:   movq    152(%r12), %rsi
+  Inst 942:   movq    8(%r13), %rdi
+  Inst 943:   movq    %rsi, 152(%r12)
+  Inst 944:   movq    %rbx, -32(%rsi)
+  Inst 945:   movq    %r15, -24(%rsi)
+  Inst 946:   movl    $1, %eax
+  Inst 947:   movq    %rax, -16(%rsi)
+  Inst 948:   movl    $1, %eax
+  Inst 949:   movq    %rax, -8(%rsi)
+  Inst 950:   xorq    %rsi, %rsi
+  Inst 951:   load_ext_name u0:1+0, %rax
+  Inst 952:   movq    %rbx, rsp(408 + virtual offset)
+  Inst 953:   movq    %rdi, rsp(416 + virtual offset)
+  Inst 954:   movq    %r13, rsp(424 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 955:   call    *%rax
+  Inst 956:   movq    rsp(408 + virtual offset), %rbx
+  Inst 957:   movq    rsp(424 + virtual offset), %r13
+  Inst 958:   movq    %rax, %rsi
+  Inst 959:   movq    %rsi, rsp(408 + virtual offset)
+  Inst 960:   movq    152(%r12), %rsi
+  Inst 961:   movq    8(%r13), %rdi
+  Inst 962:   movq    %rsi, 152(%r12)
+  Inst 963:   movq    %rbx, -32(%rsi)
+  Inst 964:   movq    %r15, -24(%rsi)
+  Inst 965:   movl    $1, %eax
+  Inst 966:   movq    %rax, -16(%rsi)
+  Inst 967:   movl    $1, %eax
+  Inst 968:   movq    %rax, -8(%rsi)
+  Inst 969:   xorq    %rsi, %rsi
+  Inst 970:   load_ext_name u0:1+0, %rax
+  Inst 971:   movq    %rbx, rsp(416 + virtual offset)
+  Inst 972:   movq    %rdi, rsp(424 + virtual offset)
+  Inst 973:   movq    %r13, rsp(432 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 974:   call    *%rax
+  Inst 975:   movq    rsp(416 + virtual offset), %rbx
+  Inst 976:   movq    rsp(432 + virtual offset), %r13
+  Inst 977:   movq    %rax, %rsi
+  Inst 978:   movq    %rsi, rsp(416 + virtual offset)
+  Inst 979:   movq    152(%r12), %rsi
+  Inst 980:   movq    8(%r13), %rdi
+  Inst 981:   movq    %rsi, 152(%r12)
+  Inst 982:   movq    %rbx, -32(%rsi)
+  Inst 983:   movq    %r15, -24(%rsi)
+  Inst 984:   movl    $1, %eax
+  Inst 985:   movq    %rax, -16(%rsi)
+  Inst 986:   movl    $1, %eax
+  Inst 987:   movq    %rax, -8(%rsi)
+  Inst 988:   xorq    %rsi, %rsi
+  Inst 989:   load_ext_name u0:1+0, %rax
+  Inst 990:   movq    %rbx, rsp(424 + virtual offset)
+  Inst 991:   movq    %rdi, rsp(432 + virtual offset)
+  Inst 992:   movq    %r13, rsp(440 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 993:   call    *%rax
+  Inst 994:   movq    rsp(424 + virtual offset), %rbx
+  Inst 995:   movq    rsp(440 + virtual offset), %r13
+  Inst 996:   movq    %rax, %rsi
+  Inst 997:   movq    %rsi, rsp(424 + virtual offset)
+  Inst 998:   movq    152(%r12), %rsi
+  Inst 999:   movq    8(%r13), %rdi
+  Inst 1000:   movq    %rsi, 152(%r12)
+  Inst 1001:   movq    %rbx, -32(%rsi)
+  Inst 1002:   movq    %r15, -24(%rsi)
+  Inst 1003:   movl    $1, %eax
+  Inst 1004:   movq    %rax, -16(%rsi)
+  Inst 1005:   movl    $1, %eax
+  Inst 1006:   movq    %rax, -8(%rsi)
+  Inst 1007:   xorq    %rsi, %rsi
+  Inst 1008:   load_ext_name u0:1+0, %rax
+  Inst 1009:   movq    %rbx, rsp(432 + virtual offset)
+  Inst 1010:   movq    %rdi, rsp(440 + virtual offset)
+  Inst 1011:   movq    %r13, rsp(448 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1012:   call    *%rax
+  Inst 1013:   movq    rsp(432 + virtual offset), %rbx
+  Inst 1014:   movq    rsp(448 + virtual offset), %r13
+  Inst 1015:   movq    %rax, %rsi
+  Inst 1016:   movq    %rsi, rsp(432 + virtual offset)
+  Inst 1017:   movq    152(%r12), %rsi
+  Inst 1018:   movq    8(%r13), %rdi
+  Inst 1019:   movq    %rsi, 152(%r12)
+  Inst 1020:   movq    %rbx, -32(%rsi)
+  Inst 1021:   movq    %r15, -24(%rsi)
+  Inst 1022:   movl    $1, %eax
+  Inst 1023:   movq    %rax, -16(%rsi)
+  Inst 1024:   movl    $1, %eax
+  Inst 1025:   movq    %rax, -8(%rsi)
+  Inst 1026:   xorq    %rsi, %rsi
+  Inst 1027:   load_ext_name u0:1+0, %rax
+  Inst 1028:   movq    %rbx, rsp(440 + virtual offset)
+  Inst 1029:   movq    %rdi, rsp(448 + virtual offset)
+  Inst 1030:   movq    %r13, rsp(456 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1031:   call    *%rax
+  Inst 1032:   movq    rsp(440 + virtual offset), %rbx
+  Inst 1033:   movq    rsp(456 + virtual offset), %r13
+  Inst 1034:   movq    %rax, %rsi
+  Inst 1035:   movq    %rsi, rsp(440 + virtual offset)
+  Inst 1036:   movq    152(%r12), %rsi
+  Inst 1037:   movq    8(%r13), %rdi
+  Inst 1038:   movq    %rsi, 152(%r12)
+  Inst 1039:   movq    %rbx, -32(%rsi)
+  Inst 1040:   movq    %r15, -24(%rsi)
+  Inst 1041:   movl    $1, %eax
+  Inst 1042:   movq    %rax, -16(%rsi)
+  Inst 1043:   movl    $1, %eax
+  Inst 1044:   movq    %rax, -8(%rsi)
+  Inst 1045:   xorq    %rsi, %rsi
+  Inst 1046:   load_ext_name u0:1+0, %rax
+  Inst 1047:   movq    %rbx, rsp(448 + virtual offset)
+  Inst 1048:   movq    %rdi, rsp(456 + virtual offset)
+  Inst 1049:   movq    %r13, rsp(464 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1050:   call    *%rax
+  Inst 1051:   movq    rsp(448 + virtual offset), %rbx
+  Inst 1052:   movq    rsp(464 + virtual offset), %r13
+  Inst 1053:   movq    %rax, %rsi
+  Inst 1054:   movq    %rsi, rsp(448 + virtual offset)
+  Inst 1055:   movq    152(%r12), %rsi
+  Inst 1056:   movq    8(%r13), %rdi
+  Inst 1057:   movq    %rsi, 152(%r12)
+  Inst 1058:   movq    %rbx, -32(%rsi)
+  Inst 1059:   movq    %r15, -24(%rsi)
+  Inst 1060:   movl    $1, %eax
+  Inst 1061:   movq    %rax, -16(%rsi)
+  Inst 1062:   movl    $1, %eax
+  Inst 1063:   movq    %rax, -8(%rsi)
+  Inst 1064:   xorq    %rsi, %rsi
+  Inst 1065:   load_ext_name u0:1+0, %rax
+  Inst 1066:   movq    %rbx, rsp(456 + virtual offset)
+  Inst 1067:   movq    %rdi, rsp(464 + virtual offset)
+  Inst 1068:   movq    %r13, rsp(472 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1069:   call    *%rax
+  Inst 1070:   movq    rsp(456 + virtual offset), %rbx
+  Inst 1071:   movq    rsp(472 + virtual offset), %r13
+  Inst 1072:   movq    %rax, %rsi
+  Inst 1073:   movq    %rsi, rsp(456 + virtual offset)
+  Inst 1074:   movq    152(%r12), %rsi
+  Inst 1075:   movq    8(%r13), %rdi
+  Inst 1076:   movq    %rsi, 152(%r12)
+  Inst 1077:   movq    %rbx, -32(%rsi)
+  Inst 1078:   movq    %r15, -24(%rsi)
+  Inst 1079:   movl    $1, %eax
+  Inst 1080:   movq    %rax, -16(%rsi)
+  Inst 1081:   movl    $1, %eax
+  Inst 1082:   movq    %rax, -8(%rsi)
+  Inst 1083:   xorq    %rsi, %rsi
+  Inst 1084:   load_ext_name u0:1+0, %rax
+  Inst 1085:   movq    %rbx, rsp(464 + virtual offset)
+  Inst 1086:   movq    %rdi, rsp(472 + virtual offset)
+  Inst 1087:   movq    %r13, rsp(480 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1088:   call    *%rax
+  Inst 1089:   movq    rsp(464 + virtual offset), %rbx
+  Inst 1090:   movq    rsp(480 + virtual offset), %r13
+  Inst 1091:   movq    %rax, %rsi
+  Inst 1092:   movq    %rsi, rsp(464 + virtual offset)
+  Inst 1093:   movq    152(%r12), %rsi
+  Inst 1094:   movq    8(%r13), %rdi
+  Inst 1095:   movq    %rsi, 152(%r12)
+  Inst 1096:   movq    %rbx, -32(%rsi)
+  Inst 1097:   movq    %r15, -24(%rsi)
+  Inst 1098:   movl    $1, %eax
+  Inst 1099:   movq    %rax, -16(%rsi)
+  Inst 1100:   movl    $1, %eax
+  Inst 1101:   movq    %rax, -8(%rsi)
+  Inst 1102:   xorq    %rsi, %rsi
+  Inst 1103:   load_ext_name u0:1+0, %rax
+  Inst 1104:   movq    %rbx, rsp(472 + virtual offset)
+  Inst 1105:   movq    %rdi, rsp(480 + virtual offset)
+  Inst 1106:   movq    %r13, rsp(488 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1107:   call    *%rax
+  Inst 1108:   movq    rsp(472 + virtual offset), %rbx
+  Inst 1109:   movq    rsp(488 + virtual offset), %r13
+  Inst 1110:   movq    %rax, %rsi
+  Inst 1111:   movq    %rsi, rsp(472 + virtual offset)
+  Inst 1112:   movq    152(%r12), %rsi
+  Inst 1113:   movq    8(%r13), %rdi
+  Inst 1114:   movq    %rsi, 152(%r12)
+  Inst 1115:   movq    %rbx, -32(%rsi)
+  Inst 1116:   movq    %r15, -24(%rsi)
+  Inst 1117:   movl    $1, %eax
+  Inst 1118:   movq    %rax, -16(%rsi)
+  Inst 1119:   movl    $1, %eax
+  Inst 1120:   movq    %rax, -8(%rsi)
+  Inst 1121:   xorq    %rsi, %rsi
+  Inst 1122:   load_ext_name u0:1+0, %rax
+  Inst 1123:   movq    %rbx, rsp(480 + virtual offset)
+  Inst 1124:   movq    %rdi, rsp(488 + virtual offset)
+  Inst 1125:   movq    %r13, rsp(496 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1126:   call    *%rax
+  Inst 1127:   movq    rsp(480 + virtual offset), %rbx
+  Inst 1128:   movq    rsp(496 + virtual offset), %r13
+  Inst 1129:   movq    %rax, %rsi
+  Inst 1130:   movq    %rsi, rsp(480 + virtual offset)
+  Inst 1131:   movq    152(%r12), %rsi
+  Inst 1132:   movq    8(%r13), %rdi
+  Inst 1133:   movq    %rsi, 152(%r12)
+  Inst 1134:   movq    %rbx, -32(%rsi)
+  Inst 1135:   movq    %r15, -24(%rsi)
+  Inst 1136:   movl    $1, %eax
+  Inst 1137:   movq    %rax, -16(%rsi)
+  Inst 1138:   movl    $1, %eax
+  Inst 1139:   movq    %rax, -8(%rsi)
+  Inst 1140:   xorq    %rsi, %rsi
+  Inst 1141:   load_ext_name u0:1+0, %rax
+  Inst 1142:   movq    %rbx, rsp(488 + virtual offset)
+  Inst 1143:   movq    %rdi, rsp(496 + virtual offset)
+  Inst 1144:   movq    %r13, rsp(504 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1145:   call    *%rax
+  Inst 1146:   movq    rsp(488 + virtual offset), %rbx
+  Inst 1147:   movq    rsp(504 + virtual offset), %r13
+  Inst 1148:   movq    %rax, %rsi
+  Inst 1149:   movq    %rsi, rsp(488 + virtual offset)
+  Inst 1150:   movq    152(%r12), %rsi
+  Inst 1151:   movq    8(%r13), %rdi
+  Inst 1152:   movq    %rsi, 152(%r12)
+  Inst 1153:   movq    %rbx, -32(%rsi)
+  Inst 1154:   movq    %r15, -24(%rsi)
+  Inst 1155:   movl    $1, %eax
+  Inst 1156:   movq    %rax, -16(%rsi)
+  Inst 1157:   movl    $1, %eax
+  Inst 1158:   movq    %rax, -8(%rsi)
+  Inst 1159:   xorq    %rsi, %rsi
+  Inst 1160:   load_ext_name u0:1+0, %rax
+  Inst 1161:   movq    %rbx, rsp(496 + virtual offset)
+  Inst 1162:   movq    %rdi, rsp(504 + virtual offset)
+  Inst 1163:   movq    %r13, rsp(512 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1164:   call    *%rax
+  Inst 1165:   movq    rsp(496 + virtual offset), %rbx
+  Inst 1166:   movq    rsp(512 + virtual offset), %r13
+  Inst 1167:   movq    %rax, %rsi
+  Inst 1168:   movq    %rsi, rsp(496 + virtual offset)
+  Inst 1169:   movq    152(%r12), %rsi
+  Inst 1170:   movq    8(%r13), %rdi
+  Inst 1171:   movq    %rsi, 152(%r12)
+  Inst 1172:   movq    %rbx, -32(%rsi)
+  Inst 1173:   movq    %r15, -24(%rsi)
+  Inst 1174:   movl    $1, %eax
+  Inst 1175:   movq    %rax, -16(%rsi)
+  Inst 1176:   movl    $1, %eax
+  Inst 1177:   movq    %rax, -8(%rsi)
+  Inst 1178:   xorq    %rsi, %rsi
+  Inst 1179:   load_ext_name u0:1+0, %rax
+  Inst 1180:   movq    %rbx, rsp(504 + virtual offset)
+  Inst 1181:   movq    %rdi, rsp(512 + virtual offset)
+  Inst 1182:   movq    %r13, rsp(520 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1183:   call    *%rax
+  Inst 1184:   movq    rsp(504 + virtual offset), %rbx
+  Inst 1185:   movq    rsp(520 + virtual offset), %r13
+  Inst 1186:   movq    %rax, %rsi
+  Inst 1187:   movq    %rsi, rsp(504 + virtual offset)
+  Inst 1188:   movq    152(%r12), %rsi
+  Inst 1189:   movq    8(%r13), %rdi
+  Inst 1190:   movq    %rsi, 152(%r12)
+  Inst 1191:   movq    %rbx, -32(%rsi)
+  Inst 1192:   movq    %r15, -24(%rsi)
+  Inst 1193:   movl    $1, %eax
+  Inst 1194:   movq    %rax, -16(%rsi)
+  Inst 1195:   movl    $1, %eax
+  Inst 1196:   movq    %rax, -8(%rsi)
+  Inst 1197:   xorq    %rsi, %rsi
+  Inst 1198:   load_ext_name u0:1+0, %rax
+  Inst 1199:   movq    %rbx, rsp(512 + virtual offset)
+  Inst 1200:   movq    %rdi, rsp(520 + virtual offset)
+  Inst 1201:   movq    %r13, rsp(528 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1202:   call    *%rax
+  Inst 1203:   movq    rsp(512 + virtual offset), %rbx
+  Inst 1204:   movq    rsp(528 + virtual offset), %r13
+  Inst 1205:   movq    %rax, %rsi
+  Inst 1206:   movq    %rsi, rsp(512 + virtual offset)
+  Inst 1207:   movq    152(%r12), %rsi
+  Inst 1208:   movq    8(%r13), %rdi
+  Inst 1209:   movq    %rsi, 152(%r12)
+  Inst 1210:   movq    %rbx, -32(%rsi)
+  Inst 1211:   movq    %r15, -24(%rsi)
+  Inst 1212:   movl    $1, %eax
+  Inst 1213:   movq    %rax, -16(%rsi)
+  Inst 1214:   movl    $1, %eax
+  Inst 1215:   movq    %rax, -8(%rsi)
+  Inst 1216:   xorq    %rsi, %rsi
+  Inst 1217:   load_ext_name u0:1+0, %rax
+  Inst 1218:   movq    %rbx, rsp(520 + virtual offset)
+  Inst 1219:   movq    %rdi, rsp(528 + virtual offset)
+  Inst 1220:   movq    %r13, rsp(536 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1221:   call    *%rax
+  Inst 1222:   movq    rsp(520 + virtual offset), %rbx
+  Inst 1223:   movq    rsp(536 + virtual offset), %r13
+  Inst 1224:   movq    %rax, %rsi
+  Inst 1225:   movq    %rsi, rsp(520 + virtual offset)
+  Inst 1226:   movq    152(%r12), %rsi
+  Inst 1227:   movq    8(%r13), %rdi
+  Inst 1228:   movq    %rsi, 152(%r12)
+  Inst 1229:   movq    %rbx, -32(%rsi)
+  Inst 1230:   movq    %r15, -24(%rsi)
+  Inst 1231:   movl    $1, %eax
+  Inst 1232:   movq    %rax, -16(%rsi)
+  Inst 1233:   movl    $1, %eax
+  Inst 1234:   movq    %rax, -8(%rsi)
+  Inst 1235:   xorq    %rsi, %rsi
+  Inst 1236:   load_ext_name u0:1+0, %rax
+  Inst 1237:   movq    %rbx, rsp(528 + virtual offset)
+  Inst 1238:   movq    %rdi, rsp(536 + virtual offset)
+  Inst 1239:   movq    %r13, rsp(544 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1240:   call    *%rax
+  Inst 1241:   movq    rsp(528 + virtual offset), %rbx
+  Inst 1242:   movq    rsp(544 + virtual offset), %r13
+  Inst 1243:   movq    %rax, %rsi
+  Inst 1244:   movq    %rsi, rsp(528 + virtual offset)
+  Inst 1245:   movq    152(%r12), %rsi
+  Inst 1246:   movq    8(%r13), %rdi
+  Inst 1247:   movq    %rsi, 152(%r12)
+  Inst 1248:   movq    %rbx, -32(%rsi)
+  Inst 1249:   movq    %r15, -24(%rsi)
+  Inst 1250:   movl    $1, %eax
+  Inst 1251:   movq    %rax, -16(%rsi)
+  Inst 1252:   movl    $1, %eax
+  Inst 1253:   movq    %rax, -8(%rsi)
+  Inst 1254:   xorq    %rsi, %rsi
+  Inst 1255:   load_ext_name u0:1+0, %rax
+  Inst 1256:   movq    %rbx, rsp(536 + virtual offset)
+  Inst 1257:   movq    %rdi, rsp(544 + virtual offset)
+  Inst 1258:   movq    %r13, rsp(552 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1259:   call    *%rax
+  Inst 1260:   movq    rsp(536 + virtual offset), %rbx
+  Inst 1261:   movq    rsp(552 + virtual offset), %r13
+  Inst 1262:   movq    %rax, %rsi
+  Inst 1263:   movq    %rsi, rsp(536 + virtual offset)
+  Inst 1264:   movq    152(%r12), %rsi
+  Inst 1265:   movq    8(%r13), %rdi
+  Inst 1266:   movq    %rsi, 152(%r12)
+  Inst 1267:   movq    %rbx, -32(%rsi)
+  Inst 1268:   movq    %r15, -24(%rsi)
+  Inst 1269:   movl    $1, %eax
+  Inst 1270:   movq    %rax, -16(%rsi)
+  Inst 1271:   movl    $1, %eax
+  Inst 1272:   movq    %rax, -8(%rsi)
+  Inst 1273:   xorq    %rsi, %rsi
+  Inst 1274:   load_ext_name u0:1+0, %rax
+  Inst 1275:   movq    %rbx, rsp(544 + virtual offset)
+  Inst 1276:   movq    %rdi, rsp(552 + virtual offset)
+  Inst 1277:   movq    %r13, rsp(560 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1278:   call    *%rax
+  Inst 1279:   movq    rsp(544 + virtual offset), %rbx
+  Inst 1280:   movq    rsp(560 + virtual offset), %r13
+  Inst 1281:   movq    %rax, %rsi
+  Inst 1282:   movq    %rsi, rsp(544 + virtual offset)
+  Inst 1283:   movq    152(%r12), %rsi
+  Inst 1284:   movq    8(%r13), %rdi
+  Inst 1285:   movq    %rsi, 152(%r12)
+  Inst 1286:   movq    %rbx, -32(%rsi)
+  Inst 1287:   movq    %r15, -24(%rsi)
+  Inst 1288:   movl    $1, %eax
+  Inst 1289:   movq    %rax, -16(%rsi)
+  Inst 1290:   movl    $1, %eax
+  Inst 1291:   movq    %rax, -8(%rsi)
+  Inst 1292:   xorq    %rsi, %rsi
+  Inst 1293:   load_ext_name u0:1+0, %rax
+  Inst 1294:   movq    %rbx, rsp(552 + virtual offset)
+  Inst 1295:   movq    %rdi, rsp(560 + virtual offset)
+  Inst 1296:   movq    %r13, rsp(568 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1297:   call    *%rax
+  Inst 1298:   movq    rsp(552 + virtual offset), %rbx
+  Inst 1299:   movq    rsp(568 + virtual offset), %r13
+  Inst 1300:   movq    %rax, %rsi
+  Inst 1301:   movq    %rsi, rsp(552 + virtual offset)
+  Inst 1302:   movq    152(%r12), %rsi
+  Inst 1303:   movq    8(%r13), %rdi
+  Inst 1304:   movq    %rsi, 152(%r12)
+  Inst 1305:   movq    %rbx, -32(%rsi)
+  Inst 1306:   movq    %r15, -24(%rsi)
+  Inst 1307:   movl    $1, %eax
+  Inst 1308:   movq    %rax, -16(%rsi)
+  Inst 1309:   movl    $1, %eax
+  Inst 1310:   movq    %rax, -8(%rsi)
+  Inst 1311:   xorq    %rsi, %rsi
+  Inst 1312:   load_ext_name u0:1+0, %rax
+  Inst 1313:   movq    %rbx, rsp(560 + virtual offset)
+  Inst 1314:   movq    %rdi, rsp(568 + virtual offset)
+  Inst 1315:   movq    %r13, rsp(576 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1316:   call    *%rax
+  Inst 1317:   movq    rsp(560 + virtual offset), %rbx
+  Inst 1318:   movq    rsp(576 + virtual offset), %r13
+  Inst 1319:   movq    %rax, %rsi
+  Inst 1320:   movq    %rsi, rsp(560 + virtual offset)
+  Inst 1321:   movq    152(%r12), %rsi
+  Inst 1322:   movq    8(%r13), %rdi
+  Inst 1323:   movq    %rsi, 152(%r12)
+  Inst 1324:   movq    %rbx, -32(%rsi)
+  Inst 1325:   movq    %r15, -24(%rsi)
+  Inst 1326:   movl    $1, %eax
+  Inst 1327:   movq    %rax, -16(%rsi)
+  Inst 1328:   movl    $1, %eax
+  Inst 1329:   movq    %rax, -8(%rsi)
+  Inst 1330:   xorq    %rsi, %rsi
+  Inst 1331:   load_ext_name u0:1+0, %rax
+  Inst 1332:   movq    %rbx, rsp(568 + virtual offset)
+  Inst 1333:   movq    %rdi, rsp(576 + virtual offset)
+  Inst 1334:   movq    %r13, rsp(584 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1335:   call    *%rax
+  Inst 1336:   movq    rsp(568 + virtual offset), %rbx
+  Inst 1337:   movq    rsp(584 + virtual offset), %r13
+  Inst 1338:   movq    %rax, %rsi
+  Inst 1339:   movq    %rsi, rsp(568 + virtual offset)
+  Inst 1340:   movq    152(%r12), %rsi
+  Inst 1341:   movq    8(%r13), %rdi
+  Inst 1342:   movq    %rsi, 152(%r12)
+  Inst 1343:   movq    %rbx, -32(%rsi)
+  Inst 1344:   movq    %r15, -24(%rsi)
+  Inst 1345:   movl    $1, %eax
+  Inst 1346:   movq    %rax, -16(%rsi)
+  Inst 1347:   movl    $1, %eax
+  Inst 1348:   movq    %rax, -8(%rsi)
+  Inst 1349:   xorq    %rsi, %rsi
+  Inst 1350:   load_ext_name u0:1+0, %rax
+  Inst 1351:   movq    %rbx, rsp(576 + virtual offset)
+  Inst 1352:   movq    %rdi, rsp(584 + virtual offset)
+  Inst 1353:   movq    %r13, rsp(592 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1354:   call    *%rax
+  Inst 1355:   movq    rsp(576 + virtual offset), %rbx
+  Inst 1356:   movq    rsp(592 + virtual offset), %r13
+  Inst 1357:   movq    %rax, %rsi
+  Inst 1358:   movq    %rsi, rsp(576 + virtual offset)
+  Inst 1359:   movq    152(%r12), %rsi
+  Inst 1360:   movq    8(%r13), %rdi
+  Inst 1361:   movq    %rsi, 152(%r12)
+  Inst 1362:   movq    %rbx, -32(%rsi)
+  Inst 1363:   movq    %r15, -24(%rsi)
+  Inst 1364:   movl    $1, %eax
+  Inst 1365:   movq    %rax, -16(%rsi)
+  Inst 1366:   movl    $1, %eax
+  Inst 1367:   movq    %rax, -8(%rsi)
+  Inst 1368:   xorq    %rsi, %rsi
+  Inst 1369:   load_ext_name u0:1+0, %rax
+  Inst 1370:   movq    %rbx, rsp(584 + virtual offset)
+  Inst 1371:   movq    %rdi, rsp(592 + virtual offset)
+  Inst 1372:   movq    %r13, rsp(600 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1373:   call    *%rax
+  Inst 1374:   movq    rsp(584 + virtual offset), %rbx
+  Inst 1375:   movq    rsp(600 + virtual offset), %r13
+  Inst 1376:   movq    %rax, %rsi
+  Inst 1377:   movq    %rsi, rsp(584 + virtual offset)
+  Inst 1378:   movq    152(%r12), %rsi
+  Inst 1379:   movq    8(%r13), %rdi
+  Inst 1380:   movq    %rsi, 152(%r12)
+  Inst 1381:   movq    %rbx, -32(%rsi)
+  Inst 1382:   movq    %r15, -24(%rsi)
+  Inst 1383:   movl    $1, %eax
+  Inst 1384:   movq    %rax, -16(%rsi)
+  Inst 1385:   movl    $1, %eax
+  Inst 1386:   movq    %rax, -8(%rsi)
+  Inst 1387:   xorq    %rsi, %rsi
+  Inst 1388:   load_ext_name u0:1+0, %rax
+  Inst 1389:   movq    %rbx, rsp(592 + virtual offset)
+  Inst 1390:   movq    %rdi, rsp(600 + virtual offset)
+  Inst 1391:   movq    %r13, rsp(608 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1392:   call    *%rax
+  Inst 1393:   movq    rsp(592 + virtual offset), %rbx
+  Inst 1394:   movq    rsp(608 + virtual offset), %r13
+  Inst 1395:   movq    %rax, %rsi
+  Inst 1396:   movq    %rsi, rsp(592 + virtual offset)
+  Inst 1397:   movq    152(%r12), %rsi
+  Inst 1398:   movq    8(%r13), %rdi
+  Inst 1399:   movq    %rsi, 152(%r12)
+  Inst 1400:   movq    %rbx, -32(%rsi)
+  Inst 1401:   movq    %r15, -24(%rsi)
+  Inst 1402:   movl    $1, %eax
+  Inst 1403:   movq    %rax, -16(%rsi)
+  Inst 1404:   movl    $1, %eax
+  Inst 1405:   movq    %rax, -8(%rsi)
+  Inst 1406:   xorq    %rsi, %rsi
+  Inst 1407:   load_ext_name u0:1+0, %rax
+  Inst 1408:   movq    %rbx, rsp(600 + virtual offset)
+  Inst 1409:   movq    %rdi, rsp(608 + virtual offset)
+  Inst 1410:   movq    %r13, rsp(616 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1411:   call    *%rax
+  Inst 1412:   movq    rsp(600 + virtual offset), %rbx
+  Inst 1413:   movq    rsp(616 + virtual offset), %r13
+  Inst 1414:   movq    %rax, %rsi
+  Inst 1415:   movq    %rsi, rsp(600 + virtual offset)
+  Inst 1416:   movq    152(%r12), %rsi
+  Inst 1417:   movq    8(%r13), %rdi
+  Inst 1418:   movq    %rsi, 152(%r12)
+  Inst 1419:   movq    %rbx, -32(%rsi)
+  Inst 1420:   movq    %r15, -24(%rsi)
+  Inst 1421:   movl    $1, %eax
+  Inst 1422:   movq    %rax, -16(%rsi)
+  Inst 1423:   movl    $1, %eax
+  Inst 1424:   movq    %rax, -8(%rsi)
+  Inst 1425:   xorq    %rsi, %rsi
+  Inst 1426:   load_ext_name u0:1+0, %rax
+  Inst 1427:   movq    %rbx, rsp(608 + virtual offset)
+  Inst 1428:   movq    %rdi, rsp(616 + virtual offset)
+  Inst 1429:   movq    %r13, rsp(624 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1430:   call    *%rax
+  Inst 1431:   movq    rsp(608 + virtual offset), %rbx
+  Inst 1432:   movq    rsp(624 + virtual offset), %r13
+  Inst 1433:   movq    %rax, %rsi
+  Inst 1434:   movq    %rsi, rsp(608 + virtual offset)
+  Inst 1435:   movq    152(%r12), %rsi
+  Inst 1436:   movq    8(%r13), %rdi
+  Inst 1437:   movq    %rsi, 152(%r12)
+  Inst 1438:   movq    %rbx, -32(%rsi)
+  Inst 1439:   movq    %r15, -24(%rsi)
+  Inst 1440:   movl    $1, %eax
+  Inst 1441:   movq    %rax, -16(%rsi)
+  Inst 1442:   movl    $1, %eax
+  Inst 1443:   movq    %rax, -8(%rsi)
+  Inst 1444:   xorq    %rsi, %rsi
+  Inst 1445:   load_ext_name u0:1+0, %rax
+  Inst 1446:   movq    %rbx, rsp(616 + virtual offset)
+  Inst 1447:   movq    %rdi, rsp(624 + virtual offset)
+  Inst 1448:   movq    %r13, rsp(632 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1449:   call    *%rax
+  Inst 1450:   movq    rsp(616 + virtual offset), %rbx
+  Inst 1451:   movq    rsp(632 + virtual offset), %r13
+  Inst 1452:   movq    %rax, %rsi
+  Inst 1453:   movq    %rsi, rsp(616 + virtual offset)
+  Inst 1454:   movq    152(%r12), %rsi
+  Inst 1455:   movq    8(%r13), %rdi
+  Inst 1456:   movq    %rsi, 152(%r12)
+  Inst 1457:   movq    %rbx, -32(%rsi)
+  Inst 1458:   movq    %r15, -24(%rsi)
+  Inst 1459:   movl    $1, %eax
+  Inst 1460:   movq    %rax, -16(%rsi)
+  Inst 1461:   movl    $1, %eax
+  Inst 1462:   movq    %rax, -8(%rsi)
+  Inst 1463:   xorq    %rsi, %rsi
+  Inst 1464:   load_ext_name u0:1+0, %rax
+  Inst 1465:   movq    %rbx, rsp(624 + virtual offset)
+  Inst 1466:   movq    %rdi, rsp(632 + virtual offset)
+  Inst 1467:   movq    %r13, rsp(640 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1468:   call    *%rax
+  Inst 1469:   movq    rsp(624 + virtual offset), %rbx
+  Inst 1470:   movq    rsp(640 + virtual offset), %r13
+  Inst 1471:   movq    %rax, %rsi
+  Inst 1472:   movq    %rsi, rsp(624 + virtual offset)
+  Inst 1473:   movq    152(%r12), %rsi
+  Inst 1474:   movq    8(%r13), %rdi
+  Inst 1475:   movq    %rsi, 152(%r12)
+  Inst 1476:   movq    %rbx, -32(%rsi)
+  Inst 1477:   movq    %r15, -24(%rsi)
+  Inst 1478:   movl    $1, %eax
+  Inst 1479:   movq    %rax, -16(%rsi)
+  Inst 1480:   movl    $1, %eax
+  Inst 1481:   movq    %rax, -8(%rsi)
+  Inst 1482:   xorq    %rsi, %rsi
+  Inst 1483:   load_ext_name u0:1+0, %rax
+  Inst 1484:   movq    %rbx, rsp(632 + virtual offset)
+  Inst 1485:   movq    %rdi, rsp(640 + virtual offset)
+  Inst 1486:   movq    %r13, rsp(648 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1487:   call    *%rax
+  Inst 1488:   movq    rsp(632 + virtual offset), %rbx
+  Inst 1489:   movq    rsp(648 + virtual offset), %r13
+  Inst 1490:   movq    %rax, %rsi
+  Inst 1491:   movq    %rsi, rsp(632 + virtual offset)
+  Inst 1492:   movq    152(%r12), %rsi
+  Inst 1493:   movq    8(%r13), %rdi
+  Inst 1494:   movq    %rsi, 152(%r12)
+  Inst 1495:   movq    %rbx, -32(%rsi)
+  Inst 1496:   movq    %r15, -24(%rsi)
+  Inst 1497:   movl    $1, %eax
+  Inst 1498:   movq    %rax, -16(%rsi)
+  Inst 1499:   movl    $1, %eax
+  Inst 1500:   movq    %rax, -8(%rsi)
+  Inst 1501:   xorq    %rsi, %rsi
+  Inst 1502:   load_ext_name u0:1+0, %rax
+  Inst 1503:   movq    %rbx, rsp(640 + virtual offset)
+  Inst 1504:   movq    %rdi, rsp(648 + virtual offset)
+  Inst 1505:   movq    %r13, rsp(656 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1506:   call    *%rax
+  Inst 1507:   movq    rsp(640 + virtual offset), %rbx
+  Inst 1508:   movq    rsp(656 + virtual offset), %r13
+  Inst 1509:   movq    %rax, %rsi
+  Inst 1510:   movq    %rsi, rsp(640 + virtual offset)
+  Inst 1511:   movq    152(%r12), %rsi
+  Inst 1512:   movq    8(%r13), %rdi
+  Inst 1513:   movq    %rsi, 152(%r12)
+  Inst 1514:   movq    %rbx, -32(%rsi)
+  Inst 1515:   movq    %r15, -24(%rsi)
+  Inst 1516:   movl    $1, %eax
+  Inst 1517:   movq    %rax, -16(%rsi)
+  Inst 1518:   movl    $1, %eax
+  Inst 1519:   movq    %rax, -8(%rsi)
+  Inst 1520:   xorq    %rsi, %rsi
+  Inst 1521:   load_ext_name u0:1+0, %rax
+  Inst 1522:   movq    %rbx, rsp(648 + virtual offset)
+  Inst 1523:   movq    %rdi, rsp(656 + virtual offset)
+  Inst 1524:   movq    %r13, rsp(664 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1525:   call    *%rax
+  Inst 1526:   movq    rsp(648 + virtual offset), %rbx
+  Inst 1527:   movq    rsp(664 + virtual offset), %r13
+  Inst 1528:   movq    %rax, %rsi
+  Inst 1529:   movq    %rsi, rsp(648 + virtual offset)
+  Inst 1530:   movq    152(%r12), %rsi
+  Inst 1531:   movq    8(%r13), %rdi
+  Inst 1532:   movq    %rsi, 152(%r12)
+  Inst 1533:   movq    %rbx, -32(%rsi)
+  Inst 1534:   movq    %r15, -24(%rsi)
+  Inst 1535:   movl    $1, %eax
+  Inst 1536:   movq    %rax, -16(%rsi)
+  Inst 1537:   movl    $1, %eax
+  Inst 1538:   movq    %rax, -8(%rsi)
+  Inst 1539:   xorq    %rsi, %rsi
+  Inst 1540:   load_ext_name u0:1+0, %rax
+  Inst 1541:   movq    %rbx, rsp(656 + virtual offset)
+  Inst 1542:   movq    %rdi, rsp(664 + virtual offset)
+  Inst 1543:   movq    %r13, rsp(672 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1544:   call    *%rax
+  Inst 1545:   movq    rsp(656 + virtual offset), %rbx
+  Inst 1546:   movq    rsp(672 + virtual offset), %r13
+  Inst 1547:   movq    %rax, %rsi
+  Inst 1548:   movq    %rsi, rsp(656 + virtual offset)
+  Inst 1549:   movq    152(%r12), %rsi
+  Inst 1550:   movq    8(%r13), %rdi
+  Inst 1551:   movq    %rsi, 152(%r12)
+  Inst 1552:   movq    %rbx, -32(%rsi)
+  Inst 1553:   movq    %r15, -24(%rsi)
+  Inst 1554:   movl    $1, %eax
+  Inst 1555:   movq    %rax, -16(%rsi)
+  Inst 1556:   movl    $1, %eax
+  Inst 1557:   movq    %rax, -8(%rsi)
+  Inst 1558:   xorq    %rsi, %rsi
+  Inst 1559:   load_ext_name u0:1+0, %rax
+  Inst 1560:   movq    %rbx, rsp(664 + virtual offset)
+  Inst 1561:   movq    %rdi, rsp(672 + virtual offset)
+  Inst 1562:   movq    %r13, rsp(680 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1563:   call    *%rax
+  Inst 1564:   movq    rsp(664 + virtual offset), %rbx
+  Inst 1565:   movq    rsp(680 + virtual offset), %r13
+  Inst 1566:   movq    %rax, %rsi
+  Inst 1567:   movq    %rsi, rsp(664 + virtual offset)
+  Inst 1568:   movq    152(%r12), %rsi
+  Inst 1569:   movq    8(%r13), %rdi
+  Inst 1570:   movq    %rsi, 152(%r12)
+  Inst 1571:   movq    %rbx, -32(%rsi)
+  Inst 1572:   movq    %r15, -24(%rsi)
+  Inst 1573:   movl    $1, %eax
+  Inst 1574:   movq    %rax, -16(%rsi)
+  Inst 1575:   movl    $1, %eax
+  Inst 1576:   movq    %rax, -8(%rsi)
+  Inst 1577:   xorq    %rsi, %rsi
+  Inst 1578:   load_ext_name u0:1+0, %rax
+  Inst 1579:   movq    %rbx, rsp(672 + virtual offset)
+  Inst 1580:   movq    %rdi, rsp(680 + virtual offset)
+  Inst 1581:   movq    %r13, rsp(688 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1582:   call    *%rax
+  Inst 1583:   movq    rsp(672 + virtual offset), %rbx
+  Inst 1584:   movq    rsp(688 + virtual offset), %r13
+  Inst 1585:   movq    %rax, %rsi
+  Inst 1586:   movq    %rsi, rsp(672 + virtual offset)
+  Inst 1587:   movq    152(%r12), %rsi
+  Inst 1588:   movq    8(%r13), %rdi
+  Inst 1589:   movq    %rsi, 152(%r12)
+  Inst 1590:   movq    %rbx, -32(%rsi)
+  Inst 1591:   movq    %r15, -24(%rsi)
+  Inst 1592:   movl    $1, %eax
+  Inst 1593:   movq    %rax, -16(%rsi)
+  Inst 1594:   movl    $1, %eax
+  Inst 1595:   movq    %rax, -8(%rsi)
+  Inst 1596:   xorq    %rsi, %rsi
+  Inst 1597:   load_ext_name u0:1+0, %rax
+  Inst 1598:   movq    %rbx, rsp(680 + virtual offset)
+  Inst 1599:   movq    %rdi, rsp(688 + virtual offset)
+  Inst 1600:   movq    %r13, rsp(696 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1601:   call    *%rax
+  Inst 1602:   movq    rsp(680 + virtual offset), %rbx
+  Inst 1603:   movq    rsp(696 + virtual offset), %r13
+  Inst 1604:   movq    %rax, %rsi
+  Inst 1605:   movq    %rsi, rsp(680 + virtual offset)
+  Inst 1606:   movq    152(%r12), %rsi
+  Inst 1607:   movq    8(%r13), %rdi
+  Inst 1608:   movq    %rsi, 152(%r12)
+  Inst 1609:   movq    %rbx, -32(%rsi)
+  Inst 1610:   movq    %r15, -24(%rsi)
+  Inst 1611:   movl    $1, %eax
+  Inst 1612:   movq    %rax, -16(%rsi)
+  Inst 1613:   movl    $1, %eax
+  Inst 1614:   movq    %rax, -8(%rsi)
+  Inst 1615:   xorq    %rsi, %rsi
+  Inst 1616:   load_ext_name u0:1+0, %rax
+  Inst 1617:   movq    %rbx, rsp(688 + virtual offset)
+  Inst 1618:   movq    %rdi, rsp(696 + virtual offset)
+  Inst 1619:   movq    %r13, rsp(704 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1620:   call    *%rax
+  Inst 1621:   movq    rsp(688 + virtual offset), %rbx
+  Inst 1622:   movq    rsp(704 + virtual offset), %r13
+  Inst 1623:   movq    %rax, %rsi
+  Inst 1624:   movq    %rsi, rsp(688 + virtual offset)
+  Inst 1625:   movq    152(%r12), %rsi
+  Inst 1626:   movq    8(%r13), %rdi
+  Inst 1627:   movq    %rsi, 152(%r12)
+  Inst 1628:   movq    %rbx, -32(%rsi)
+  Inst 1629:   movq    %r15, -24(%rsi)
+  Inst 1630:   movl    $1, %eax
+  Inst 1631:   movq    %rax, -16(%rsi)
+  Inst 1632:   movl    $1, %eax
+  Inst 1633:   movq    %rax, -8(%rsi)
+  Inst 1634:   xorq    %rsi, %rsi
+  Inst 1635:   load_ext_name u0:1+0, %rax
+  Inst 1636:   movq    %rbx, rsp(696 + virtual offset)
+  Inst 1637:   movq    %rdi, rsp(704 + virtual offset)
+  Inst 1638:   movq    %r13, rsp(712 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1639:   call    *%rax
+  Inst 1640:   movq    rsp(696 + virtual offset), %rbx
+  Inst 1641:   movq    rsp(712 + virtual offset), %r13
+  Inst 1642:   movq    %rax, %rsi
+  Inst 1643:   movq    %rsi, rsp(696 + virtual offset)
+  Inst 1644:   movq    152(%r12), %rsi
+  Inst 1645:   movq    8(%r13), %rdi
+  Inst 1646:   movq    %rsi, 152(%r12)
+  Inst 1647:   movq    %rbx, -32(%rsi)
+  Inst 1648:   movq    %r15, -24(%rsi)
+  Inst 1649:   movl    $1, %eax
+  Inst 1650:   movq    %rax, -16(%rsi)
+  Inst 1651:   movl    $1, %eax
+  Inst 1652:   movq    %rax, -8(%rsi)
+  Inst 1653:   xorq    %rsi, %rsi
+  Inst 1654:   load_ext_name u0:1+0, %rax
+  Inst 1655:   movq    %rbx, rsp(704 + virtual offset)
+  Inst 1656:   movq    %rdi, rsp(712 + virtual offset)
+  Inst 1657:   movq    %r13, rsp(720 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1658:   call    *%rax
+  Inst 1659:   movq    rsp(704 + virtual offset), %rbx
+  Inst 1660:   movq    rsp(720 + virtual offset), %r13
+  Inst 1661:   movq    %rax, %rsi
+  Inst 1662:   movq    %rsi, rsp(704 + virtual offset)
+  Inst 1663:   movq    152(%r12), %rsi
+  Inst 1664:   movq    8(%r13), %rdi
+  Inst 1665:   movq    %rsi, 152(%r12)
+  Inst 1666:   movq    %rbx, -32(%rsi)
+  Inst 1667:   movq    %r15, -24(%rsi)
+  Inst 1668:   movl    $1, %eax
+  Inst 1669:   movq    %rax, -16(%rsi)
+  Inst 1670:   movl    $1, %eax
+  Inst 1671:   movq    %rax, -8(%rsi)
+  Inst 1672:   xorq    %rsi, %rsi
+  Inst 1673:   load_ext_name u0:1+0, %rax
+  Inst 1674:   movq    %rbx, rsp(712 + virtual offset)
+  Inst 1675:   movq    %rdi, rsp(720 + virtual offset)
+  Inst 1676:   movq    %r13, rsp(728 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1677:   call    *%rax
+  Inst 1678:   movq    rsp(712 + virtual offset), %rbx
+  Inst 1679:   movq    rsp(728 + virtual offset), %r13
+  Inst 1680:   movq    %rax, %rsi
+  Inst 1681:   movq    %rsi, rsp(712 + virtual offset)
+  Inst 1682:   movq    152(%r12), %rsi
+  Inst 1683:   movq    8(%r13), %rdi
+  Inst 1684:   movq    %rsi, 152(%r12)
+  Inst 1685:   movq    %rbx, -32(%rsi)
+  Inst 1686:   movq    %r15, -24(%rsi)
+  Inst 1687:   movl    $1, %eax
+  Inst 1688:   movq    %rax, -16(%rsi)
+  Inst 1689:   movl    $1, %eax
+  Inst 1690:   movq    %rax, -8(%rsi)
+  Inst 1691:   xorq    %rsi, %rsi
+  Inst 1692:   load_ext_name u0:1+0, %rax
+  Inst 1693:   movq    %rbx, rsp(720 + virtual offset)
+  Inst 1694:   movq    %rdi, rsp(728 + virtual offset)
+  Inst 1695:   movq    %r13, rsp(736 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1696:   call    *%rax
+  Inst 1697:   movq    rsp(720 + virtual offset), %rbx
+  Inst 1698:   movq    rsp(736 + virtual offset), %r13
+  Inst 1699:   movq    %rax, %rsi
+  Inst 1700:   movq    %rsi, rsp(720 + virtual offset)
+  Inst 1701:   movq    152(%r12), %rsi
+  Inst 1702:   movq    8(%r13), %rdi
+  Inst 1703:   movq    %rsi, 152(%r12)
+  Inst 1704:   movq    %rbx, -32(%rsi)
+  Inst 1705:   movq    %r15, -24(%rsi)
+  Inst 1706:   movl    $1, %eax
+  Inst 1707:   movq    %rax, -16(%rsi)
+  Inst 1708:   movl    $1, %eax
+  Inst 1709:   movq    %rax, -8(%rsi)
+  Inst 1710:   xorq    %rsi, %rsi
+  Inst 1711:   load_ext_name u0:1+0, %rax
+  Inst 1712:   movq    %rbx, rsp(728 + virtual offset)
+  Inst 1713:   movq    %rdi, rsp(736 + virtual offset)
+  Inst 1714:   movq    %r13, rsp(744 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1715:   call    *%rax
+  Inst 1716:   movq    rsp(728 + virtual offset), %rbx
+  Inst 1717:   movq    rsp(744 + virtual offset), %r13
+  Inst 1718:   movq    %rax, %rsi
+  Inst 1719:   movq    %rsi, rsp(728 + virtual offset)
+  Inst 1720:   movq    152(%r12), %rsi
+  Inst 1721:   movq    8(%r13), %rdi
+  Inst 1722:   movq    %rsi, 152(%r12)
+  Inst 1723:   movq    %rbx, -32(%rsi)
+  Inst 1724:   movq    %r15, -24(%rsi)
+  Inst 1725:   movl    $1, %eax
+  Inst 1726:   movq    %rax, -16(%rsi)
+  Inst 1727:   movl    $1, %eax
+  Inst 1728:   movq    %rax, -8(%rsi)
+  Inst 1729:   xorq    %rsi, %rsi
+  Inst 1730:   load_ext_name u0:1+0, %rax
+  Inst 1731:   movq    %rbx, rsp(736 + virtual offset)
+  Inst 1732:   movq    %rdi, rsp(744 + virtual offset)
+  Inst 1733:   movq    %r13, rsp(752 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1734:   call    *%rax
+  Inst 1735:   movq    rsp(736 + virtual offset), %rbx
+  Inst 1736:   movq    rsp(752 + virtual offset), %r13
+  Inst 1737:   movq    %rax, %rsi
+  Inst 1738:   movq    %rsi, rsp(736 + virtual offset)
+  Inst 1739:   movq    152(%r12), %rsi
+  Inst 1740:   movq    8(%r13), %rdi
+  Inst 1741:   movq    %rsi, 152(%r12)
+  Inst 1742:   movq    %rbx, -32(%rsi)
+  Inst 1743:   movq    %r15, -24(%rsi)
+  Inst 1744:   movl    $1, %eax
+  Inst 1745:   movq    %rax, -16(%rsi)
+  Inst 1746:   movl    $1, %eax
+  Inst 1747:   movq    %rax, -8(%rsi)
+  Inst 1748:   xorq    %rsi, %rsi
+  Inst 1749:   load_ext_name u0:1+0, %rax
+  Inst 1750:   movq    %rbx, rsp(744 + virtual offset)
+  Inst 1751:   movq    %rdi, rsp(752 + virtual offset)
+  Inst 1752:   movq    %r13, rsp(760 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1753:   call    *%rax
+  Inst 1754:   movq    rsp(744 + virtual offset), %rbx
+  Inst 1755:   movq    rsp(760 + virtual offset), %r13
+  Inst 1756:   movq    %rax, %rsi
+  Inst 1757:   movq    %rsi, rsp(744 + virtual offset)
+  Inst 1758:   movq    152(%r12), %rsi
+  Inst 1759:   movq    8(%r13), %rdi
+  Inst 1760:   movq    %rsi, 152(%r12)
+  Inst 1761:   movq    %rbx, -32(%rsi)
+  Inst 1762:   movq    %r15, -24(%rsi)
+  Inst 1763:   movl    $1, %eax
+  Inst 1764:   movq    %rax, -16(%rsi)
+  Inst 1765:   movl    $1, %eax
+  Inst 1766:   movq    %rax, -8(%rsi)
+  Inst 1767:   xorq    %rsi, %rsi
+  Inst 1768:   load_ext_name u0:1+0, %rax
+  Inst 1769:   movq    %rbx, rsp(752 + virtual offset)
+  Inst 1770:   movq    %rdi, rsp(760 + virtual offset)
+  Inst 1771:   movq    %r13, rsp(768 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1772:   call    *%rax
+  Inst 1773:   movq    rsp(752 + virtual offset), %rbx
+  Inst 1774:   movq    rsp(768 + virtual offset), %r13
+  Inst 1775:   movq    %rax, %rsi
+  Inst 1776:   movq    %rsi, rsp(752 + virtual offset)
+  Inst 1777:   movq    152(%r12), %rsi
+  Inst 1778:   movq    8(%r13), %rdi
+  Inst 1779:   movq    %rsi, 152(%r12)
+  Inst 1780:   movq    %rbx, -32(%rsi)
+  Inst 1781:   movq    %r15, -24(%rsi)
+  Inst 1782:   movl    $1, %eax
+  Inst 1783:   movq    %rax, -16(%rsi)
+  Inst 1784:   movl    $1, %eax
+  Inst 1785:   movq    %rax, -8(%rsi)
+  Inst 1786:   xorq    %rsi, %rsi
+  Inst 1787:   load_ext_name u0:1+0, %rax
+  Inst 1788:   movq    %rbx, rsp(760 + virtual offset)
+  Inst 1789:   movq    %rdi, rsp(768 + virtual offset)
+  Inst 1790:   movq    %r13, rsp(776 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1791:   call    *%rax
+  Inst 1792:   movq    rsp(760 + virtual offset), %rbx
+  Inst 1793:   movq    rsp(776 + virtual offset), %r13
+  Inst 1794:   movq    %rax, %rsi
+  Inst 1795:   movq    %rsi, rsp(760 + virtual offset)
+  Inst 1796:   movq    152(%r12), %rsi
+  Inst 1797:   movq    8(%r13), %rdi
+  Inst 1798:   movq    %rsi, 152(%r12)
+  Inst 1799:   movq    %rbx, -32(%rsi)
+  Inst 1800:   movq    %r15, -24(%rsi)
+  Inst 1801:   movl    $1, %eax
+  Inst 1802:   movq    %rax, -16(%rsi)
+  Inst 1803:   movl    $1, %eax
+  Inst 1804:   movq    %rax, -8(%rsi)
+  Inst 1805:   xorq    %rsi, %rsi
+  Inst 1806:   load_ext_name u0:1+0, %rax
+  Inst 1807:   movq    %rbx, rsp(768 + virtual offset)
+  Inst 1808:   movq    %rdi, rsp(776 + virtual offset)
+  Inst 1809:   movq    %r13, rsp(784 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97, S98] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1810:   call    *%rax
+  Inst 1811:   movq    rsp(768 + virtual offset), %rbx
+  Inst 1812:   movq    rsp(784 + virtual offset), %r13
+  Inst 1813:   movq    %rax, %rsi
+  Inst 1814:   movq    %rsi, rsp(768 + virtual offset)
+  Inst 1815:   movq    152(%r12), %rsi
+  Inst 1816:   movq    8(%r13), %rdi
+  Inst 1817:   movq    %rsi, 152(%r12)
+  Inst 1818:   movq    %rbx, -32(%rsi)
+  Inst 1819:   movq    %r15, -24(%rsi)
+  Inst 1820:   movl    $1, %eax
+  Inst 1821:   movq    %rax, -16(%rsi)
+  Inst 1822:   movl    $1, %eax
+  Inst 1823:   movq    %rax, -8(%rsi)
+  Inst 1824:   xorq    %rsi, %rsi
+  Inst 1825:   load_ext_name u0:1+0, %rax
+  Inst 1826:   movq    %rbx, rsp(776 + virtual offset)
+  Inst 1827:   movq    %rdi, rsp(784 + virtual offset)
+  Inst 1828:   movq    %r13, rsp(792 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97, S98, S99] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1829:   call    *%rax
+  Inst 1830:   movq    rsp(776 + virtual offset), %rbx
+  Inst 1831:   movq    rsp(792 + virtual offset), %r13
+  Inst 1832:   movq    %rax, %rsi
+  Inst 1833:   movq    %rsi, rsp(776 + virtual offset)
+  Inst 1834:   movq    152(%r12), %rsi
+  Inst 1835:   movq    8(%r13), %rdi
+  Inst 1836:   movq    %rsi, 152(%r12)
+  Inst 1837:   movq    %rbx, -32(%rsi)
+  Inst 1838:   movq    %r15, -24(%rsi)
+  Inst 1839:   movl    $1, %eax
+  Inst 1840:   movq    %rax, -16(%rsi)
+  Inst 1841:   movl    $1, %eax
+  Inst 1842:   movq    %rax, -8(%rsi)
+  Inst 1843:   xorq    %rsi, %rsi
+  Inst 1844:   load_ext_name u0:1+0, %rax
+  Inst 1845:   movq    %rbx, rsp(784 + virtual offset)
+  Inst 1846:   movq    %rdi, rsp(792 + virtual offset)
+  Inst 1847:   movq    %r13, rsp(800 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97, S98, S99, S100] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1848:   call    *%rax
+  Inst 1849:   movq    rsp(784 + virtual offset), %rbx
+  Inst 1850:   movq    rsp(800 + virtual offset), %r13
+  Inst 1851:   movq    %rax, %rsi
+  Inst 1852:   movq    %rsi, rsp(784 + virtual offset)
+  Inst 1853:   movq    152(%r12), %rsi
+  Inst 1854:   movq    8(%r13), %rdi
+  Inst 1855:   movq    %rsi, 152(%r12)
+  Inst 1856:   movq    %rbx, -32(%rsi)
+  Inst 1857:   movq    %r15, -24(%rsi)
+  Inst 1858:   movl    $1, %eax
+  Inst 1859:   movq    %rax, -16(%rsi)
+  Inst 1860:   movl    $1, %eax
+  Inst 1861:   movq    %rax, -8(%rsi)
+  Inst 1862:   xorq    %rsi, %rsi
+  Inst 1863:   load_ext_name u0:1+0, %rax
+  Inst 1864:   movq    %rbx, rsp(792 + virtual offset)
+  Inst 1865:   movq    %rdi, rsp(800 + virtual offset)
+  Inst 1866:   movq    %r13, rsp(808 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97, S98, S99, S100, S101] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1867:   call    *%rax
+  Inst 1868:   movq    rsp(792 + virtual offset), %rbx
+  Inst 1869:   movq    rsp(808 + virtual offset), %r13
+  Inst 1870:   movq    %rax, %rsi
+  Inst 1871:   movq    %rsi, rsp(792 + virtual offset)
+  Inst 1872:   movq    152(%r12), %rsi
+  Inst 1873:   movq    8(%r13), %rdi
+  Inst 1874:   movq    %rsi, 152(%r12)
+  Inst 1875:   movq    %rbx, -32(%rsi)
+  Inst 1876:   movq    %r15, -24(%rsi)
+  Inst 1877:   movl    $1, %eax
+  Inst 1878:   movq    %rax, -16(%rsi)
+  Inst 1879:   movl    $1, %eax
+  Inst 1880:   movq    %rax, -8(%rsi)
+  Inst 1881:   xorq    %rsi, %rsi
+  Inst 1882:   load_ext_name u0:1+0, %rax
+  Inst 1883:   movq    %rbx, rsp(800 + virtual offset)
+  Inst 1884:   movq    %rdi, rsp(808 + virtual offset)
+  Inst 1885:   movq    %r13, rsp(816 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97, S98, S99, S100, S101, S102] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1886:   call    *%rax
+  Inst 1887:   movq    rsp(800 + virtual offset), %rbx
+  Inst 1888:   movq    rsp(816 + virtual offset), %r13
+  Inst 1889:   movq    %rax, %rsi
+  Inst 1890:   movq    %rsi, rsp(800 + virtual offset)
+  Inst 1891:   movq    152(%r12), %rsi
+  Inst 1892:   movq    8(%r13), %rdi
+  Inst 1893:   movq    %rsi, 152(%r12)
+  Inst 1894:   movq    %rbx, -32(%rsi)
+  Inst 1895:   movq    %r15, -24(%rsi)
+  Inst 1896:   movl    $1, %eax
+  Inst 1897:   movq    %rax, -16(%rsi)
+  Inst 1898:   movl    $1, %eax
+  Inst 1899:   movq    %rax, -8(%rsi)
+  Inst 1900:   xorq    %rsi, %rsi
+  Inst 1901:   load_ext_name u0:1+0, %rax
+  Inst 1902:   movq    %rbx, rsp(808 + virtual offset)
+  Inst 1903:   movq    %rdi, rsp(816 + virtual offset)
+  Inst 1904:   movq    %r13, rsp(824 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97, S98, S99, S100, S101, S102, S103] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1905:   call    *%rax
+  Inst 1906:   movq    rsp(808 + virtual offset), %rbx
+  Inst 1907:   movq    rsp(824 + virtual offset), %r13
+  Inst 1908:   movq    %rax, %r14
+  Inst 1909:   movq    152(%r12), %rsi
+  Inst 1910:   movq    8(%r13), %rdi
+  Inst 1911:   movq    %rsi, 152(%r12)
+  Inst 1912:   movq    %rbx, -32(%rsi)
+  Inst 1913:   movq    %r15, -24(%rsi)
+  Inst 1914:   movl    $1, %eax
+  Inst 1915:   movq    %rax, -16(%rsi)
+  Inst 1916:   movl    $1, %eax
+  Inst 1917:   movq    %rax, -8(%rsi)
+  Inst 1918:   xorq    %rsi, %rsi
+  Inst 1919:   load_ext_name u0:1+0, %rax
+  Inst 1920:   movq    %rdi, rsp(808 + virtual offset)
+  Inst 1921:   movq    %r13, rsp(816 + virtual offset)
+  Inst 1922:   movq    %r14, rsp(824 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97, S98, S99, S100, S101, S102, S103] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1923:   call    *%rax
+  Inst 1924:   movq    rsp(816 + virtual offset), %r13
+  Inst 1925:   movq    rsp(824 + virtual offset), %r14
+  Inst 1926:   movq    %rax, %rbx
+  Inst 1927:   movq    152(%r12), %rsi
+  Inst 1928:   movq    %rsi, rsp(808 + virtual offset)
+  Inst 1929:   movabsq $-808, %r15
+  Inst 1930:   addq    0(%r12), %r15
+  Inst 1931:   movq    %r15, 0(%r12)
+  Inst 1932:   movq    8(%r12), %rsi
+  Inst 1933:   cmpq    %rsi, %r15
+  Inst 1934:   jnb     label2; j label3
+Block 2:
+  (successor: Block 5)
+  (instruction range: 1935 .. 1936)
+  Inst 1935:   jmp     label5
+Block 3:
+  (original IR block: block4)
+  (successor: Block 4)
+  (instruction range: 1936 .. 1950)
+  Inst 1936:   movl    $100, %edi
+  Inst 1937:   movl    $17, %esi
+  Inst 1938:   movl    $1, %edx
+  Inst 1939:   xorq    %rcx, %rcx
+  Inst 1940:   load_ext_name u0:2+0, %rax
+  Inst 1941:   movq    %rbx, rsp(816 + virtual offset)
+  Inst 1942:   movq    %r13, rsp(824 + virtual offset)
+  Inst 1943:   movq    %r14, rsp(832 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S36, S37, S38, S39, S40, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55, S56, S57, S58, S59, S60, S61, S62, S63, S64, S65, S66, S67, S68, S69, S70, S71, S72, S73, S74, S75, S76, S77, S78, S79, S80, S81, S82, S83, S84, S85, S86, S87, S88, S89, S90, S91, S92, S93, S94, S95, S96, S97, S98, S99, S100, S102, S103, S104] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 1944:   call    *%rax
+  Inst 1945:   movq    rsp(816 + virtual offset), %rbx
+  Inst 1946:   movq    rsp(824 + virtual offset), %r13
+  Inst 1947:   movq    rsp(832 + virtual offset), %r14
+  Inst 1948:   movq    0(%r12), %r15
+  Inst 1949:   jmp     label4
+Block 4:
+  (successor: Block 5)
+  (instruction range: 1950 .. 1951)
+  Inst 1950:   jmp     label5
+Block 5:
+  (original IR block: block5)
+  (successor: Block 6)
+  (successor: Block 7)
+  (instruction range: 1951 .. 2158)
+  Inst 1951:   movl    $102400, %esi
+  Inst 1952:   movq    %rsi, 0(%r15)
+  Inst 1953:   addq    $8, %r15
+  Inst 1954:   movq    %rbx, 0(%r15)
+  Inst 1955:   movq    %r14, 8(%r15)
+  Inst 1956:   movq    rsp(800 + virtual offset), %rsi
+  Inst 1957:   movq    %rsi, 16(%r15)
+  Inst 1958:   movq    rsp(792 + virtual offset), %rsi
+  Inst 1959:   movq    %rsi, 24(%r15)
+  Inst 1960:   movq    rsp(784 + virtual offset), %rsi
+  Inst 1961:   movq    %rsi, 32(%r15)
+  Inst 1962:   movq    rsp(776 + virtual offset), %rsi
+  Inst 1963:   movq    %rsi, 40(%r15)
+  Inst 1964:   movq    rsp(768 + virtual offset), %rsi
+  Inst 1965:   movq    %rsi, 48(%r15)
+  Inst 1966:   movq    rsp(760 + virtual offset), %rsi
+  Inst 1967:   movq    %rsi, 56(%r15)
+  Inst 1968:   movq    rsp(752 + virtual offset), %rsi
+  Inst 1969:   movq    %rsi, 64(%r15)
+  Inst 1970:   movq    rsp(744 + virtual offset), %rsi
+  Inst 1971:   movq    %rsi, 72(%r15)
+  Inst 1972:   movq    rsp(736 + virtual offset), %rsi
+  Inst 1973:   movq    %rsi, 80(%r15)
+  Inst 1974:   movq    rsp(728 + virtual offset), %rsi
+  Inst 1975:   movq    %rsi, 88(%r15)
+  Inst 1976:   movq    rsp(720 + virtual offset), %rsi
+  Inst 1977:   movq    %rsi, 96(%r15)
+  Inst 1978:   movq    rsp(712 + virtual offset), %rsi
+  Inst 1979:   movq    %rsi, 104(%r15)
+  Inst 1980:   movq    rsp(704 + virtual offset), %rsi
+  Inst 1981:   movq    %rsi, 112(%r15)
+  Inst 1982:   movq    rsp(696 + virtual offset), %rsi
+  Inst 1983:   movq    %rsi, 120(%r15)
+  Inst 1984:   movq    rsp(688 + virtual offset), %rsi
+  Inst 1985:   movq    %rsi, 128(%r15)
+  Inst 1986:   movq    rsp(680 + virtual offset), %rsi
+  Inst 1987:   movq    %rsi, 136(%r15)
+  Inst 1988:   movq    rsp(672 + virtual offset), %rsi
+  Inst 1989:   movq    %rsi, 144(%r15)
+  Inst 1990:   movq    rsp(664 + virtual offset), %rsi
+  Inst 1991:   movq    %rsi, 152(%r15)
+  Inst 1992:   movq    rsp(656 + virtual offset), %rsi
+  Inst 1993:   movq    %rsi, 160(%r15)
+  Inst 1994:   movq    rsp(648 + virtual offset), %rsi
+  Inst 1995:   movq    %rsi, 168(%r15)
+  Inst 1996:   movq    rsp(640 + virtual offset), %rsi
+  Inst 1997:   movq    %rsi, 176(%r15)
+  Inst 1998:   movq    rsp(632 + virtual offset), %rsi
+  Inst 1999:   movq    %rsi, 184(%r15)
+  Inst 2000:   movq    rsp(624 + virtual offset), %rsi
+  Inst 2001:   movq    %rsi, 192(%r15)
+  Inst 2002:   movq    rsp(616 + virtual offset), %rsi
+  Inst 2003:   movq    %rsi, 200(%r15)
+  Inst 2004:   movq    rsp(608 + virtual offset), %rsi
+  Inst 2005:   movq    %rsi, 208(%r15)
+  Inst 2006:   movq    rsp(600 + virtual offset), %rsi
+  Inst 2007:   movq    %rsi, 216(%r15)
+  Inst 2008:   movq    rsp(592 + virtual offset), %rsi
+  Inst 2009:   movq    %rsi, 224(%r15)
+  Inst 2010:   movq    rsp(584 + virtual offset), %rsi
+  Inst 2011:   movq    %rsi, 232(%r15)
+  Inst 2012:   movq    rsp(576 + virtual offset), %rsi
+  Inst 2013:   movq    %rsi, 240(%r15)
+  Inst 2014:   movq    rsp(568 + virtual offset), %rsi
+  Inst 2015:   movq    %rsi, 248(%r15)
+  Inst 2016:   movq    rsp(560 + virtual offset), %rsi
+  Inst 2017:   movq    %rsi, 256(%r15)
+  Inst 2018:   movq    rsp(552 + virtual offset), %rsi
+  Inst 2019:   movq    %rsi, 264(%r15)
+  Inst 2020:   movq    rsp(544 + virtual offset), %rsi
+  Inst 2021:   movq    %rsi, 272(%r15)
+  Inst 2022:   movq    rsp(536 + virtual offset), %rsi
+  Inst 2023:   movq    %rsi, 280(%r15)
+  Inst 2024:   movq    rsp(528 + virtual offset), %rsi
+  Inst 2025:   movq    %rsi, 288(%r15)
+  Inst 2026:   movq    rsp(520 + virtual offset), %rsi
+  Inst 2027:   movq    %rsi, 296(%r15)
+  Inst 2028:   movq    rsp(512 + virtual offset), %rsi
+  Inst 2029:   movq    %rsi, 304(%r15)
+  Inst 2030:   movq    rsp(504 + virtual offset), %rsi
+  Inst 2031:   movq    %rsi, 312(%r15)
+  Inst 2032:   movq    rsp(496 + virtual offset), %rsi
+  Inst 2033:   movq    %rsi, 320(%r15)
+  Inst 2034:   movq    rsp(488 + virtual offset), %rsi
+  Inst 2035:   movq    %rsi, 328(%r15)
+  Inst 2036:   movq    rsp(480 + virtual offset), %rsi
+  Inst 2037:   movq    %rsi, 336(%r15)
+  Inst 2038:   movq    rsp(472 + virtual offset), %rsi
+  Inst 2039:   movq    %rsi, 344(%r15)
+  Inst 2040:   movq    rsp(464 + virtual offset), %rsi
+  Inst 2041:   movq    %rsi, 352(%r15)
+  Inst 2042:   movq    rsp(456 + virtual offset), %rsi
+  Inst 2043:   movq    %rsi, 360(%r15)
+  Inst 2044:   movq    rsp(448 + virtual offset), %rsi
+  Inst 2045:   movq    %rsi, 368(%r15)
+  Inst 2046:   movq    rsp(440 + virtual offset), %rsi
+  Inst 2047:   movq    %rsi, 376(%r15)
+  Inst 2048:   movq    rsp(432 + virtual offset), %rsi
+  Inst 2049:   movq    %rsi, 384(%r15)
+  Inst 2050:   movq    rsp(424 + virtual offset), %rsi
+  Inst 2051:   movq    %rsi, 392(%r15)
+  Inst 2052:   movq    rsp(416 + virtual offset), %rsi
+  Inst 2053:   movq    %rsi, 400(%r15)
+  Inst 2054:   movq    rsp(408 + virtual offset), %rsi
+  Inst 2055:   movq    %rsi, 408(%r15)
+  Inst 2056:   movq    rsp(400 + virtual offset), %rsi
+  Inst 2057:   movq    %rsi, 416(%r15)
+  Inst 2058:   movq    rsp(392 + virtual offset), %rsi
+  Inst 2059:   movq    %rsi, 424(%r15)
+  Inst 2060:   movq    rsp(384 + virtual offset), %rsi
+  Inst 2061:   movq    %rsi, 432(%r15)
+  Inst 2062:   movq    rsp(376 + virtual offset), %rsi
+  Inst 2063:   movq    %rsi, 440(%r15)
+  Inst 2064:   movq    rsp(368 + virtual offset), %rsi
+  Inst 2065:   movq    %rsi, 448(%r15)
+  Inst 2066:   movq    rsp(360 + virtual offset), %rsi
+  Inst 2067:   movq    %rsi, 456(%r15)
+  Inst 2068:   movq    rsp(352 + virtual offset), %rsi
+  Inst 2069:   movq    %rsi, 464(%r15)
+  Inst 2070:   movq    rsp(344 + virtual offset), %rsi
+  Inst 2071:   movq    %rsi, 472(%r15)
+  Inst 2072:   movq    rsp(336 + virtual offset), %rsi
+  Inst 2073:   movq    %rsi, 480(%r15)
+  Inst 2074:   movq    rsp(328 + virtual offset), %rsi
+  Inst 2075:   movq    %rsi, 488(%r15)
+  Inst 2076:   movq    rsp(320 + virtual offset), %rsi
+  Inst 2077:   movq    %rsi, 496(%r15)
+  Inst 2078:   movq    rsp(312 + virtual offset), %rsi
+  Inst 2079:   movq    %rsi, 504(%r15)
+  Inst 2080:   movq    rsp(304 + virtual offset), %rsi
+  Inst 2081:   movq    %rsi, 512(%r15)
+  Inst 2082:   movq    rsp(296 + virtual offset), %rsi
+  Inst 2083:   movq    %rsi, 520(%r15)
+  Inst 2084:   movq    rsp(288 + virtual offset), %rsi
+  Inst 2085:   movq    %rsi, 528(%r15)
+  Inst 2086:   movq    rsp(280 + virtual offset), %rsi
+  Inst 2087:   movq    %rsi, 536(%r15)
+  Inst 2088:   movq    rsp(272 + virtual offset), %rsi
+  Inst 2089:   movq    %rsi, 544(%r15)
+  Inst 2090:   movq    rsp(264 + virtual offset), %rsi
+  Inst 2091:   movq    %rsi, 552(%r15)
+  Inst 2092:   movq    rsp(256 + virtual offset), %rsi
+  Inst 2093:   movq    %rsi, 560(%r15)
+  Inst 2094:   movq    rsp(248 + virtual offset), %rsi
+  Inst 2095:   movq    %rsi, 568(%r15)
+  Inst 2096:   movq    rsp(240 + virtual offset), %rsi
+  Inst 2097:   movq    %rsi, 576(%r15)
+  Inst 2098:   movq    rsp(232 + virtual offset), %rsi
+  Inst 2099:   movq    %rsi, 584(%r15)
+  Inst 2100:   movq    rsp(224 + virtual offset), %rsi
+  Inst 2101:   movq    %rsi, 592(%r15)
+  Inst 2102:   movq    rsp(216 + virtual offset), %rsi
+  Inst 2103:   movq    %rsi, 600(%r15)
+  Inst 2104:   movq    rsp(208 + virtual offset), %rsi
+  Inst 2105:   movq    %rsi, 608(%r15)
+  Inst 2106:   movq    rsp(200 + virtual offset), %rsi
+  Inst 2107:   movq    %rsi, 616(%r15)
+  Inst 2108:   movq    rsp(192 + virtual offset), %rsi
+  Inst 2109:   movq    %rsi, 624(%r15)
+  Inst 2110:   movq    rsp(184 + virtual offset), %rsi
+  Inst 2111:   movq    %rsi, 632(%r15)
+  Inst 2112:   movq    rsp(176 + virtual offset), %rsi
+  Inst 2113:   movq    %rsi, 640(%r15)
+  Inst 2114:   movq    rsp(168 + virtual offset), %rsi
+  Inst 2115:   movq    %rsi, 648(%r15)
+  Inst 2116:   movq    rsp(160 + virtual offset), %rsi
+  Inst 2117:   movq    %rsi, 656(%r15)
+  Inst 2118:   movq    rsp(152 + virtual offset), %rsi
+  Inst 2119:   movq    %rsi, 664(%r15)
+  Inst 2120:   movq    rsp(144 + virtual offset), %rsi
+  Inst 2121:   movq    %rsi, 672(%r15)
+  Inst 2122:   movq    rsp(136 + virtual offset), %rsi
+  Inst 2123:   movq    %rsi, 680(%r15)
+  Inst 2124:   movq    rsp(128 + virtual offset), %rsi
+  Inst 2125:   movq    %rsi, 688(%r15)
+  Inst 2126:   movq    rsp(120 + virtual offset), %rsi
+  Inst 2127:   movq    %rsi, 696(%r15)
+  Inst 2128:   movq    rsp(112 + virtual offset), %rsi
+  Inst 2129:   movq    %rsi, 704(%r15)
+  Inst 2130:   movq    rsp(104 + virtual offset), %rsi
+  Inst 2131:   movq    %rsi, 712(%r15)
+  Inst 2132:   movq    rsp(96 + virtual offset), %rsi
+  Inst 2133:   movq    %rsi, 720(%r15)
+  Inst 2134:   movq    rsp(88 + virtual offset), %rsi
+  Inst 2135:   movq    %rsi, 728(%r15)
+  Inst 2136:   movq    rsp(80 + virtual offset), %rsi
+  Inst 2137:   movq    %rsi, 736(%r15)
+  Inst 2138:   movq    rsp(72 + virtual offset), %rsi
+  Inst 2139:   movq    %rsi, 744(%r15)
+  Inst 2140:   movq    rsp(64 + virtual offset), %rsi
+  Inst 2141:   movq    %rsi, 752(%r15)
+  Inst 2142:   movq    rsp(56 + virtual offset), %rsi
+  Inst 2143:   movq    %rsi, 760(%r15)
+  Inst 2144:   movq    rsp(48 + virtual offset), %rsi
+  Inst 2145:   movq    %rsi, 768(%r15)
+  Inst 2146:   movq    rsp(40 + virtual offset), %rsi
+  Inst 2147:   movq    %rsi, 776(%r15)
+  Inst 2148:   movq    rsp(32 + virtual offset), %rsi
+  Inst 2149:   movq    %rsi, 784(%r15)
+  Inst 2150:   movq    rsp(24 + virtual offset), %rsi
+  Inst 2151:   movq    %rsi, 792(%r15)
+  Inst 2152:   movabsq $-24, %rsi
+  Inst 2153:   addq    0(%r12), %rsi
+  Inst 2154:   movq    %rsi, 0(%r12)
+  Inst 2155:   movq    8(%r12), %rdi
+  Inst 2156:   cmpq    %rdi, %rsi
+  Inst 2157:   jnb     label6; j label7
+Block 6:
+  (successor: Block 9)
+  (instruction range: 2158 .. 2159)
+  Inst 2158:   jmp     label9
+Block 7:
+  (original IR block: block6)
+  (successor: Block 8)
+  (instruction range: 2159 .. 2171)
+  Inst 2159:   movl    $2, %edi
+  Inst 2160:   movl    $17, %esi
+  Inst 2161:   movl    $1, %edx
+  Inst 2162:   xorq    %rcx, %rcx
+  Inst 2163:   load_ext_name u0:2+0, %rax
+  Inst 2164:   movq    %r15, rsp(24 + virtual offset)
+  Inst 2165:   movq    %r13, rsp(32 + virtual offset)
+      (safepoint: slots [S0, S2, S3, S4] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 2166:   call    *%rax
+  Inst 2167:   movq    rsp(24 + virtual offset), %r15
+  Inst 2168:   movq    rsp(32 + virtual offset), %r13
+  Inst 2169:   movq    0(%r12), %rsi
+  Inst 2170:   jmp     label8
+Block 8:
+  (successor: Block 9)
+  (instruction range: 2171 .. 2172)
+  Inst 2171:   jmp     label9
+Block 9:
+  (original IR block: block7)
+  (successor: Block 12)
+  (instruction range: 2172 .. 2188)
+  Inst 2172:   movl    $2048, %edi
+  Inst 2173:   movq    %rdi, 0(%rsi)
+  Inst 2174:   addq    $8, %rsi
+  Inst 2175:   movq    %r15, 0(%rsi)
+  Inst 2176:   movq    rsp(0 + virtual offset), %rdi
+  Inst 2177:   movq    %rdi, 8(%rsi)
+  Inst 2178:   movq    rsp(16 + virtual offset), %rax
+  Inst 2179:   addq    $-2, %rax
+  Inst 2180:   movq    rsp(808 + virtual offset), %rdi
+  Inst 2181:   addq    $-16, %rdi
+  Inst 2182:   movq    rsp(808 + virtual offset), %rcx
+  Inst 2183:   movq    %rax, -16(%rcx)
+  Inst 2184:   movq    rsp(808 + virtual offset), %rax
+  Inst 2185:   movq    %rsi, -8(%rax)
+  Inst 2186:   movl    $2, %esi
+  Inst 2187:   jmp     label12
+Block 10:
+  (original IR block: block1)
+  (successor: Block 11)
+  (instruction range: 2188 .. 2189)
+  Inst 2188:   jmp     label11
+Block 11:
+  (successor: Block 12)
+  (instruction range: 2189 .. 2192)
+  Inst 2189:   movq    rsp(0 + virtual offset), %r13
+  Inst 2190:   xorq    %rsi, %rsi
+  Inst 2191:   jmp     label12
+Block 12:
+  (original IR block: block3)
+  (instruction range: 2192 .. 2204)
+  Inst 2192:   movq    %rdi, 152(%r12)
+  Inst 2193:   movq    %r13, %rax
+  Inst 2194:   movq    %rsi, %rdx
+  Inst 2195:   movq    848(%rsp), %r12
+  Inst 2196:   movq    856(%rsp), %r13
+  Inst 2197:   movq    864(%rsp), %r14
+  Inst 2198:   movq    872(%rsp), %rbx
+  Inst 2199:   movq    880(%rsp), %r15
+  Inst 2200:   addq    $896, %rsp
+  Inst 2201:   movq    %rbp, %rsp
+  Inst 2202:   popq    %rbp
+  Inst 2203:   ret
+}}
