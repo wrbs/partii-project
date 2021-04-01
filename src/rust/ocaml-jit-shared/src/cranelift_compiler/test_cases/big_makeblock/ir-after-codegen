@@ -27,12 +27,12 @@ block0(v0: r64, v1: i64):
     v14 = iconst.i64 0
     v15 = iconst.i64 1
     v16 = symbol_value.i64 gv1
+    store notrap aligned v10, v4+152
     v17 = iadd_imm v10, -32
     store notrap aligned v12, v17
     store notrap aligned v16, v17+8
     store notrap aligned v15, v17+16
     store notrap aligned v15, v17+24
-    store notrap aligned v17, v4+152
     v18, v19 = call fn1(v13, v14)
     v20 = load.i64 notrap aligned v4+152
     v21 = iconst.i64 1
@@ -41,12 +41,12 @@ block0(v0: r64, v1: i64):
     v24 = iconst.i64 0
     v25 = iconst.i64 1
     v26 = symbol_value.i64 gv1
+    store notrap aligned v20, v4+152
     v27 = iadd_imm v20, -32
     store notrap aligned v22, v27
     store notrap aligned v26, v27+8
     store notrap aligned v25, v27+16
     store notrap aligned v25, v27+24
-    store notrap aligned v27, v4+152
     v28, v29 = call fn1(v23, v24)
     v30 = load.i64 notrap aligned v4+152
     v31 = iconst.i64 1
@@ -55,12 +55,12 @@ block0(v0: r64, v1: i64):
     v34 = iconst.i64 0
     v35 = iconst.i64 1
     v36 = symbol_value.i64 gv1
+    store notrap aligned v30, v4+152
     v37 = iadd_imm v30, -32
     store notrap aligned v32, v37
     store notrap aligned v36, v37+8
     store notrap aligned v35, v37+16
     store notrap aligned v35, v37+24
-    store notrap aligned v37, v4+152
     v38, v39 = call fn1(v33, v34)
     v40 = load.i64 notrap aligned v4+152
     v41 = iconst.i64 1
@@ -69,12 +69,12 @@ block0(v0: r64, v1: i64):
     v44 = iconst.i64 0
     v45 = iconst.i64 1
     v46 = symbol_value.i64 gv1
+    store notrap aligned v40, v4+152
     v47 = iadd_imm v40, -32
     store notrap aligned v42, v47
     store notrap aligned v46, v47+8
     store notrap aligned v45, v47+16
     store notrap aligned v45, v47+24
-    store notrap aligned v47, v4+152
     v48, v49 = call fn1(v43, v44)
     v50 = load.i64 notrap aligned v4+152
     v51 = iconst.i64 1
@@ -83,12 +83,12 @@ block0(v0: r64, v1: i64):
     v54 = iconst.i64 0
     v55 = iconst.i64 1
     v56 = symbol_value.i64 gv1
+    store notrap aligned v50, v4+152
     v57 = iadd_imm v50, -32
     store notrap aligned v52, v57
     store notrap aligned v56, v57+8
     store notrap aligned v55, v57+16
     store notrap aligned v55, v57+24
-    store notrap aligned v57, v4+152
     v58, v59 = call fn1(v53, v54)
     v60 = load.i64 notrap aligned v4+152
     v61 = iconst.i64 1
@@ -97,12 +97,12 @@ block0(v0: r64, v1: i64):
     v64 = iconst.i64 0
     v65 = iconst.i64 1
     v66 = symbol_value.i64 gv1
+    store notrap aligned v60, v4+152
     v67 = iadd_imm v60, -32
     store notrap aligned v62, v67
     store notrap aligned v66, v67+8
     store notrap aligned v65, v67+16
     store notrap aligned v65, v67+24
-    store notrap aligned v67, v4+152
     v68, v69 = call fn1(v63, v64)
     v70 = load.i64 notrap aligned v4+152
     v71 = iconst.i64 1
@@ -111,12 +111,12 @@ block0(v0: r64, v1: i64):
     v74 = iconst.i64 0
     v75 = iconst.i64 1
     v76 = symbol_value.i64 gv1
+    store notrap aligned v70, v4+152
     v77 = iadd_imm v70, -32
     store notrap aligned v72, v77
     store notrap aligned v76, v77+8
     store notrap aligned v75, v77+16
     store notrap aligned v75, v77+24
-    store notrap aligned v77, v4+152
     v78, v79 = call fn1(v73, v74)
     v80 = load.i64 notrap aligned v4+152
     v81 = iconst.i64 1
@@ -125,12 +125,12 @@ block0(v0: r64, v1: i64):
     v84 = iconst.i64 0
     v85 = iconst.i64 1
     v86 = symbol_value.i64 gv1
+    store notrap aligned v80, v4+152
     v87 = iadd_imm v80, -32
     store notrap aligned v82, v87
     store notrap aligned v86, v87+8
     store notrap aligned v85, v87+16
     store notrap aligned v85, v87+24
-    store notrap aligned v87, v4+152
     v88, v89 = call fn1(v83, v84)
     v90 = load.i64 notrap aligned v4+152
     v91 = iconst.i64 1
@@ -139,12 +139,12 @@ block0(v0: r64, v1: i64):
     v94 = iconst.i64 0
     v95 = iconst.i64 1
     v96 = symbol_value.i64 gv1
+    store notrap aligned v90, v4+152
     v97 = iadd_imm v90, -32
     store notrap aligned v92, v97
     store notrap aligned v96, v97+8
     store notrap aligned v95, v97+16
     store notrap aligned v95, v97+24
-    store notrap aligned v97, v4+152
     v98, v99 = call fn1(v93, v94)
     v100 = load.i64 notrap aligned v4+152
     v101 = iconst.i64 1
@@ -153,12 +153,12 @@ block0(v0: r64, v1: i64):
     v104 = iconst.i64 0
     v105 = iconst.i64 1
     v106 = symbol_value.i64 gv1
+    store notrap aligned v100, v4+152
     v107 = iadd_imm v100, -32
     store notrap aligned v102, v107
     store notrap aligned v106, v107+8
     store notrap aligned v105, v107+16
     store notrap aligned v105, v107+24
-    store notrap aligned v107, v4+152
     v108, v109 = call fn1(v103, v104)
     v110 = load.i64 notrap aligned v4+152
     v111 = iconst.i64 1
@@ -167,12 +167,12 @@ block0(v0: r64, v1: i64):
     v114 = iconst.i64 0
     v115 = iconst.i64 1
     v116 = symbol_value.i64 gv1
+    store notrap aligned v110, v4+152
     v117 = iadd_imm v110, -32
     store notrap aligned v112, v117
     store notrap aligned v116, v117+8
     store notrap aligned v115, v117+16
     store notrap aligned v115, v117+24
-    store notrap aligned v117, v4+152
     v118, v119 = call fn1(v113, v114)
     v120 = load.i64 notrap aligned v4+152
     v121 = iconst.i64 1
@@ -181,12 +181,12 @@ block0(v0: r64, v1: i64):
     v124 = iconst.i64 0
     v125 = iconst.i64 1
     v126 = symbol_value.i64 gv1
+    store notrap aligned v120, v4+152
     v127 = iadd_imm v120, -32
     store notrap aligned v122, v127
     store notrap aligned v126, v127+8
     store notrap aligned v125, v127+16
     store notrap aligned v125, v127+24
-    store notrap aligned v127, v4+152
     v128, v129 = call fn1(v123, v124)
     v130 = load.i64 notrap aligned v4+152
     v131 = iconst.i64 1
@@ -195,12 +195,12 @@ block0(v0: r64, v1: i64):
     v134 = iconst.i64 0
     v135 = iconst.i64 1
     v136 = symbol_value.i64 gv1
+    store notrap aligned v130, v4+152
     v137 = iadd_imm v130, -32
     store notrap aligned v132, v137
     store notrap aligned v136, v137+8
     store notrap aligned v135, v137+16
     store notrap aligned v135, v137+24
-    store notrap aligned v137, v4+152
     v138, v139 = call fn1(v133, v134)
     v140 = load.i64 notrap aligned v4+152
     v141 = iconst.i64 1
@@ -209,12 +209,12 @@ block0(v0: r64, v1: i64):
     v144 = iconst.i64 0
     v145 = iconst.i64 1
     v146 = symbol_value.i64 gv1
+    store notrap aligned v140, v4+152
     v147 = iadd_imm v140, -32
     store notrap aligned v142, v147
     store notrap aligned v146, v147+8
     store notrap aligned v145, v147+16
     store notrap aligned v145, v147+24
-    store notrap aligned v147, v4+152
     v148, v149 = call fn1(v143, v144)
     v150 = load.i64 notrap aligned v4+152
     v151 = iconst.i64 1
@@ -223,12 +223,12 @@ block0(v0: r64, v1: i64):
     v154 = iconst.i64 0
     v155 = iconst.i64 1
     v156 = symbol_value.i64 gv1
+    store notrap aligned v150, v4+152
     v157 = iadd_imm v150, -32
     store notrap aligned v152, v157
     store notrap aligned v156, v157+8
     store notrap aligned v155, v157+16
     store notrap aligned v155, v157+24
-    store notrap aligned v157, v4+152
     v158, v159 = call fn1(v153, v154)
     v160 = load.i64 notrap aligned v4+152
     v161 = iconst.i64 1
@@ -237,12 +237,12 @@ block0(v0: r64, v1: i64):
     v164 = iconst.i64 0
     v165 = iconst.i64 1
     v166 = symbol_value.i64 gv1
+    store notrap aligned v160, v4+152
     v167 = iadd_imm v160, -32
     store notrap aligned v162, v167
     store notrap aligned v166, v167+8
     store notrap aligned v165, v167+16
     store notrap aligned v165, v167+24
-    store notrap aligned v167, v4+152
     v168, v169 = call fn1(v163, v164)
     v170 = load.i64 notrap aligned v4+152
     v171 = iconst.i64 1
@@ -251,12 +251,12 @@ block0(v0: r64, v1: i64):
     v174 = iconst.i64 0
     v175 = iconst.i64 1
     v176 = symbol_value.i64 gv1
+    store notrap aligned v170, v4+152
     v177 = iadd_imm v170, -32
     store notrap aligned v172, v177
     store notrap aligned v176, v177+8
     store notrap aligned v175, v177+16
     store notrap aligned v175, v177+24
-    store notrap aligned v177, v4+152
     v178, v179 = call fn1(v173, v174)
     v180 = load.i64 notrap aligned v4+152
     v181 = iconst.i64 1
@@ -265,12 +265,12 @@ block0(v0: r64, v1: i64):
     v184 = iconst.i64 0
     v185 = iconst.i64 1
     v186 = symbol_value.i64 gv1
+    store notrap aligned v180, v4+152
     v187 = iadd_imm v180, -32
     store notrap aligned v182, v187
     store notrap aligned v186, v187+8
     store notrap aligned v185, v187+16
     store notrap aligned v185, v187+24
-    store notrap aligned v187, v4+152
     v188, v189 = call fn1(v183, v184)
     v190 = load.i64 notrap aligned v4+152
     v191 = iconst.i64 1
@@ -279,12 +279,12 @@ block0(v0: r64, v1: i64):
     v194 = iconst.i64 0
     v195 = iconst.i64 1
     v196 = symbol_value.i64 gv1
+    store notrap aligned v190, v4+152
     v197 = iadd_imm v190, -32
     store notrap aligned v192, v197
     store notrap aligned v196, v197+8
     store notrap aligned v195, v197+16
     store notrap aligned v195, v197+24
-    store notrap aligned v197, v4+152
     v198, v199 = call fn1(v193, v194)
     v200 = load.i64 notrap aligned v4+152
     v201 = iconst.i64 1
@@ -293,12 +293,12 @@ block0(v0: r64, v1: i64):
     v204 = iconst.i64 0
     v205 = iconst.i64 1
     v206 = symbol_value.i64 gv1
+    store notrap aligned v200, v4+152
     v207 = iadd_imm v200, -32
     store notrap aligned v202, v207
     store notrap aligned v206, v207+8
     store notrap aligned v205, v207+16
     store notrap aligned v205, v207+24
-    store notrap aligned v207, v4+152
     v208, v209 = call fn1(v203, v204)
     v210 = load.i64 notrap aligned v4+152
     v211 = iconst.i64 1
@@ -307,12 +307,12 @@ block0(v0: r64, v1: i64):
     v214 = iconst.i64 0
     v215 = iconst.i64 1
     v216 = symbol_value.i64 gv1
+    store notrap aligned v210, v4+152
     v217 = iadd_imm v210, -32
     store notrap aligned v212, v217
     store notrap aligned v216, v217+8
     store notrap aligned v215, v217+16
     store notrap aligned v215, v217+24
-    store notrap aligned v217, v4+152
     v218, v219 = call fn1(v213, v214)
     v220 = load.i64 notrap aligned v4+152
     v221 = iconst.i64 1
@@ -321,12 +321,12 @@ block0(v0: r64, v1: i64):
     v224 = iconst.i64 0
     v225 = iconst.i64 1
     v226 = symbol_value.i64 gv1
+    store notrap aligned v220, v4+152
     v227 = iadd_imm v220, -32
     store notrap aligned v222, v227
     store notrap aligned v226, v227+8
     store notrap aligned v225, v227+16
     store notrap aligned v225, v227+24
-    store notrap aligned v227, v4+152
     v228, v229 = call fn1(v223, v224)
     v230 = load.i64 notrap aligned v4+152
     v231 = iconst.i64 1
@@ -335,12 +335,12 @@ block0(v0: r64, v1: i64):
     v234 = iconst.i64 0
     v235 = iconst.i64 1
     v236 = symbol_value.i64 gv1
+    store notrap aligned v230, v4+152
     v237 = iadd_imm v230, -32
     store notrap aligned v232, v237
     store notrap aligned v236, v237+8
     store notrap aligned v235, v237+16
     store notrap aligned v235, v237+24
-    store notrap aligned v237, v4+152
     v238, v239 = call fn1(v233, v234)
     v240 = load.i64 notrap aligned v4+152
     v241 = iconst.i64 1
@@ -349,12 +349,12 @@ block0(v0: r64, v1: i64):
     v244 = iconst.i64 0
     v245 = iconst.i64 1
     v246 = symbol_value.i64 gv1
+    store notrap aligned v240, v4+152
     v247 = iadd_imm v240, -32
     store notrap aligned v242, v247
     store notrap aligned v246, v247+8
     store notrap aligned v245, v247+16
     store notrap aligned v245, v247+24
-    store notrap aligned v247, v4+152
     v248, v249 = call fn1(v243, v244)
     v250 = load.i64 notrap aligned v4+152
     v251 = iconst.i64 1
@@ -363,12 +363,12 @@ block0(v0: r64, v1: i64):
     v254 = iconst.i64 0
     v255 = iconst.i64 1
     v256 = symbol_value.i64 gv1
+    store notrap aligned v250, v4+152
     v257 = iadd_imm v250, -32
     store notrap aligned v252, v257
     store notrap aligned v256, v257+8
     store notrap aligned v255, v257+16
     store notrap aligned v255, v257+24
-    store notrap aligned v257, v4+152
     v258, v259 = call fn1(v253, v254)
     v260 = load.i64 notrap aligned v4+152
     v261 = iconst.i64 1
@@ -377,12 +377,12 @@ block0(v0: r64, v1: i64):
     v264 = iconst.i64 0
     v265 = iconst.i64 1
     v266 = symbol_value.i64 gv1
+    store notrap aligned v260, v4+152
     v267 = iadd_imm v260, -32
     store notrap aligned v262, v267
     store notrap aligned v266, v267+8
     store notrap aligned v265, v267+16
     store notrap aligned v265, v267+24
-    store notrap aligned v267, v4+152
     v268, v269 = call fn1(v263, v264)
     v270 = load.i64 notrap aligned v4+152
     v271 = iconst.i64 1
@@ -391,12 +391,12 @@ block0(v0: r64, v1: i64):
     v274 = iconst.i64 0
     v275 = iconst.i64 1
     v276 = symbol_value.i64 gv1
+    store notrap aligned v270, v4+152
     v277 = iadd_imm v270, -32
     store notrap aligned v272, v277
     store notrap aligned v276, v277+8
     store notrap aligned v275, v277+16
     store notrap aligned v275, v277+24
-    store notrap aligned v277, v4+152
     v278, v279 = call fn1(v273, v274)
     v280 = load.i64 notrap aligned v4+152
     v281 = iconst.i64 1
@@ -405,12 +405,12 @@ block0(v0: r64, v1: i64):
     v284 = iconst.i64 0
     v285 = iconst.i64 1
     v286 = symbol_value.i64 gv1
+    store notrap aligned v280, v4+152
     v287 = iadd_imm v280, -32
     store notrap aligned v282, v287
     store notrap aligned v286, v287+8
     store notrap aligned v285, v287+16
     store notrap aligned v285, v287+24
-    store notrap aligned v287, v4+152
     v288, v289 = call fn1(v283, v284)
     v290 = load.i64 notrap aligned v4+152
     v291 = iconst.i64 1
@@ -419,12 +419,12 @@ block0(v0: r64, v1: i64):
     v294 = iconst.i64 0
     v295 = iconst.i64 1
     v296 = symbol_value.i64 gv1
+    store notrap aligned v290, v4+152
     v297 = iadd_imm v290, -32
     store notrap aligned v292, v297
     store notrap aligned v296, v297+8
     store notrap aligned v295, v297+16
     store notrap aligned v295, v297+24
-    store notrap aligned v297, v4+152
     v298, v299 = call fn1(v293, v294)
     v300 = load.i64 notrap aligned v4+152
     v301 = iconst.i64 1
@@ -433,12 +433,12 @@ block0(v0: r64, v1: i64):
     v304 = iconst.i64 0
     v305 = iconst.i64 1
     v306 = symbol_value.i64 gv1
+    store notrap aligned v300, v4+152
     v307 = iadd_imm v300, -32
     store notrap aligned v302, v307
     store notrap aligned v306, v307+8
     store notrap aligned v305, v307+16
     store notrap aligned v305, v307+24
-    store notrap aligned v307, v4+152
     v308, v309 = call fn1(v303, v304)
     v310 = load.i64 notrap aligned v4+152
     v311 = iconst.i64 1
@@ -447,12 +447,12 @@ block0(v0: r64, v1: i64):
     v314 = iconst.i64 0
     v315 = iconst.i64 1
     v316 = symbol_value.i64 gv1
+    store notrap aligned v310, v4+152
     v317 = iadd_imm v310, -32
     store notrap aligned v312, v317
     store notrap aligned v316, v317+8
     store notrap aligned v315, v317+16
     store notrap aligned v315, v317+24
-    store notrap aligned v317, v4+152
     v318, v319 = call fn1(v313, v314)
     v320 = load.i64 notrap aligned v4+152
     v321 = iconst.i64 1
@@ -461,12 +461,12 @@ block0(v0: r64, v1: i64):
     v324 = iconst.i64 0
     v325 = iconst.i64 1
     v326 = symbol_value.i64 gv1
+    store notrap aligned v320, v4+152
     v327 = iadd_imm v320, -32
     store notrap aligned v322, v327
     store notrap aligned v326, v327+8
     store notrap aligned v325, v327+16
     store notrap aligned v325, v327+24
-    store notrap aligned v327, v4+152
     v328, v329 = call fn1(v323, v324)
     v330 = load.i64 notrap aligned v4+152
     v331 = iconst.i64 1
@@ -475,12 +475,12 @@ block0(v0: r64, v1: i64):
     v334 = iconst.i64 0
     v335 = iconst.i64 1
     v336 = symbol_value.i64 gv1
+    store notrap aligned v330, v4+152
     v337 = iadd_imm v330, -32
     store notrap aligned v332, v337
     store notrap aligned v336, v337+8
     store notrap aligned v335, v337+16
     store notrap aligned v335, v337+24
-    store notrap aligned v337, v4+152
     v338, v339 = call fn1(v333, v334)
     v340 = load.i64 notrap aligned v4+152
     v341 = iconst.i64 1
@@ -489,12 +489,12 @@ block0(v0: r64, v1: i64):
     v344 = iconst.i64 0
     v345 = iconst.i64 1
     v346 = symbol_value.i64 gv1
+    store notrap aligned v340, v4+152
     v347 = iadd_imm v340, -32
     store notrap aligned v342, v347
     store notrap aligned v346, v347+8
     store notrap aligned v345, v347+16
     store notrap aligned v345, v347+24
-    store notrap aligned v347, v4+152
     v348, v349 = call fn1(v343, v344)
     v350 = load.i64 notrap aligned v4+152
     v351 = iconst.i64 1
@@ -503,12 +503,12 @@ block0(v0: r64, v1: i64):
     v354 = iconst.i64 0
     v355 = iconst.i64 1
     v356 = symbol_value.i64 gv1
+    store notrap aligned v350, v4+152
     v357 = iadd_imm v350, -32
     store notrap aligned v352, v357
     store notrap aligned v356, v357+8
     store notrap aligned v355, v357+16
     store notrap aligned v355, v357+24
-    store notrap aligned v357, v4+152
     v358, v359 = call fn1(v353, v354)
     v360 = load.i64 notrap aligned v4+152
     v361 = iconst.i64 1
@@ -517,12 +517,12 @@ block0(v0: r64, v1: i64):
     v364 = iconst.i64 0
     v365 = iconst.i64 1
     v366 = symbol_value.i64 gv1
+    store notrap aligned v360, v4+152
     v367 = iadd_imm v360, -32
     store notrap aligned v362, v367
     store notrap aligned v366, v367+8
     store notrap aligned v365, v367+16
     store notrap aligned v365, v367+24
-    store notrap aligned v367, v4+152
     v368, v369 = call fn1(v363, v364)
     v370 = load.i64 notrap aligned v4+152
     v371 = iconst.i64 1
@@ -531,12 +531,12 @@ block0(v0: r64, v1: i64):
     v374 = iconst.i64 0
     v375 = iconst.i64 1
     v376 = symbol_value.i64 gv1
+    store notrap aligned v370, v4+152
     v377 = iadd_imm v370, -32
     store notrap aligned v372, v377
     store notrap aligned v376, v377+8
     store notrap aligned v375, v377+16
     store notrap aligned v375, v377+24
-    store notrap aligned v377, v4+152
     v378, v379 = call fn1(v373, v374)
     v380 = load.i64 notrap aligned v4+152
     v381 = iconst.i64 1
@@ -545,12 +545,12 @@ block0(v0: r64, v1: i64):
     v384 = iconst.i64 0
     v385 = iconst.i64 1
     v386 = symbol_value.i64 gv1
+    store notrap aligned v380, v4+152
     v387 = iadd_imm v380, -32
     store notrap aligned v382, v387
     store notrap aligned v386, v387+8
     store notrap aligned v385, v387+16
     store notrap aligned v385, v387+24
-    store notrap aligned v387, v4+152
     v388, v389 = call fn1(v383, v384)
     v390 = load.i64 notrap aligned v4+152
     v391 = iconst.i64 1
@@ -559,12 +559,12 @@ block0(v0: r64, v1: i64):
     v394 = iconst.i64 0
     v395 = iconst.i64 1
     v396 = symbol_value.i64 gv1
+    store notrap aligned v390, v4+152
     v397 = iadd_imm v390, -32
     store notrap aligned v392, v397
     store notrap aligned v396, v397+8
     store notrap aligned v395, v397+16
     store notrap aligned v395, v397+24
-    store notrap aligned v397, v4+152
     v398, v399 = call fn1(v393, v394)
     v400 = load.i64 notrap aligned v4+152
     v401 = iconst.i64 1
@@ -573,12 +573,12 @@ block0(v0: r64, v1: i64):
     v404 = iconst.i64 0
     v405 = iconst.i64 1
     v406 = symbol_value.i64 gv1
+    store notrap aligned v400, v4+152
     v407 = iadd_imm v400, -32
     store notrap aligned v402, v407
     store notrap aligned v406, v407+8
     store notrap aligned v405, v407+16
     store notrap aligned v405, v407+24
-    store notrap aligned v407, v4+152
     v408, v409 = call fn1(v403, v404)
     v410 = load.i64 notrap aligned v4+152
     v411 = iconst.i64 1
@@ -587,12 +587,12 @@ block0(v0: r64, v1: i64):
     v414 = iconst.i64 0
     v415 = iconst.i64 1
     v416 = symbol_value.i64 gv1
+    store notrap aligned v410, v4+152
     v417 = iadd_imm v410, -32
     store notrap aligned v412, v417
     store notrap aligned v416, v417+8
     store notrap aligned v415, v417+16
     store notrap aligned v415, v417+24
-    store notrap aligned v417, v4+152
     v418, v419 = call fn1(v413, v414)
     v420 = load.i64 notrap aligned v4+152
     v421 = iconst.i64 1
@@ -601,12 +601,12 @@ block0(v0: r64, v1: i64):
     v424 = iconst.i64 0
     v425 = iconst.i64 1
     v426 = symbol_value.i64 gv1
+    store notrap aligned v420, v4+152
     v427 = iadd_imm v420, -32
     store notrap aligned v422, v427
     store notrap aligned v426, v427+8
     store notrap aligned v425, v427+16
     store notrap aligned v425, v427+24
-    store notrap aligned v427, v4+152
     v428, v429 = call fn1(v423, v424)
     v430 = load.i64 notrap aligned v4+152
     v431 = iconst.i64 1
@@ -615,12 +615,12 @@ block0(v0: r64, v1: i64):
     v434 = iconst.i64 0
     v435 = iconst.i64 1
     v436 = symbol_value.i64 gv1
+    store notrap aligned v430, v4+152
     v437 = iadd_imm v430, -32
     store notrap aligned v432, v437
     store notrap aligned v436, v437+8
     store notrap aligned v435, v437+16
     store notrap aligned v435, v437+24
-    store notrap aligned v437, v4+152
     v438, v439 = call fn1(v433, v434)
     v440 = load.i64 notrap aligned v4+152
     v441 = iconst.i64 1
@@ -629,12 +629,12 @@ block0(v0: r64, v1: i64):
     v444 = iconst.i64 0
     v445 = iconst.i64 1
     v446 = symbol_value.i64 gv1
+    store notrap aligned v440, v4+152
     v447 = iadd_imm v440, -32
     store notrap aligned v442, v447
     store notrap aligned v446, v447+8
     store notrap aligned v445, v447+16
     store notrap aligned v445, v447+24
-    store notrap aligned v447, v4+152
     v448, v449 = call fn1(v443, v444)
     v450 = load.i64 notrap aligned v4+152
     v451 = iconst.i64 1
@@ -643,12 +643,12 @@ block0(v0: r64, v1: i64):
     v454 = iconst.i64 0
     v455 = iconst.i64 1
     v456 = symbol_value.i64 gv1
+    store notrap aligned v450, v4+152
     v457 = iadd_imm v450, -32
     store notrap aligned v452, v457
     store notrap aligned v456, v457+8
     store notrap aligned v455, v457+16
     store notrap aligned v455, v457+24
-    store notrap aligned v457, v4+152
     v458, v459 = call fn1(v453, v454)
     v460 = load.i64 notrap aligned v4+152
     v461 = iconst.i64 1
@@ -657,12 +657,12 @@ block0(v0: r64, v1: i64):
     v464 = iconst.i64 0
     v465 = iconst.i64 1
     v466 = symbol_value.i64 gv1
+    store notrap aligned v460, v4+152
     v467 = iadd_imm v460, -32
     store notrap aligned v462, v467
     store notrap aligned v466, v467+8
     store notrap aligned v465, v467+16
     store notrap aligned v465, v467+24
-    store notrap aligned v467, v4+152
     v468, v469 = call fn1(v463, v464)
     v470 = load.i64 notrap aligned v4+152
     v471 = iconst.i64 1
@@ -671,12 +671,12 @@ block0(v0: r64, v1: i64):
     v474 = iconst.i64 0
     v475 = iconst.i64 1
     v476 = symbol_value.i64 gv1
+    store notrap aligned v470, v4+152
     v477 = iadd_imm v470, -32
     store notrap aligned v472, v477
     store notrap aligned v476, v477+8
     store notrap aligned v475, v477+16
     store notrap aligned v475, v477+24
-    store notrap aligned v477, v4+152
     v478, v479 = call fn1(v473, v474)
     v480 = load.i64 notrap aligned v4+152
     v481 = iconst.i64 1
@@ -685,12 +685,12 @@ block0(v0: r64, v1: i64):
     v484 = iconst.i64 0
     v485 = iconst.i64 1
     v486 = symbol_value.i64 gv1
+    store notrap aligned v480, v4+152
     v487 = iadd_imm v480, -32
     store notrap aligned v482, v487
     store notrap aligned v486, v487+8
     store notrap aligned v485, v487+16
     store notrap aligned v485, v487+24
-    store notrap aligned v487, v4+152
     v488, v489 = call fn1(v483, v484)
     v490 = load.i64 notrap aligned v4+152
     v491 = iconst.i64 1
@@ -699,12 +699,12 @@ block0(v0: r64, v1: i64):
     v494 = iconst.i64 0
     v495 = iconst.i64 1
     v496 = symbol_value.i64 gv1
+    store notrap aligned v490, v4+152
     v497 = iadd_imm v490, -32
     store notrap aligned v492, v497
     store notrap aligned v496, v497+8
     store notrap aligned v495, v497+16
     store notrap aligned v495, v497+24
-    store notrap aligned v497, v4+152
     v498, v499 = call fn1(v493, v494)
     v500 = load.i64 notrap aligned v4+152
     v501 = iconst.i64 1
@@ -713,12 +713,12 @@ block0(v0: r64, v1: i64):
     v504 = iconst.i64 0
     v505 = iconst.i64 1
     v506 = symbol_value.i64 gv1
+    store notrap aligned v500, v4+152
     v507 = iadd_imm v500, -32
     store notrap aligned v502, v507
     store notrap aligned v506, v507+8
     store notrap aligned v505, v507+16
     store notrap aligned v505, v507+24
-    store notrap aligned v507, v4+152
     v508, v509 = call fn1(v503, v504)
     v510 = load.i64 notrap aligned v4+152
     v511 = iconst.i64 1
@@ -727,12 +727,12 @@ block0(v0: r64, v1: i64):
     v514 = iconst.i64 0
     v515 = iconst.i64 1
     v516 = symbol_value.i64 gv1
+    store notrap aligned v510, v4+152
     v517 = iadd_imm v510, -32
     store notrap aligned v512, v517
     store notrap aligned v516, v517+8
     store notrap aligned v515, v517+16
     store notrap aligned v515, v517+24
-    store notrap aligned v517, v4+152
     v518, v519 = call fn1(v513, v514)
     v520 = load.i64 notrap aligned v4+152
     v521 = iconst.i64 1
@@ -741,12 +741,12 @@ block0(v0: r64, v1: i64):
     v524 = iconst.i64 0
     v525 = iconst.i64 1
     v526 = symbol_value.i64 gv1
+    store notrap aligned v520, v4+152
     v527 = iadd_imm v520, -32
     store notrap aligned v522, v527
     store notrap aligned v526, v527+8
     store notrap aligned v525, v527+16
     store notrap aligned v525, v527+24
-    store notrap aligned v527, v4+152
     v528, v529 = call fn1(v523, v524)
     v530 = load.i64 notrap aligned v4+152
     v531 = iconst.i64 1
@@ -755,12 +755,12 @@ block0(v0: r64, v1: i64):
     v534 = iconst.i64 0
     v535 = iconst.i64 1
     v536 = symbol_value.i64 gv1
+    store notrap aligned v530, v4+152
     v537 = iadd_imm v530, -32
     store notrap aligned v532, v537
     store notrap aligned v536, v537+8
     store notrap aligned v535, v537+16
     store notrap aligned v535, v537+24
-    store notrap aligned v537, v4+152
     v538, v539 = call fn1(v533, v534)
     v540 = load.i64 notrap aligned v4+152
     v541 = iconst.i64 1
@@ -769,12 +769,12 @@ block0(v0: r64, v1: i64):
     v544 = iconst.i64 0
     v545 = iconst.i64 1
     v546 = symbol_value.i64 gv1
+    store notrap aligned v540, v4+152
     v547 = iadd_imm v540, -32
     store notrap aligned v542, v547
     store notrap aligned v546, v547+8
     store notrap aligned v545, v547+16
     store notrap aligned v545, v547+24
-    store notrap aligned v547, v4+152
     v548, v549 = call fn1(v543, v544)
     v550 = load.i64 notrap aligned v4+152
     v551 = iconst.i64 1
@@ -783,12 +783,12 @@ block0(v0: r64, v1: i64):
     v554 = iconst.i64 0
     v555 = iconst.i64 1
     v556 = symbol_value.i64 gv1
+    store notrap aligned v550, v4+152
     v557 = iadd_imm v550, -32
     store notrap aligned v552, v557
     store notrap aligned v556, v557+8
     store notrap aligned v555, v557+16
     store notrap aligned v555, v557+24
-    store notrap aligned v557, v4+152
     v558, v559 = call fn1(v553, v554)
     v560 = load.i64 notrap aligned v4+152
     v561 = iconst.i64 1
@@ -797,12 +797,12 @@ block0(v0: r64, v1: i64):
     v564 = iconst.i64 0
     v565 = iconst.i64 1
     v566 = symbol_value.i64 gv1
+    store notrap aligned v560, v4+152
     v567 = iadd_imm v560, -32
     store notrap aligned v562, v567
     store notrap aligned v566, v567+8
     store notrap aligned v565, v567+16
     store notrap aligned v565, v567+24
-    store notrap aligned v567, v4+152
     v568, v569 = call fn1(v563, v564)
     v570 = load.i64 notrap aligned v4+152
     v571 = iconst.i64 1
@@ -811,12 +811,12 @@ block0(v0: r64, v1: i64):
     v574 = iconst.i64 0
     v575 = iconst.i64 1
     v576 = symbol_value.i64 gv1
+    store notrap aligned v570, v4+152
     v577 = iadd_imm v570, -32
     store notrap aligned v572, v577
     store notrap aligned v576, v577+8
     store notrap aligned v575, v577+16
     store notrap aligned v575, v577+24
-    store notrap aligned v577, v4+152
     v578, v579 = call fn1(v573, v574)
     v580 = load.i64 notrap aligned v4+152
     v581 = iconst.i64 1
@@ -825,12 +825,12 @@ block0(v0: r64, v1: i64):
     v584 = iconst.i64 0
     v585 = iconst.i64 1
     v586 = symbol_value.i64 gv1
+    store notrap aligned v580, v4+152
     v587 = iadd_imm v580, -32
     store notrap aligned v582, v587
     store notrap aligned v586, v587+8
     store notrap aligned v585, v587+16
     store notrap aligned v585, v587+24
-    store notrap aligned v587, v4+152
     v588, v589 = call fn1(v583, v584)
     v590 = load.i64 notrap aligned v4+152
     v591 = iconst.i64 1
@@ -839,12 +839,12 @@ block0(v0: r64, v1: i64):
     v594 = iconst.i64 0
     v595 = iconst.i64 1
     v596 = symbol_value.i64 gv1
+    store notrap aligned v590, v4+152
     v597 = iadd_imm v590, -32
     store notrap aligned v592, v597
     store notrap aligned v596, v597+8
     store notrap aligned v595, v597+16
     store notrap aligned v595, v597+24
-    store notrap aligned v597, v4+152
     v598, v599 = call fn1(v593, v594)
     v600 = load.i64 notrap aligned v4+152
     v601 = iconst.i64 1
@@ -853,12 +853,12 @@ block0(v0: r64, v1: i64):
     v604 = iconst.i64 0
     v605 = iconst.i64 1
     v606 = symbol_value.i64 gv1
+    store notrap aligned v600, v4+152
     v607 = iadd_imm v600, -32
     store notrap aligned v602, v607
     store notrap aligned v606, v607+8
     store notrap aligned v605, v607+16
     store notrap aligned v605, v607+24
-    store notrap aligned v607, v4+152
     v608, v609 = call fn1(v603, v604)
     v610 = load.i64 notrap aligned v4+152
     v611 = iconst.i64 1
@@ -867,12 +867,12 @@ block0(v0: r64, v1: i64):
     v614 = iconst.i64 0
     v615 = iconst.i64 1
     v616 = symbol_value.i64 gv1
+    store notrap aligned v610, v4+152
     v617 = iadd_imm v610, -32
     store notrap aligned v612, v617
     store notrap aligned v616, v617+8
     store notrap aligned v615, v617+16
     store notrap aligned v615, v617+24
-    store notrap aligned v617, v4+152
     v618, v619 = call fn1(v613, v614)
     v620 = load.i64 notrap aligned v4+152
     v621 = iconst.i64 1
@@ -881,12 +881,12 @@ block0(v0: r64, v1: i64):
     v624 = iconst.i64 0
     v625 = iconst.i64 1
     v626 = symbol_value.i64 gv1
+    store notrap aligned v620, v4+152
     v627 = iadd_imm v620, -32
     store notrap aligned v622, v627
     store notrap aligned v626, v627+8
     store notrap aligned v625, v627+16
     store notrap aligned v625, v627+24
-    store notrap aligned v627, v4+152
     v628, v629 = call fn1(v623, v624)
     v630 = load.i64 notrap aligned v4+152
     v631 = iconst.i64 1
@@ -895,12 +895,12 @@ block0(v0: r64, v1: i64):
     v634 = iconst.i64 0
     v635 = iconst.i64 1
     v636 = symbol_value.i64 gv1
+    store notrap aligned v630, v4+152
     v637 = iadd_imm v630, -32
     store notrap aligned v632, v637
     store notrap aligned v636, v637+8
     store notrap aligned v635, v637+16
     store notrap aligned v635, v637+24
-    store notrap aligned v637, v4+152
     v638, v639 = call fn1(v633, v634)
     v640 = load.i64 notrap aligned v4+152
     v641 = iconst.i64 1
@@ -909,12 +909,12 @@ block0(v0: r64, v1: i64):
     v644 = iconst.i64 0
     v645 = iconst.i64 1
     v646 = symbol_value.i64 gv1
+    store notrap aligned v640, v4+152
     v647 = iadd_imm v640, -32
     store notrap aligned v642, v647
     store notrap aligned v646, v647+8
     store notrap aligned v645, v647+16
     store notrap aligned v645, v647+24
-    store notrap aligned v647, v4+152
     v648, v649 = call fn1(v643, v644)
     v650 = load.i64 notrap aligned v4+152
     v651 = iconst.i64 1
@@ -923,12 +923,12 @@ block0(v0: r64, v1: i64):
     v654 = iconst.i64 0
     v655 = iconst.i64 1
     v656 = symbol_value.i64 gv1
+    store notrap aligned v650, v4+152
     v657 = iadd_imm v650, -32
     store notrap aligned v652, v657
     store notrap aligned v656, v657+8
     store notrap aligned v655, v657+16
     store notrap aligned v655, v657+24
-    store notrap aligned v657, v4+152
     v658, v659 = call fn1(v653, v654)
     v660 = load.i64 notrap aligned v4+152
     v661 = iconst.i64 1
@@ -937,12 +937,12 @@ block0(v0: r64, v1: i64):
     v664 = iconst.i64 0
     v665 = iconst.i64 1
     v666 = symbol_value.i64 gv1
+    store notrap aligned v660, v4+152
     v667 = iadd_imm v660, -32
     store notrap aligned v662, v667
     store notrap aligned v666, v667+8
     store notrap aligned v665, v667+16
     store notrap aligned v665, v667+24
-    store notrap aligned v667, v4+152
     v668, v669 = call fn1(v663, v664)
     v670 = load.i64 notrap aligned v4+152
     v671 = iconst.i64 1
@@ -951,12 +951,12 @@ block0(v0: r64, v1: i64):
     v674 = iconst.i64 0
     v675 = iconst.i64 1
     v676 = symbol_value.i64 gv1
+    store notrap aligned v670, v4+152
     v677 = iadd_imm v670, -32
     store notrap aligned v672, v677
     store notrap aligned v676, v677+8
     store notrap aligned v675, v677+16
     store notrap aligned v675, v677+24
-    store notrap aligned v677, v4+152
     v678, v679 = call fn1(v673, v674)
     v680 = load.i64 notrap aligned v4+152
     v681 = iconst.i64 1
@@ -965,12 +965,12 @@ block0(v0: r64, v1: i64):
     v684 = iconst.i64 0
     v685 = iconst.i64 1
     v686 = symbol_value.i64 gv1
+    store notrap aligned v680, v4+152
     v687 = iadd_imm v680, -32
     store notrap aligned v682, v687
     store notrap aligned v686, v687+8
     store notrap aligned v685, v687+16
     store notrap aligned v685, v687+24
-    store notrap aligned v687, v4+152
     v688, v689 = call fn1(v683, v684)
     v690 = load.i64 notrap aligned v4+152
     v691 = iconst.i64 1
@@ -979,12 +979,12 @@ block0(v0: r64, v1: i64):
     v694 = iconst.i64 0
     v695 = iconst.i64 1
     v696 = symbol_value.i64 gv1
+    store notrap aligned v690, v4+152
     v697 = iadd_imm v690, -32
     store notrap aligned v692, v697
     store notrap aligned v696, v697+8
     store notrap aligned v695, v697+16
     store notrap aligned v695, v697+24
-    store notrap aligned v697, v4+152
     v698, v699 = call fn1(v693, v694)
     v700 = load.i64 notrap aligned v4+152
     v701 = iconst.i64 1
@@ -993,12 +993,12 @@ block0(v0: r64, v1: i64):
     v704 = iconst.i64 0
     v705 = iconst.i64 1
     v706 = symbol_value.i64 gv1
+    store notrap aligned v700, v4+152
     v707 = iadd_imm v700, -32
     store notrap aligned v702, v707
     store notrap aligned v706, v707+8
     store notrap aligned v705, v707+16
     store notrap aligned v705, v707+24
-    store notrap aligned v707, v4+152
     v708, v709 = call fn1(v703, v704)
     v710 = load.i64 notrap aligned v4+152
     v711 = iconst.i64 1
@@ -1007,12 +1007,12 @@ block0(v0: r64, v1: i64):
     v714 = iconst.i64 0
     v715 = iconst.i64 1
     v716 = symbol_value.i64 gv1
+    store notrap aligned v710, v4+152
     v717 = iadd_imm v710, -32
     store notrap aligned v712, v717
     store notrap aligned v716, v717+8
     store notrap aligned v715, v717+16
     store notrap aligned v715, v717+24
-    store notrap aligned v717, v4+152
     v718, v719 = call fn1(v713, v714)
     v720 = load.i64 notrap aligned v4+152
     v721 = iconst.i64 1
@@ -1021,12 +1021,12 @@ block0(v0: r64, v1: i64):
     v724 = iconst.i64 0
     v725 = iconst.i64 1
     v726 = symbol_value.i64 gv1
+    store notrap aligned v720, v4+152
     v727 = iadd_imm v720, -32
     store notrap aligned v722, v727
     store notrap aligned v726, v727+8
     store notrap aligned v725, v727+16
     store notrap aligned v725, v727+24
-    store notrap aligned v727, v4+152
     v728, v729 = call fn1(v723, v724)
     v730 = load.i64 notrap aligned v4+152
     v731 = iconst.i64 1
@@ -1035,12 +1035,12 @@ block0(v0: r64, v1: i64):
     v734 = iconst.i64 0
     v735 = iconst.i64 1
     v736 = symbol_value.i64 gv1
+    store notrap aligned v730, v4+152
     v737 = iadd_imm v730, -32
     store notrap aligned v732, v737
     store notrap aligned v736, v737+8
     store notrap aligned v735, v737+16
     store notrap aligned v735, v737+24
-    store notrap aligned v737, v4+152
     v738, v739 = call fn1(v733, v734)
     v740 = load.i64 notrap aligned v4+152
     v741 = iconst.i64 1
@@ -1049,12 +1049,12 @@ block0(v0: r64, v1: i64):
     v744 = iconst.i64 0
     v745 = iconst.i64 1
     v746 = symbol_value.i64 gv1
+    store notrap aligned v740, v4+152
     v747 = iadd_imm v740, -32
     store notrap aligned v742, v747
     store notrap aligned v746, v747+8
     store notrap aligned v745, v747+16
     store notrap aligned v745, v747+24
-    store notrap aligned v747, v4+152
     v748, v749 = call fn1(v743, v744)
     v750 = load.i64 notrap aligned v4+152
     v751 = iconst.i64 1
@@ -1063,12 +1063,12 @@ block0(v0: r64, v1: i64):
     v754 = iconst.i64 0
     v755 = iconst.i64 1
     v756 = symbol_value.i64 gv1
+    store notrap aligned v750, v4+152
     v757 = iadd_imm v750, -32
     store notrap aligned v752, v757
     store notrap aligned v756, v757+8
     store notrap aligned v755, v757+16
     store notrap aligned v755, v757+24
-    store notrap aligned v757, v4+152
     v758, v759 = call fn1(v753, v754)
     v760 = load.i64 notrap aligned v4+152
     v761 = iconst.i64 1
@@ -1077,12 +1077,12 @@ block0(v0: r64, v1: i64):
     v764 = iconst.i64 0
     v765 = iconst.i64 1
     v766 = symbol_value.i64 gv1
+    store notrap aligned v760, v4+152
     v767 = iadd_imm v760, -32
     store notrap aligned v762, v767
     store notrap aligned v766, v767+8
     store notrap aligned v765, v767+16
     store notrap aligned v765, v767+24
-    store notrap aligned v767, v4+152
     v768, v769 = call fn1(v763, v764)
     v770 = load.i64 notrap aligned v4+152
     v771 = iconst.i64 1
@@ -1091,12 +1091,12 @@ block0(v0: r64, v1: i64):
     v774 = iconst.i64 0
     v775 = iconst.i64 1
     v776 = symbol_value.i64 gv1
+    store notrap aligned v770, v4+152
     v777 = iadd_imm v770, -32
     store notrap aligned v772, v777
     store notrap aligned v776, v777+8
     store notrap aligned v775, v777+16
     store notrap aligned v775, v777+24
-    store notrap aligned v777, v4+152
     v778, v779 = call fn1(v773, v774)
     v780 = load.i64 notrap aligned v4+152
     v781 = iconst.i64 1
@@ -1105,12 +1105,12 @@ block0(v0: r64, v1: i64):
     v784 = iconst.i64 0
     v785 = iconst.i64 1
     v786 = symbol_value.i64 gv1
+    store notrap aligned v780, v4+152
     v787 = iadd_imm v780, -32
     store notrap aligned v782, v787
     store notrap aligned v786, v787+8
     store notrap aligned v785, v787+16
     store notrap aligned v785, v787+24
-    store notrap aligned v787, v4+152
     v788, v789 = call fn1(v783, v784)
     v790 = load.i64 notrap aligned v4+152
     v791 = iconst.i64 1
@@ -1119,12 +1119,12 @@ block0(v0: r64, v1: i64):
     v794 = iconst.i64 0
     v795 = iconst.i64 1
     v796 = symbol_value.i64 gv1
+    store notrap aligned v790, v4+152
     v797 = iadd_imm v790, -32
     store notrap aligned v792, v797
     store notrap aligned v796, v797+8
     store notrap aligned v795, v797+16
     store notrap aligned v795, v797+24
-    store notrap aligned v797, v4+152
     v798, v799 = call fn1(v793, v794)
     v800 = load.i64 notrap aligned v4+152
     v801 = iconst.i64 1
@@ -1133,12 +1133,12 @@ block0(v0: r64, v1: i64):
     v804 = iconst.i64 0
     v805 = iconst.i64 1
     v806 = symbol_value.i64 gv1
+    store notrap aligned v800, v4+152
     v807 = iadd_imm v800, -32
     store notrap aligned v802, v807
     store notrap aligned v806, v807+8
     store notrap aligned v805, v807+16
     store notrap aligned v805, v807+24
-    store notrap aligned v807, v4+152
     v808, v809 = call fn1(v803, v804)
     v810 = load.i64 notrap aligned v4+152
     v811 = iconst.i64 1
@@ -1147,12 +1147,12 @@ block0(v0: r64, v1: i64):
     v814 = iconst.i64 0
     v815 = iconst.i64 1
     v816 = symbol_value.i64 gv1
+    store notrap aligned v810, v4+152
     v817 = iadd_imm v810, -32
     store notrap aligned v812, v817
     store notrap aligned v816, v817+8
     store notrap aligned v815, v817+16
     store notrap aligned v815, v817+24
-    store notrap aligned v817, v4+152
     v818, v819 = call fn1(v813, v814)
     v820 = load.i64 notrap aligned v4+152
     v821 = iconst.i64 1
@@ -1161,12 +1161,12 @@ block0(v0: r64, v1: i64):
     v824 = iconst.i64 0
     v825 = iconst.i64 1
     v826 = symbol_value.i64 gv1
+    store notrap aligned v820, v4+152
     v827 = iadd_imm v820, -32
     store notrap aligned v822, v827
     store notrap aligned v826, v827+8
     store notrap aligned v825, v827+16
     store notrap aligned v825, v827+24
-    store notrap aligned v827, v4+152
     v828, v829 = call fn1(v823, v824)
     v830 = load.i64 notrap aligned v4+152
     v831 = iconst.i64 1
@@ -1175,12 +1175,12 @@ block0(v0: r64, v1: i64):
     v834 = iconst.i64 0
     v835 = iconst.i64 1
     v836 = symbol_value.i64 gv1
+    store notrap aligned v830, v4+152
     v837 = iadd_imm v830, -32
     store notrap aligned v832, v837
     store notrap aligned v836, v837+8
     store notrap aligned v835, v837+16
     store notrap aligned v835, v837+24
-    store notrap aligned v837, v4+152
     v838, v839 = call fn1(v833, v834)
     v840 = load.i64 notrap aligned v4+152
     v841 = iconst.i64 1
@@ -1189,12 +1189,12 @@ block0(v0: r64, v1: i64):
     v844 = iconst.i64 0
     v845 = iconst.i64 1
     v846 = symbol_value.i64 gv1
+    store notrap aligned v840, v4+152
     v847 = iadd_imm v840, -32
     store notrap aligned v842, v847
     store notrap aligned v846, v847+8
     store notrap aligned v845, v847+16
     store notrap aligned v845, v847+24
-    store notrap aligned v847, v4+152
     v848, v849 = call fn1(v843, v844)
     v850 = load.i64 notrap aligned v4+152
     v851 = iconst.i64 1
@@ -1203,12 +1203,12 @@ block0(v0: r64, v1: i64):
     v854 = iconst.i64 0
     v855 = iconst.i64 1
     v856 = symbol_value.i64 gv1
+    store notrap aligned v850, v4+152
     v857 = iadd_imm v850, -32
     store notrap aligned v852, v857
     store notrap aligned v856, v857+8
     store notrap aligned v855, v857+16
     store notrap aligned v855, v857+24
-    store notrap aligned v857, v4+152
     v858, v859 = call fn1(v853, v854)
     v860 = load.i64 notrap aligned v4+152
     v861 = iconst.i64 1
@@ -1217,12 +1217,12 @@ block0(v0: r64, v1: i64):
     v864 = iconst.i64 0
     v865 = iconst.i64 1
     v866 = symbol_value.i64 gv1
+    store notrap aligned v860, v4+152
     v867 = iadd_imm v860, -32
     store notrap aligned v862, v867
     store notrap aligned v866, v867+8
     store notrap aligned v865, v867+16
     store notrap aligned v865, v867+24
-    store notrap aligned v867, v4+152
     v868, v869 = call fn1(v863, v864)
     v870 = load.i64 notrap aligned v4+152
     v871 = iconst.i64 1
@@ -1231,12 +1231,12 @@ block0(v0: r64, v1: i64):
     v874 = iconst.i64 0
     v875 = iconst.i64 1
     v876 = symbol_value.i64 gv1
+    store notrap aligned v870, v4+152
     v877 = iadd_imm v870, -32
     store notrap aligned v872, v877
     store notrap aligned v876, v877+8
     store notrap aligned v875, v877+16
     store notrap aligned v875, v877+24
-    store notrap aligned v877, v4+152
     v878, v879 = call fn1(v873, v874)
     v880 = load.i64 notrap aligned v4+152
     v881 = iconst.i64 1
@@ -1245,12 +1245,12 @@ block0(v0: r64, v1: i64):
     v884 = iconst.i64 0
     v885 = iconst.i64 1
     v886 = symbol_value.i64 gv1
+    store notrap aligned v880, v4+152
     v887 = iadd_imm v880, -32
     store notrap aligned v882, v887
     store notrap aligned v886, v887+8
     store notrap aligned v885, v887+16
     store notrap aligned v885, v887+24
-    store notrap aligned v887, v4+152
     v888, v889 = call fn1(v883, v884)
     v890 = load.i64 notrap aligned v4+152
     v891 = iconst.i64 1
@@ -1259,12 +1259,12 @@ block0(v0: r64, v1: i64):
     v894 = iconst.i64 0
     v895 = iconst.i64 1
     v896 = symbol_value.i64 gv1
+    store notrap aligned v890, v4+152
     v897 = iadd_imm v890, -32
     store notrap aligned v892, v897
     store notrap aligned v896, v897+8
     store notrap aligned v895, v897+16
     store notrap aligned v895, v897+24
-    store notrap aligned v897, v4+152
     v898, v899 = call fn1(v893, v894)
     v900 = load.i64 notrap aligned v4+152
     v901 = iconst.i64 1
@@ -1273,12 +1273,12 @@ block0(v0: r64, v1: i64):
     v904 = iconst.i64 0
     v905 = iconst.i64 1
     v906 = symbol_value.i64 gv1
+    store notrap aligned v900, v4+152
     v907 = iadd_imm v900, -32
     store notrap aligned v902, v907
     store notrap aligned v906, v907+8
     store notrap aligned v905, v907+16
     store notrap aligned v905, v907+24
-    store notrap aligned v907, v4+152
     v908, v909 = call fn1(v903, v904)
     v910 = load.i64 notrap aligned v4+152
     v911 = iconst.i64 1
@@ -1287,12 +1287,12 @@ block0(v0: r64, v1: i64):
     v914 = iconst.i64 0
     v915 = iconst.i64 1
     v916 = symbol_value.i64 gv1
+    store notrap aligned v910, v4+152
     v917 = iadd_imm v910, -32
     store notrap aligned v912, v917
     store notrap aligned v916, v917+8
     store notrap aligned v915, v917+16
     store notrap aligned v915, v917+24
-    store notrap aligned v917, v4+152
     v918, v919 = call fn1(v913, v914)
     v920 = load.i64 notrap aligned v4+152
     v921 = iconst.i64 1
@@ -1301,12 +1301,12 @@ block0(v0: r64, v1: i64):
     v924 = iconst.i64 0
     v925 = iconst.i64 1
     v926 = symbol_value.i64 gv1
+    store notrap aligned v920, v4+152
     v927 = iadd_imm v920, -32
     store notrap aligned v922, v927
     store notrap aligned v926, v927+8
     store notrap aligned v925, v927+16
     store notrap aligned v925, v927+24
-    store notrap aligned v927, v4+152
     v928, v929 = call fn1(v923, v924)
     v930 = load.i64 notrap aligned v4+152
     v931 = iconst.i64 1
@@ -1315,12 +1315,12 @@ block0(v0: r64, v1: i64):
     v934 = iconst.i64 0
     v935 = iconst.i64 1
     v936 = symbol_value.i64 gv1
+    store notrap aligned v930, v4+152
     v937 = iadd_imm v930, -32
     store notrap aligned v932, v937
     store notrap aligned v936, v937+8
     store notrap aligned v935, v937+16
     store notrap aligned v935, v937+24
-    store notrap aligned v937, v4+152
     v938, v939 = call fn1(v933, v934)
     v940 = load.i64 notrap aligned v4+152
     v941 = iconst.i64 1
@@ -1329,12 +1329,12 @@ block0(v0: r64, v1: i64):
     v944 = iconst.i64 0
     v945 = iconst.i64 1
     v946 = symbol_value.i64 gv1
+    store notrap aligned v940, v4+152
     v947 = iadd_imm v940, -32
     store notrap aligned v942, v947
     store notrap aligned v946, v947+8
     store notrap aligned v945, v947+16
     store notrap aligned v945, v947+24
-    store notrap aligned v947, v4+152
     v948, v949 = call fn1(v943, v944)
     v950 = load.i64 notrap aligned v4+152
     v951 = iconst.i64 1
@@ -1343,12 +1343,12 @@ block0(v0: r64, v1: i64):
     v954 = iconst.i64 0
     v955 = iconst.i64 1
     v956 = symbol_value.i64 gv1
+    store notrap aligned v950, v4+152
     v957 = iadd_imm v950, -32
     store notrap aligned v952, v957
     store notrap aligned v956, v957+8
     store notrap aligned v955, v957+16
     store notrap aligned v955, v957+24
-    store notrap aligned v957, v4+152
     v958, v959 = call fn1(v953, v954)
     v960 = load.i64 notrap aligned v4+152
     v961 = iconst.i64 1
@@ -1357,12 +1357,12 @@ block0(v0: r64, v1: i64):
     v964 = iconst.i64 0
     v965 = iconst.i64 1
     v966 = symbol_value.i64 gv1
+    store notrap aligned v960, v4+152
     v967 = iadd_imm v960, -32
     store notrap aligned v962, v967
     store notrap aligned v966, v967+8
     store notrap aligned v965, v967+16
     store notrap aligned v965, v967+24
-    store notrap aligned v967, v4+152
     v968, v969 = call fn1(v963, v964)
     v970 = load.i64 notrap aligned v4+152
     v971 = iconst.i64 1
@@ -1371,12 +1371,12 @@ block0(v0: r64, v1: i64):
     v974 = iconst.i64 0
     v975 = iconst.i64 1
     v976 = symbol_value.i64 gv1
+    store notrap aligned v970, v4+152
     v977 = iadd_imm v970, -32
     store notrap aligned v972, v977
     store notrap aligned v976, v977+8
     store notrap aligned v975, v977+16
     store notrap aligned v975, v977+24
-    store notrap aligned v977, v4+152
     v978, v979 = call fn1(v973, v974)
     v980 = load.i64 notrap aligned v4+152
     v981 = iconst.i64 1
@@ -1385,12 +1385,12 @@ block0(v0: r64, v1: i64):
     v984 = iconst.i64 0
     v985 = iconst.i64 1
     v986 = symbol_value.i64 gv1
+    store notrap aligned v980, v4+152
     v987 = iadd_imm v980, -32
     store notrap aligned v982, v987
     store notrap aligned v986, v987+8
     store notrap aligned v985, v987+16
     store notrap aligned v985, v987+24
-    store notrap aligned v987, v4+152
     v988, v989 = call fn1(v983, v984)
     v990 = load.i64 notrap aligned v4+152
     v991 = iconst.i64 1
@@ -1399,12 +1399,12 @@ block0(v0: r64, v1: i64):
     v994 = iconst.i64 0
     v995 = iconst.i64 1
     v996 = symbol_value.i64 gv1
+    store notrap aligned v990, v4+152
     v997 = iadd_imm v990, -32
     store notrap aligned v992, v997
     store notrap aligned v996, v997+8
     store notrap aligned v995, v997+16
     store notrap aligned v995, v997+24
-    store notrap aligned v997, v4+152
     v998, v999 = call fn1(v993, v994)
     v1000 = load.i64 notrap aligned v4+152
     v1001 = iconst.i64 1
@@ -1413,12 +1413,12 @@ block0(v0: r64, v1: i64):
     v1004 = iconst.i64 0
     v1005 = iconst.i64 1
     v1006 = symbol_value.i64 gv1
+    store notrap aligned v1000, v4+152
     v1007 = iadd_imm v1000, -32
     store notrap aligned v1002, v1007
     store notrap aligned v1006, v1007+8
     store notrap aligned v1005, v1007+16
     store notrap aligned v1005, v1007+24
-    store notrap aligned v1007, v4+152
     v1008, v1009 = call fn1(v1003, v1004)
     v1010 = load.i64 notrap aligned v4+152
     v1011 = iconst.i64 1
@@ -1427,12 +1427,12 @@ block0(v0: r64, v1: i64):
     v1014 = iconst.i64 0
     v1015 = iconst.i64 1
     v1016 = symbol_value.i64 gv1
+    store notrap aligned v1010, v4+152
     v1017 = iadd_imm v1010, -32
     store notrap aligned v1012, v1017
     store notrap aligned v1016, v1017+8
     store notrap aligned v1015, v1017+16
     store notrap aligned v1015, v1017+24
-    store notrap aligned v1017, v4+152
     v1018, v1019 = call fn1(v1013, v1014)
     v1020 = load.i64 notrap aligned v4+152
     v1021 = iconst.i64 1
@@ -1441,12 +1441,12 @@ block0(v0: r64, v1: i64):
     v1024 = iconst.i64 0
     v1025 = iconst.i64 1
     v1026 = symbol_value.i64 gv1
+    store notrap aligned v1020, v4+152
     v1027 = iadd_imm v1020, -32
     store notrap aligned v1022, v1027
     store notrap aligned v1026, v1027+8
     store notrap aligned v1025, v1027+16
     store notrap aligned v1025, v1027+24
-    store notrap aligned v1027, v4+152
     v1028, v1029 = call fn1(v1023, v1024)
     v1030 = load.i64 notrap aligned v4+152
     v1031 = iconst.i64 1
@@ -1455,12 +1455,12 @@ block0(v0: r64, v1: i64):
     v1034 = iconst.i64 0
     v1035 = iconst.i64 1
     v1036 = symbol_value.i64 gv1
+    store notrap aligned v1030, v4+152
     v1037 = iadd_imm v1030, -32
     store notrap aligned v1032, v1037
     store notrap aligned v1036, v1037+8
     store notrap aligned v1035, v1037+16
     store notrap aligned v1035, v1037+24
-    store notrap aligned v1037, v4+152
     v1038, v1039 = call fn1(v1033, v1034)
     v1040 = load.i64 notrap aligned v4+152
     v1041 = iconst.i64 1
@@ -1469,12 +1469,12 @@ block0(v0: r64, v1: i64):
     v1044 = iconst.i64 0
     v1045 = iconst.i64 1
     v1046 = symbol_value.i64 gv1
+    store notrap aligned v1040, v4+152
     v1047 = iadd_imm v1040, -32
     store notrap aligned v1042, v1047
     store notrap aligned v1046, v1047+8
     store notrap aligned v1045, v1047+16
     store notrap aligned v1045, v1047+24
-    store notrap aligned v1047, v4+152
     v1048, v1049 = call fn1(v1043, v1044)
     v1050 = load.i64 notrap aligned v4+152
     v1051 = iconst.i64 1
@@ -1483,12 +1483,12 @@ block0(v0: r64, v1: i64):
     v1054 = iconst.i64 0
     v1055 = iconst.i64 1
     v1056 = symbol_value.i64 gv1
+    store notrap aligned v1050, v4+152
     v1057 = iadd_imm v1050, -32
     store notrap aligned v1052, v1057
     store notrap aligned v1056, v1057+8
     store notrap aligned v1055, v1057+16
     store notrap aligned v1055, v1057+24
-    store notrap aligned v1057, v4+152
     v1058, v1059 = call fn1(v1053, v1054)
     v1060 = load.i64 notrap aligned v4+152
     v1061 = iconst.i64 1
@@ -1497,12 +1497,12 @@ block0(v0: r64, v1: i64):
     v1064 = iconst.i64 0
     v1065 = iconst.i64 1
     v1066 = symbol_value.i64 gv1
+    store notrap aligned v1060, v4+152
     v1067 = iadd_imm v1060, -32
     store notrap aligned v1062, v1067
     store notrap aligned v1066, v1067+8
     store notrap aligned v1065, v1067+16
     store notrap aligned v1065, v1067+24
-    store notrap aligned v1067, v4+152
     v1068, v1069 = call fn1(v1063, v1064)
     v1070 = load.i64 notrap aligned v4+152
     v1071 = iconst.i64 1
@@ -1511,12 +1511,12 @@ block0(v0: r64, v1: i64):
     v1074 = iconst.i64 0
     v1075 = iconst.i64 1
     v1076 = symbol_value.i64 gv1
+    store notrap aligned v1070, v4+152
     v1077 = iadd_imm v1070, -32
     store notrap aligned v1072, v1077
     store notrap aligned v1076, v1077+8
     store notrap aligned v1075, v1077+16
     store notrap aligned v1075, v1077+24
-    store notrap aligned v1077, v4+152
     v1078, v1079 = call fn1(v1073, v1074)
     v1080 = load.i64 notrap aligned v4+152
     v1081 = iconst.i64 1
@@ -1525,12 +1525,12 @@ block0(v0: r64, v1: i64):
     v1084 = iconst.i64 0
     v1085 = iconst.i64 1
     v1086 = symbol_value.i64 gv1
+    store notrap aligned v1080, v4+152
     v1087 = iadd_imm v1080, -32
     store notrap aligned v1082, v1087
     store notrap aligned v1086, v1087+8
     store notrap aligned v1085, v1087+16
     store notrap aligned v1085, v1087+24
-    store notrap aligned v1087, v4+152
     v1088, v1089 = call fn1(v1083, v1084)
     v1090 = load.i64 notrap aligned v4+152
     v1091 = iconst.i64 1
@@ -1539,12 +1539,12 @@ block0(v0: r64, v1: i64):
     v1094 = iconst.i64 0
     v1095 = iconst.i64 1
     v1096 = symbol_value.i64 gv1
+    store notrap aligned v1090, v4+152
     v1097 = iadd_imm v1090, -32
     store notrap aligned v1092, v1097
     store notrap aligned v1096, v1097+8
     store notrap aligned v1095, v1097+16
     store notrap aligned v1095, v1097+24
-    store notrap aligned v1097, v4+152
     v1098, v1099 = call fn1(v1093, v1094)
     v1100 = load.i64 notrap aligned v4+152
     v1101 = iconst.i64 1
@@ -1553,12 +1553,12 @@ block0(v0: r64, v1: i64):
     v1104 = iconst.i64 0
     v1105 = iconst.i64 1
     v1106 = symbol_value.i64 gv1
+    store notrap aligned v1100, v4+152
     v1107 = iadd_imm v1100, -32
     store notrap aligned v1102, v1107
     store notrap aligned v1106, v1107+8
     store notrap aligned v1105, v1107+16
     store notrap aligned v1105, v1107+24
-    store notrap aligned v1107, v4+152
     v1108, v1109 = call fn1(v1103, v1104)
     v1110 = load.i64 notrap aligned v4+152
     v1111 = iconst.i64 1
@@ -1567,12 +1567,12 @@ block0(v0: r64, v1: i64):
     v1114 = iconst.i64 0
     v1115 = iconst.i64 1
     v1116 = symbol_value.i64 gv1
+    store notrap aligned v1110, v4+152
     v1117 = iadd_imm v1110, -32
     store notrap aligned v1112, v1117
     store notrap aligned v1116, v1117+8
     store notrap aligned v1115, v1117+16
     store notrap aligned v1115, v1117+24
-    store notrap aligned v1117, v4+152
     v1118, v1119 = call fn1(v1113, v1114)
     v1120 = load.i64 notrap aligned v4+152
     v1121 = iconst.i64 1
@@ -1581,12 +1581,12 @@ block0(v0: r64, v1: i64):
     v1124 = iconst.i64 0
     v1125 = iconst.i64 1
     v1126 = symbol_value.i64 gv1
+    store notrap aligned v1120, v4+152
     v1127 = iadd_imm v1120, -32
     store notrap aligned v1122, v1127
     store notrap aligned v1126, v1127+8
     store notrap aligned v1125, v1127+16
     store notrap aligned v1125, v1127+24
-    store notrap aligned v1127, v4+152
     v1128, v1129 = call fn1(v1123, v1124)
     v1130 = load.i64 notrap aligned v4+152
     v1131 = iconst.i64 1
@@ -1595,12 +1595,12 @@ block0(v0: r64, v1: i64):
     v1134 = iconst.i64 0
     v1135 = iconst.i64 1
     v1136 = symbol_value.i64 gv1
+    store notrap aligned v1130, v4+152
     v1137 = iadd_imm v1130, -32
     store notrap aligned v1132, v1137
     store notrap aligned v1136, v1137+8
     store notrap aligned v1135, v1137+16
     store notrap aligned v1135, v1137+24
-    store notrap aligned v1137, v4+152
     v1138, v1139 = call fn1(v1133, v1134)
     v1140 = load.i64 notrap aligned v4+152
     v1141 = iconst.i64 1
@@ -1609,12 +1609,12 @@ block0(v0: r64, v1: i64):
     v1144 = iconst.i64 0
     v1145 = iconst.i64 1
     v1146 = symbol_value.i64 gv1
+    store notrap aligned v1140, v4+152
     v1147 = iadd_imm v1140, -32
     store notrap aligned v1142, v1147
     store notrap aligned v1146, v1147+8
     store notrap aligned v1145, v1147+16
     store notrap aligned v1145, v1147+24
-    store notrap aligned v1147, v4+152
     v1148, v1149 = call fn1(v1143, v1144)
     v1150 = load.i64 notrap aligned v4+152
     v1151 = iconst.i64 1
@@ -1623,12 +1623,12 @@ block0(v0: r64, v1: i64):
     v1154 = iconst.i64 0
     v1155 = iconst.i64 1
     v1156 = symbol_value.i64 gv1
+    store notrap aligned v1150, v4+152
     v1157 = iadd_imm v1150, -32
     store notrap aligned v1152, v1157
     store notrap aligned v1156, v1157+8
     store notrap aligned v1155, v1157+16
     store notrap aligned v1155, v1157+24
-    store notrap aligned v1157, v4+152
     v1158, v1159 = call fn1(v1153, v1154)
     v1160 = load.i64 notrap aligned v4+152
     v1161 = iconst.i64 1
@@ -1637,12 +1637,12 @@ block0(v0: r64, v1: i64):
     v1164 = iconst.i64 0
     v1165 = iconst.i64 1
     v1166 = symbol_value.i64 gv1
+    store notrap aligned v1160, v4+152
     v1167 = iadd_imm v1160, -32
     store notrap aligned v1162, v1167
     store notrap aligned v1166, v1167+8
     store notrap aligned v1165, v1167+16
     store notrap aligned v1165, v1167+24
-    store notrap aligned v1167, v4+152
     v1168, v1169 = call fn1(v1163, v1164)
     v1170 = load.i64 notrap aligned v4+152
     v1171 = iconst.i64 1
@@ -1651,12 +1651,12 @@ block0(v0: r64, v1: i64):
     v1174 = iconst.i64 0
     v1175 = iconst.i64 1
     v1176 = symbol_value.i64 gv1
+    store notrap aligned v1170, v4+152
     v1177 = iadd_imm v1170, -32
     store notrap aligned v1172, v1177
     store notrap aligned v1176, v1177+8
     store notrap aligned v1175, v1177+16
     store notrap aligned v1175, v1177+24
-    store notrap aligned v1177, v4+152
     v1178, v1179 = call fn1(v1173, v1174)
     v1180 = load.i64 notrap aligned v4+152
     v1181 = iconst.i64 1
@@ -1665,12 +1665,12 @@ block0(v0: r64, v1: i64):
     v1184 = iconst.i64 0
     v1185 = iconst.i64 1
     v1186 = symbol_value.i64 gv1
+    store notrap aligned v1180, v4+152
     v1187 = iadd_imm v1180, -32
     store notrap aligned v1182, v1187
     store notrap aligned v1186, v1187+8
     store notrap aligned v1185, v1187+16
     store notrap aligned v1185, v1187+24
-    store notrap aligned v1187, v4+152
     v1188, v1189 = call fn1(v1183, v1184)
     v1190 = load.i64 notrap aligned v4+152
     v1191 = iconst.i64 1
@@ -1679,12 +1679,12 @@ block0(v0: r64, v1: i64):
     v1194 = iconst.i64 0
     v1195 = iconst.i64 1
     v1196 = symbol_value.i64 gv1
+    store notrap aligned v1190, v4+152
     v1197 = iadd_imm v1190, -32
     store notrap aligned v1192, v1197
     store notrap aligned v1196, v1197+8
     store notrap aligned v1195, v1197+16
     store notrap aligned v1195, v1197+24
-    store notrap aligned v1197, v4+152
     v1198, v1199 = call fn1(v1193, v1194)
     v1200 = load.i64 notrap aligned v4+152
     v1201 = iconst.i64 1
@@ -1693,12 +1693,12 @@ block0(v0: r64, v1: i64):
     v1204 = iconst.i64 0
     v1205 = iconst.i64 1
     v1206 = symbol_value.i64 gv1
+    store notrap aligned v1200, v4+152
     v1207 = iadd_imm v1200, -32
     store notrap aligned v1202, v1207
     store notrap aligned v1206, v1207+8
     store notrap aligned v1205, v1207+16
     store notrap aligned v1205, v1207+24
-    store notrap aligned v1207, v4+152
     v1208, v1209 = call fn1(v1203, v1204)
     v1210 = load.i64 notrap aligned v4+152
     v1211 = iconst.i64 1
@@ -1707,12 +1707,12 @@ block0(v0: r64, v1: i64):
     v1214 = iconst.i64 0
     v1215 = iconst.i64 1
     v1216 = symbol_value.i64 gv1
+    store notrap aligned v1210, v4+152
     v1217 = iadd_imm v1210, -32
     store notrap aligned v1212, v1217
     store notrap aligned v1216, v1217+8
     store notrap aligned v1215, v1217+16
     store notrap aligned v1215, v1217+24
-    store notrap aligned v1217, v4+152
     v1218, v1219 = call fn1(v1213, v1214)
     v1220 = load.i64 notrap aligned v4+152
     v1221 = iconst.i64 1
@@ -1721,12 +1721,12 @@ block0(v0: r64, v1: i64):
     v1224 = iconst.i64 0
     v1225 = iconst.i64 1
     v1226 = symbol_value.i64 gv1
+    store notrap aligned v1220, v4+152
     v1227 = iadd_imm v1220, -32
     store notrap aligned v1222, v1227
     store notrap aligned v1226, v1227+8
     store notrap aligned v1225, v1227+16
     store notrap aligned v1225, v1227+24
-    store notrap aligned v1227, v4+152
     v1228, v1229 = call fn1(v1223, v1224)
     v1230 = load.i64 notrap aligned v4+152
     v1231 = iconst.i64 1
@@ -1735,12 +1735,12 @@ block0(v0: r64, v1: i64):
     v1234 = iconst.i64 0
     v1235 = iconst.i64 1
     v1236 = symbol_value.i64 gv1
+    store notrap aligned v1230, v4+152
     v1237 = iadd_imm v1230, -32
     store notrap aligned v1232, v1237
     store notrap aligned v1236, v1237+8
     store notrap aligned v1235, v1237+16
     store notrap aligned v1235, v1237+24
-    store notrap aligned v1237, v4+152
     v1238, v1239 = call fn1(v1233, v1234)
     v1240 = load.i64 notrap aligned v4+152
     v1241 = iconst.i64 1
@@ -1749,12 +1749,12 @@ block0(v0: r64, v1: i64):
     v1244 = iconst.i64 0
     v1245 = iconst.i64 1
     v1246 = symbol_value.i64 gv1
+    store notrap aligned v1240, v4+152
     v1247 = iadd_imm v1240, -32
     store notrap aligned v1242, v1247
     store notrap aligned v1246, v1247+8
     store notrap aligned v1245, v1247+16
     store notrap aligned v1245, v1247+24
-    store notrap aligned v1247, v4+152
     v1248, v1249 = call fn1(v1243, v1244)
     v1250 = load.i64 notrap aligned v4+152
     v1251 = iconst.i64 1
@@ -1763,12 +1763,12 @@ block0(v0: r64, v1: i64):
     v1254 = iconst.i64 0
     v1255 = iconst.i64 1
     v1256 = symbol_value.i64 gv1
+    store notrap aligned v1250, v4+152
     v1257 = iadd_imm v1250, -32
     store notrap aligned v1252, v1257
     store notrap aligned v1256, v1257+8
     store notrap aligned v1255, v1257+16
     store notrap aligned v1255, v1257+24
-    store notrap aligned v1257, v4+152
     v1258, v1259 = call fn1(v1253, v1254)
     v1260 = load.i64 notrap aligned v4+152
     v1261 = iconst.i64 1
@@ -1777,12 +1777,12 @@ block0(v0: r64, v1: i64):
     v1264 = iconst.i64 0
     v1265 = iconst.i64 1
     v1266 = symbol_value.i64 gv1
+    store notrap aligned v1260, v4+152
     v1267 = iadd_imm v1260, -32
     store notrap aligned v1262, v1267
     store notrap aligned v1266, v1267+8
     store notrap aligned v1265, v1267+16
     store notrap aligned v1265, v1267+24
-    store notrap aligned v1267, v4+152
     v1268, v1269 = call fn1(v1263, v1264)
     v1270 = load.i64 notrap aligned v4+152
     v1271 = iconst.i64 1
@@ -1791,12 +1791,12 @@ block0(v0: r64, v1: i64):
     v1274 = iconst.i64 0
     v1275 = iconst.i64 1
     v1276 = symbol_value.i64 gv1
+    store notrap aligned v1270, v4+152
     v1277 = iadd_imm v1270, -32
     store notrap aligned v1272, v1277
     store notrap aligned v1276, v1277+8
     store notrap aligned v1275, v1277+16
     store notrap aligned v1275, v1277+24
-    store notrap aligned v1277, v4+152
     v1278, v1279 = call fn1(v1273, v1274)
     v1280 = load.i64 notrap aligned v4+152
     v1281 = iconst.i64 1
@@ -1805,12 +1805,12 @@ block0(v0: r64, v1: i64):
     v1284 = iconst.i64 0
     v1285 = iconst.i64 1
     v1286 = symbol_value.i64 gv1
+    store notrap aligned v1280, v4+152
     v1287 = iadd_imm v1280, -32
     store notrap aligned v1282, v1287
     store notrap aligned v1286, v1287+8
     store notrap aligned v1285, v1287+16
     store notrap aligned v1285, v1287+24
-    store notrap aligned v1287, v4+152
     v1288, v1289 = call fn1(v1283, v1284)
     v1290 = load.i64 notrap aligned v4+152
     v1291 = iconst.i64 1
@@ -1819,12 +1819,12 @@ block0(v0: r64, v1: i64):
     v1294 = iconst.i64 0
     v1295 = iconst.i64 1
     v1296 = symbol_value.i64 gv1
+    store notrap aligned v1290, v4+152
     v1297 = iadd_imm v1290, -32
     store notrap aligned v1292, v1297
     store notrap aligned v1296, v1297+8
     store notrap aligned v1295, v1297+16
     store notrap aligned v1295, v1297+24
-    store notrap aligned v1297, v4+152
     v1298, v1299 = call fn1(v1293, v1294)
     v1300 = load.i64 notrap aligned v4+152
     v1301 = iconst.i64 1
@@ -1833,12 +1833,12 @@ block0(v0: r64, v1: i64):
     v1304 = iconst.i64 0
     v1305 = iconst.i64 1
     v1306 = symbol_value.i64 gv1
+    store notrap aligned v1300, v4+152
     v1307 = iadd_imm v1300, -32
     store notrap aligned v1302, v1307
     store notrap aligned v1306, v1307+8
     store notrap aligned v1305, v1307+16
     store notrap aligned v1305, v1307+24
-    store notrap aligned v1307, v4+152
     v1308, v1309 = call fn1(v1303, v1304)
     v1310 = load.i64 notrap aligned v4+152
     v1311 = iconst.i64 1
@@ -1847,12 +1847,12 @@ block0(v0: r64, v1: i64):
     v1314 = iconst.i64 0
     v1315 = iconst.i64 1
     v1316 = symbol_value.i64 gv1
+    store notrap aligned v1310, v4+152
     v1317 = iadd_imm v1310, -32
     store notrap aligned v1312, v1317
     store notrap aligned v1316, v1317+8
     store notrap aligned v1315, v1317+16
     store notrap aligned v1315, v1317+24
-    store notrap aligned v1317, v4+152
     v1318, v1319 = call fn1(v1313, v1314)
     v1320 = load.i64 notrap aligned v4+152
     v1321 = iconst.i64 1
@@ -1861,12 +1861,12 @@ block0(v0: r64, v1: i64):
     v1324 = iconst.i64 0
     v1325 = iconst.i64 1
     v1326 = symbol_value.i64 gv1
+    store notrap aligned v1320, v4+152
     v1327 = iadd_imm v1320, -32
     store notrap aligned v1322, v1327
     store notrap aligned v1326, v1327+8
     store notrap aligned v1325, v1327+16
     store notrap aligned v1325, v1327+24
-    store notrap aligned v1327, v4+152
     v1328, v1329 = call fn1(v1323, v1324)
     v1330 = load.i64 notrap aligned v4+152
     v1331 = iconst.i64 1
@@ -1875,12 +1875,12 @@ block0(v0: r64, v1: i64):
     v1334 = iconst.i64 0
     v1335 = iconst.i64 1
     v1336 = symbol_value.i64 gv1
+    store notrap aligned v1330, v4+152
     v1337 = iadd_imm v1330, -32
     store notrap aligned v1332, v1337
     store notrap aligned v1336, v1337+8
     store notrap aligned v1335, v1337+16
     store notrap aligned v1335, v1337+24
-    store notrap aligned v1337, v4+152
     v1338, v1339 = call fn1(v1333, v1334)
     v1340 = load.i64 notrap aligned v4+152
     v1341 = iconst.i64 1
@@ -1889,12 +1889,12 @@ block0(v0: r64, v1: i64):
     v1344 = iconst.i64 0
     v1345 = iconst.i64 1
     v1346 = symbol_value.i64 gv1
+    store notrap aligned v1340, v4+152
     v1347 = iadd_imm v1340, -32
     store notrap aligned v1342, v1347
     store notrap aligned v1346, v1347+8
     store notrap aligned v1345, v1347+16
     store notrap aligned v1345, v1347+24
-    store notrap aligned v1347, v4+152
     v1348, v1349 = call fn1(v1343, v1344)
     v1350 = load.i64 notrap aligned v4+152
     v1351 = iconst.i64 1
@@ -1903,12 +1903,12 @@ block0(v0: r64, v1: i64):
     v1354 = iconst.i64 0
     v1355 = iconst.i64 1
     v1356 = symbol_value.i64 gv1
+    store notrap aligned v1350, v4+152
     v1357 = iadd_imm v1350, -32
     store notrap aligned v1352, v1357
     store notrap aligned v1356, v1357+8
     store notrap aligned v1355, v1357+16
     store notrap aligned v1355, v1357+24
-    store notrap aligned v1357, v4+152
     v1358, v1359 = call fn1(v1353, v1354)
     v1360 = load.i64 notrap aligned v4+152
     v1361 = iconst.i64 1
@@ -1917,12 +1917,12 @@ block0(v0: r64, v1: i64):
     v1364 = iconst.i64 0
     v1365 = iconst.i64 1
     v1366 = symbol_value.i64 gv1
+    store notrap aligned v1360, v4+152
     v1367 = iadd_imm v1360, -32
     store notrap aligned v1362, v1367
     store notrap aligned v1366, v1367+8
     store notrap aligned v1365, v1367+16
     store notrap aligned v1365, v1367+24
-    store notrap aligned v1367, v4+152
     v1368, v1369 = call fn1(v1363, v1364)
     v1370 = load.i64 notrap aligned v4+152
     v1371 = iconst.i64 1
@@ -1931,12 +1931,12 @@ block0(v0: r64, v1: i64):
     v1374 = iconst.i64 0
     v1375 = iconst.i64 1
     v1376 = symbol_value.i64 gv1
+    store notrap aligned v1370, v4+152
     v1377 = iadd_imm v1370, -32
     store notrap aligned v1372, v1377
     store notrap aligned v1376, v1377+8
     store notrap aligned v1375, v1377+16
     store notrap aligned v1375, v1377+24
-    store notrap aligned v1377, v4+152
     v1378, v1379 = call fn1(v1373, v1374)
     v1380 = load.i64 notrap aligned v4+152
     v1381 = iconst.i64 1
@@ -1945,12 +1945,12 @@ block0(v0: r64, v1: i64):
     v1384 = iconst.i64 0
     v1385 = iconst.i64 1
     v1386 = symbol_value.i64 gv1
+    store notrap aligned v1380, v4+152
     v1387 = iadd_imm v1380, -32
     store notrap aligned v1382, v1387
     store notrap aligned v1386, v1387+8
     store notrap aligned v1385, v1387+16
     store notrap aligned v1385, v1387+24
-    store notrap aligned v1387, v4+152
     v1388, v1389 = call fn1(v1383, v1384)
     v1390 = load.i64 notrap aligned v4+152
     v1391 = iconst.i64 1
@@ -1959,12 +1959,12 @@ block0(v0: r64, v1: i64):
     v1394 = iconst.i64 0
     v1395 = iconst.i64 1
     v1396 = symbol_value.i64 gv1
+    store notrap aligned v1390, v4+152
     v1397 = iadd_imm v1390, -32
     store notrap aligned v1392, v1397
     store notrap aligned v1396, v1397+8
     store notrap aligned v1395, v1397+16
     store notrap aligned v1395, v1397+24
-    store notrap aligned v1397, v4+152
     v1398, v1399 = call fn1(v1393, v1394)
     v1400 = load.i64 notrap aligned v4+152
     v1401 = iconst.i64 1
@@ -1973,12 +1973,12 @@ block0(v0: r64, v1: i64):
     v1404 = iconst.i64 0
     v1405 = iconst.i64 1
     v1406 = symbol_value.i64 gv1
+    store notrap aligned v1400, v4+152
     v1407 = iadd_imm v1400, -32
     store notrap aligned v1402, v1407
     store notrap aligned v1406, v1407+8
     store notrap aligned v1405, v1407+16
     store notrap aligned v1405, v1407+24
-    store notrap aligned v1407, v4+152
     v1408, v1409 = call fn1(v1403, v1404)
     v1410 = load.i64 notrap aligned v4+152
     v1411 = iconst.i64 1
@@ -1987,12 +1987,12 @@ block0(v0: r64, v1: i64):
     v1414 = iconst.i64 0
     v1415 = iconst.i64 1
     v1416 = symbol_value.i64 gv1
+    store notrap aligned v1410, v4+152
     v1417 = iadd_imm v1410, -32
     store notrap aligned v1412, v1417
     store notrap aligned v1416, v1417+8
     store notrap aligned v1415, v1417+16
     store notrap aligned v1415, v1417+24
-    store notrap aligned v1417, v4+152
     v1418, v1419 = call fn1(v1413, v1414)
     v1420 = load.i64 notrap aligned v4+152
     v1421 = iconst.i64 1
@@ -2001,12 +2001,12 @@ block0(v0: r64, v1: i64):
     v1424 = iconst.i64 0
     v1425 = iconst.i64 1
     v1426 = symbol_value.i64 gv1
+    store notrap aligned v1420, v4+152
     v1427 = iadd_imm v1420, -32
     store notrap aligned v1422, v1427
     store notrap aligned v1426, v1427+8
     store notrap aligned v1425, v1427+16
     store notrap aligned v1425, v1427+24
-    store notrap aligned v1427, v4+152
     v1428, v1429 = call fn1(v1423, v1424)
     v1430 = load.i64 notrap aligned v4+152
     v1431 = iconst.i64 1
@@ -2015,12 +2015,12 @@ block0(v0: r64, v1: i64):
     v1434 = iconst.i64 0
     v1435 = iconst.i64 1
     v1436 = symbol_value.i64 gv1
+    store notrap aligned v1430, v4+152
     v1437 = iadd_imm v1430, -32
     store notrap aligned v1432, v1437
     store notrap aligned v1436, v1437+8
     store notrap aligned v1435, v1437+16
     store notrap aligned v1435, v1437+24
-    store notrap aligned v1437, v4+152
     v1438, v1439 = call fn1(v1433, v1434)
     v1440 = load.i64 notrap aligned v4+152
     v1441 = iconst.i64 1
@@ -2029,12 +2029,12 @@ block0(v0: r64, v1: i64):
     v1444 = iconst.i64 0
     v1445 = iconst.i64 1
     v1446 = symbol_value.i64 gv1
+    store notrap aligned v1440, v4+152
     v1447 = iadd_imm v1440, -32
     store notrap aligned v1442, v1447
     store notrap aligned v1446, v1447+8
     store notrap aligned v1445, v1447+16
     store notrap aligned v1445, v1447+24
-    store notrap aligned v1447, v4+152
     v1448, v1449 = call fn1(v1443, v1444)
     v1450 = load.i64 notrap aligned v4+152
     v1451 = iconst.i64 1
@@ -2043,12 +2043,12 @@ block0(v0: r64, v1: i64):
     v1454 = iconst.i64 0
     v1455 = iconst.i64 1
     v1456 = symbol_value.i64 gv1
+    store notrap aligned v1450, v4+152
     v1457 = iadd_imm v1450, -32
     store notrap aligned v1452, v1457
     store notrap aligned v1456, v1457+8
     store notrap aligned v1455, v1457+16
     store notrap aligned v1455, v1457+24
-    store notrap aligned v1457, v4+152
     v1458, v1459 = call fn1(v1453, v1454)
     v1460 = load.i64 notrap aligned v4+152
     v1461 = iconst.i64 1
@@ -2057,12 +2057,12 @@ block0(v0: r64, v1: i64):
     v1464 = iconst.i64 0
     v1465 = iconst.i64 1
     v1466 = symbol_value.i64 gv1
+    store notrap aligned v1460, v4+152
     v1467 = iadd_imm v1460, -32
     store notrap aligned v1462, v1467
     store notrap aligned v1466, v1467+8
     store notrap aligned v1465, v1467+16
     store notrap aligned v1465, v1467+24
-    store notrap aligned v1467, v4+152
     v1468, v1469 = call fn1(v1463, v1464)
     v1470 = load.i64 notrap aligned v4+152
     v1471 = iconst.i64 1
@@ -2071,12 +2071,12 @@ block0(v0: r64, v1: i64):
     v1474 = iconst.i64 0
     v1475 = iconst.i64 1
     v1476 = symbol_value.i64 gv1
+    store notrap aligned v1470, v4+152
     v1477 = iadd_imm v1470, -32
     store notrap aligned v1472, v1477
     store notrap aligned v1476, v1477+8
     store notrap aligned v1475, v1477+16
     store notrap aligned v1475, v1477+24
-    store notrap aligned v1477, v4+152
     v1478, v1479 = call fn1(v1473, v1474)
     v1480 = load.i64 notrap aligned v4+152
     v1481 = iconst.i64 1
@@ -2085,12 +2085,12 @@ block0(v0: r64, v1: i64):
     v1484 = iconst.i64 0
     v1485 = iconst.i64 1
     v1486 = symbol_value.i64 gv1
+    store notrap aligned v1480, v4+152
     v1487 = iadd_imm v1480, -32
     store notrap aligned v1482, v1487
     store notrap aligned v1486, v1487+8
     store notrap aligned v1485, v1487+16
     store notrap aligned v1485, v1487+24
-    store notrap aligned v1487, v4+152
     v1488, v1489 = call fn1(v1483, v1484)
     v1490 = load.i64 notrap aligned v4+152
     v1491 = iconst.i64 1
@@ -2099,12 +2099,12 @@ block0(v0: r64, v1: i64):
     v1494 = iconst.i64 0
     v1495 = iconst.i64 1
     v1496 = symbol_value.i64 gv1
+    store notrap aligned v1490, v4+152
     v1497 = iadd_imm v1490, -32
     store notrap aligned v1492, v1497
     store notrap aligned v1496, v1497+8
     store notrap aligned v1495, v1497+16
     store notrap aligned v1495, v1497+24
-    store notrap aligned v1497, v4+152
     v1498, v1499 = call fn1(v1493, v1494)
     v1500 = load.i64 notrap aligned v4+152
     v1501 = iconst.i64 1
@@ -2113,12 +2113,12 @@ block0(v0: r64, v1: i64):
     v1504 = iconst.i64 0
     v1505 = iconst.i64 1
     v1506 = symbol_value.i64 gv1
+    store notrap aligned v1500, v4+152
     v1507 = iadd_imm v1500, -32
     store notrap aligned v1502, v1507
     store notrap aligned v1506, v1507+8
     store notrap aligned v1505, v1507+16
     store notrap aligned v1505, v1507+24
-    store notrap aligned v1507, v4+152
     v1508, v1509 = call fn1(v1503, v1504)
     v1510 = load.i64 notrap aligned v4+152
     v1511 = iconst.i64 1
@@ -2127,12 +2127,12 @@ block0(v0: r64, v1: i64):
     v1514 = iconst.i64 0
     v1515 = iconst.i64 1
     v1516 = symbol_value.i64 gv1
+    store notrap aligned v1510, v4+152
     v1517 = iadd_imm v1510, -32
     store notrap aligned v1512, v1517
     store notrap aligned v1516, v1517+8
     store notrap aligned v1515, v1517+16
     store notrap aligned v1515, v1517+24
-    store notrap aligned v1517, v4+152
     v1518, v1519 = call fn1(v1513, v1514)
     v1520 = load.i64 notrap aligned v4+152
     v1521 = iconst.i64 1
@@ -2141,12 +2141,12 @@ block0(v0: r64, v1: i64):
     v1524 = iconst.i64 0
     v1525 = iconst.i64 1
     v1526 = symbol_value.i64 gv1
+    store notrap aligned v1520, v4+152
     v1527 = iadd_imm v1520, -32
     store notrap aligned v1522, v1527
     store notrap aligned v1526, v1527+8
     store notrap aligned v1525, v1527+16
     store notrap aligned v1525, v1527+24
-    store notrap aligned v1527, v4+152
     v1528, v1529 = call fn1(v1523, v1524)
     v1530 = load.i64 notrap aligned v4+152
     v1531 = iconst.i64 1
@@ -2155,12 +2155,12 @@ block0(v0: r64, v1: i64):
     v1534 = iconst.i64 0
     v1535 = iconst.i64 1
     v1536 = symbol_value.i64 gv1
+    store notrap aligned v1530, v4+152
     v1537 = iadd_imm v1530, -32
     store notrap aligned v1532, v1537
     store notrap aligned v1536, v1537+8
     store notrap aligned v1535, v1537+16
     store notrap aligned v1535, v1537+24
-    store notrap aligned v1537, v4+152
     v1538, v1539 = call fn1(v1533, v1534)
     v1540 = load.i64 notrap aligned v4+152
     v1541 = iconst.i64 1
@@ -2169,12 +2169,12 @@ block0(v0: r64, v1: i64):
     v1544 = iconst.i64 0
     v1545 = iconst.i64 1
     v1546 = symbol_value.i64 gv1
+    store notrap aligned v1540, v4+152
     v1547 = iadd_imm v1540, -32
     store notrap aligned v1542, v1547
     store notrap aligned v1546, v1547+8
     store notrap aligned v1545, v1547+16
     store notrap aligned v1545, v1547+24
-    store notrap aligned v1547, v4+152
     v1548, v1549 = call fn1(v1543, v1544)
     v1550 = load.i64 notrap aligned v4+152
     v1551 = iconst.i64 1
@@ -2183,12 +2183,12 @@ block0(v0: r64, v1: i64):
     v1554 = iconst.i64 0
     v1555 = iconst.i64 1
     v1556 = symbol_value.i64 gv1
+    store notrap aligned v1550, v4+152
     v1557 = iadd_imm v1550, -32
     store notrap aligned v1552, v1557
     store notrap aligned v1556, v1557+8
     store notrap aligned v1555, v1557+16
     store notrap aligned v1555, v1557+24
-    store notrap aligned v1557, v4+152
     v1558, v1559 = call fn1(v1553, v1554)
     v1560 = load.i64 notrap aligned v4+152
     v1561 = iconst.i64 1
@@ -2197,12 +2197,12 @@ block0(v0: r64, v1: i64):
     v1564 = iconst.i64 0
     v1565 = iconst.i64 1
     v1566 = symbol_value.i64 gv1
+    store notrap aligned v1560, v4+152
     v1567 = iadd_imm v1560, -32
     store notrap aligned v1562, v1567
     store notrap aligned v1566, v1567+8
     store notrap aligned v1565, v1567+16
     store notrap aligned v1565, v1567+24
-    store notrap aligned v1567, v4+152
     v1568, v1569 = call fn1(v1563, v1564)
     v1570 = load.i64 notrap aligned v4+152
     v1571 = iconst.i64 1
@@ -2211,12 +2211,12 @@ block0(v0: r64, v1: i64):
     v1574 = iconst.i64 0
     v1575 = iconst.i64 1
     v1576 = symbol_value.i64 gv1
+    store notrap aligned v1570, v4+152
     v1577 = iadd_imm v1570, -32
     store notrap aligned v1572, v1577
     store notrap aligned v1576, v1577+8
     store notrap aligned v1575, v1577+16
     store notrap aligned v1575, v1577+24
-    store notrap aligned v1577, v4+152
     v1578, v1579 = call fn1(v1573, v1574)
     v1580 = load.i64 notrap aligned v4+152
     v1581 = iconst.i64 1
@@ -2225,12 +2225,12 @@ block0(v0: r64, v1: i64):
     v1584 = iconst.i64 0
     v1585 = iconst.i64 1
     v1586 = symbol_value.i64 gv1
+    store notrap aligned v1580, v4+152
     v1587 = iadd_imm v1580, -32
     store notrap aligned v1582, v1587
     store notrap aligned v1586, v1587+8
     store notrap aligned v1585, v1587+16
     store notrap aligned v1585, v1587+24
-    store notrap aligned v1587, v4+152
     v1588, v1589 = call fn1(v1583, v1584)
     v1590 = load.i64 notrap aligned v4+152
     v1591 = iconst.i64 1
@@ -2239,12 +2239,12 @@ block0(v0: r64, v1: i64):
     v1594 = iconst.i64 0
     v1595 = iconst.i64 1
     v1596 = symbol_value.i64 gv1
+    store notrap aligned v1590, v4+152
     v1597 = iadd_imm v1590, -32
     store notrap aligned v1592, v1597
     store notrap aligned v1596, v1597+8
     store notrap aligned v1595, v1597+16
     store notrap aligned v1595, v1597+24
-    store notrap aligned v1597, v4+152
     v1598, v1599 = call fn1(v1593, v1594)
     v1600 = load.i64 notrap aligned v4+152
     v1601 = iconst.i64 1
@@ -2253,12 +2253,12 @@ block0(v0: r64, v1: i64):
     v1604 = iconst.i64 0
     v1605 = iconst.i64 1
     v1606 = symbol_value.i64 gv1
+    store notrap aligned v1600, v4+152
     v1607 = iadd_imm v1600, -32
     store notrap aligned v1602, v1607
     store notrap aligned v1606, v1607+8
     store notrap aligned v1605, v1607+16
     store notrap aligned v1605, v1607+24
-    store notrap aligned v1607, v4+152
     v1608, v1609 = call fn1(v1603, v1604)
     v1610 = load.i64 notrap aligned v4+152
     v1611 = iconst.i64 1
@@ -2267,12 +2267,12 @@ block0(v0: r64, v1: i64):
     v1614 = iconst.i64 0
     v1615 = iconst.i64 1
     v1616 = symbol_value.i64 gv1
+    store notrap aligned v1610, v4+152
     v1617 = iadd_imm v1610, -32
     store notrap aligned v1612, v1617
     store notrap aligned v1616, v1617+8
     store notrap aligned v1615, v1617+16
     store notrap aligned v1615, v1617+24
-    store notrap aligned v1617, v4+152
     v1618, v1619 = call fn1(v1613, v1614)
     v1620 = load.i64 notrap aligned v4+152
     v1621 = iconst.i64 1
@@ -2281,12 +2281,12 @@ block0(v0: r64, v1: i64):
     v1624 = iconst.i64 0
     v1625 = iconst.i64 1
     v1626 = symbol_value.i64 gv1
+    store notrap aligned v1620, v4+152
     v1627 = iadd_imm v1620, -32
     store notrap aligned v1622, v1627
     store notrap aligned v1626, v1627+8
     store notrap aligned v1625, v1627+16
     store notrap aligned v1625, v1627+24
-    store notrap aligned v1627, v4+152
     v1628, v1629 = call fn1(v1623, v1624)
     v1630 = load.i64 notrap aligned v4+152
     v1631 = iconst.i64 1
@@ -2295,12 +2295,12 @@ block0(v0: r64, v1: i64):
     v1634 = iconst.i64 0
     v1635 = iconst.i64 1
     v1636 = symbol_value.i64 gv1
+    store notrap aligned v1630, v4+152
     v1637 = iadd_imm v1630, -32
     store notrap aligned v1632, v1637
     store notrap aligned v1636, v1637+8
     store notrap aligned v1635, v1637+16
     store notrap aligned v1635, v1637+24
-    store notrap aligned v1637, v4+152
     v1638, v1639 = call fn1(v1633, v1634)
     v1640 = load.i64 notrap aligned v4+152
     v1641 = iconst.i64 1
@@ -2309,12 +2309,12 @@ block0(v0: r64, v1: i64):
     v1644 = iconst.i64 0
     v1645 = iconst.i64 1
     v1646 = symbol_value.i64 gv1
+    store notrap aligned v1640, v4+152
     v1647 = iadd_imm v1640, -32
     store notrap aligned v1642, v1647
     store notrap aligned v1646, v1647+8
     store notrap aligned v1645, v1647+16
     store notrap aligned v1645, v1647+24
-    store notrap aligned v1647, v4+152
     v1648, v1649 = call fn1(v1643, v1644)
     v1650 = load.i64 notrap aligned v4+152
     v1651 = iconst.i64 1
@@ -2323,12 +2323,12 @@ block0(v0: r64, v1: i64):
     v1654 = iconst.i64 0
     v1655 = iconst.i64 1
     v1656 = symbol_value.i64 gv1
+    store notrap aligned v1650, v4+152
     v1657 = iadd_imm v1650, -32
     store notrap aligned v1652, v1657
     store notrap aligned v1656, v1657+8
     store notrap aligned v1655, v1657+16
     store notrap aligned v1655, v1657+24
-    store notrap aligned v1657, v4+152
     v1658, v1659 = call fn1(v1653, v1654)
     v1660 = load.i64 notrap aligned v4+152
     v1661 = iconst.i64 1
@@ -2337,12 +2337,12 @@ block0(v0: r64, v1: i64):
     v1664 = iconst.i64 0
     v1665 = iconst.i64 1
     v1666 = symbol_value.i64 gv1
+    store notrap aligned v1660, v4+152
     v1667 = iadd_imm v1660, -32
     store notrap aligned v1662, v1667
     store notrap aligned v1666, v1667+8
     store notrap aligned v1665, v1667+16
     store notrap aligned v1665, v1667+24
-    store notrap aligned v1667, v4+152
     v1668, v1669 = call fn1(v1663, v1664)
     v1670 = load.i64 notrap aligned v4+152
     v1671 = iconst.i64 1
@@ -2351,12 +2351,12 @@ block0(v0: r64, v1: i64):
     v1674 = iconst.i64 0
     v1675 = iconst.i64 1
     v1676 = symbol_value.i64 gv1
+    store notrap aligned v1670, v4+152
     v1677 = iadd_imm v1670, -32
     store notrap aligned v1672, v1677
     store notrap aligned v1676, v1677+8
     store notrap aligned v1675, v1677+16
     store notrap aligned v1675, v1677+24
-    store notrap aligned v1677, v4+152
     v1678, v1679 = call fn1(v1673, v1674)
     v1680 = load.i64 notrap aligned v4+152
     v1681 = iconst.i64 1
@@ -2365,12 +2365,12 @@ block0(v0: r64, v1: i64):
     v1684 = iconst.i64 0
     v1685 = iconst.i64 1
     v1686 = symbol_value.i64 gv1
+    store notrap aligned v1680, v4+152
     v1687 = iadd_imm v1680, -32
     store notrap aligned v1682, v1687
     store notrap aligned v1686, v1687+8
     store notrap aligned v1685, v1687+16
     store notrap aligned v1685, v1687+24
-    store notrap aligned v1687, v4+152
     v1688, v1689 = call fn1(v1683, v1684)
     v1690 = load.i64 notrap aligned v4+152
     v1691 = iconst.i64 1
@@ -2379,12 +2379,12 @@ block0(v0: r64, v1: i64):
     v1694 = iconst.i64 0
     v1695 = iconst.i64 1
     v1696 = symbol_value.i64 gv1
+    store notrap aligned v1690, v4+152
     v1697 = iadd_imm v1690, -32
     store notrap aligned v1692, v1697
     store notrap aligned v1696, v1697+8
     store notrap aligned v1695, v1697+16
     store notrap aligned v1695, v1697+24
-    store notrap aligned v1697, v4+152
     v1698, v1699 = call fn1(v1693, v1694)
     v1700 = load.i64 notrap aligned v4+152
     v1701 = iconst.i64 1
@@ -2393,12 +2393,12 @@ block0(v0: r64, v1: i64):
     v1704 = iconst.i64 0
     v1705 = iconst.i64 1
     v1706 = symbol_value.i64 gv1
+    store notrap aligned v1700, v4+152
     v1707 = iadd_imm v1700, -32
     store notrap aligned v1702, v1707
     store notrap aligned v1706, v1707+8
     store notrap aligned v1705, v1707+16
     store notrap aligned v1705, v1707+24
-    store notrap aligned v1707, v4+152
     v1708, v1709 = call fn1(v1703, v1704)
     v1710 = load.i64 notrap aligned v4+152
     v1711 = iconst.i64 1
@@ -2407,12 +2407,12 @@ block0(v0: r64, v1: i64):
     v1714 = iconst.i64 0
     v1715 = iconst.i64 1
     v1716 = symbol_value.i64 gv1
+    store notrap aligned v1710, v4+152
     v1717 = iadd_imm v1710, -32
     store notrap aligned v1712, v1717
     store notrap aligned v1716, v1717+8
     store notrap aligned v1715, v1717+16
     store notrap aligned v1715, v1717+24
-    store notrap aligned v1717, v4+152
     v1718, v1719 = call fn1(v1713, v1714)
     v1720 = load.i64 notrap aligned v4+152
     v1721 = iconst.i64 1
@@ -2421,12 +2421,12 @@ block0(v0: r64, v1: i64):
     v1724 = iconst.i64 0
     v1725 = iconst.i64 1
     v1726 = symbol_value.i64 gv1
+    store notrap aligned v1720, v4+152
     v1727 = iadd_imm v1720, -32
     store notrap aligned v1722, v1727
     store notrap aligned v1726, v1727+8
     store notrap aligned v1725, v1727+16
     store notrap aligned v1725, v1727+24
-    store notrap aligned v1727, v4+152
     v1728, v1729 = call fn1(v1723, v1724)
     v1730 = load.i64 notrap aligned v4+152
     v1731 = iconst.i64 1
@@ -2435,12 +2435,12 @@ block0(v0: r64, v1: i64):
     v1734 = iconst.i64 0
     v1735 = iconst.i64 1
     v1736 = symbol_value.i64 gv1
+    store notrap aligned v1730, v4+152
     v1737 = iadd_imm v1730, -32
     store notrap aligned v1732, v1737
     store notrap aligned v1736, v1737+8
     store notrap aligned v1735, v1737+16
     store notrap aligned v1735, v1737+24
-    store notrap aligned v1737, v4+152
     v1738, v1739 = call fn1(v1733, v1734)
     v1740 = load.i64 notrap aligned v4+152
     v1741 = iconst.i64 1
@@ -2449,12 +2449,12 @@ block0(v0: r64, v1: i64):
     v1744 = iconst.i64 0
     v1745 = iconst.i64 1
     v1746 = symbol_value.i64 gv1
+    store notrap aligned v1740, v4+152
     v1747 = iadd_imm v1740, -32
     store notrap aligned v1742, v1747
     store notrap aligned v1746, v1747+8
     store notrap aligned v1745, v1747+16
     store notrap aligned v1745, v1747+24
-    store notrap aligned v1747, v4+152
     v1748, v1749 = call fn1(v1743, v1744)
     v1750 = load.i64 notrap aligned v4+152
     v1751 = iconst.i64 1
@@ -2463,12 +2463,12 @@ block0(v0: r64, v1: i64):
     v1754 = iconst.i64 0
     v1755 = iconst.i64 1
     v1756 = symbol_value.i64 gv1
+    store notrap aligned v1750, v4+152
     v1757 = iadd_imm v1750, -32
     store notrap aligned v1752, v1757
     store notrap aligned v1756, v1757+8
     store notrap aligned v1755, v1757+16
     store notrap aligned v1755, v1757+24
-    store notrap aligned v1757, v4+152
     v1758, v1759 = call fn1(v1753, v1754)
     v1760 = load.i64 notrap aligned v4+152
     v1761 = iconst.i64 1
@@ -2477,12 +2477,12 @@ block0(v0: r64, v1: i64):
     v1764 = iconst.i64 0
     v1765 = iconst.i64 1
     v1766 = symbol_value.i64 gv1
+    store notrap aligned v1760, v4+152
     v1767 = iadd_imm v1760, -32
     store notrap aligned v1762, v1767
     store notrap aligned v1766, v1767+8
     store notrap aligned v1765, v1767+16
     store notrap aligned v1765, v1767+24
-    store notrap aligned v1767, v4+152
     v1768, v1769 = call fn1(v1763, v1764)
     v1770 = load.i64 notrap aligned v4+152
     v1771 = iconst.i64 1
@@ -2491,12 +2491,12 @@ block0(v0: r64, v1: i64):
     v1774 = iconst.i64 0
     v1775 = iconst.i64 1
     v1776 = symbol_value.i64 gv1
+    store notrap aligned v1770, v4+152
     v1777 = iadd_imm v1770, -32
     store notrap aligned v1772, v1777
     store notrap aligned v1776, v1777+8
     store notrap aligned v1775, v1777+16
     store notrap aligned v1775, v1777+24
-    store notrap aligned v1777, v4+152
     v1778, v1779 = call fn1(v1773, v1774)
     v1780 = load.i64 notrap aligned v4+152
     v1781 = iconst.i64 1
@@ -2505,12 +2505,12 @@ block0(v0: r64, v1: i64):
     v1784 = iconst.i64 0
     v1785 = iconst.i64 1
     v1786 = symbol_value.i64 gv1
+    store notrap aligned v1780, v4+152
     v1787 = iadd_imm v1780, -32
     store notrap aligned v1782, v1787
     store notrap aligned v1786, v1787+8
     store notrap aligned v1785, v1787+16
     store notrap aligned v1785, v1787+24
-    store notrap aligned v1787, v4+152
     v1788, v1789 = call fn1(v1783, v1784)
     v1790 = load.i64 notrap aligned v4+152
     v1791 = iconst.i64 1
@@ -2519,12 +2519,12 @@ block0(v0: r64, v1: i64):
     v1794 = iconst.i64 0
     v1795 = iconst.i64 1
     v1796 = symbol_value.i64 gv1
+    store notrap aligned v1790, v4+152
     v1797 = iadd_imm v1790, -32
     store notrap aligned v1792, v1797
     store notrap aligned v1796, v1797+8
     store notrap aligned v1795, v1797+16
     store notrap aligned v1795, v1797+24
-    store notrap aligned v1797, v4+152
     v1798, v1799 = call fn1(v1793, v1794)
     v1800 = load.i64 notrap aligned v4+152
     v1801 = iconst.i64 1
@@ -2533,12 +2533,12 @@ block0(v0: r64, v1: i64):
     v1804 = iconst.i64 0
     v1805 = iconst.i64 1
     v1806 = symbol_value.i64 gv1
+    store notrap aligned v1800, v4+152
     v1807 = iadd_imm v1800, -32
     store notrap aligned v1802, v1807
     store notrap aligned v1806, v1807+8
     store notrap aligned v1805, v1807+16
     store notrap aligned v1805, v1807+24
-    store notrap aligned v1807, v4+152
     v1808, v1809 = call fn1(v1803, v1804)
     v1810 = load.i64 notrap aligned v4+152
     v1811 = iconst.i64 1
@@ -2547,12 +2547,12 @@ block0(v0: r64, v1: i64):
     v1814 = iconst.i64 0
     v1815 = iconst.i64 1
     v1816 = symbol_value.i64 gv1
+    store notrap aligned v1810, v4+152
     v1817 = iadd_imm v1810, -32
     store notrap aligned v1812, v1817
     store notrap aligned v1816, v1817+8
     store notrap aligned v1815, v1817+16
     store notrap aligned v1815, v1817+24
-    store notrap aligned v1817, v4+152
     v1818, v1819 = call fn1(v1813, v1814)
     v1820 = load.i64 notrap aligned v4+152
     v1821 = iconst.i64 1
@@ -2561,12 +2561,12 @@ block0(v0: r64, v1: i64):
     v1824 = iconst.i64 0
     v1825 = iconst.i64 1
     v1826 = symbol_value.i64 gv1
+    store notrap aligned v1820, v4+152
     v1827 = iadd_imm v1820, -32
     store notrap aligned v1822, v1827
     store notrap aligned v1826, v1827+8
     store notrap aligned v1825, v1827+16
     store notrap aligned v1825, v1827+24
-    store notrap aligned v1827, v4+152
     v1828, v1829 = call fn1(v1823, v1824)
     v1830 = load.i64 notrap aligned v4+152
     v1831 = iconst.i64 1
@@ -2575,12 +2575,12 @@ block0(v0: r64, v1: i64):
     v1834 = iconst.i64 0
     v1835 = iconst.i64 1
     v1836 = symbol_value.i64 gv1
+    store notrap aligned v1830, v4+152
     v1837 = iadd_imm v1830, -32
     store notrap aligned v1832, v1837
     store notrap aligned v1836, v1837+8
     store notrap aligned v1835, v1837+16
     store notrap aligned v1835, v1837+24
-    store notrap aligned v1837, v4+152
     v1838, v1839 = call fn1(v1833, v1834)
     v1840 = load.i64 notrap aligned v4+152
     v1841 = iconst.i64 1
@@ -2589,12 +2589,12 @@ block0(v0: r64, v1: i64):
     v1844 = iconst.i64 0
     v1845 = iconst.i64 1
     v1846 = symbol_value.i64 gv1
+    store notrap aligned v1840, v4+152
     v1847 = iadd_imm v1840, -32
     store notrap aligned v1842, v1847
     store notrap aligned v1846, v1847+8
     store notrap aligned v1845, v1847+16
     store notrap aligned v1845, v1847+24
-    store notrap aligned v1847, v4+152
     v1848, v1849 = call fn1(v1843, v1844)
     v1850 = load.i64 notrap aligned v4+152
     v1851 = iconst.i64 1
@@ -2603,12 +2603,12 @@ block0(v0: r64, v1: i64):
     v1854 = iconst.i64 0
     v1855 = iconst.i64 1
     v1856 = symbol_value.i64 gv1
+    store notrap aligned v1850, v4+152
     v1857 = iadd_imm v1850, -32
     store notrap aligned v1852, v1857
     store notrap aligned v1856, v1857+8
     store notrap aligned v1855, v1857+16
     store notrap aligned v1855, v1857+24
-    store notrap aligned v1857, v4+152
     v1858, v1859 = call fn1(v1853, v1854)
     v1860 = load.i64 notrap aligned v4+152
     v1861 = iconst.i64 1
@@ -2617,12 +2617,12 @@ block0(v0: r64, v1: i64):
     v1864 = iconst.i64 0
     v1865 = iconst.i64 1
     v1866 = symbol_value.i64 gv1
+    store notrap aligned v1860, v4+152
     v1867 = iadd_imm v1860, -32
     store notrap aligned v1862, v1867
     store notrap aligned v1866, v1867+8
     store notrap aligned v1865, v1867+16
     store notrap aligned v1865, v1867+24
-    store notrap aligned v1867, v4+152
     v1868, v1869 = call fn1(v1863, v1864)
     v1870 = load.i64 notrap aligned v4+152
     v1871 = iconst.i64 1
@@ -2631,12 +2631,12 @@ block0(v0: r64, v1: i64):
     v1874 = iconst.i64 0
     v1875 = iconst.i64 1
     v1876 = symbol_value.i64 gv1
+    store notrap aligned v1870, v4+152
     v1877 = iadd_imm v1870, -32
     store notrap aligned v1872, v1877
     store notrap aligned v1876, v1877+8
     store notrap aligned v1875, v1877+16
     store notrap aligned v1875, v1877+24
-    store notrap aligned v1877, v4+152
     v1878, v1879 = call fn1(v1873, v1874)
     v1880 = load.i64 notrap aligned v4+152
     v1881 = iconst.i64 1
@@ -2645,12 +2645,12 @@ block0(v0: r64, v1: i64):
     v1884 = iconst.i64 0
     v1885 = iconst.i64 1
     v1886 = symbol_value.i64 gv1
+    store notrap aligned v1880, v4+152
     v1887 = iadd_imm v1880, -32
     store notrap aligned v1882, v1887
     store notrap aligned v1886, v1887+8
     store notrap aligned v1885, v1887+16
     store notrap aligned v1885, v1887+24
-    store notrap aligned v1887, v4+152
     v1888, v1889 = call fn1(v1883, v1884)
     v1890 = load.i64 notrap aligned v4+152
     v1891 = iconst.i64 1
@@ -2659,12 +2659,12 @@ block0(v0: r64, v1: i64):
     v1894 = iconst.i64 0
     v1895 = iconst.i64 1
     v1896 = symbol_value.i64 gv1
+    store notrap aligned v1890, v4+152
     v1897 = iadd_imm v1890, -32
     store notrap aligned v1892, v1897
     store notrap aligned v1896, v1897+8
     store notrap aligned v1895, v1897+16
     store notrap aligned v1895, v1897+24
-    store notrap aligned v1897, v4+152
     v1898, v1899 = call fn1(v1893, v1894)
     v1900 = load.i64 notrap aligned v4+152
     v1901 = iconst.i64 1
@@ -2673,12 +2673,12 @@ block0(v0: r64, v1: i64):
     v1904 = iconst.i64 0
     v1905 = iconst.i64 1
     v1906 = symbol_value.i64 gv1
+    store notrap aligned v1900, v4+152
     v1907 = iadd_imm v1900, -32
     store notrap aligned v1902, v1907
     store notrap aligned v1906, v1907+8
     store notrap aligned v1905, v1907+16
     store notrap aligned v1905, v1907+24
-    store notrap aligned v1907, v4+152
     v1908, v1909 = call fn1(v1903, v1904)
     v1910 = load.i64 notrap aligned v4+152
     v1911 = iconst.i64 1
@@ -2687,12 +2687,12 @@ block0(v0: r64, v1: i64):
     v1914 = iconst.i64 0
     v1915 = iconst.i64 1
     v1916 = symbol_value.i64 gv1
+    store notrap aligned v1910, v4+152
     v1917 = iadd_imm v1910, -32
     store notrap aligned v1912, v1917
     store notrap aligned v1916, v1917+8
     store notrap aligned v1915, v1917+16
     store notrap aligned v1915, v1917+24
-    store notrap aligned v1917, v4+152
     v1918, v1919 = call fn1(v1913, v1914)
     v1920 = load.i64 notrap aligned v4+152
     v1921 = iconst.i64 1
@@ -2701,12 +2701,12 @@ block0(v0: r64, v1: i64):
     v1924 = iconst.i64 0
     v1925 = iconst.i64 1
     v1926 = symbol_value.i64 gv1
+    store notrap aligned v1920, v4+152
     v1927 = iadd_imm v1920, -32
     store notrap aligned v1922, v1927
     store notrap aligned v1926, v1927+8
     store notrap aligned v1925, v1927+16
     store notrap aligned v1925, v1927+24
-    store notrap aligned v1927, v4+152
     v1928, v1929 = call fn1(v1923, v1924)
     v1930 = load.i64 notrap aligned v4+152
     v1931 = iconst.i64 1
@@ -2715,12 +2715,12 @@ block0(v0: r64, v1: i64):
     v1934 = iconst.i64 0
     v1935 = iconst.i64 1
     v1936 = symbol_value.i64 gv1
+    store notrap aligned v1930, v4+152
     v1937 = iadd_imm v1930, -32
     store notrap aligned v1932, v1937
     store notrap aligned v1936, v1937+8
     store notrap aligned v1935, v1937+16
     store notrap aligned v1935, v1937+24
-    store notrap aligned v1937, v4+152
     v1938, v1939 = call fn1(v1933, v1934)
     v1940 = load.i64 notrap aligned v4+152
     v1941 = iconst.i64 1
@@ -2729,12 +2729,12 @@ block0(v0: r64, v1: i64):
     v1944 = iconst.i64 0
     v1945 = iconst.i64 1
     v1946 = symbol_value.i64 gv1
+    store notrap aligned v1940, v4+152
     v1947 = iadd_imm v1940, -32
     store notrap aligned v1942, v1947
     store notrap aligned v1946, v1947+8
     store notrap aligned v1945, v1947+16
     store notrap aligned v1945, v1947+24
-    store notrap aligned v1947, v4+152
     v1948, v1949 = call fn1(v1943, v1944)
     v1950 = load.i64 notrap aligned v4+152
     v1951 = iconst.i64 1
@@ -2743,12 +2743,12 @@ block0(v0: r64, v1: i64):
     v1954 = iconst.i64 0
     v1955 = iconst.i64 1
     v1956 = symbol_value.i64 gv1
+    store notrap aligned v1950, v4+152
     v1957 = iadd_imm v1950, -32
     store notrap aligned v1952, v1957
     store notrap aligned v1956, v1957+8
     store notrap aligned v1955, v1957+16
     store notrap aligned v1955, v1957+24
-    store notrap aligned v1957, v4+152
     v1958, v1959 = call fn1(v1953, v1954)
     v1960 = load.i64 notrap aligned v4+152
     v1961 = iconst.i64 1
@@ -2757,12 +2757,12 @@ block0(v0: r64, v1: i64):
     v1964 = iconst.i64 0
     v1965 = iconst.i64 1
     v1966 = symbol_value.i64 gv1
+    store notrap aligned v1960, v4+152
     v1967 = iadd_imm v1960, -32
     store notrap aligned v1962, v1967
     store notrap aligned v1966, v1967+8
     store notrap aligned v1965, v1967+16
     store notrap aligned v1965, v1967+24
-    store notrap aligned v1967, v4+152
     v1968, v1969 = call fn1(v1963, v1964)
     v1970 = load.i64 notrap aligned v4+152
     v1971 = iconst.i64 1
@@ -2771,12 +2771,12 @@ block0(v0: r64, v1: i64):
     v1974 = iconst.i64 0
     v1975 = iconst.i64 1
     v1976 = symbol_value.i64 gv1
+    store notrap aligned v1970, v4+152
     v1977 = iadd_imm v1970, -32
     store notrap aligned v1972, v1977
     store notrap aligned v1976, v1977+8
     store notrap aligned v1975, v1977+16
     store notrap aligned v1975, v1977+24
-    store notrap aligned v1977, v4+152
     v1978, v1979 = call fn1(v1973, v1974)
     v1980 = load.i64 notrap aligned v4+152
     v1981 = iconst.i64 1
@@ -2785,12 +2785,12 @@ block0(v0: r64, v1: i64):
     v1984 = iconst.i64 0
     v1985 = iconst.i64 1
     v1986 = symbol_value.i64 gv1
+    store notrap aligned v1980, v4+152
     v1987 = iadd_imm v1980, -32
     store notrap aligned v1982, v1987
     store notrap aligned v1986, v1987+8
     store notrap aligned v1985, v1987+16
     store notrap aligned v1985, v1987+24
-    store notrap aligned v1987, v4+152
     v1988, v1989 = call fn1(v1983, v1984)
     v1990 = load.i64 notrap aligned v4+152
     v1991 = iconst.i64 1
@@ -2799,12 +2799,12 @@ block0(v0: r64, v1: i64):
     v1994 = iconst.i64 0
     v1995 = iconst.i64 1
     v1996 = symbol_value.i64 gv1
+    store notrap aligned v1990, v4+152
     v1997 = iadd_imm v1990, -32
     store notrap aligned v1992, v1997
     store notrap aligned v1996, v1997+8
     store notrap aligned v1995, v1997+16
     store notrap aligned v1995, v1997+24
-    store notrap aligned v1997, v4+152
     v1998, v1999 = call fn1(v1993, v1994)
     v2000 = load.i64 notrap aligned v4+152
     v2001 = iconst.i64 1
@@ -2813,12 +2813,12 @@ block0(v0: r64, v1: i64):
     v2004 = iconst.i64 0
     v2005 = iconst.i64 1
     v2006 = symbol_value.i64 gv1
+    store notrap aligned v2000, v4+152
     v2007 = iadd_imm v2000, -32
     store notrap aligned v2002, v2007
     store notrap aligned v2006, v2007+8
     store notrap aligned v2005, v2007+16
     store notrap aligned v2005, v2007+24
-    store notrap aligned v2007, v4+152
     v2008, v2009 = call fn1(v2003, v2004)
     v2010 = load.i64 notrap aligned v4+152
     v2011 = iconst.i64 1
@@ -2827,12 +2827,12 @@ block0(v0: r64, v1: i64):
     v2014 = iconst.i64 0
     v2015 = iconst.i64 1
     v2016 = symbol_value.i64 gv1
+    store notrap aligned v2010, v4+152
     v2017 = iadd_imm v2010, -32
     store notrap aligned v2012, v2017
     store notrap aligned v2016, v2017+8
     store notrap aligned v2015, v2017+16
     store notrap aligned v2015, v2017+24
-    store notrap aligned v2017, v4+152
     v2018, v2019 = call fn1(v2013, v2014)
     v2020 = load.i64 notrap aligned v4+152
     v2021 = iconst.i64 1
@@ -2841,12 +2841,12 @@ block0(v0: r64, v1: i64):
     v2024 = iconst.i64 0
     v2025 = iconst.i64 1
     v2026 = symbol_value.i64 gv1
+    store notrap aligned v2020, v4+152
     v2027 = iadd_imm v2020, -32
     store notrap aligned v2022, v2027
     store notrap aligned v2026, v2027+8
     store notrap aligned v2025, v2027+16
     store notrap aligned v2025, v2027+24
-    store notrap aligned v2027, v4+152
     v2028, v2029 = call fn1(v2023, v2024)
     v2030 = load.i64 notrap aligned v4+152
     v2031 = iconst.i64 1
@@ -2855,12 +2855,12 @@ block0(v0: r64, v1: i64):
     v2034 = iconst.i64 0
     v2035 = iconst.i64 1
     v2036 = symbol_value.i64 gv1
+    store notrap aligned v2030, v4+152
     v2037 = iadd_imm v2030, -32
     store notrap aligned v2032, v2037
     store notrap aligned v2036, v2037+8
     store notrap aligned v2035, v2037+16
     store notrap aligned v2035, v2037+24
-    store notrap aligned v2037, v4+152
     v2038, v2039 = call fn1(v2033, v2034)
     v2040 = load.i64 notrap aligned v4+152
     v2041 = iconst.i64 1
@@ -2869,12 +2869,12 @@ block0(v0: r64, v1: i64):
     v2044 = iconst.i64 0
     v2045 = iconst.i64 1
     v2046 = symbol_value.i64 gv1
+    store notrap aligned v2040, v4+152
     v2047 = iadd_imm v2040, -32
     store notrap aligned v2042, v2047
     store notrap aligned v2046, v2047+8
     store notrap aligned v2045, v2047+16
     store notrap aligned v2045, v2047+24
-    store notrap aligned v2047, v4+152
     v2048, v2049 = call fn1(v2043, v2044)
     v2050 = load.i64 notrap aligned v4+152
     v2051 = iconst.i64 1
@@ -2883,12 +2883,12 @@ block0(v0: r64, v1: i64):
     v2054 = iconst.i64 0
     v2055 = iconst.i64 1
     v2056 = symbol_value.i64 gv1
+    store notrap aligned v2050, v4+152
     v2057 = iadd_imm v2050, -32
     store notrap aligned v2052, v2057
     store notrap aligned v2056, v2057+8
     store notrap aligned v2055, v2057+16
     store notrap aligned v2055, v2057+24
-    store notrap aligned v2057, v4+152
     v2058, v2059 = call fn1(v2053, v2054)
     v2060 = load.i64 notrap aligned v4+152
     v2061 = iconst.i64 1
@@ -2897,12 +2897,12 @@ block0(v0: r64, v1: i64):
     v2064 = iconst.i64 0
     v2065 = iconst.i64 1
     v2066 = symbol_value.i64 gv1
+    store notrap aligned v2060, v4+152
     v2067 = iadd_imm v2060, -32
     store notrap aligned v2062, v2067
     store notrap aligned v2066, v2067+8
     store notrap aligned v2065, v2067+16
     store notrap aligned v2065, v2067+24
-    store notrap aligned v2067, v4+152
     v2068, v2069 = call fn1(v2063, v2064)
     v2070 = load.i64 notrap aligned v4+152
     v2071 = iconst.i64 1
@@ -2911,12 +2911,12 @@ block0(v0: r64, v1: i64):
     v2074 = iconst.i64 0
     v2075 = iconst.i64 1
     v2076 = symbol_value.i64 gv1
+    store notrap aligned v2070, v4+152
     v2077 = iadd_imm v2070, -32
     store notrap aligned v2072, v2077
     store notrap aligned v2076, v2077+8
     store notrap aligned v2075, v2077+16
     store notrap aligned v2075, v2077+24
-    store notrap aligned v2077, v4+152
     v2078, v2079 = call fn1(v2073, v2074)
     v2080 = load.i64 notrap aligned v4+152
     v2081 = iconst.i64 1
@@ -2925,12 +2925,12 @@ block0(v0: r64, v1: i64):
     v2084 = iconst.i64 0
     v2085 = iconst.i64 1
     v2086 = symbol_value.i64 gv1
+    store notrap aligned v2080, v4+152
     v2087 = iadd_imm v2080, -32
     store notrap aligned v2082, v2087
     store notrap aligned v2086, v2087+8
     store notrap aligned v2085, v2087+16
     store notrap aligned v2085, v2087+24
-    store notrap aligned v2087, v4+152
     v2088, v2089 = call fn1(v2083, v2084)
     v2090 = load.i64 notrap aligned v4+152
     v2091 = iconst.i64 1
@@ -2939,12 +2939,12 @@ block0(v0: r64, v1: i64):
     v2094 = iconst.i64 0
     v2095 = iconst.i64 1
     v2096 = symbol_value.i64 gv1
+    store notrap aligned v2090, v4+152
     v2097 = iadd_imm v2090, -32
     store notrap aligned v2092, v2097
     store notrap aligned v2096, v2097+8
     store notrap aligned v2095, v2097+16
     store notrap aligned v2095, v2097+24
-    store notrap aligned v2097, v4+152
     v2098, v2099 = call fn1(v2093, v2094)
     v2100 = load.i64 notrap aligned v4+152
     v2101 = iconst.i64 1
@@ -2953,12 +2953,12 @@ block0(v0: r64, v1: i64):
     v2104 = iconst.i64 0
     v2105 = iconst.i64 1
     v2106 = symbol_value.i64 gv1
+    store notrap aligned v2100, v4+152
     v2107 = iadd_imm v2100, -32
     store notrap aligned v2102, v2107
     store notrap aligned v2106, v2107+8
     store notrap aligned v2105, v2107+16
     store notrap aligned v2105, v2107+24
-    store notrap aligned v2107, v4+152
     v2108, v2109 = call fn1(v2103, v2104)
     v2110 = load.i64 notrap aligned v4+152
     v2111 = iconst.i64 1
@@ -2967,12 +2967,12 @@ block0(v0: r64, v1: i64):
     v2114 = iconst.i64 0
     v2115 = iconst.i64 1
     v2116 = symbol_value.i64 gv1
+    store notrap aligned v2110, v4+152
     v2117 = iadd_imm v2110, -32
     store notrap aligned v2112, v2117
     store notrap aligned v2116, v2117+8
     store notrap aligned v2115, v2117+16
     store notrap aligned v2115, v2117+24
-    store notrap aligned v2117, v4+152
     v2118, v2119 = call fn1(v2113, v2114)
     v2120 = load.i64 notrap aligned v4+152
     v2121 = iconst.i64 1
@@ -2981,12 +2981,12 @@ block0(v0: r64, v1: i64):
     v2124 = iconst.i64 0
     v2125 = iconst.i64 1
     v2126 = symbol_value.i64 gv1
+    store notrap aligned v2120, v4+152
     v2127 = iadd_imm v2120, -32
     store notrap aligned v2122, v2127
     store notrap aligned v2126, v2127+8
     store notrap aligned v2125, v2127+16
     store notrap aligned v2125, v2127+24
-    store notrap aligned v2127, v4+152
     v2128, v2129 = call fn1(v2123, v2124)
     v2130 = load.i64 notrap aligned v4+152
     v2131 = iconst.i64 1
@@ -2995,12 +2995,12 @@ block0(v0: r64, v1: i64):
     v2134 = iconst.i64 0
     v2135 = iconst.i64 1
     v2136 = symbol_value.i64 gv1
+    store notrap aligned v2130, v4+152
     v2137 = iadd_imm v2130, -32
     store notrap aligned v2132, v2137
     store notrap aligned v2136, v2137+8
     store notrap aligned v2135, v2137+16
     store notrap aligned v2135, v2137+24
-    store notrap aligned v2137, v4+152
     v2138, v2139 = call fn1(v2133, v2134)
     v2140 = load.i64 notrap aligned v4+152
     v2141 = iconst.i64 1
@@ -3009,12 +3009,12 @@ block0(v0: r64, v1: i64):
     v2144 = iconst.i64 0
     v2145 = iconst.i64 1
     v2146 = symbol_value.i64 gv1
+    store notrap aligned v2140, v4+152
     v2147 = iadd_imm v2140, -32
     store notrap aligned v2142, v2147
     store notrap aligned v2146, v2147+8
     store notrap aligned v2145, v2147+16
     store notrap aligned v2145, v2147+24
-    store notrap aligned v2147, v4+152
     v2148, v2149 = call fn1(v2143, v2144)
     v2150 = load.i64 notrap aligned v4+152
     v2151 = iconst.i64 1
@@ -3023,12 +3023,12 @@ block0(v0: r64, v1: i64):
     v2154 = iconst.i64 0
     v2155 = iconst.i64 1
     v2156 = symbol_value.i64 gv1
+    store notrap aligned v2150, v4+152
     v2157 = iadd_imm v2150, -32
     store notrap aligned v2152, v2157
     store notrap aligned v2156, v2157+8
     store notrap aligned v2155, v2157+16
     store notrap aligned v2155, v2157+24
-    store notrap aligned v2157, v4+152
     v2158, v2159 = call fn1(v2153, v2154)
     v2160 = load.i64 notrap aligned v4+152
     v2161 = iconst.i64 1
@@ -3037,12 +3037,12 @@ block0(v0: r64, v1: i64):
     v2164 = iconst.i64 0
     v2165 = iconst.i64 1
     v2166 = symbol_value.i64 gv1
+    store notrap aligned v2160, v4+152
     v2167 = iadd_imm v2160, -32
     store notrap aligned v2162, v2167
     store notrap aligned v2166, v2167+8
     store notrap aligned v2165, v2167+16
     store notrap aligned v2165, v2167+24
-    store notrap aligned v2167, v4+152
     v2168, v2169 = call fn1(v2163, v2164)
     v2170 = load.i64 notrap aligned v4+152
     v2171 = iconst.i64 1
@@ -3051,12 +3051,12 @@ block0(v0: r64, v1: i64):
     v2174 = iconst.i64 0
     v2175 = iconst.i64 1
     v2176 = symbol_value.i64 gv1
+    store notrap aligned v2170, v4+152
     v2177 = iadd_imm v2170, -32
     store notrap aligned v2172, v2177
     store notrap aligned v2176, v2177+8
     store notrap aligned v2175, v2177+16
     store notrap aligned v2175, v2177+24
-    store notrap aligned v2177, v4+152
     v2178, v2179 = call fn1(v2173, v2174)
     v2180 = load.i64 notrap aligned v4+152
     v2181 = iconst.i64 1
@@ -3065,12 +3065,12 @@ block0(v0: r64, v1: i64):
     v2184 = iconst.i64 0
     v2185 = iconst.i64 1
     v2186 = symbol_value.i64 gv1
+    store notrap aligned v2180, v4+152
     v2187 = iadd_imm v2180, -32
     store notrap aligned v2182, v2187
     store notrap aligned v2186, v2187+8
     store notrap aligned v2185, v2187+16
     store notrap aligned v2185, v2187+24
-    store notrap aligned v2187, v4+152
     v2188, v2189 = call fn1(v2183, v2184)
     v2190 = load.i64 notrap aligned v4+152
     v2191 = iconst.i64 1
@@ -3079,12 +3079,12 @@ block0(v0: r64, v1: i64):
     v2194 = iconst.i64 0
     v2195 = iconst.i64 1
     v2196 = symbol_value.i64 gv1
+    store notrap aligned v2190, v4+152
     v2197 = iadd_imm v2190, -32
     store notrap aligned v2192, v2197
     store notrap aligned v2196, v2197+8
     store notrap aligned v2195, v2197+16
     store notrap aligned v2195, v2197+24
-    store notrap aligned v2197, v4+152
     v2198, v2199 = call fn1(v2193, v2194)
     v2200 = load.i64 notrap aligned v4+152
     v2201 = iconst.i64 1
@@ -3093,12 +3093,12 @@ block0(v0: r64, v1: i64):
     v2204 = iconst.i64 0
     v2205 = iconst.i64 1
     v2206 = symbol_value.i64 gv1
+    store notrap aligned v2200, v4+152
     v2207 = iadd_imm v2200, -32
     store notrap aligned v2202, v2207
     store notrap aligned v2206, v2207+8
     store notrap aligned v2205, v2207+16
     store notrap aligned v2205, v2207+24
-    store notrap aligned v2207, v4+152
     v2208, v2209 = call fn1(v2203, v2204)
     v2210 = load.i64 notrap aligned v4+152
     v2211 = iconst.i64 1
@@ -3107,12 +3107,12 @@ block0(v0: r64, v1: i64):
     v2214 = iconst.i64 0
     v2215 = iconst.i64 1
     v2216 = symbol_value.i64 gv1
+    store notrap aligned v2210, v4+152
     v2217 = iadd_imm v2210, -32
     store notrap aligned v2212, v2217
     store notrap aligned v2216, v2217+8
     store notrap aligned v2215, v2217+16
     store notrap aligned v2215, v2217+24
-    store notrap aligned v2217, v4+152
     v2218, v2219 = call fn1(v2213, v2214)
     v2220 = load.i64 notrap aligned v4+152
     v2221 = iconst.i64 1
@@ -3121,12 +3121,12 @@ block0(v0: r64, v1: i64):
     v2224 = iconst.i64 0
     v2225 = iconst.i64 1
     v2226 = symbol_value.i64 gv1
+    store notrap aligned v2220, v4+152
     v2227 = iadd_imm v2220, -32
     store notrap aligned v2222, v2227
     store notrap aligned v2226, v2227+8
     store notrap aligned v2225, v2227+16
     store notrap aligned v2225, v2227+24
-    store notrap aligned v2227, v4+152
     v2228, v2229 = call fn1(v2223, v2224)
     v2230 = load.i64 notrap aligned v4+152
     v2231 = iconst.i64 1
@@ -3135,12 +3135,12 @@ block0(v0: r64, v1: i64):
     v2234 = iconst.i64 0
     v2235 = iconst.i64 1
     v2236 = symbol_value.i64 gv1
+    store notrap aligned v2230, v4+152
     v2237 = iadd_imm v2230, -32
     store notrap aligned v2232, v2237
     store notrap aligned v2236, v2237+8
     store notrap aligned v2235, v2237+16
     store notrap aligned v2235, v2237+24
-    store notrap aligned v2237, v4+152
     v2238, v2239 = call fn1(v2233, v2234)
     v2240 = load.i64 notrap aligned v4+152
     v2241 = iconst.i64 1
@@ -3149,12 +3149,12 @@ block0(v0: r64, v1: i64):
     v2244 = iconst.i64 0
     v2245 = iconst.i64 1
     v2246 = symbol_value.i64 gv1
+    store notrap aligned v2240, v4+152
     v2247 = iadd_imm v2240, -32
     store notrap aligned v2242, v2247
     store notrap aligned v2246, v2247+8
     store notrap aligned v2245, v2247+16
     store notrap aligned v2245, v2247+24
-    store notrap aligned v2247, v4+152
     v2248, v2249 = call fn1(v2243, v2244)
     v2250 = load.i64 notrap aligned v4+152
     v2251 = iconst.i64 1
@@ -3163,12 +3163,12 @@ block0(v0: r64, v1: i64):
     v2254 = iconst.i64 0
     v2255 = iconst.i64 1
     v2256 = symbol_value.i64 gv1
+    store notrap aligned v2250, v4+152
     v2257 = iadd_imm v2250, -32
     store notrap aligned v2252, v2257
     store notrap aligned v2256, v2257+8
     store notrap aligned v2255, v2257+16
     store notrap aligned v2255, v2257+24
-    store notrap aligned v2257, v4+152
     v2258, v2259 = call fn1(v2253, v2254)
     v2260 = load.i64 notrap aligned v4+152
     v2261 = iconst.i64 1
@@ -3177,12 +3177,12 @@ block0(v0: r64, v1: i64):
     v2264 = iconst.i64 0
     v2265 = iconst.i64 1
     v2266 = symbol_value.i64 gv1
+    store notrap aligned v2260, v4+152
     v2267 = iadd_imm v2260, -32
     store notrap aligned v2262, v2267
     store notrap aligned v2266, v2267+8
     store notrap aligned v2265, v2267+16
     store notrap aligned v2265, v2267+24
-    store notrap aligned v2267, v4+152
     v2268, v2269 = call fn1(v2263, v2264)
     v2270 = load.i64 notrap aligned v4+152
     v2271 = iconst.i64 1
@@ -3191,12 +3191,12 @@ block0(v0: r64, v1: i64):
     v2274 = iconst.i64 0
     v2275 = iconst.i64 1
     v2276 = symbol_value.i64 gv1
+    store notrap aligned v2270, v4+152
     v2277 = iadd_imm v2270, -32
     store notrap aligned v2272, v2277
     store notrap aligned v2276, v2277+8
     store notrap aligned v2275, v2277+16
     store notrap aligned v2275, v2277+24
-    store notrap aligned v2277, v4+152
     v2278, v2279 = call fn1(v2273, v2274)
     v2280 = load.i64 notrap aligned v4+152
     v2281 = iconst.i64 1
@@ -3205,12 +3205,12 @@ block0(v0: r64, v1: i64):
     v2284 = iconst.i64 0
     v2285 = iconst.i64 1
     v2286 = symbol_value.i64 gv1
+    store notrap aligned v2280, v4+152
     v2287 = iadd_imm v2280, -32
     store notrap aligned v2282, v2287
     store notrap aligned v2286, v2287+8
     store notrap aligned v2285, v2287+16
     store notrap aligned v2285, v2287+24
-    store notrap aligned v2287, v4+152
     v2288, v2289 = call fn1(v2283, v2284)
     v2290 = load.i64 notrap aligned v4+152
     v2291 = iconst.i64 1
@@ -3219,12 +3219,12 @@ block0(v0: r64, v1: i64):
     v2294 = iconst.i64 0
     v2295 = iconst.i64 1
     v2296 = symbol_value.i64 gv1
+    store notrap aligned v2290, v4+152
     v2297 = iadd_imm v2290, -32
     store notrap aligned v2292, v2297
     store notrap aligned v2296, v2297+8
     store notrap aligned v2295, v2297+16
     store notrap aligned v2295, v2297+24
-    store notrap aligned v2297, v4+152
     v2298, v2299 = call fn1(v2293, v2294)
     v2300 = load.i64 notrap aligned v4+152
     v2301 = iconst.i64 1
@@ -3233,12 +3233,12 @@ block0(v0: r64, v1: i64):
     v2304 = iconst.i64 0
     v2305 = iconst.i64 1
     v2306 = symbol_value.i64 gv1
+    store notrap aligned v2300, v4+152
     v2307 = iadd_imm v2300, -32
     store notrap aligned v2302, v2307
     store notrap aligned v2306, v2307+8
     store notrap aligned v2305, v2307+16
     store notrap aligned v2305, v2307+24
-    store notrap aligned v2307, v4+152
     v2308, v2309 = call fn1(v2303, v2304)
     v2310 = load.i64 notrap aligned v4+152
     v2311 = iconst.i64 1
@@ -3247,12 +3247,12 @@ block0(v0: r64, v1: i64):
     v2314 = iconst.i64 0
     v2315 = iconst.i64 1
     v2316 = symbol_value.i64 gv1
+    store notrap aligned v2310, v4+152
     v2317 = iadd_imm v2310, -32
     store notrap aligned v2312, v2317
     store notrap aligned v2316, v2317+8
     store notrap aligned v2315, v2317+16
     store notrap aligned v2315, v2317+24
-    store notrap aligned v2317, v4+152
     v2318, v2319 = call fn1(v2313, v2314)
     v2320 = load.i64 notrap aligned v4+152
     v2321 = iconst.i64 1
@@ -3261,12 +3261,12 @@ block0(v0: r64, v1: i64):
     v2324 = iconst.i64 0
     v2325 = iconst.i64 1
     v2326 = symbol_value.i64 gv1
+    store notrap aligned v2320, v4+152
     v2327 = iadd_imm v2320, -32
     store notrap aligned v2322, v2327
     store notrap aligned v2326, v2327+8
     store notrap aligned v2325, v2327+16
     store notrap aligned v2325, v2327+24
-    store notrap aligned v2327, v4+152
     v2328, v2329 = call fn1(v2323, v2324)
     v2330 = load.i64 notrap aligned v4+152
     v2331 = iconst.i64 1
@@ -3275,12 +3275,12 @@ block0(v0: r64, v1: i64):
     v2334 = iconst.i64 0
     v2335 = iconst.i64 1
     v2336 = symbol_value.i64 gv1
+    store notrap aligned v2330, v4+152
     v2337 = iadd_imm v2330, -32
     store notrap aligned v2332, v2337
     store notrap aligned v2336, v2337+8
     store notrap aligned v2335, v2337+16
     store notrap aligned v2335, v2337+24
-    store notrap aligned v2337, v4+152
     v2338, v2339 = call fn1(v2333, v2334)
     v2340 = load.i64 notrap aligned v4+152
     v2341 = iconst.i64 1
@@ -3289,12 +3289,12 @@ block0(v0: r64, v1: i64):
     v2344 = iconst.i64 0
     v2345 = iconst.i64 1
     v2346 = symbol_value.i64 gv1
+    store notrap aligned v2340, v4+152
     v2347 = iadd_imm v2340, -32
     store notrap aligned v2342, v2347
     store notrap aligned v2346, v2347+8
     store notrap aligned v2345, v2347+16
     store notrap aligned v2345, v2347+24
-    store notrap aligned v2347, v4+152
     v2348, v2349 = call fn1(v2343, v2344)
     v2350 = load.i64 notrap aligned v4+152
     v2351 = iconst.i64 1
@@ -3303,12 +3303,12 @@ block0(v0: r64, v1: i64):
     v2354 = iconst.i64 0
     v2355 = iconst.i64 1
     v2356 = symbol_value.i64 gv1
+    store notrap aligned v2350, v4+152
     v2357 = iadd_imm v2350, -32
     store notrap aligned v2352, v2357
     store notrap aligned v2356, v2357+8
     store notrap aligned v2355, v2357+16
     store notrap aligned v2355, v2357+24
-    store notrap aligned v2357, v4+152
     v2358, v2359 = call fn1(v2353, v2354)
     v2360 = load.i64 notrap aligned v4+152
     v2361 = iconst.i64 1
@@ -3317,12 +3317,12 @@ block0(v0: r64, v1: i64):
     v2364 = iconst.i64 0
     v2365 = iconst.i64 1
     v2366 = symbol_value.i64 gv1
+    store notrap aligned v2360, v4+152
     v2367 = iadd_imm v2360, -32
     store notrap aligned v2362, v2367
     store notrap aligned v2366, v2367+8
     store notrap aligned v2365, v2367+16
     store notrap aligned v2365, v2367+24
-    store notrap aligned v2367, v4+152
     v2368, v2369 = call fn1(v2363, v2364)
     v2370 = load.i64 notrap aligned v4+152
     v2371 = iconst.i64 1
@@ -3331,12 +3331,12 @@ block0(v0: r64, v1: i64):
     v2374 = iconst.i64 0
     v2375 = iconst.i64 1
     v2376 = symbol_value.i64 gv1
+    store notrap aligned v2370, v4+152
     v2377 = iadd_imm v2370, -32
     store notrap aligned v2372, v2377
     store notrap aligned v2376, v2377+8
     store notrap aligned v2375, v2377+16
     store notrap aligned v2375, v2377+24
-    store notrap aligned v2377, v4+152
     v2378, v2379 = call fn1(v2373, v2374)
     v2380 = load.i64 notrap aligned v4+152
     v2381 = iconst.i64 1
@@ -3345,12 +3345,12 @@ block0(v0: r64, v1: i64):
     v2384 = iconst.i64 0
     v2385 = iconst.i64 1
     v2386 = symbol_value.i64 gv1
+    store notrap aligned v2380, v4+152
     v2387 = iadd_imm v2380, -32
     store notrap aligned v2382, v2387
     store notrap aligned v2386, v2387+8
     store notrap aligned v2385, v2387+16
     store notrap aligned v2385, v2387+24
-    store notrap aligned v2387, v4+152
     v2388, v2389 = call fn1(v2383, v2384)
     v2390 = load.i64 notrap aligned v4+152
     v2391 = iconst.i64 1
@@ -3359,12 +3359,12 @@ block0(v0: r64, v1: i64):
     v2394 = iconst.i64 0
     v2395 = iconst.i64 1
     v2396 = symbol_value.i64 gv1
+    store notrap aligned v2390, v4+152
     v2397 = iadd_imm v2390, -32
     store notrap aligned v2392, v2397
     store notrap aligned v2396, v2397+8
     store notrap aligned v2395, v2397+16
     store notrap aligned v2395, v2397+24
-    store notrap aligned v2397, v4+152
     v2398, v2399 = call fn1(v2393, v2394)
     v2400 = load.i64 notrap aligned v4+152
     v2401 = iconst.i64 1
@@ -3373,12 +3373,12 @@ block0(v0: r64, v1: i64):
     v2404 = iconst.i64 0
     v2405 = iconst.i64 1
     v2406 = symbol_value.i64 gv1
+    store notrap aligned v2400, v4+152
     v2407 = iadd_imm v2400, -32
     store notrap aligned v2402, v2407
     store notrap aligned v2406, v2407+8
     store notrap aligned v2405, v2407+16
     store notrap aligned v2405, v2407+24
-    store notrap aligned v2407, v4+152
     v2408, v2409 = call fn1(v2403, v2404)
     v2410 = load.i64 notrap aligned v4+152
     v2411 = iconst.i64 1
@@ -3387,12 +3387,12 @@ block0(v0: r64, v1: i64):
     v2414 = iconst.i64 0
     v2415 = iconst.i64 1
     v2416 = symbol_value.i64 gv1
+    store notrap aligned v2410, v4+152
     v2417 = iadd_imm v2410, -32
     store notrap aligned v2412, v2417
     store notrap aligned v2416, v2417+8
     store notrap aligned v2415, v2417+16
     store notrap aligned v2415, v2417+24
-    store notrap aligned v2417, v4+152
     v2418, v2419 = call fn1(v2413, v2414)
     v2420 = load.i64 notrap aligned v4+152
     v2421 = iconst.i64 1
@@ -3401,12 +3401,12 @@ block0(v0: r64, v1: i64):
     v2424 = iconst.i64 0
     v2425 = iconst.i64 1
     v2426 = symbol_value.i64 gv1
+    store notrap aligned v2420, v4+152
     v2427 = iadd_imm v2420, -32
     store notrap aligned v2422, v2427
     store notrap aligned v2426, v2427+8
     store notrap aligned v2425, v2427+16
     store notrap aligned v2425, v2427+24
-    store notrap aligned v2427, v4+152
     v2428, v2429 = call fn1(v2423, v2424)
     v2430 = load.i64 notrap aligned v4+152
     v2431 = iconst.i64 1
@@ -3415,12 +3415,12 @@ block0(v0: r64, v1: i64):
     v2434 = iconst.i64 0
     v2435 = iconst.i64 1
     v2436 = symbol_value.i64 gv1
+    store notrap aligned v2430, v4+152
     v2437 = iadd_imm v2430, -32
     store notrap aligned v2432, v2437
     store notrap aligned v2436, v2437+8
     store notrap aligned v2435, v2437+16
     store notrap aligned v2435, v2437+24
-    store notrap aligned v2437, v4+152
     v2438, v2439 = call fn1(v2433, v2434)
     v2440 = load.i64 notrap aligned v4+152
     v2441 = iconst.i64 1
@@ -3429,12 +3429,12 @@ block0(v0: r64, v1: i64):
     v2444 = iconst.i64 0
     v2445 = iconst.i64 1
     v2446 = symbol_value.i64 gv1
+    store notrap aligned v2440, v4+152
     v2447 = iadd_imm v2440, -32
     store notrap aligned v2442, v2447
     store notrap aligned v2446, v2447+8
     store notrap aligned v2445, v2447+16
     store notrap aligned v2445, v2447+24
-    store notrap aligned v2447, v4+152
     v2448, v2449 = call fn1(v2443, v2444)
     v2450 = load.i64 notrap aligned v4+152
     v2451 = iconst.i64 1
@@ -3443,12 +3443,12 @@ block0(v0: r64, v1: i64):
     v2454 = iconst.i64 0
     v2455 = iconst.i64 1
     v2456 = symbol_value.i64 gv1
+    store notrap aligned v2450, v4+152
     v2457 = iadd_imm v2450, -32
     store notrap aligned v2452, v2457
     store notrap aligned v2456, v2457+8
     store notrap aligned v2455, v2457+16
     store notrap aligned v2455, v2457+24
-    store notrap aligned v2457, v4+152
     v2458, v2459 = call fn1(v2453, v2454)
     v2460 = load.i64 notrap aligned v4+152
     v2461 = iconst.i64 1
@@ -3457,12 +3457,12 @@ block0(v0: r64, v1: i64):
     v2464 = iconst.i64 0
     v2465 = iconst.i64 1
     v2466 = symbol_value.i64 gv1
+    store notrap aligned v2460, v4+152
     v2467 = iadd_imm v2460, -32
     store notrap aligned v2462, v2467
     store notrap aligned v2466, v2467+8
     store notrap aligned v2465, v2467+16
     store notrap aligned v2465, v2467+24
-    store notrap aligned v2467, v4+152
     v2468, v2469 = call fn1(v2463, v2464)
     v2470 = load.i64 notrap aligned v4+152
     v2471 = iconst.i64 1
@@ -3471,12 +3471,12 @@ block0(v0: r64, v1: i64):
     v2474 = iconst.i64 0
     v2475 = iconst.i64 1
     v2476 = symbol_value.i64 gv1
+    store notrap aligned v2470, v4+152
     v2477 = iadd_imm v2470, -32
     store notrap aligned v2472, v2477
     store notrap aligned v2476, v2477+8
     store notrap aligned v2475, v2477+16
     store notrap aligned v2475, v2477+24
-    store notrap aligned v2477, v4+152
     v2478, v2479 = call fn1(v2473, v2474)
     v2480 = load.i64 notrap aligned v4+152
     v2481 = iconst.i64 1
@@ -3485,12 +3485,12 @@ block0(v0: r64, v1: i64):
     v2484 = iconst.i64 0
     v2485 = iconst.i64 1
     v2486 = symbol_value.i64 gv1
+    store notrap aligned v2480, v4+152
     v2487 = iadd_imm v2480, -32
     store notrap aligned v2482, v2487
     store notrap aligned v2486, v2487+8
     store notrap aligned v2485, v2487+16
     store notrap aligned v2485, v2487+24
-    store notrap aligned v2487, v4+152
     v2488, v2489 = call fn1(v2483, v2484)
     v2490 = load.i64 notrap aligned v4+152
     v2491 = iconst.i64 1
@@ -3499,12 +3499,12 @@ block0(v0: r64, v1: i64):
     v2494 = iconst.i64 0
     v2495 = iconst.i64 1
     v2496 = symbol_value.i64 gv1
+    store notrap aligned v2490, v4+152
     v2497 = iadd_imm v2490, -32
     store notrap aligned v2492, v2497
     store notrap aligned v2496, v2497+8
     store notrap aligned v2495, v2497+16
     store notrap aligned v2495, v2497+24
-    store notrap aligned v2497, v4+152
     v2498, v2499 = call fn1(v2493, v2494)
     v2500 = load.i64 notrap aligned v4+152
     v2501 = iconst.i64 1
@@ -3513,12 +3513,12 @@ block0(v0: r64, v1: i64):
     v2504 = iconst.i64 0
     v2505 = iconst.i64 1
     v2506 = symbol_value.i64 gv1
+    store notrap aligned v2500, v4+152
     v2507 = iadd_imm v2500, -32
     store notrap aligned v2502, v2507
     store notrap aligned v2506, v2507+8
     store notrap aligned v2505, v2507+16
     store notrap aligned v2505, v2507+24
-    store notrap aligned v2507, v4+152
     v2508, v2509 = call fn1(v2503, v2504)
     v2510 = load.i64 notrap aligned v4+152
     v2511 = iconst.i64 1
@@ -3527,12 +3527,12 @@ block0(v0: r64, v1: i64):
     v2514 = iconst.i64 0
     v2515 = iconst.i64 1
     v2516 = symbol_value.i64 gv1
+    store notrap aligned v2510, v4+152
     v2517 = iadd_imm v2510, -32
     store notrap aligned v2512, v2517
     store notrap aligned v2516, v2517+8
     store notrap aligned v2515, v2517+16
     store notrap aligned v2515, v2517+24
-    store notrap aligned v2517, v4+152
     v2518, v2519 = call fn1(v2513, v2514)
     v2520 = load.i64 notrap aligned v4+152
     v2521 = iconst.i64 1
@@ -3541,12 +3541,12 @@ block0(v0: r64, v1: i64):
     v2524 = iconst.i64 0
     v2525 = iconst.i64 1
     v2526 = symbol_value.i64 gv1
+    store notrap aligned v2520, v4+152
     v2527 = iadd_imm v2520, -32
     store notrap aligned v2522, v2527
     store notrap aligned v2526, v2527+8
     store notrap aligned v2525, v2527+16
     store notrap aligned v2525, v2527+24
-    store notrap aligned v2527, v4+152
     v2528, v2529 = call fn1(v2523, v2524)
     v2530 = load.i64 notrap aligned v4+152
     v2531 = iconst.i64 1
@@ -3555,12 +3555,12 @@ block0(v0: r64, v1: i64):
     v2534 = iconst.i64 0
     v2535 = iconst.i64 1
     v2536 = symbol_value.i64 gv1
+    store notrap aligned v2530, v4+152
     v2537 = iadd_imm v2530, -32
     store notrap aligned v2532, v2537
     store notrap aligned v2536, v2537+8
     store notrap aligned v2535, v2537+16
     store notrap aligned v2535, v2537+24
-    store notrap aligned v2537, v4+152
     v2538, v2539 = call fn1(v2533, v2534)
     v2540 = load.i64 notrap aligned v4+152
     v2541 = iconst.i64 1
@@ -3569,12 +3569,12 @@ block0(v0: r64, v1: i64):
     v2544 = iconst.i64 0
     v2545 = iconst.i64 1
     v2546 = symbol_value.i64 gv1
+    store notrap aligned v2540, v4+152
     v2547 = iadd_imm v2540, -32
     store notrap aligned v2542, v2547
     store notrap aligned v2546, v2547+8
     store notrap aligned v2545, v2547+16
     store notrap aligned v2545, v2547+24
-    store notrap aligned v2547, v4+152
     v2548, v2549 = call fn1(v2543, v2544)
     v2550 = load.i64 notrap aligned v4+152
     v2551 = iconst.i64 1
@@ -3583,12 +3583,12 @@ block0(v0: r64, v1: i64):
     v2554 = iconst.i64 0
     v2555 = iconst.i64 1
     v2556 = symbol_value.i64 gv1
+    store notrap aligned v2550, v4+152
     v2557 = iadd_imm v2550, -32
     store notrap aligned v2552, v2557
     store notrap aligned v2556, v2557+8
     store notrap aligned v2555, v2557+16
     store notrap aligned v2555, v2557+24
-    store notrap aligned v2557, v4+152
     v2558, v2559 = call fn1(v2553, v2554)
     v2560 = load.i64 notrap aligned v4+152
     v2561 = iconst.i64 1
@@ -3597,12 +3597,12 @@ block0(v0: r64, v1: i64):
     v2564 = iconst.i64 0
     v2565 = iconst.i64 1
     v2566 = symbol_value.i64 gv1
+    store notrap aligned v2560, v4+152
     v2567 = iadd_imm v2560, -32
     store notrap aligned v2562, v2567
     store notrap aligned v2566, v2567+8
     store notrap aligned v2565, v2567+16
     store notrap aligned v2565, v2567+24
-    store notrap aligned v2567, v4+152
     v2568, v2569 = call fn1(v2563, v2564)
     v2570 = load.i64 notrap aligned v4+152
     v2571 = iconst.i64 1
@@ -3611,12 +3611,12 @@ block0(v0: r64, v1: i64):
     v2574 = iconst.i64 0
     v2575 = iconst.i64 1
     v2576 = symbol_value.i64 gv1
+    store notrap aligned v2570, v4+152
     v2577 = iadd_imm v2570, -32
     store notrap aligned v2572, v2577
     store notrap aligned v2576, v2577+8
     store notrap aligned v2575, v2577+16
     store notrap aligned v2575, v2577+24
-    store notrap aligned v2577, v4+152
     v2578, v2579 = call fn1(v2573, v2574)
     v2580 = load.i64 notrap aligned v4+152
     v2581 = iconst.i64 257

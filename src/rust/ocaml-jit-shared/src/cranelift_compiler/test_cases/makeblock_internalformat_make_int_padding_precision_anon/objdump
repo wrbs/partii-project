@@ -17,23 +17,23 @@ Disassembly of section .text:
   24:	49 bc 00 00 00 00 00 	movabs r12,0x0
   2b:	00 00 00 
 			26: R_X86_64_64	caml_state_addr
-  2e:	48 8b 0e             	mov    rcx,QWORD PTR [rsi]
-  31:	49 8b 55 30          	mov    rdx,QWORD PTR [r13+0x30]
-  35:	49 8b 7d 28          	mov    rdi,QWORD PTR [r13+0x28]
-  39:	49 b8 00 00 00 00 00 	movabs r8,0x0
-  40:	00 00 00 
-			3b: R_X86_64_64	callback_return_addr
-  43:	48 89 f0             	mov    rax,rsi
-  46:	48 83 c0 e0          	add    rax,0xffffffffffffffe0
-  4a:	48 89 56 e0          	mov    QWORD PTR [rsi-0x20],rdx
-  4e:	48 89 4e e8          	mov    QWORD PTR [rsi-0x18],rcx
-  52:	4c 89 46 f0          	mov    QWORD PTR [rsi-0x10],r8
-  56:	b9 01 00 00 00       	mov    ecx,0x1
-  5b:	48 89 4e f8          	mov    QWORD PTR [rsi-0x8],rcx
-  5f:	b9 01 00 00 00       	mov    ecx,0x1
-  64:	48 89 0e             	mov    QWORD PTR [rsi],rcx
-  67:	49 89 84 24 98 00 00 	mov    QWORD PTR [r12+0x98],rax
-  6e:	00 
+  2e:	48 8b 06             	mov    rax,QWORD PTR [rsi]
+  31:	48 89 f1             	mov    rcx,rsi
+  34:	48 83 c1 08          	add    rcx,0x8
+  38:	49 8b 55 30          	mov    rdx,QWORD PTR [r13+0x30]
+  3c:	49 8b 7d 28          	mov    rdi,QWORD PTR [r13+0x28]
+  40:	49 b8 00 00 00 00 00 	movabs r8,0x0
+  47:	00 00 00 
+			42: R_X86_64_64	callback_return_addr
+  4a:	49 89 8c 24 98 00 00 	mov    QWORD PTR [r12+0x98],rcx
+  51:	00 
+  52:	48 89 56 e0          	mov    QWORD PTR [rsi-0x20],rdx
+  56:	48 89 46 e8          	mov    QWORD PTR [rsi-0x18],rax
+  5a:	4c 89 46 f0          	mov    QWORD PTR [rsi-0x10],r8
+  5e:	b8 01 00 00 00       	mov    eax,0x1
+  63:	48 89 46 f8          	mov    QWORD PTR [rsi-0x8],rax
+  67:	b8 01 00 00 00       	mov    eax,0x1
+  6c:	48 89 06             	mov    QWORD PTR [rsi],rax
   6f:	be 01 00 00 00       	mov    esi,0x1
   74:	48 b8 00 00 00 00 00 	movabs rax,0x0
   7b:	00 00 00 

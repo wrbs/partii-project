@@ -19,23 +19,23 @@ Block 0:
   Inst 12:   unwind SaveReg { clobber_offset: 24, reg: r28J }
   Inst 13:   load_ext_name u1:0+0, %r12
   Inst 14:   movq    0(%rsi), %rdi
-  Inst 15:   movq    8(%rdi), %r13
-  Inst 16:   movq    0(%rdi), %r14
-  Inst 17:   load_ext_name u1:1+0, %rbx
-  Inst 18:   movq    0(%rbx), %rdi
-  Inst 19:   movq    360(%rdi), %rdi
-  Inst 20:   movq    120(%rdi), %rdi
-  Inst 21:   load_ext_name u1:2+0, %rcx
-  Inst 22:   movq    %rsi, %rax
-  Inst 23:   addq    $-32, %rax
-  Inst 24:   movq    %r14, -32(%rsi)
-  Inst 25:   movq    %r13, -24(%rsi)
-  Inst 26:   movq    %rcx, -16(%rsi)
-  Inst 27:   movl    $1, %ecx
-  Inst 28:   movq    %rcx, -8(%rsi)
-  Inst 29:   movl    $1, %ecx
-  Inst 30:   movq    %rcx, 0(%rsi)
-  Inst 31:   movq    %rax, 152(%r12)
+  Inst 15:   movq    %rsi, %rax
+  Inst 16:   addq    $8, %rax
+  Inst 17:   movq    8(%rdi), %r13
+  Inst 18:   movq    0(%rdi), %r14
+  Inst 19:   load_ext_name u1:1+0, %rbx
+  Inst 20:   movq    0(%rbx), %rdi
+  Inst 21:   movq    360(%rdi), %rdi
+  Inst 22:   movq    120(%rdi), %rdi
+  Inst 23:   load_ext_name u1:2+0, %rcx
+  Inst 24:   movq    %rax, 152(%r12)
+  Inst 25:   movq    %r14, -32(%rsi)
+  Inst 26:   movq    %r13, -24(%rsi)
+  Inst 27:   movq    %rcx, -16(%rsi)
+  Inst 28:   movl    $1, %eax
+  Inst 29:   movq    %rax, -8(%rsi)
+  Inst 30:   movl    $1, %eax
+  Inst 31:   movq    %rax, 0(%rsi)
   Inst 32:   movl    $1, %esi
   Inst 33:   load_ext_name u0:1+0, %rax
   Inst 34:   movq    %rdi, rsp(0 + virtual offset)
