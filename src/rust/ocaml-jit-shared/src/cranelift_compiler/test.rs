@@ -133,3 +133,4 @@ test_case!(arith_le);
 test_case!(arith_toplevel_t);
 test_case!(trigger_gc_please);
 test_case!(arith_not);
+test_case!(arith_neg);

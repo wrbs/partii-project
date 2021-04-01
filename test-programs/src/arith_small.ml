@@ -48,4 +48,5 @@ let do_not x = not x
 let () =
     let _ = do_not true in
     let _ = do_not false in
+    let _ = List.map (fun x -> -x) nums in
     List.iter do_tests (pairs_of nums)

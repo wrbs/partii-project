@@ -1,0 +1,1 @@
+{"arity":1,"blocks":[{"block_id":0,"predecessors":[],"block_type":"First","instructions":[{"Acc":0},"NegInt"],"exit":{"Return":1},"start_stack_size":1,"end_stack_size":0,"sealed_blocks":[]}],"used_closures":[],"max_stack_size":1}

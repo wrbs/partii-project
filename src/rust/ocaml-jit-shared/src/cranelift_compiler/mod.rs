@@ -461,7 +461,12 @@ where
                 let res = self.builder.ins().bxor_imm(val, 2);
                 self.set_acc_int(res);
             }
-            // BasicBlockInstruction::NegInt => {}
+            BasicBlockInstruction::NegInt => {
+                let two = self.builder.ins().iconst(I64, 2);
+                let acc = self.get_acc_int();
+                let res = self.builder.ins().isub(two, acc);
+                self.set_acc_int(res);
+            }
             BasicBlockInstruction::ArithInt(op) => {
                 let a = self.get_acc_int();
                 let b = self.pick_int(0)?;
