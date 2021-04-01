@@ -15,12 +15,12 @@ let ops = [
 ]
 
 let preds = [
-    ( == );
-    ( != );
-    ( > );
-    ( < );
-    ( >= );
-    ( <= );
+    (fun (x : int) y -> x = y);
+    (fun (x : int) y -> x <> y);
+    (fun (x : int) y -> x > y);
+    (fun (x : int) y -> x < y);
+    (fun (x : int) y -> x >= y);
+    (fun (x : int) y -> x <= y);
 ]
 
 let do_op_test (a, b) f = try
