@@ -3,7 +3,10 @@ use std::{
     fmt::Write,
 };
 
-use crate::basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicClosure};
+use crate::{
+    basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicClosure},
+    instructions::ArithOp,
+};
 use anyhow::{bail, ensure, Context, Result};
 use codegen::{
     binemit::{StackMap, StackMapSink},
@@ -455,7 +458,32 @@ where
             }
             // BasicBlockInstruction::BoolNot => {}
             // BasicBlockInstruction::NegInt => {}
-            // BasicBlockInstruction::ArithInt(_) => {}
+            BasicBlockInstruction::ArithInt(op) => {
+                let a = self.get_acc_int();
+                let b = self.pick_int(0)?;
+                self.pop(1)?;
+
+                let result = match op {
+                    ArithOp::Add => {
+                        // a + b = (x * 2 + 1) + (y * 2 + 1) = (x + y) * 2 + 2
+                        // result = a + b - 1 = (x + y) * 2 + 1
+                        let added = self.builder.ins().iadd(a, b);
+                        self.builder.ins().iadd_imm(added, -1)
+                    }
+                    // ArithOp::Sub => {}
+                    // ArithOp::Mul => {}
+                    // ArithOp::Div => {}
+                    // ArithOp::Mod => {}
+                    // ArithOp::And => {}
+                    // ArithOp::Or => {}
+                    // ArithOp::Xor => {}
+                    // ArithOp::Lsl => {}
+                    // ArithOp::Lsr => {}
+                    // ArithOp::Asr => {}
+                    _ => bail!("Unimplemented arith_op: {:?}", op),
+                };
+                self.set_acc_int(result);
+            }
             // BasicBlockInstruction::IsInt => {}
             // BasicBlockInstruction::IntCmp(_) => {}
             // BasicBlockInstruction::OffsetInt(_) => {}
