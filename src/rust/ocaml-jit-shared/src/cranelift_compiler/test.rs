@@ -131,3 +131,4 @@ test_case!(arith_mod);
 test_case!(arith_div);
 test_case!(arith_le);
 test_case!(arith_toplevel_t);
+test_case!(trigger_gc_please);

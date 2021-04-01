@@ -543,7 +543,11 @@ where
                     .selectif(I64, cc, flags, val_true, val_false);
                 self.set_acc_int(res);
             }
-            // BasicBlockInstruction::OffsetInt(_) => {}
+            BasicBlockInstruction::OffsetInt(n) => {
+                let acc = self.get_acc_int();
+                let added = self.builder.ins().iadd_imm(acc, (*n as i64) << 1);
+                self.set_acc_int(added);
+            }
             &BasicBlockInstruction::CCall1(id) => self.c_call(id, Arity::N1)?,
             &BasicBlockInstruction::CCall2(id) => self.c_call(id, Arity::N2)?,
             &BasicBlockInstruction::CCall3(id) => self.c_call(id, Arity::N3)?,

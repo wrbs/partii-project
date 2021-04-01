@@ -1,0 +1,1633 @@
+0xbf: StackMap {
+    bitmap: [
+        BitSet(
+            61,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x11d: StackMap {
+    bitmap: [
+        BitSet(
+            125,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x17b: StackMap {
+    bitmap: [
+        BitSet(
+            253,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1d9: StackMap {
+    bitmap: [
+        BitSet(
+            509,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x237: StackMap {
+    bitmap: [
+        BitSet(
+            1021,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x295: StackMap {
+    bitmap: [
+        BitSet(
+            2045,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x2f3: StackMap {
+    bitmap: [
+        BitSet(
+            4093,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x351: StackMap {
+    bitmap: [
+        BitSet(
+            8189,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x3af: StackMap {
+    bitmap: [
+        BitSet(
+            16381,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x40d: StackMap {
+    bitmap: [
+        BitSet(
+            32765,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x46b: StackMap {
+    bitmap: [
+        BitSet(
+            65533,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x4cc: StackMap {
+    bitmap: [
+        BitSet(
+            131069,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x533: StackMap {
+    bitmap: [
+        BitSet(
+            262141,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x59d: StackMap {
+    bitmap: [
+        BitSet(
+            524285,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x60d: StackMap {
+    bitmap: [
+        BitSet(
+            1048573,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x67d: StackMap {
+    bitmap: [
+        BitSet(
+            2097149,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x6ed: StackMap {
+    bitmap: [
+        BitSet(
+            4194301,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x75d: StackMap {
+    bitmap: [
+        BitSet(
+            8388605,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x7cd: StackMap {
+    bitmap: [
+        BitSet(
+            16777213,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x83d: StackMap {
+    bitmap: [
+        BitSet(
+            33554429,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x8ad: StackMap {
+    bitmap: [
+        BitSet(
+            67108861,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x91d: StackMap {
+    bitmap: [
+        BitSet(
+            134217725,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x98d: StackMap {
+    bitmap: [
+        BitSet(
+            268435453,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x9fd: StackMap {
+    bitmap: [
+        BitSet(
+            536870909,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xa6d: StackMap {
+    bitmap: [
+        BitSet(
+            1073741821,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xadd: StackMap {
+    bitmap: [
+        BitSet(
+            2147483645,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xb4d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xbbd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            1,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xc2d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            3,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xc9d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            7,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xd0d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            15,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xd7d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            31,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xded: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            63,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xe5d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            127,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xecd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            255,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xf3d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            511,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0xfad: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            1023,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x101d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            2047,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x108d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4095,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x10fd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            8191,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x116d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            16383,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x11dd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            32767,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x124d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            65535,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x12bd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            131071,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x132d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            262143,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x139d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            524287,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x140d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            1048575,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x147d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            2097151,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x14ed: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4194303,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x155d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            8388607,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x15cd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            16777215,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x163d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            33554431,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x16ad: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            67108863,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x171d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            134217727,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x178d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            268435455,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x17fd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            536870911,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x186d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            1073741823,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x18dd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            2147483647,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x194d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x19bd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            1,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1a2d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            3,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1a9d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            7,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1b0d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            15,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1b7d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            31,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1bed: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            63,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1c5d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            127,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1ccd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            255,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1d3d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            511,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1dad: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            1023,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1e1d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            2047,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1e8d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4095,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1efd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            8191,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1f6d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            16383,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x1fdd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            32767,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x204d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            65535,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x20bd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            131071,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x212d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            262143,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x219d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            524287,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x220d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            1048575,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x227d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            2097151,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x22ed: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4194303,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x235d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            8388607,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x23cd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            16777215,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x243d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            33554431,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x24ad: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            67108863,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x251d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            134217727,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x258d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            268435455,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x25fd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            536870911,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x266d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            1073741823,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x26dd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            2147483647,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x274d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}0x27bd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            1,
+        ),
+    ],
+    mapped_words: 106,
+}0x282d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            3,
+        ),
+    ],
+    mapped_words: 106,
+}0x289d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            7,
+        ),
+    ],
+    mapped_words: 106,
+}0x290d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            15,
+        ),
+    ],
+    mapped_words: 106,
+}0x297d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            31,
+        ),
+    ],
+    mapped_words: 106,
+}0x29ed: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            63,
+        ),
+    ],
+    mapped_words: 106,
+}0x2a5d: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            127,
+        ),
+    ],
+    mapped_words: 106,
+}0x2acd: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            255,
+        ),
+    ],
+    mapped_words: 106,
+}0x2b35: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            255,
+        ),
+    ],
+    mapped_words: 106,
+}0x2bab: StackMap {
+    bitmap: [
+        BitSet(
+            4294967293,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            4294967295,
+        ),
+        BitSet(
+            479,
+        ),
+    ],
+    mapped_words: 106,
+}0x318c: StackMap {
+    bitmap: [
+        BitSet(
+            29,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+        BitSet(
+            0,
+        ),
+    ],
+    mapped_words: 106,
+}
