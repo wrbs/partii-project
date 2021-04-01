@@ -8,6 +8,8 @@ function u0:0(r64, i64) -> r64, i64 system_v {
 block0(v0: r64, v1: i64):
     v4 = symbol_value.i64 gv0
     v5 = load.r64 notrap aligned v1
+    v29 = iconst.i64 8
+    v6 = iadd v1, v29
     v7 = load.r64 notrap aligned v5+8
     v8 = load.r64 notrap aligned v5
     v9 = symbol_value.i64 gv1
@@ -19,6 +21,7 @@ block0(v0: r64, v1: i64):
     v13 = iconst.i64 1
     v14 -> v13
     v15 = symbol_value.i64 gv2
+    store notrap aligned v6, v4+152
     v30 = iconst.i64 -32
     v31 -> v30
     v16 = iadd v1, v30
@@ -27,7 +30,6 @@ block0(v0: r64, v1: i64):
     store notrap aligned v15, v16+16
     store notrap aligned v13, v16+24
     store notrap aligned v13, v16+32
-    store notrap aligned v16, v4+152
     v17, v18 = call fn0(v12, v13)
     v19 = load.i64 notrap aligned v4+152
     v21 = load.i64 notrap aligned v9

@@ -16,28 +16,28 @@ Disassembly of section .text:
   23:	00 00 00 
 			1e: R_X86_64_64	caml_state_addr
   26:	48 8b 3e             	mov    rdi,QWORD PTR [rsi]
-  29:	4c 8b 6f 08          	mov    r13,QWORD PTR [rdi+0x8]
-  2d:	4c 8b 37             	mov    r14,QWORD PTR [rdi]
-  30:	48 bb 00 00 00 00 00 	movabs rbx,0x0
-  37:	00 00 00 
-			32: R_X86_64_64	global_data_addr
-  3a:	48 8b 3b             	mov    rdi,QWORD PTR [rbx]
-  3d:	48 8b bf 68 01 00 00 	mov    rdi,QWORD PTR [rdi+0x168]
-  44:	48 8b 7f 78          	mov    rdi,QWORD PTR [rdi+0x78]
-  48:	48 b9 00 00 00 00 00 	movabs rcx,0x0
-  4f:	00 00 00 
-			4a: R_X86_64_64	callback_return_addr
-  52:	48 89 f0             	mov    rax,rsi
-  55:	48 83 c0 e0          	add    rax,0xffffffffffffffe0
-  59:	4c 89 76 e0          	mov    QWORD PTR [rsi-0x20],r14
-  5d:	4c 89 6e e8          	mov    QWORD PTR [rsi-0x18],r13
-  61:	48 89 4e f0          	mov    QWORD PTR [rsi-0x10],rcx
-  65:	b9 01 00 00 00       	mov    ecx,0x1
-  6a:	48 89 4e f8          	mov    QWORD PTR [rsi-0x8],rcx
-  6e:	b9 01 00 00 00       	mov    ecx,0x1
-  73:	48 89 0e             	mov    QWORD PTR [rsi],rcx
-  76:	49 89 84 24 98 00 00 	mov    QWORD PTR [r12+0x98],rax
-  7d:	00 
+  29:	48 89 f0             	mov    rax,rsi
+  2c:	48 83 c0 08          	add    rax,0x8
+  30:	4c 8b 6f 08          	mov    r13,QWORD PTR [rdi+0x8]
+  34:	4c 8b 37             	mov    r14,QWORD PTR [rdi]
+  37:	48 bb 00 00 00 00 00 	movabs rbx,0x0
+  3e:	00 00 00 
+			39: R_X86_64_64	global_data_addr
+  41:	48 8b 3b             	mov    rdi,QWORD PTR [rbx]
+  44:	48 8b bf 68 01 00 00 	mov    rdi,QWORD PTR [rdi+0x168]
+  4b:	48 8b 7f 78          	mov    rdi,QWORD PTR [rdi+0x78]
+  4f:	48 b9 00 00 00 00 00 	movabs rcx,0x0
+  56:	00 00 00 
+			51: R_X86_64_64	callback_return_addr
+  59:	49 89 84 24 98 00 00 	mov    QWORD PTR [r12+0x98],rax
+  60:	00 
+  61:	4c 89 76 e0          	mov    QWORD PTR [rsi-0x20],r14
+  65:	4c 89 6e e8          	mov    QWORD PTR [rsi-0x18],r13
+  69:	48 89 4e f0          	mov    QWORD PTR [rsi-0x10],rcx
+  6d:	b8 01 00 00 00       	mov    eax,0x1
+  72:	48 89 46 f8          	mov    QWORD PTR [rsi-0x8],rax
+  76:	b8 01 00 00 00       	mov    eax,0x1
+  7b:	48 89 06             	mov    QWORD PTR [rsi],rax
   7e:	be 01 00 00 00       	mov    esi,0x1
   83:	48 b8 00 00 00 00 00 	movabs rax,0x0
   8a:	00 00 00 

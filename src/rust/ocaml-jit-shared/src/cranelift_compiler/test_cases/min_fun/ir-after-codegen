@@ -20,13 +20,13 @@ block0(v0: r64, v1: i64):
     v13 = iconst.i64 1
     v14 = iconst.i64 1
     v15 = symbol_value.i64 gv2
+    store notrap aligned v6, v4+152
     v16 = iadd_imm v6, -40
     store notrap aligned v8, v16
     store notrap aligned v7, v16+8
     store notrap aligned v15, v16+16
     store notrap aligned v14, v16+24
     store notrap aligned v14, v16+32
-    store notrap aligned v16, v4+152
     v17, v18 = call fn0(v12, v13)
     v19 = load.i64 notrap aligned v4+152
     v20 = symbol_value.i64 gv1

@@ -21,17 +21,17 @@ Block 0:
   Inst 14:   load_ext_name u1:0+0, %r12
   Inst 15:   movq    0(%rsi), %r14
   Inst 16:   movq    8(%rsi), %rbx
-  Inst 17:   movq    8(%r13), %rdi
-  Inst 18:   load_ext_name u1:1+0, %rcx
-  Inst 19:   movq    %rsi, %rax
-  Inst 20:   addq    $-16, %rax
-  Inst 21:   movq    %r14, -16(%rsi)
-  Inst 22:   movq    %rcx, -8(%rsi)
-  Inst 23:   movl    $1, %ecx
-  Inst 24:   movq    %rcx, 0(%rsi)
-  Inst 25:   movl    $1, %ecx
-  Inst 26:   movq    %rcx, 8(%rsi)
-  Inst 27:   movq    %rax, 152(%r12)
+  Inst 17:   movq    %rsi, %rax
+  Inst 18:   addq    $16, %rax
+  Inst 19:   movq    8(%r13), %rdi
+  Inst 20:   load_ext_name u1:1+0, %rcx
+  Inst 21:   movq    %rax, 152(%r12)
+  Inst 22:   movq    %r14, -16(%rsi)
+  Inst 23:   movq    %rcx, -8(%rsi)
+  Inst 24:   movl    $1, %eax
+  Inst 25:   movq    %rax, 0(%rsi)
+  Inst 26:   movl    $1, %eax
+  Inst 27:   movq    %rax, 8(%rsi)
   Inst 28:   xorq    %rsi, %rsi
   Inst 29:   load_ext_name u0:1+0, %rax
   Inst 30:   movq    %r13, rsp(0 + virtual offset)
