@@ -484,12 +484,31 @@ where
                     }
                     // ArithOp::Div => {}
                     // ArithOp::Mod => {}
-                    // ArithOp::And => {}
-                    // ArithOp::Or => {}
-                    // ArithOp::Xor => {}
-                    // ArithOp::Lsl => {}
-                    // ArithOp::Lsr => {}
-                    // ArithOp::Asr => {}
+                    ArithOp::And => self.builder.ins().band(a, b),
+                    ArithOp::Or => self.builder.ins().bor(a, b),
+                    ArithOp::Xor => {
+                        let xor = self.builder.ins().bxor(a, b);
+                        self.builder.ins().bor_imm(xor, 1)
+                    }
+                    ArithOp::Lsl => {
+                        // accu = (value)((((intnat) accu - 1) << Long_val(*sp++)) + 1); Next;
+                        let shift = self.value_to_long(b);
+                        let adec = self.builder.ins().iadd_imm(a, -1);
+                        let shifted = self.builder.ins().ishl(adec, shift);
+                        self.builder.ins().iadd_imm(shifted, 1)
+                    }
+                    ArithOp::Lsr => {
+                        // accu = (value)((((uintnat) accu) >> Long_val(*sp++)) | 1); Next;
+                        let shift = self.value_to_long(b);
+                        let shifted = self.builder.ins().ushr(a, shift);
+                        self.builder.ins().bor_imm(shifted, 1)
+                    }
+                    ArithOp::Asr => {
+                        // accu = (value)((((intnat) accu) >> Long_val(*sp++)) | 1); Next;
+                        let shift = self.value_to_long(b);
+                        let shifted = self.builder.ins().sshr(a, shift);
+                        self.builder.ins().bor_imm(shifted, 1)
+                    }
                     _ => bail!("Unimplemented arith_op: {:?}", op),
                 };
                 self.set_acc_int(result);
