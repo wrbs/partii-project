@@ -470,7 +470,11 @@ where
                         let added = self.builder.ins().iadd(a, b);
                         self.builder.ins().iadd_imm(added, -1)
                     }
-                    // ArithOp::Sub => {}
+                    ArithOp::Sub => {
+                        // It's a - b + 1 for similar reasons to add
+                        let subbed = self.builder.ins().isub(a, b);
+                        self.builder.ins().iadd_imm(subbed, 1)
+                    }
                     // ArithOp::Mul => {}
                     // ArithOp::Div => {}
                     // ArithOp::Mod => {}

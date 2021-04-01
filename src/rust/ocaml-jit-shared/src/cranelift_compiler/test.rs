@@ -126,3 +126,4 @@ test_case!(min_fun);
 test_case!(makeblock_internalformat_make_int_padding_precision_anon);
 test_case!(big_makeblock);
 test_case!(arith_add);
+test_case!(arith_sub);
