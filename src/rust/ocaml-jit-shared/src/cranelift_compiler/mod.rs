@@ -475,7 +475,13 @@ where
                         let subbed = self.builder.ins().isub(a, b);
                         self.builder.ins().iadd_imm(subbed, 1)
                     }
-                    // ArithOp::Mul => {}
+                    ArithOp::Mul => {
+                        let al = self.value_to_long(a);
+                        let bl = self.value_to_long(b);
+
+                        let rl = self.builder.ins().imul(al, bl);
+                        self.long_to_value(rl)
+                    }
                     // ArithOp::Div => {}
                     // ArithOp::Mod => {}
                     // ArithOp::And => {}
@@ -566,6 +572,16 @@ where
     }
 
     // Helpers
+
+    fn value_to_long(&mut self, ival: Value) -> Value {
+        self.builder.ins().sshr_imm(ival, 1)
+    }
+
+    fn long_to_value(&mut self, lval: Value) -> Value {
+        let doubled = self.builder.ins().iadd(lval, lval);
+        self.builder.ins().iadd_imm(doubled, 1)
+    }
+
 
     fn emit_apply(&mut self, num_args: usize) -> Result<()> {
         let closure = self.get_acc_ref();
