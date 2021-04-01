@@ -1,0 +1,39 @@
+
+<input>:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <arith_mod>:
+   0:	55                   	push   rbp
+   1:	48 89 e5             	mov    rbp,rsp
+   4:	49 b8 00 00 00 00 00 	movabs r8,0x0
+   b:	00 00 00 
+			6: R_X86_64_64	caml_state_addr
+   e:	48 8b 0e             	mov    rcx,QWORD PTR [rsi]
+  11:	48 8b 46 08          	mov    rax,QWORD PTR [rsi+0x8]
+  15:	48 89 f7             	mov    rdi,rsi
+  18:	48 83 c7 10          	add    rdi,0x10
+  1c:	be 01 00 00 00       	mov    esi,0x1
+  21:	48 39 f0             	cmp    rax,rsi
+  24:	0f 84 2f 00 00 00    	je     59 <arith_mod+0x59>
+  2a:	48 c1 f9 01          	sar    rcx,0x1
+  2e:	48 89 c6             	mov    rsi,rax
+  31:	48 c1 fe 01          	sar    rsi,0x1
+  35:	48 89 c8             	mov    rax,rcx
+  38:	48 99                	cqo    
+  3a:	48 f7 fe             	idiv   rsi
+  3d:	48 89 d6             	mov    rsi,rdx
+  40:	48 01 d6             	add    rsi,rdx
+  43:	48 83 c6 01          	add    rsi,0x1
+  47:	49 89 b8 98 00 00 00 	mov    QWORD PTR [r8+0x98],rdi
+  4e:	48 31 d2             	xor    rdx,rdx
+  51:	48 89 f0             	mov    rax,rsi
+  54:	48 89 ec             	mov    rsp,rbp
+  57:	5d                   	pop    rbp
+  58:	c3                   	ret    
+  59:	48 be 00 00 00 00 00 	movabs rsi,0x0
+  60:	00 00 00 
+			5b: R_X86_64_64	caml_raise_zero_divide
+  63:	ff d6                	call   rsi
+  65:	0f 0b                	ud2    

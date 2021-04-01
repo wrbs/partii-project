@@ -1,0 +1,51 @@
+VCode_ShowWithRRU {{
+  Entry block: 0
+Block 0:
+  (original IR block: block0)
+  (successor: Block 1)
+  (successor: Block 3)
+  (instruction range: 0 .. 12)
+  Inst 0:   pushq   %rbp
+  Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
+  Inst 2:   movq    %rsp, %rbp
+  Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 0 }
+  Inst 4:   load_ext_name u1:0+0, %r8
+  Inst 5:   movq    0(%rsi), %rcx
+  Inst 6:   movq    8(%rsi), %rax
+  Inst 7:   movq    %rsi, %rdi
+  Inst 8:   addq    $16, %rdi
+  Inst 9:   movl    $1, %esi
+  Inst 10:   cmpq    %rsi, %rax
+  Inst 11:   jnz     label1; j label3
+Block 1:
+  (original IR block: block3)
+  (successor: Block 2)
+  (instruction range: 12 .. 22)
+  Inst 12:   sarq    $1, %rcx
+  Inst 13:   movq    %rax, %rsi
+  Inst 14:   sarq    $1, %rsi
+  Inst 15:   movq    %rcx, %rax
+  Inst 16:   cqo
+  Inst 17:   idiv    %rsi
+  Inst 18:   movq    %rdx, %rsi
+  Inst 19:   addq    %rdx, %rsi
+  Inst 20:   addq    $1, %rsi
+  Inst 21:   jmp     label2
+Block 2:
+  (original IR block: block1)
+  (instruction range: 22 .. 28)
+  Inst 22:   movq    %rdi, 152(%r8)
+  Inst 23:   xorq    %rdx, %rdx
+  Inst 24:   movq    %rsi, %rax
+  Inst 25:   movq    %rbp, %rsp
+  Inst 26:   popq    %rbp
+  Inst 27:   ret
+Block 3:
+  (original IR block: block2)
+  (instruction range: 28 .. 31)
+  Inst 28:   load_ext_name u0:1+0, %rsi
+      (safepoint: slots [] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 29:   call    *%rsi
+      (safepoint: slots [] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 30:   ud2 unreachable
+}}
