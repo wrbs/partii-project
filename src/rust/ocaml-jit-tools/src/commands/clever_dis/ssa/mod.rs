@@ -19,9 +19,6 @@ mod stack_state;
 #[cfg(test)]
 mod test_block_translation;
 
-#[cfg(test)]
-mod test_closure_translation;
-
 pub mod data;
 
 struct Vars {
