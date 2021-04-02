@@ -11,10 +11,9 @@ block0(v0: r64, v1: i64):
     v3 = iconst.i64 0
     v4 = symbol_value.i64 gv0
     v5 = load.r64 notrap aligned v1
-    v1138 -> v5
+    v1036 -> v5
     v6 = load.r64 notrap aligned v1+8
-    v1122 -> v6
-    v1136 -> v6
+    v1022 -> v6
     v7 = iadd_imm v1, 16
     v8 = iconst.i64 1
     v9 = raw_bitcast.i64 v5
@@ -38,7 +37,6 @@ block2:
     store notrap aligned v14, v16+16
     store notrap aligned v14, v16+24
     v17, v18 = call fn0(v12, v13)
-    v1121 -> v17
     v19 = load.i64 notrap aligned v4+152
     v20 = iconst.i64 1
     v21 = raw_bitcast.r64 v20
@@ -53,7 +51,6 @@ block2:
     store notrap aligned v24, v26+16
     store notrap aligned v24, v26+24
     v27, v28 = call fn0(v22, v23)
-    v1120 -> v27
     v29 = load.i64 notrap aligned v4+152
     v30 = iconst.i64 1
     v31 = raw_bitcast.r64 v30
@@ -68,7 +65,6 @@ block2:
     store notrap aligned v34, v36+16
     store notrap aligned v34, v36+24
     v37, v38 = call fn0(v32, v33)
-    v1119 -> v37
     v39 = load.i64 notrap aligned v4+152
     v40 = iconst.i64 1
     v41 = raw_bitcast.r64 v40
@@ -83,7 +79,6 @@ block2:
     store notrap aligned v44, v46+16
     store notrap aligned v44, v46+24
     v47, v48 = call fn0(v42, v43)
-    v1118 -> v47
     v49 = load.i64 notrap aligned v4+152
     v50 = iconst.i64 1
     v51 = raw_bitcast.r64 v50
@@ -98,7 +93,6 @@ block2:
     store notrap aligned v54, v56+16
     store notrap aligned v54, v56+24
     v57, v58 = call fn0(v52, v53)
-    v1117 -> v57
     v59 = load.i64 notrap aligned v4+152
     v60 = iconst.i64 1
     v61 = raw_bitcast.r64 v60
@@ -113,7 +107,6 @@ block2:
     store notrap aligned v64, v66+16
     store notrap aligned v64, v66+24
     v67, v68 = call fn0(v62, v63)
-    v1116 -> v67
     v69 = load.i64 notrap aligned v4+152
     v70 = iconst.i64 1
     v71 = raw_bitcast.r64 v70
@@ -128,7 +121,6 @@ block2:
     store notrap aligned v74, v76+16
     store notrap aligned v74, v76+24
     v77, v78 = call fn0(v72, v73)
-    v1115 -> v77
     v79 = load.i64 notrap aligned v4+152
     v80 = iconst.i64 1
     v81 = raw_bitcast.r64 v80
@@ -143,7 +135,6 @@ block2:
     store notrap aligned v84, v86+16
     store notrap aligned v84, v86+24
     v87, v88 = call fn0(v82, v83)
-    v1114 -> v87
     v89 = load.i64 notrap aligned v4+152
     v90 = iconst.i64 1
     v91 = raw_bitcast.r64 v90
@@ -158,7 +149,6 @@ block2:
     store notrap aligned v94, v96+16
     store notrap aligned v94, v96+24
     v97, v98 = call fn0(v92, v93)
-    v1113 -> v97
     v99 = load.i64 notrap aligned v4+152
     v100 = iconst.i64 1
     v101 = raw_bitcast.r64 v100
@@ -173,7 +163,6 @@ block2:
     store notrap aligned v104, v106+16
     store notrap aligned v104, v106+24
     v107, v108 = call fn0(v102, v103)
-    v1112 -> v107
     v109 = load.i64 notrap aligned v4+152
     v110 = iconst.i64 1
     v111 = raw_bitcast.r64 v110
@@ -188,7 +177,6 @@ block2:
     store notrap aligned v114, v116+16
     store notrap aligned v114, v116+24
     v117, v118 = call fn0(v112, v113)
-    v1111 -> v117
     v119 = load.i64 notrap aligned v4+152
     v120 = iconst.i64 1
     v121 = raw_bitcast.r64 v120
@@ -203,7 +191,6 @@ block2:
     store notrap aligned v124, v126+16
     store notrap aligned v124, v126+24
     v127, v128 = call fn0(v122, v123)
-    v1110 -> v127
     v129 = load.i64 notrap aligned v4+152
     v130 = iconst.i64 1
     v131 = raw_bitcast.r64 v130
@@ -218,7 +205,6 @@ block2:
     store notrap aligned v134, v136+16
     store notrap aligned v134, v136+24
     v137, v138 = call fn0(v132, v133)
-    v1109 -> v137
     v139 = load.i64 notrap aligned v4+152
     v140 = iconst.i64 1
     v141 = raw_bitcast.r64 v140
@@ -233,7 +219,6 @@ block2:
     store notrap aligned v144, v146+16
     store notrap aligned v144, v146+24
     v147, v148 = call fn0(v142, v143)
-    v1108 -> v147
     v149 = load.i64 notrap aligned v4+152
     v150 = iconst.i64 1
     v151 = raw_bitcast.r64 v150
@@ -248,7 +233,6 @@ block2:
     store notrap aligned v154, v156+16
     store notrap aligned v154, v156+24
     v157, v158 = call fn0(v152, v153)
-    v1107 -> v157
     v159 = load.i64 notrap aligned v4+152
     v160 = iconst.i64 1
     v161 = raw_bitcast.r64 v160
@@ -263,7 +247,6 @@ block2:
     store notrap aligned v164, v166+16
     store notrap aligned v164, v166+24
     v167, v168 = call fn0(v162, v163)
-    v1106 -> v167
     v169 = load.i64 notrap aligned v4+152
     v170 = iconst.i64 1
     v171 = raw_bitcast.r64 v170
@@ -278,7 +261,6 @@ block2:
     store notrap aligned v174, v176+16
     store notrap aligned v174, v176+24
     v177, v178 = call fn0(v172, v173)
-    v1105 -> v177
     v179 = load.i64 notrap aligned v4+152
     v180 = iconst.i64 1
     v181 = raw_bitcast.r64 v180
@@ -293,7 +275,6 @@ block2:
     store notrap aligned v184, v186+16
     store notrap aligned v184, v186+24
     v187, v188 = call fn0(v182, v183)
-    v1104 -> v187
     v189 = load.i64 notrap aligned v4+152
     v190 = iconst.i64 1
     v191 = raw_bitcast.r64 v190
@@ -308,7 +289,6 @@ block2:
     store notrap aligned v194, v196+16
     store notrap aligned v194, v196+24
     v197, v198 = call fn0(v192, v193)
-    v1103 -> v197
     v199 = load.i64 notrap aligned v4+152
     v200 = iconst.i64 1
     v201 = raw_bitcast.r64 v200
@@ -323,7 +303,6 @@ block2:
     store notrap aligned v204, v206+16
     store notrap aligned v204, v206+24
     v207, v208 = call fn0(v202, v203)
-    v1102 -> v207
     v209 = load.i64 notrap aligned v4+152
     v210 = iconst.i64 1
     v211 = raw_bitcast.r64 v210
@@ -338,7 +317,6 @@ block2:
     store notrap aligned v214, v216+16
     store notrap aligned v214, v216+24
     v217, v218 = call fn0(v212, v213)
-    v1101 -> v217
     v219 = load.i64 notrap aligned v4+152
     v220 = iconst.i64 1
     v221 = raw_bitcast.r64 v220
@@ -353,7 +331,6 @@ block2:
     store notrap aligned v224, v226+16
     store notrap aligned v224, v226+24
     v227, v228 = call fn0(v222, v223)
-    v1100 -> v227
     v229 = load.i64 notrap aligned v4+152
     v230 = iconst.i64 1
     v231 = raw_bitcast.r64 v230
@@ -368,7 +345,6 @@ block2:
     store notrap aligned v234, v236+16
     store notrap aligned v234, v236+24
     v237, v238 = call fn0(v232, v233)
-    v1099 -> v237
     v239 = load.i64 notrap aligned v4+152
     v240 = iconst.i64 1
     v241 = raw_bitcast.r64 v240
@@ -383,7 +359,6 @@ block2:
     store notrap aligned v244, v246+16
     store notrap aligned v244, v246+24
     v247, v248 = call fn0(v242, v243)
-    v1098 -> v247
     v249 = load.i64 notrap aligned v4+152
     v250 = iconst.i64 1
     v251 = raw_bitcast.r64 v250
@@ -398,7 +373,6 @@ block2:
     store notrap aligned v254, v256+16
     store notrap aligned v254, v256+24
     v257, v258 = call fn0(v252, v253)
-    v1097 -> v257
     v259 = load.i64 notrap aligned v4+152
     v260 = iconst.i64 1
     v261 = raw_bitcast.r64 v260
@@ -413,7 +387,6 @@ block2:
     store notrap aligned v264, v266+16
     store notrap aligned v264, v266+24
     v267, v268 = call fn0(v262, v263)
-    v1096 -> v267
     v269 = load.i64 notrap aligned v4+152
     v270 = iconst.i64 1
     v271 = raw_bitcast.r64 v270
@@ -428,7 +401,6 @@ block2:
     store notrap aligned v274, v276+16
     store notrap aligned v274, v276+24
     v277, v278 = call fn0(v272, v273)
-    v1095 -> v277
     v279 = load.i64 notrap aligned v4+152
     v280 = iconst.i64 1
     v281 = raw_bitcast.r64 v280
@@ -443,7 +415,6 @@ block2:
     store notrap aligned v284, v286+16
     store notrap aligned v284, v286+24
     v287, v288 = call fn0(v282, v283)
-    v1094 -> v287
     v289 = load.i64 notrap aligned v4+152
     v290 = iconst.i64 1
     v291 = raw_bitcast.r64 v290
@@ -458,7 +429,6 @@ block2:
     store notrap aligned v294, v296+16
     store notrap aligned v294, v296+24
     v297, v298 = call fn0(v292, v293)
-    v1093 -> v297
     v299 = load.i64 notrap aligned v4+152
     v300 = iconst.i64 1
     v301 = raw_bitcast.r64 v300
@@ -473,7 +443,6 @@ block2:
     store notrap aligned v304, v306+16
     store notrap aligned v304, v306+24
     v307, v308 = call fn0(v302, v303)
-    v1092 -> v307
     v309 = load.i64 notrap aligned v4+152
     v310 = iconst.i64 1
     v311 = raw_bitcast.r64 v310
@@ -488,7 +457,6 @@ block2:
     store notrap aligned v314, v316+16
     store notrap aligned v314, v316+24
     v317, v318 = call fn0(v312, v313)
-    v1091 -> v317
     v319 = load.i64 notrap aligned v4+152
     v320 = iconst.i64 1
     v321 = raw_bitcast.r64 v320
@@ -503,7 +471,6 @@ block2:
     store notrap aligned v324, v326+16
     store notrap aligned v324, v326+24
     v327, v328 = call fn0(v322, v323)
-    v1090 -> v327
     v329 = load.i64 notrap aligned v4+152
     v330 = iconst.i64 1
     v331 = raw_bitcast.r64 v330
@@ -518,7 +485,6 @@ block2:
     store notrap aligned v334, v336+16
     store notrap aligned v334, v336+24
     v337, v338 = call fn0(v332, v333)
-    v1089 -> v337
     v339 = load.i64 notrap aligned v4+152
     v340 = iconst.i64 1
     v341 = raw_bitcast.r64 v340
@@ -533,7 +499,6 @@ block2:
     store notrap aligned v344, v346+16
     store notrap aligned v344, v346+24
     v347, v348 = call fn0(v342, v343)
-    v1088 -> v347
     v349 = load.i64 notrap aligned v4+152
     v350 = iconst.i64 1
     v351 = raw_bitcast.r64 v350
@@ -548,7 +513,6 @@ block2:
     store notrap aligned v354, v356+16
     store notrap aligned v354, v356+24
     v357, v358 = call fn0(v352, v353)
-    v1087 -> v357
     v359 = load.i64 notrap aligned v4+152
     v360 = iconst.i64 1
     v361 = raw_bitcast.r64 v360
@@ -563,7 +527,6 @@ block2:
     store notrap aligned v364, v366+16
     store notrap aligned v364, v366+24
     v367, v368 = call fn0(v362, v363)
-    v1086 -> v367
     v369 = load.i64 notrap aligned v4+152
     v370 = iconst.i64 1
     v371 = raw_bitcast.r64 v370
@@ -578,7 +541,6 @@ block2:
     store notrap aligned v374, v376+16
     store notrap aligned v374, v376+24
     v377, v378 = call fn0(v372, v373)
-    v1085 -> v377
     v379 = load.i64 notrap aligned v4+152
     v380 = iconst.i64 1
     v381 = raw_bitcast.r64 v380
@@ -593,7 +555,6 @@ block2:
     store notrap aligned v384, v386+16
     store notrap aligned v384, v386+24
     v387, v388 = call fn0(v382, v383)
-    v1084 -> v387
     v389 = load.i64 notrap aligned v4+152
     v390 = iconst.i64 1
     v391 = raw_bitcast.r64 v390
@@ -608,7 +569,6 @@ block2:
     store notrap aligned v394, v396+16
     store notrap aligned v394, v396+24
     v397, v398 = call fn0(v392, v393)
-    v1083 -> v397
     v399 = load.i64 notrap aligned v4+152
     v400 = iconst.i64 1
     v401 = raw_bitcast.r64 v400
@@ -623,7 +583,6 @@ block2:
     store notrap aligned v404, v406+16
     store notrap aligned v404, v406+24
     v407, v408 = call fn0(v402, v403)
-    v1082 -> v407
     v409 = load.i64 notrap aligned v4+152
     v410 = iconst.i64 1
     v411 = raw_bitcast.r64 v410
@@ -638,7 +597,6 @@ block2:
     store notrap aligned v414, v416+16
     store notrap aligned v414, v416+24
     v417, v418 = call fn0(v412, v413)
-    v1081 -> v417
     v419 = load.i64 notrap aligned v4+152
     v420 = iconst.i64 1
     v421 = raw_bitcast.r64 v420
@@ -653,7 +611,6 @@ block2:
     store notrap aligned v424, v426+16
     store notrap aligned v424, v426+24
     v427, v428 = call fn0(v422, v423)
-    v1080 -> v427
     v429 = load.i64 notrap aligned v4+152
     v430 = iconst.i64 1
     v431 = raw_bitcast.r64 v430
@@ -668,7 +625,6 @@ block2:
     store notrap aligned v434, v436+16
     store notrap aligned v434, v436+24
     v437, v438 = call fn0(v432, v433)
-    v1079 -> v437
     v439 = load.i64 notrap aligned v4+152
     v440 = iconst.i64 1
     v441 = raw_bitcast.r64 v440
@@ -683,7 +639,6 @@ block2:
     store notrap aligned v444, v446+16
     store notrap aligned v444, v446+24
     v447, v448 = call fn0(v442, v443)
-    v1078 -> v447
     v449 = load.i64 notrap aligned v4+152
     v450 = iconst.i64 1
     v451 = raw_bitcast.r64 v450
@@ -698,7 +653,6 @@ block2:
     store notrap aligned v454, v456+16
     store notrap aligned v454, v456+24
     v457, v458 = call fn0(v452, v453)
-    v1077 -> v457
     v459 = load.i64 notrap aligned v4+152
     v460 = iconst.i64 1
     v461 = raw_bitcast.r64 v460
@@ -713,7 +667,6 @@ block2:
     store notrap aligned v464, v466+16
     store notrap aligned v464, v466+24
     v467, v468 = call fn0(v462, v463)
-    v1076 -> v467
     v469 = load.i64 notrap aligned v4+152
     v470 = iconst.i64 1
     v471 = raw_bitcast.r64 v470
@@ -728,7 +681,6 @@ block2:
     store notrap aligned v474, v476+16
     store notrap aligned v474, v476+24
     v477, v478 = call fn0(v472, v473)
-    v1075 -> v477
     v479 = load.i64 notrap aligned v4+152
     v480 = iconst.i64 1
     v481 = raw_bitcast.r64 v480
@@ -743,7 +695,6 @@ block2:
     store notrap aligned v484, v486+16
     store notrap aligned v484, v486+24
     v487, v488 = call fn0(v482, v483)
-    v1074 -> v487
     v489 = load.i64 notrap aligned v4+152
     v490 = iconst.i64 1
     v491 = raw_bitcast.r64 v490
@@ -758,7 +709,6 @@ block2:
     store notrap aligned v494, v496+16
     store notrap aligned v494, v496+24
     v497, v498 = call fn0(v492, v493)
-    v1073 -> v497
     v499 = load.i64 notrap aligned v4+152
     v500 = iconst.i64 1
     v501 = raw_bitcast.r64 v500
@@ -773,7 +723,6 @@ block2:
     store notrap aligned v504, v506+16
     store notrap aligned v504, v506+24
     v507, v508 = call fn0(v502, v503)
-    v1072 -> v507
     v509 = load.i64 notrap aligned v4+152
     v510 = iconst.i64 1
     v511 = raw_bitcast.r64 v510
@@ -788,7 +737,6 @@ block2:
     store notrap aligned v514, v516+16
     store notrap aligned v514, v516+24
     v517, v518 = call fn0(v512, v513)
-    v1071 -> v517
     v519 = load.i64 notrap aligned v4+152
     v520 = iconst.i64 1
     v521 = raw_bitcast.r64 v520
@@ -803,7 +751,6 @@ block2:
     store notrap aligned v524, v526+16
     store notrap aligned v524, v526+24
     v527, v528 = call fn0(v522, v523)
-    v1070 -> v527
     v529 = load.i64 notrap aligned v4+152
     v530 = iconst.i64 1
     v531 = raw_bitcast.r64 v530
@@ -818,7 +765,6 @@ block2:
     store notrap aligned v534, v536+16
     store notrap aligned v534, v536+24
     v537, v538 = call fn0(v532, v533)
-    v1069 -> v537
     v539 = load.i64 notrap aligned v4+152
     v540 = iconst.i64 1
     v541 = raw_bitcast.r64 v540
@@ -833,7 +779,6 @@ block2:
     store notrap aligned v544, v546+16
     store notrap aligned v544, v546+24
     v547, v548 = call fn0(v542, v543)
-    v1068 -> v547
     v549 = load.i64 notrap aligned v4+152
     v550 = iconst.i64 1
     v551 = raw_bitcast.r64 v550
@@ -848,7 +793,6 @@ block2:
     store notrap aligned v554, v556+16
     store notrap aligned v554, v556+24
     v557, v558 = call fn0(v552, v553)
-    v1067 -> v557
     v559 = load.i64 notrap aligned v4+152
     v560 = iconst.i64 1
     v561 = raw_bitcast.r64 v560
@@ -863,7 +807,6 @@ block2:
     store notrap aligned v564, v566+16
     store notrap aligned v564, v566+24
     v567, v568 = call fn0(v562, v563)
-    v1066 -> v567
     v569 = load.i64 notrap aligned v4+152
     v570 = iconst.i64 1
     v571 = raw_bitcast.r64 v570
@@ -878,7 +821,6 @@ block2:
     store notrap aligned v574, v576+16
     store notrap aligned v574, v576+24
     v577, v578 = call fn0(v572, v573)
-    v1065 -> v577
     v579 = load.i64 notrap aligned v4+152
     v580 = iconst.i64 1
     v581 = raw_bitcast.r64 v580
@@ -893,7 +835,6 @@ block2:
     store notrap aligned v584, v586+16
     store notrap aligned v584, v586+24
     v587, v588 = call fn0(v582, v583)
-    v1064 -> v587
     v589 = load.i64 notrap aligned v4+152
     v590 = iconst.i64 1
     v591 = raw_bitcast.r64 v590
@@ -908,7 +849,6 @@ block2:
     store notrap aligned v594, v596+16
     store notrap aligned v594, v596+24
     v597, v598 = call fn0(v592, v593)
-    v1063 -> v597
     v599 = load.i64 notrap aligned v4+152
     v600 = iconst.i64 1
     v601 = raw_bitcast.r64 v600
@@ -923,7 +863,6 @@ block2:
     store notrap aligned v604, v606+16
     store notrap aligned v604, v606+24
     v607, v608 = call fn0(v602, v603)
-    v1062 -> v607
     v609 = load.i64 notrap aligned v4+152
     v610 = iconst.i64 1
     v611 = raw_bitcast.r64 v610
@@ -938,7 +877,6 @@ block2:
     store notrap aligned v614, v616+16
     store notrap aligned v614, v616+24
     v617, v618 = call fn0(v612, v613)
-    v1061 -> v617
     v619 = load.i64 notrap aligned v4+152
     v620 = iconst.i64 1
     v621 = raw_bitcast.r64 v620
@@ -953,7 +891,6 @@ block2:
     store notrap aligned v624, v626+16
     store notrap aligned v624, v626+24
     v627, v628 = call fn0(v622, v623)
-    v1060 -> v627
     v629 = load.i64 notrap aligned v4+152
     v630 = iconst.i64 1
     v631 = raw_bitcast.r64 v630
@@ -968,7 +905,6 @@ block2:
     store notrap aligned v634, v636+16
     store notrap aligned v634, v636+24
     v637, v638 = call fn0(v632, v633)
-    v1059 -> v637
     v639 = load.i64 notrap aligned v4+152
     v640 = iconst.i64 1
     v641 = raw_bitcast.r64 v640
@@ -983,7 +919,6 @@ block2:
     store notrap aligned v644, v646+16
     store notrap aligned v644, v646+24
     v647, v648 = call fn0(v642, v643)
-    v1058 -> v647
     v649 = load.i64 notrap aligned v4+152
     v650 = iconst.i64 1
     v651 = raw_bitcast.r64 v650
@@ -998,7 +933,6 @@ block2:
     store notrap aligned v654, v656+16
     store notrap aligned v654, v656+24
     v657, v658 = call fn0(v652, v653)
-    v1057 -> v657
     v659 = load.i64 notrap aligned v4+152
     v660 = iconst.i64 1
     v661 = raw_bitcast.r64 v660
@@ -1013,7 +947,6 @@ block2:
     store notrap aligned v664, v666+16
     store notrap aligned v664, v666+24
     v667, v668 = call fn0(v662, v663)
-    v1056 -> v667
     v669 = load.i64 notrap aligned v4+152
     v670 = iconst.i64 1
     v671 = raw_bitcast.r64 v670
@@ -1028,7 +961,6 @@ block2:
     store notrap aligned v674, v676+16
     store notrap aligned v674, v676+24
     v677, v678 = call fn0(v672, v673)
-    v1055 -> v677
     v679 = load.i64 notrap aligned v4+152
     v680 = iconst.i64 1
     v681 = raw_bitcast.r64 v680
@@ -1043,7 +975,6 @@ block2:
     store notrap aligned v684, v686+16
     store notrap aligned v684, v686+24
     v687, v688 = call fn0(v682, v683)
-    v1054 -> v687
     v689 = load.i64 notrap aligned v4+152
     v690 = iconst.i64 1
     v691 = raw_bitcast.r64 v690
@@ -1058,7 +989,6 @@ block2:
     store notrap aligned v694, v696+16
     store notrap aligned v694, v696+24
     v697, v698 = call fn0(v692, v693)
-    v1053 -> v697
     v699 = load.i64 notrap aligned v4+152
     v700 = iconst.i64 1
     v701 = raw_bitcast.r64 v700
@@ -1073,7 +1003,6 @@ block2:
     store notrap aligned v704, v706+16
     store notrap aligned v704, v706+24
     v707, v708 = call fn0(v702, v703)
-    v1052 -> v707
     v709 = load.i64 notrap aligned v4+152
     v710 = iconst.i64 1
     v711 = raw_bitcast.r64 v710
@@ -1088,7 +1017,6 @@ block2:
     store notrap aligned v714, v716+16
     store notrap aligned v714, v716+24
     v717, v718 = call fn0(v712, v713)
-    v1051 -> v717
     v719 = load.i64 notrap aligned v4+152
     v720 = iconst.i64 1
     v721 = raw_bitcast.r64 v720
@@ -1103,7 +1031,6 @@ block2:
     store notrap aligned v724, v726+16
     store notrap aligned v724, v726+24
     v727, v728 = call fn0(v722, v723)
-    v1050 -> v727
     v729 = load.i64 notrap aligned v4+152
     v730 = iconst.i64 1
     v731 = raw_bitcast.r64 v730
@@ -1118,7 +1045,6 @@ block2:
     store notrap aligned v734, v736+16
     store notrap aligned v734, v736+24
     v737, v738 = call fn0(v732, v733)
-    v1049 -> v737
     v739 = load.i64 notrap aligned v4+152
     v740 = iconst.i64 1
     v741 = raw_bitcast.r64 v740
@@ -1133,7 +1059,6 @@ block2:
     store notrap aligned v744, v746+16
     store notrap aligned v744, v746+24
     v747, v748 = call fn0(v742, v743)
-    v1048 -> v747
     v749 = load.i64 notrap aligned v4+152
     v750 = iconst.i64 1
     v751 = raw_bitcast.r64 v750
@@ -1148,7 +1073,6 @@ block2:
     store notrap aligned v754, v756+16
     store notrap aligned v754, v756+24
     v757, v758 = call fn0(v752, v753)
-    v1047 -> v757
     v759 = load.i64 notrap aligned v4+152
     v760 = iconst.i64 1
     v761 = raw_bitcast.r64 v760
@@ -1163,7 +1087,6 @@ block2:
     store notrap aligned v764, v766+16
     store notrap aligned v764, v766+24
     v767, v768 = call fn0(v762, v763)
-    v1046 -> v767
     v769 = load.i64 notrap aligned v4+152
     v770 = iconst.i64 1
     v771 = raw_bitcast.r64 v770
@@ -1178,7 +1101,6 @@ block2:
     store notrap aligned v774, v776+16
     store notrap aligned v774, v776+24
     v777, v778 = call fn0(v772, v773)
-    v1045 -> v777
     v779 = load.i64 notrap aligned v4+152
     v780 = iconst.i64 1
     v781 = raw_bitcast.r64 v780
@@ -1193,7 +1115,6 @@ block2:
     store notrap aligned v784, v786+16
     store notrap aligned v784, v786+24
     v787, v788 = call fn0(v782, v783)
-    v1044 -> v787
     v789 = load.i64 notrap aligned v4+152
     v790 = iconst.i64 1
     v791 = raw_bitcast.r64 v790
@@ -1208,7 +1129,6 @@ block2:
     store notrap aligned v794, v796+16
     store notrap aligned v794, v796+24
     v797, v798 = call fn0(v792, v793)
-    v1043 -> v797
     v799 = load.i64 notrap aligned v4+152
     v800 = iconst.i64 1
     v801 = raw_bitcast.r64 v800
@@ -1223,7 +1143,6 @@ block2:
     store notrap aligned v804, v806+16
     store notrap aligned v804, v806+24
     v807, v808 = call fn0(v802, v803)
-    v1042 -> v807
     v809 = load.i64 notrap aligned v4+152
     v810 = iconst.i64 1
     v811 = raw_bitcast.r64 v810
@@ -1238,7 +1157,6 @@ block2:
     store notrap aligned v814, v816+16
     store notrap aligned v814, v816+24
     v817, v818 = call fn0(v812, v813)
-    v1041 -> v817
     v819 = load.i64 notrap aligned v4+152
     v820 = iconst.i64 1
     v821 = raw_bitcast.r64 v820
@@ -1253,7 +1171,6 @@ block2:
     store notrap aligned v824, v826+16
     store notrap aligned v824, v826+24
     v827, v828 = call fn0(v822, v823)
-    v1040 -> v827
     v829 = load.i64 notrap aligned v4+152
     v830 = iconst.i64 1
     v831 = raw_bitcast.r64 v830
@@ -1268,7 +1185,6 @@ block2:
     store notrap aligned v834, v836+16
     store notrap aligned v834, v836+24
     v837, v838 = call fn0(v832, v833)
-    v1039 -> v837
     v839 = load.i64 notrap aligned v4+152
     v840 = iconst.i64 1
     v841 = raw_bitcast.r64 v840
@@ -1283,7 +1199,6 @@ block2:
     store notrap aligned v844, v846+16
     store notrap aligned v844, v846+24
     v847, v848 = call fn0(v842, v843)
-    v1038 -> v847
     v849 = load.i64 notrap aligned v4+152
     v850 = iconst.i64 1
     v851 = raw_bitcast.r64 v850
@@ -1298,7 +1213,6 @@ block2:
     store notrap aligned v854, v856+16
     store notrap aligned v854, v856+24
     v857, v858 = call fn0(v852, v853)
-    v1037 -> v857
     v859 = load.i64 notrap aligned v4+152
     v860 = iconst.i64 1
     v861 = raw_bitcast.r64 v860
@@ -1313,7 +1227,6 @@ block2:
     store notrap aligned v864, v866+16
     store notrap aligned v864, v866+24
     v867, v868 = call fn0(v862, v863)
-    v1036 -> v867
     v869 = load.i64 notrap aligned v4+152
     v870 = iconst.i64 1
     v871 = raw_bitcast.r64 v870
@@ -1328,7 +1241,6 @@ block2:
     store notrap aligned v874, v876+16
     store notrap aligned v874, v876+24
     v877, v878 = call fn0(v872, v873)
-    v1035 -> v877
     v879 = load.i64 notrap aligned v4+152
     v880 = iconst.i64 1
     v881 = raw_bitcast.r64 v880
@@ -1343,7 +1255,6 @@ block2:
     store notrap aligned v884, v886+16
     store notrap aligned v884, v886+24
     v887, v888 = call fn0(v882, v883)
-    v1034 -> v887
     v889 = load.i64 notrap aligned v4+152
     v890 = iconst.i64 1
     v891 = raw_bitcast.r64 v890
@@ -1358,7 +1269,6 @@ block2:
     store notrap aligned v894, v896+16
     store notrap aligned v894, v896+24
     v897, v898 = call fn0(v892, v893)
-    v1033 -> v897
     v899 = load.i64 notrap aligned v4+152
     v900 = iconst.i64 1
     v901 = raw_bitcast.r64 v900
@@ -1373,7 +1283,6 @@ block2:
     store notrap aligned v904, v906+16
     store notrap aligned v904, v906+24
     v907, v908 = call fn0(v902, v903)
-    v1032 -> v907
     v909 = load.i64 notrap aligned v4+152
     v910 = iconst.i64 1
     v911 = raw_bitcast.r64 v910
@@ -1388,7 +1297,6 @@ block2:
     store notrap aligned v914, v916+16
     store notrap aligned v914, v916+24
     v917, v918 = call fn0(v912, v913)
-    v1031 -> v917
     v919 = load.i64 notrap aligned v4+152
     v920 = iconst.i64 1
     v921 = raw_bitcast.r64 v920
@@ -1403,7 +1311,6 @@ block2:
     store notrap aligned v924, v926+16
     store notrap aligned v924, v926+24
     v927, v928 = call fn0(v922, v923)
-    v1030 -> v927
     v929 = load.i64 notrap aligned v4+152
     v930 = iconst.i64 1
     v931 = raw_bitcast.r64 v930
@@ -1418,7 +1325,6 @@ block2:
     store notrap aligned v934, v936+16
     store notrap aligned v934, v936+24
     v937, v938 = call fn0(v932, v933)
-    v1029 -> v937
     v939 = load.i64 notrap aligned v4+152
     v940 = iconst.i64 1
     v941 = raw_bitcast.r64 v940
@@ -1433,7 +1339,6 @@ block2:
     store notrap aligned v944, v946+16
     store notrap aligned v944, v946+24
     v947, v948 = call fn0(v942, v943)
-    v1028 -> v947
     v949 = load.i64 notrap aligned v4+152
     v950 = iconst.i64 1
     v951 = raw_bitcast.r64 v950
@@ -1448,7 +1353,6 @@ block2:
     store notrap aligned v954, v956+16
     store notrap aligned v954, v956+24
     v957, v958 = call fn0(v952, v953)
-    v1027 -> v957
     v959 = load.i64 notrap aligned v4+152
     v960 = iconst.i64 1
     v961 = raw_bitcast.r64 v960
@@ -1463,7 +1367,6 @@ block2:
     store notrap aligned v964, v966+16
     store notrap aligned v964, v966+24
     v967, v968 = call fn0(v962, v963)
-    v1026 -> v967
     v969 = load.i64 notrap aligned v4+152
     v970 = iconst.i64 1
     v971 = raw_bitcast.r64 v970
@@ -1478,7 +1381,6 @@ block2:
     store notrap aligned v974, v976+16
     store notrap aligned v974, v976+24
     v977, v978 = call fn0(v972, v973)
-    v1025 -> v977
     v979 = load.i64 notrap aligned v4+152
     v980 = iconst.i64 1
     v981 = raw_bitcast.r64 v980
@@ -1493,7 +1395,6 @@ block2:
     store notrap aligned v984, v986+16
     store notrap aligned v984, v986+24
     v987, v988 = call fn0(v982, v983)
-    v1024 -> v987
     v989 = load.i64 notrap aligned v4+152
     v990 = iconst.i64 1
     v991 = raw_bitcast.r64 v990
@@ -1508,7 +1409,6 @@ block2:
     store notrap aligned v994, v996+16
     store notrap aligned v994, v996+24
     v997, v998 = call fn0(v992, v993)
-    v1023 -> v997
     v999 = load.i64 notrap aligned v4+152
     v1000 = iconst.i64 1
     v1001 = raw_bitcast.r64 v1000
@@ -1523,9 +1423,8 @@ block2:
     store notrap aligned v1004, v1006+16
     store notrap aligned v1004, v1006+24
     v1007, v1008 = call fn0(v1002, v1003)
-    v1022 -> v1007
     v1009 = load.i64 notrap aligned v4+152
-    v1146 -> v1009
+    v1044 -> v1009
     v1010 = load.i64 notrap aligned v4
     v1011 = iadd_imm v1010, -808
     store notrap aligned v1011, v4
@@ -1547,7 +1446,6 @@ block5(v1013: i64):
     store notrap aligned v1019, v1013
     v1020 = iadd_imm v1013, 8
     v1021 = raw_bitcast.r64 v1020
-    v1135 -> v1021
     store.r64 notrap aligned v1007, v1021
     store.r64 notrap aligned v997, v1021+8
     store.r64 notrap aligned v987, v1021+16
@@ -1648,42 +1546,42 @@ block5(v1013: i64):
     store.r64 notrap aligned v37, v1021+776
     store.r64 notrap aligned v27, v1021+784
     store.r64 notrap aligned v17, v1021+792
-    v1123 = load.i64 notrap aligned v4
-    v1124 = iadd_imm v1123, -24
-    store notrap aligned v1124, v4
-    v1125 = load.i64 notrap aligned v4+8
-    br_icmp ult v1124, v1125, block6
-    jump block7(v1124, v1138, v1146)
+    v1023 = load.i64 notrap aligned v4
+    v1024 = iadd_imm v1023, -24
+    store notrap aligned v1024, v4
+    v1025 = load.i64 notrap aligned v4+8
+    br_icmp ult v1024, v1025, block6
+    jump block7(v1024, v1036, v1044)
 
 block6:
-    v1127 = iconst.i64 2
-    v1128 = iconst.i32 17
-    v1129 = iconst.i32 1
-    v1130 = iconst.i64 0
-    call fn1(v1127, v1128, v1129, v1130)
-    v1131 = load.i64 notrap aligned v4
-    jump block7(v1131, v1138, v1146)
+    v1027 = iconst.i64 2
+    v1028 = iconst.i32 17
+    v1029 = iconst.i32 1
+    v1030 = iconst.i64 0
+    call fn1(v1027, v1028, v1029, v1030)
+    v1031 = load.i64 notrap aligned v4
+    jump block7(v1031, v1036, v1044)
 
-block7(v1126: i64, v1137: r64, v1145: i64):
-    v1132 = iconst.i64 2048
-    store notrap aligned v1132, v1126
-    v1133 = iadd_imm v1126, 8
-    v1134 = raw_bitcast.r64 v1133
-    store.r64 notrap aligned v1021, v1134
-    store.r64 notrap aligned v6, v1134+8
-    v1139 = raw_bitcast.i64 v1137
-    v1140 = iadd_imm v1139, -2
-    v1141 = raw_bitcast.r64 v1140
-    v1142 = raw_bitcast.i64 v0
-    v1143 = iadd_imm v1142, 0
-    v1144 = raw_bitcast.r64 v1143
-    v1147 = iadd_imm v1145, -16
-    store notrap aligned v1141, v1147
-    store notrap aligned v1134, v1147+8
-    v1148 = iconst.i64 2
-    jump block3(v1147, v1144, v1148)
+block7(v1026: i64, v1035: r64, v1043: i64):
+    v1032 = iconst.i64 2048
+    store notrap aligned v1032, v1026
+    v1033 = iadd_imm v1026, 8
+    v1034 = raw_bitcast.r64 v1033
+    store.r64 notrap aligned v1021, v1034
+    store.r64 notrap aligned v6, v1034+8
+    v1037 = raw_bitcast.i64 v1035
+    v1038 = iadd_imm v1037, -2
+    v1039 = raw_bitcast.r64 v1038
+    v1040 = raw_bitcast.i64 v0
+    v1041 = iadd_imm v1040, 0
+    v1042 = raw_bitcast.r64 v1041
+    v1045 = iadd_imm v1043, -16
+    store notrap aligned v1039, v1045
+    store notrap aligned v1034, v1045+8
+    v1046 = iconst.i64 2
+    jump block3(v1045, v1042, v1046)
 
-block3(v1149: i64, v1150: r64, v1151: i64):
-    store notrap aligned v1149, v4+152
-    return v1150, v1151
+block3(v1047: i64, v1048: r64, v1049: i64):
+    store notrap aligned v1047, v4+152
+    return v1048, v1049
 }

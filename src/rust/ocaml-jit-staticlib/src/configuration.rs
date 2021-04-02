@@ -38,6 +38,8 @@ arg_enum! {
     }
 }
 
+const DEFAULT_ERROR_HANDLING: &str = "Ignore";
+
 #[derive(Debug, StructOpt)]
 #[structopt(name = PROGRAM_NAME, about = "An experimental JIT compiler for OCaml bytecode")]
 pub struct Options {
@@ -76,7 +78,7 @@ pub struct Options {
     #[structopt(long, conflicts_with = "hot-threshold")]
     pub no_hot_threshold: bool,
 
-    #[structopt(long, default_value = "Panic")]
+    #[structopt(long, default_value = DEFAULT_ERROR_HANDLING)]
     pub cranelift_error_handling: CraneliftErrorHandling,
 }
 

@@ -3623,519 +3623,520 @@ block0(v0: r64, v1: i64):
     v2582 = iconst.i8 0
     v2583 = call fn2(v2581, v2582)
     v2584 = raw_bitcast.i64 v2583
-    call fn3(v2584, v2578)
-    v2585 = iadd_imm v2584, 8
-    call fn3(v2585, v2568)
-    v2586 = iadd_imm v2584, 16
-    call fn3(v2586, v2558)
-    v2587 = iadd_imm v2584, 24
-    call fn3(v2587, v2548)
-    v2588 = iadd_imm v2584, 32
-    call fn3(v2588, v2538)
-    v2589 = iadd_imm v2584, 40
-    call fn3(v2589, v2528)
-    v2590 = iadd_imm v2584, 48
-    call fn3(v2590, v2518)
-    v2591 = iadd_imm v2584, 56
-    call fn3(v2591, v2508)
-    v2592 = iadd_imm v2584, 64
-    call fn3(v2592, v2498)
-    v2593 = iadd_imm v2584, 72
-    call fn3(v2593, v2488)
-    v2594 = iadd_imm v2584, 80
-    call fn3(v2594, v2478)
-    v2595 = iadd_imm v2584, 88
-    call fn3(v2595, v2468)
-    v2596 = iadd_imm v2584, 96
-    call fn3(v2596, v2458)
-    v2597 = iadd_imm v2584, 104
-    call fn3(v2597, v2448)
-    v2598 = iadd_imm v2584, 112
-    call fn3(v2598, v2438)
-    v2599 = iadd_imm v2584, 120
-    call fn3(v2599, v2428)
-    v2600 = iadd_imm v2584, 128
-    call fn3(v2600, v2418)
-    v2601 = iadd_imm v2584, 136
-    call fn3(v2601, v2408)
-    v2602 = iadd_imm v2584, 144
-    call fn3(v2602, v2398)
-    v2603 = iadd_imm v2584, 152
-    call fn3(v2603, v2388)
-    v2604 = iadd_imm v2584, 160
-    call fn3(v2604, v2378)
-    v2605 = iadd_imm v2584, 168
-    call fn3(v2605, v2368)
-    v2606 = iadd_imm v2584, 176
-    call fn3(v2606, v2358)
-    v2607 = iadd_imm v2584, 184
-    call fn3(v2607, v2348)
-    v2608 = iadd_imm v2584, 192
-    call fn3(v2608, v2338)
-    v2609 = iadd_imm v2584, 200
-    call fn3(v2609, v2328)
-    v2610 = iadd_imm v2584, 208
-    call fn3(v2610, v2318)
-    v2611 = iadd_imm v2584, 216
-    call fn3(v2611, v2308)
-    v2612 = iadd_imm v2584, 224
-    call fn3(v2612, v2298)
-    v2613 = iadd_imm v2584, 232
-    call fn3(v2613, v2288)
-    v2614 = iadd_imm v2584, 240
-    call fn3(v2614, v2278)
-    v2615 = iadd_imm v2584, 248
-    call fn3(v2615, v2268)
-    v2616 = iadd_imm v2584, 256
-    call fn3(v2616, v2258)
-    v2617 = iadd_imm v2584, 264
-    call fn3(v2617, v2248)
-    v2618 = iadd_imm v2584, 272
-    call fn3(v2618, v2238)
-    v2619 = iadd_imm v2584, 280
-    call fn3(v2619, v2228)
-    v2620 = iadd_imm v2584, 288
-    call fn3(v2620, v2218)
-    v2621 = iadd_imm v2584, 296
-    call fn3(v2621, v2208)
-    v2622 = iadd_imm v2584, 304
-    call fn3(v2622, v2198)
-    v2623 = iadd_imm v2584, 312
-    call fn3(v2623, v2188)
-    v2624 = iadd_imm v2584, 320
-    call fn3(v2624, v2178)
-    v2625 = iadd_imm v2584, 328
-    call fn3(v2625, v2168)
-    v2626 = iadd_imm v2584, 336
-    call fn3(v2626, v2158)
-    v2627 = iadd_imm v2584, 344
-    call fn3(v2627, v2148)
-    v2628 = iadd_imm v2584, 352
-    call fn3(v2628, v2138)
-    v2629 = iadd_imm v2584, 360
-    call fn3(v2629, v2128)
-    v2630 = iadd_imm v2584, 368
-    call fn3(v2630, v2118)
-    v2631 = iadd_imm v2584, 376
-    call fn3(v2631, v2108)
-    v2632 = iadd_imm v2584, 384
-    call fn3(v2632, v2098)
-    v2633 = iadd_imm v2584, 392
-    call fn3(v2633, v2088)
-    v2634 = iadd_imm v2584, 400
-    call fn3(v2634, v2078)
-    v2635 = iadd_imm v2584, 408
-    call fn3(v2635, v2068)
-    v2636 = iadd_imm v2584, 416
-    call fn3(v2636, v2058)
-    v2637 = iadd_imm v2584, 424
-    call fn3(v2637, v2048)
-    v2638 = iadd_imm v2584, 432
-    call fn3(v2638, v2038)
-    v2639 = iadd_imm v2584, 440
-    call fn3(v2639, v2028)
-    v2640 = iadd_imm v2584, 448
-    call fn3(v2640, v2018)
-    v2641 = iadd_imm v2584, 456
-    call fn3(v2641, v2008)
-    v2642 = iadd_imm v2584, 464
-    call fn3(v2642, v1998)
-    v2643 = iadd_imm v2584, 472
-    call fn3(v2643, v1988)
-    v2644 = iadd_imm v2584, 480
-    call fn3(v2644, v1978)
-    v2645 = iadd_imm v2584, 488
-    call fn3(v2645, v1968)
-    v2646 = iadd_imm v2584, 496
-    call fn3(v2646, v1958)
-    v2647 = iadd_imm v2584, 504
-    call fn3(v2647, v1948)
-    v2648 = iadd_imm v2584, 512
-    call fn3(v2648, v1938)
-    v2649 = iadd_imm v2584, 520
-    call fn3(v2649, v1928)
-    v2650 = iadd_imm v2584, 528
-    call fn3(v2650, v1918)
-    v2651 = iadd_imm v2584, 536
-    call fn3(v2651, v1908)
-    v2652 = iadd_imm v2584, 544
-    call fn3(v2652, v1898)
-    v2653 = iadd_imm v2584, 552
-    call fn3(v2653, v1888)
-    v2654 = iadd_imm v2584, 560
-    call fn3(v2654, v1878)
-    v2655 = iadd_imm v2584, 568
-    call fn3(v2655, v1868)
-    v2656 = iadd_imm v2584, 576
-    call fn3(v2656, v1858)
-    v2657 = iadd_imm v2584, 584
-    call fn3(v2657, v1848)
-    v2658 = iadd_imm v2584, 592
-    call fn3(v2658, v1838)
-    v2659 = iadd_imm v2584, 600
-    call fn3(v2659, v1828)
-    v2660 = iadd_imm v2584, 608
-    call fn3(v2660, v1818)
-    v2661 = iadd_imm v2584, 616
-    call fn3(v2661, v1808)
-    v2662 = iadd_imm v2584, 624
-    call fn3(v2662, v1798)
-    v2663 = iadd_imm v2584, 632
-    call fn3(v2663, v1788)
-    v2664 = iadd_imm v2584, 640
-    call fn3(v2664, v1778)
-    v2665 = iadd_imm v2584, 648
-    call fn3(v2665, v1768)
-    v2666 = iadd_imm v2584, 656
-    call fn3(v2666, v1758)
-    v2667 = iadd_imm v2584, 664
-    call fn3(v2667, v1748)
-    v2668 = iadd_imm v2584, 672
-    call fn3(v2668, v1738)
-    v2669 = iadd_imm v2584, 680
-    call fn3(v2669, v1728)
-    v2670 = iadd_imm v2584, 688
-    call fn3(v2670, v1718)
-    v2671 = iadd_imm v2584, 696
-    call fn3(v2671, v1708)
-    v2672 = iadd_imm v2584, 704
-    call fn3(v2672, v1698)
-    v2673 = iadd_imm v2584, 712
-    call fn3(v2673, v1688)
-    v2674 = iadd_imm v2584, 720
-    call fn3(v2674, v1678)
-    v2675 = iadd_imm v2584, 728
-    call fn3(v2675, v1668)
-    v2676 = iadd_imm v2584, 736
-    call fn3(v2676, v1658)
-    v2677 = iadd_imm v2584, 744
-    call fn3(v2677, v1648)
-    v2678 = iadd_imm v2584, 752
-    call fn3(v2678, v1638)
-    v2679 = iadd_imm v2584, 760
-    call fn3(v2679, v1628)
-    v2680 = iadd_imm v2584, 768
-    call fn3(v2680, v1618)
-    v2681 = iadd_imm v2584, 776
-    call fn3(v2681, v1608)
-    v2682 = iadd_imm v2584, 784
-    call fn3(v2682, v1598)
-    v2683 = iadd_imm v2584, 792
-    call fn3(v2683, v1588)
-    v2684 = iadd_imm v2584, 800
-    call fn3(v2684, v1578)
-    v2685 = iadd_imm v2584, 808
-    call fn3(v2685, v1568)
-    v2686 = iadd_imm v2584, 816
-    call fn3(v2686, v1558)
-    v2687 = iadd_imm v2584, 824
-    call fn3(v2687, v1548)
-    v2688 = iadd_imm v2584, 832
-    call fn3(v2688, v1538)
-    v2689 = iadd_imm v2584, 840
-    call fn3(v2689, v1528)
-    v2690 = iadd_imm v2584, 848
-    call fn3(v2690, v1518)
-    v2691 = iadd_imm v2584, 856
-    call fn3(v2691, v1508)
-    v2692 = iadd_imm v2584, 864
-    call fn3(v2692, v1498)
-    v2693 = iadd_imm v2584, 872
-    call fn3(v2693, v1488)
-    v2694 = iadd_imm v2584, 880
-    call fn3(v2694, v1478)
-    v2695 = iadd_imm v2584, 888
-    call fn3(v2695, v1468)
-    v2696 = iadd_imm v2584, 896
-    call fn3(v2696, v1458)
-    v2697 = iadd_imm v2584, 904
-    call fn3(v2697, v1448)
-    v2698 = iadd_imm v2584, 912
-    call fn3(v2698, v1438)
-    v2699 = iadd_imm v2584, 920
-    call fn3(v2699, v1428)
-    v2700 = iadd_imm v2584, 928
-    call fn3(v2700, v1418)
-    v2701 = iadd_imm v2584, 936
-    call fn3(v2701, v1408)
-    v2702 = iadd_imm v2584, 944
-    call fn3(v2702, v1398)
-    v2703 = iadd_imm v2584, 952
-    call fn3(v2703, v1388)
-    v2704 = iadd_imm v2584, 960
-    call fn3(v2704, v1378)
-    v2705 = iadd_imm v2584, 968
-    call fn3(v2705, v1368)
-    v2706 = iadd_imm v2584, 976
-    call fn3(v2706, v1358)
-    v2707 = iadd_imm v2584, 984
-    call fn3(v2707, v1348)
-    v2708 = iadd_imm v2584, 992
-    call fn3(v2708, v1338)
-    v2709 = iadd_imm v2584, 1000
-    call fn3(v2709, v1328)
-    v2710 = iadd_imm v2584, 1008
-    call fn3(v2710, v1318)
-    v2711 = iadd_imm v2584, 1016
-    call fn3(v2711, v1308)
-    v2712 = iadd_imm v2584, 1024
-    call fn3(v2712, v1298)
-    v2713 = iadd_imm v2584, 1032
-    call fn3(v2713, v1288)
-    v2714 = iadd_imm v2584, 1040
-    call fn3(v2714, v1278)
-    v2715 = iadd_imm v2584, 1048
-    call fn3(v2715, v1268)
-    v2716 = iadd_imm v2584, 1056
-    call fn3(v2716, v1258)
-    v2717 = iadd_imm v2584, 1064
-    call fn3(v2717, v1248)
-    v2718 = iadd_imm v2584, 1072
-    call fn3(v2718, v1238)
-    v2719 = iadd_imm v2584, 1080
-    call fn3(v2719, v1228)
-    v2720 = iadd_imm v2584, 1088
-    call fn3(v2720, v1218)
-    v2721 = iadd_imm v2584, 1096
-    call fn3(v2721, v1208)
-    v2722 = iadd_imm v2584, 1104
-    call fn3(v2722, v1198)
-    v2723 = iadd_imm v2584, 1112
-    call fn3(v2723, v1188)
-    v2724 = iadd_imm v2584, 1120
-    call fn3(v2724, v1178)
-    v2725 = iadd_imm v2584, 1128
-    call fn3(v2725, v1168)
-    v2726 = iadd_imm v2584, 1136
-    call fn3(v2726, v1158)
-    v2727 = iadd_imm v2584, 1144
-    call fn3(v2727, v1148)
-    v2728 = iadd_imm v2584, 1152
-    call fn3(v2728, v1138)
-    v2729 = iadd_imm v2584, 1160
-    call fn3(v2729, v1128)
-    v2730 = iadd_imm v2584, 1168
-    call fn3(v2730, v1118)
-    v2731 = iadd_imm v2584, 1176
-    call fn3(v2731, v1108)
-    v2732 = iadd_imm v2584, 1184
-    call fn3(v2732, v1098)
-    v2733 = iadd_imm v2584, 1192
-    call fn3(v2733, v1088)
-    v2734 = iadd_imm v2584, 1200
-    call fn3(v2734, v1078)
-    v2735 = iadd_imm v2584, 1208
-    call fn3(v2735, v1068)
-    v2736 = iadd_imm v2584, 1216
-    call fn3(v2736, v1058)
-    v2737 = iadd_imm v2584, 1224
-    call fn3(v2737, v1048)
-    v2738 = iadd_imm v2584, 1232
-    call fn3(v2738, v1038)
-    v2739 = iadd_imm v2584, 1240
-    call fn3(v2739, v1028)
-    v2740 = iadd_imm v2584, 1248
-    call fn3(v2740, v1018)
-    v2741 = iadd_imm v2584, 1256
-    call fn3(v2741, v1008)
-    v2742 = iadd_imm v2584, 1264
-    call fn3(v2742, v998)
-    v2743 = iadd_imm v2584, 1272
-    call fn3(v2743, v988)
-    v2744 = iadd_imm v2584, 1280
-    call fn3(v2744, v978)
-    v2745 = iadd_imm v2584, 1288
-    call fn3(v2745, v968)
-    v2746 = iadd_imm v2584, 1296
-    call fn3(v2746, v958)
-    v2747 = iadd_imm v2584, 1304
-    call fn3(v2747, v948)
-    v2748 = iadd_imm v2584, 1312
-    call fn3(v2748, v938)
-    v2749 = iadd_imm v2584, 1320
-    call fn3(v2749, v928)
-    v2750 = iadd_imm v2584, 1328
-    call fn3(v2750, v918)
-    v2751 = iadd_imm v2584, 1336
-    call fn3(v2751, v908)
-    v2752 = iadd_imm v2584, 1344
-    call fn3(v2752, v898)
-    v2753 = iadd_imm v2584, 1352
-    call fn3(v2753, v888)
-    v2754 = iadd_imm v2584, 1360
-    call fn3(v2754, v878)
-    v2755 = iadd_imm v2584, 1368
-    call fn3(v2755, v868)
-    v2756 = iadd_imm v2584, 1376
-    call fn3(v2756, v858)
-    v2757 = iadd_imm v2584, 1384
-    call fn3(v2757, v848)
-    v2758 = iadd_imm v2584, 1392
-    call fn3(v2758, v838)
-    v2759 = iadd_imm v2584, 1400
-    call fn3(v2759, v828)
-    v2760 = iadd_imm v2584, 1408
-    call fn3(v2760, v818)
-    v2761 = iadd_imm v2584, 1416
-    call fn3(v2761, v808)
-    v2762 = iadd_imm v2584, 1424
-    call fn3(v2762, v798)
-    v2763 = iadd_imm v2584, 1432
-    call fn3(v2763, v788)
-    v2764 = iadd_imm v2584, 1440
-    call fn3(v2764, v778)
-    v2765 = iadd_imm v2584, 1448
-    call fn3(v2765, v768)
-    v2766 = iadd_imm v2584, 1456
-    call fn3(v2766, v758)
-    v2767 = iadd_imm v2584, 1464
-    call fn3(v2767, v748)
-    v2768 = iadd_imm v2584, 1472
-    call fn3(v2768, v738)
-    v2769 = iadd_imm v2584, 1480
-    call fn3(v2769, v728)
-    v2770 = iadd_imm v2584, 1488
-    call fn3(v2770, v718)
-    v2771 = iadd_imm v2584, 1496
-    call fn3(v2771, v708)
-    v2772 = iadd_imm v2584, 1504
-    call fn3(v2772, v698)
-    v2773 = iadd_imm v2584, 1512
-    call fn3(v2773, v688)
-    v2774 = iadd_imm v2584, 1520
-    call fn3(v2774, v678)
-    v2775 = iadd_imm v2584, 1528
-    call fn3(v2775, v668)
-    v2776 = iadd_imm v2584, 1536
-    call fn3(v2776, v658)
-    v2777 = iadd_imm v2584, 1544
-    call fn3(v2777, v648)
-    v2778 = iadd_imm v2584, 1552
-    call fn3(v2778, v638)
-    v2779 = iadd_imm v2584, 1560
-    call fn3(v2779, v628)
-    v2780 = iadd_imm v2584, 1568
-    call fn3(v2780, v618)
-    v2781 = iadd_imm v2584, 1576
-    call fn3(v2781, v608)
-    v2782 = iadd_imm v2584, 1584
-    call fn3(v2782, v598)
-    v2783 = iadd_imm v2584, 1592
-    call fn3(v2783, v588)
-    v2784 = iadd_imm v2584, 1600
-    call fn3(v2784, v578)
-    v2785 = iadd_imm v2584, 1608
-    call fn3(v2785, v568)
-    v2786 = iadd_imm v2584, 1616
-    call fn3(v2786, v558)
-    v2787 = iadd_imm v2584, 1624
-    call fn3(v2787, v548)
-    v2788 = iadd_imm v2584, 1632
-    call fn3(v2788, v538)
-    v2789 = iadd_imm v2584, 1640
-    call fn3(v2789, v528)
-    v2790 = iadd_imm v2584, 1648
-    call fn3(v2790, v518)
-    v2791 = iadd_imm v2584, 1656
-    call fn3(v2791, v508)
-    v2792 = iadd_imm v2584, 1664
-    call fn3(v2792, v498)
-    v2793 = iadd_imm v2584, 1672
-    call fn3(v2793, v488)
-    v2794 = iadd_imm v2584, 1680
-    call fn3(v2794, v478)
-    v2795 = iadd_imm v2584, 1688
-    call fn3(v2795, v468)
-    v2796 = iadd_imm v2584, 1696
-    call fn3(v2796, v458)
-    v2797 = iadd_imm v2584, 1704
-    call fn3(v2797, v448)
-    v2798 = iadd_imm v2584, 1712
-    call fn3(v2798, v438)
-    v2799 = iadd_imm v2584, 1720
-    call fn3(v2799, v428)
-    v2800 = iadd_imm v2584, 1728
-    call fn3(v2800, v418)
-    v2801 = iadd_imm v2584, 1736
-    call fn3(v2801, v408)
-    v2802 = iadd_imm v2584, 1744
-    call fn3(v2802, v398)
-    v2803 = iadd_imm v2584, 1752
-    call fn3(v2803, v388)
-    v2804 = iadd_imm v2584, 1760
-    call fn3(v2804, v378)
-    v2805 = iadd_imm v2584, 1768
-    call fn3(v2805, v368)
-    v2806 = iadd_imm v2584, 1776
-    call fn3(v2806, v358)
-    v2807 = iadd_imm v2584, 1784
-    call fn3(v2807, v348)
-    v2808 = iadd_imm v2584, 1792
-    call fn3(v2808, v338)
-    v2809 = iadd_imm v2584, 1800
-    call fn3(v2809, v328)
-    v2810 = iadd_imm v2584, 1808
-    call fn3(v2810, v318)
-    v2811 = iadd_imm v2584, 1816
-    call fn3(v2811, v308)
-    v2812 = iadd_imm v2584, 1824
-    call fn3(v2812, v298)
-    v2813 = iadd_imm v2584, 1832
-    call fn3(v2813, v288)
-    v2814 = iadd_imm v2584, 1840
-    call fn3(v2814, v278)
-    v2815 = iadd_imm v2584, 1848
-    call fn3(v2815, v268)
-    v2816 = iadd_imm v2584, 1856
-    call fn3(v2816, v258)
-    v2817 = iadd_imm v2584, 1864
-    call fn3(v2817, v248)
-    v2818 = iadd_imm v2584, 1872
-    call fn3(v2818, v238)
-    v2819 = iadd_imm v2584, 1880
-    call fn3(v2819, v228)
-    v2820 = iadd_imm v2584, 1888
-    call fn3(v2820, v218)
-    v2821 = iadd_imm v2584, 1896
-    call fn3(v2821, v208)
-    v2822 = iadd_imm v2584, 1904
-    call fn3(v2822, v198)
-    v2823 = iadd_imm v2584, 1912
-    call fn3(v2823, v188)
-    v2824 = iadd_imm v2584, 1920
-    call fn3(v2824, v178)
-    v2825 = iadd_imm v2584, 1928
-    call fn3(v2825, v168)
-    v2826 = iadd_imm v2584, 1936
-    call fn3(v2826, v158)
-    v2827 = iadd_imm v2584, 1944
-    call fn3(v2827, v148)
-    v2828 = iadd_imm v2584, 1952
-    call fn3(v2828, v138)
-    v2829 = iadd_imm v2584, 1960
-    call fn3(v2829, v128)
-    v2830 = iadd_imm v2584, 1968
-    call fn3(v2830, v118)
-    v2831 = iadd_imm v2584, 1976
-    call fn3(v2831, v108)
-    v2832 = iadd_imm v2584, 1984
-    call fn3(v2832, v98)
-    v2833 = iadd_imm v2584, 1992
-    call fn3(v2833, v88)
-    v2834 = iadd_imm v2584, 2000
-    call fn3(v2834, v78)
-    v2835 = iadd_imm v2584, 2008
-    call fn3(v2835, v68)
-    v2836 = iadd_imm v2584, 2016
-    call fn3(v2836, v58)
-    v2837 = iadd_imm v2584, 2024
-    call fn3(v2837, v48)
-    v2838 = iadd_imm v2584, 2032
-    call fn3(v2838, v38)
-    v2839 = iadd_imm v2584, 2040
-    call fn3(v2839, v28)
-    v2840 = iadd_imm v2584, 2048
-    call fn3(v2840, v18)
+    v2585 = iadd_imm v2584, 0
+    call fn3(v2585, v2578)
+    v2586 = iadd_imm v2584, 8
+    call fn3(v2586, v2568)
+    v2587 = iadd_imm v2584, 16
+    call fn3(v2587, v2558)
+    v2588 = iadd_imm v2584, 24
+    call fn3(v2588, v2548)
+    v2589 = iadd_imm v2584, 32
+    call fn3(v2589, v2538)
+    v2590 = iadd_imm v2584, 40
+    call fn3(v2590, v2528)
+    v2591 = iadd_imm v2584, 48
+    call fn3(v2591, v2518)
+    v2592 = iadd_imm v2584, 56
+    call fn3(v2592, v2508)
+    v2593 = iadd_imm v2584, 64
+    call fn3(v2593, v2498)
+    v2594 = iadd_imm v2584, 72
+    call fn3(v2594, v2488)
+    v2595 = iadd_imm v2584, 80
+    call fn3(v2595, v2478)
+    v2596 = iadd_imm v2584, 88
+    call fn3(v2596, v2468)
+    v2597 = iadd_imm v2584, 96
+    call fn3(v2597, v2458)
+    v2598 = iadd_imm v2584, 104
+    call fn3(v2598, v2448)
+    v2599 = iadd_imm v2584, 112
+    call fn3(v2599, v2438)
+    v2600 = iadd_imm v2584, 120
+    call fn3(v2600, v2428)
+    v2601 = iadd_imm v2584, 128
+    call fn3(v2601, v2418)
+    v2602 = iadd_imm v2584, 136
+    call fn3(v2602, v2408)
+    v2603 = iadd_imm v2584, 144
+    call fn3(v2603, v2398)
+    v2604 = iadd_imm v2584, 152
+    call fn3(v2604, v2388)
+    v2605 = iadd_imm v2584, 160
+    call fn3(v2605, v2378)
+    v2606 = iadd_imm v2584, 168
+    call fn3(v2606, v2368)
+    v2607 = iadd_imm v2584, 176
+    call fn3(v2607, v2358)
+    v2608 = iadd_imm v2584, 184
+    call fn3(v2608, v2348)
+    v2609 = iadd_imm v2584, 192
+    call fn3(v2609, v2338)
+    v2610 = iadd_imm v2584, 200
+    call fn3(v2610, v2328)
+    v2611 = iadd_imm v2584, 208
+    call fn3(v2611, v2318)
+    v2612 = iadd_imm v2584, 216
+    call fn3(v2612, v2308)
+    v2613 = iadd_imm v2584, 224
+    call fn3(v2613, v2298)
+    v2614 = iadd_imm v2584, 232
+    call fn3(v2614, v2288)
+    v2615 = iadd_imm v2584, 240
+    call fn3(v2615, v2278)
+    v2616 = iadd_imm v2584, 248
+    call fn3(v2616, v2268)
+    v2617 = iadd_imm v2584, 256
+    call fn3(v2617, v2258)
+    v2618 = iadd_imm v2584, 264
+    call fn3(v2618, v2248)
+    v2619 = iadd_imm v2584, 272
+    call fn3(v2619, v2238)
+    v2620 = iadd_imm v2584, 280
+    call fn3(v2620, v2228)
+    v2621 = iadd_imm v2584, 288
+    call fn3(v2621, v2218)
+    v2622 = iadd_imm v2584, 296
+    call fn3(v2622, v2208)
+    v2623 = iadd_imm v2584, 304
+    call fn3(v2623, v2198)
+    v2624 = iadd_imm v2584, 312
+    call fn3(v2624, v2188)
+    v2625 = iadd_imm v2584, 320
+    call fn3(v2625, v2178)
+    v2626 = iadd_imm v2584, 328
+    call fn3(v2626, v2168)
+    v2627 = iadd_imm v2584, 336
+    call fn3(v2627, v2158)
+    v2628 = iadd_imm v2584, 344
+    call fn3(v2628, v2148)
+    v2629 = iadd_imm v2584, 352
+    call fn3(v2629, v2138)
+    v2630 = iadd_imm v2584, 360
+    call fn3(v2630, v2128)
+    v2631 = iadd_imm v2584, 368
+    call fn3(v2631, v2118)
+    v2632 = iadd_imm v2584, 376
+    call fn3(v2632, v2108)
+    v2633 = iadd_imm v2584, 384
+    call fn3(v2633, v2098)
+    v2634 = iadd_imm v2584, 392
+    call fn3(v2634, v2088)
+    v2635 = iadd_imm v2584, 400
+    call fn3(v2635, v2078)
+    v2636 = iadd_imm v2584, 408
+    call fn3(v2636, v2068)
+    v2637 = iadd_imm v2584, 416
+    call fn3(v2637, v2058)
+    v2638 = iadd_imm v2584, 424
+    call fn3(v2638, v2048)
+    v2639 = iadd_imm v2584, 432
+    call fn3(v2639, v2038)
+    v2640 = iadd_imm v2584, 440
+    call fn3(v2640, v2028)
+    v2641 = iadd_imm v2584, 448
+    call fn3(v2641, v2018)
+    v2642 = iadd_imm v2584, 456
+    call fn3(v2642, v2008)
+    v2643 = iadd_imm v2584, 464
+    call fn3(v2643, v1998)
+    v2644 = iadd_imm v2584, 472
+    call fn3(v2644, v1988)
+    v2645 = iadd_imm v2584, 480
+    call fn3(v2645, v1978)
+    v2646 = iadd_imm v2584, 488
+    call fn3(v2646, v1968)
+    v2647 = iadd_imm v2584, 496
+    call fn3(v2647, v1958)
+    v2648 = iadd_imm v2584, 504
+    call fn3(v2648, v1948)
+    v2649 = iadd_imm v2584, 512
+    call fn3(v2649, v1938)
+    v2650 = iadd_imm v2584, 520
+    call fn3(v2650, v1928)
+    v2651 = iadd_imm v2584, 528
+    call fn3(v2651, v1918)
+    v2652 = iadd_imm v2584, 536
+    call fn3(v2652, v1908)
+    v2653 = iadd_imm v2584, 544
+    call fn3(v2653, v1898)
+    v2654 = iadd_imm v2584, 552
+    call fn3(v2654, v1888)
+    v2655 = iadd_imm v2584, 560
+    call fn3(v2655, v1878)
+    v2656 = iadd_imm v2584, 568
+    call fn3(v2656, v1868)
+    v2657 = iadd_imm v2584, 576
+    call fn3(v2657, v1858)
+    v2658 = iadd_imm v2584, 584
+    call fn3(v2658, v1848)
+    v2659 = iadd_imm v2584, 592
+    call fn3(v2659, v1838)
+    v2660 = iadd_imm v2584, 600
+    call fn3(v2660, v1828)
+    v2661 = iadd_imm v2584, 608
+    call fn3(v2661, v1818)
+    v2662 = iadd_imm v2584, 616
+    call fn3(v2662, v1808)
+    v2663 = iadd_imm v2584, 624
+    call fn3(v2663, v1798)
+    v2664 = iadd_imm v2584, 632
+    call fn3(v2664, v1788)
+    v2665 = iadd_imm v2584, 640
+    call fn3(v2665, v1778)
+    v2666 = iadd_imm v2584, 648
+    call fn3(v2666, v1768)
+    v2667 = iadd_imm v2584, 656
+    call fn3(v2667, v1758)
+    v2668 = iadd_imm v2584, 664
+    call fn3(v2668, v1748)
+    v2669 = iadd_imm v2584, 672
+    call fn3(v2669, v1738)
+    v2670 = iadd_imm v2584, 680
+    call fn3(v2670, v1728)
+    v2671 = iadd_imm v2584, 688
+    call fn3(v2671, v1718)
+    v2672 = iadd_imm v2584, 696
+    call fn3(v2672, v1708)
+    v2673 = iadd_imm v2584, 704
+    call fn3(v2673, v1698)
+    v2674 = iadd_imm v2584, 712
+    call fn3(v2674, v1688)
+    v2675 = iadd_imm v2584, 720
+    call fn3(v2675, v1678)
+    v2676 = iadd_imm v2584, 728
+    call fn3(v2676, v1668)
+    v2677 = iadd_imm v2584, 736
+    call fn3(v2677, v1658)
+    v2678 = iadd_imm v2584, 744
+    call fn3(v2678, v1648)
+    v2679 = iadd_imm v2584, 752
+    call fn3(v2679, v1638)
+    v2680 = iadd_imm v2584, 760
+    call fn3(v2680, v1628)
+    v2681 = iadd_imm v2584, 768
+    call fn3(v2681, v1618)
+    v2682 = iadd_imm v2584, 776
+    call fn3(v2682, v1608)
+    v2683 = iadd_imm v2584, 784
+    call fn3(v2683, v1598)
+    v2684 = iadd_imm v2584, 792
+    call fn3(v2684, v1588)
+    v2685 = iadd_imm v2584, 800
+    call fn3(v2685, v1578)
+    v2686 = iadd_imm v2584, 808
+    call fn3(v2686, v1568)
+    v2687 = iadd_imm v2584, 816
+    call fn3(v2687, v1558)
+    v2688 = iadd_imm v2584, 824
+    call fn3(v2688, v1548)
+    v2689 = iadd_imm v2584, 832
+    call fn3(v2689, v1538)
+    v2690 = iadd_imm v2584, 840
+    call fn3(v2690, v1528)
+    v2691 = iadd_imm v2584, 848
+    call fn3(v2691, v1518)
+    v2692 = iadd_imm v2584, 856
+    call fn3(v2692, v1508)
+    v2693 = iadd_imm v2584, 864
+    call fn3(v2693, v1498)
+    v2694 = iadd_imm v2584, 872
+    call fn3(v2694, v1488)
+    v2695 = iadd_imm v2584, 880
+    call fn3(v2695, v1478)
+    v2696 = iadd_imm v2584, 888
+    call fn3(v2696, v1468)
+    v2697 = iadd_imm v2584, 896
+    call fn3(v2697, v1458)
+    v2698 = iadd_imm v2584, 904
+    call fn3(v2698, v1448)
+    v2699 = iadd_imm v2584, 912
+    call fn3(v2699, v1438)
+    v2700 = iadd_imm v2584, 920
+    call fn3(v2700, v1428)
+    v2701 = iadd_imm v2584, 928
+    call fn3(v2701, v1418)
+    v2702 = iadd_imm v2584, 936
+    call fn3(v2702, v1408)
+    v2703 = iadd_imm v2584, 944
+    call fn3(v2703, v1398)
+    v2704 = iadd_imm v2584, 952
+    call fn3(v2704, v1388)
+    v2705 = iadd_imm v2584, 960
+    call fn3(v2705, v1378)
+    v2706 = iadd_imm v2584, 968
+    call fn3(v2706, v1368)
+    v2707 = iadd_imm v2584, 976
+    call fn3(v2707, v1358)
+    v2708 = iadd_imm v2584, 984
+    call fn3(v2708, v1348)
+    v2709 = iadd_imm v2584, 992
+    call fn3(v2709, v1338)
+    v2710 = iadd_imm v2584, 1000
+    call fn3(v2710, v1328)
+    v2711 = iadd_imm v2584, 1008
+    call fn3(v2711, v1318)
+    v2712 = iadd_imm v2584, 1016
+    call fn3(v2712, v1308)
+    v2713 = iadd_imm v2584, 1024
+    call fn3(v2713, v1298)
+    v2714 = iadd_imm v2584, 1032
+    call fn3(v2714, v1288)
+    v2715 = iadd_imm v2584, 1040
+    call fn3(v2715, v1278)
+    v2716 = iadd_imm v2584, 1048
+    call fn3(v2716, v1268)
+    v2717 = iadd_imm v2584, 1056
+    call fn3(v2717, v1258)
+    v2718 = iadd_imm v2584, 1064
+    call fn3(v2718, v1248)
+    v2719 = iadd_imm v2584, 1072
+    call fn3(v2719, v1238)
+    v2720 = iadd_imm v2584, 1080
+    call fn3(v2720, v1228)
+    v2721 = iadd_imm v2584, 1088
+    call fn3(v2721, v1218)
+    v2722 = iadd_imm v2584, 1096
+    call fn3(v2722, v1208)
+    v2723 = iadd_imm v2584, 1104
+    call fn3(v2723, v1198)
+    v2724 = iadd_imm v2584, 1112
+    call fn3(v2724, v1188)
+    v2725 = iadd_imm v2584, 1120
+    call fn3(v2725, v1178)
+    v2726 = iadd_imm v2584, 1128
+    call fn3(v2726, v1168)
+    v2727 = iadd_imm v2584, 1136
+    call fn3(v2727, v1158)
+    v2728 = iadd_imm v2584, 1144
+    call fn3(v2728, v1148)
+    v2729 = iadd_imm v2584, 1152
+    call fn3(v2729, v1138)
+    v2730 = iadd_imm v2584, 1160
+    call fn3(v2730, v1128)
+    v2731 = iadd_imm v2584, 1168
+    call fn3(v2731, v1118)
+    v2732 = iadd_imm v2584, 1176
+    call fn3(v2732, v1108)
+    v2733 = iadd_imm v2584, 1184
+    call fn3(v2733, v1098)
+    v2734 = iadd_imm v2584, 1192
+    call fn3(v2734, v1088)
+    v2735 = iadd_imm v2584, 1200
+    call fn3(v2735, v1078)
+    v2736 = iadd_imm v2584, 1208
+    call fn3(v2736, v1068)
+    v2737 = iadd_imm v2584, 1216
+    call fn3(v2737, v1058)
+    v2738 = iadd_imm v2584, 1224
+    call fn3(v2738, v1048)
+    v2739 = iadd_imm v2584, 1232
+    call fn3(v2739, v1038)
+    v2740 = iadd_imm v2584, 1240
+    call fn3(v2740, v1028)
+    v2741 = iadd_imm v2584, 1248
+    call fn3(v2741, v1018)
+    v2742 = iadd_imm v2584, 1256
+    call fn3(v2742, v1008)
+    v2743 = iadd_imm v2584, 1264
+    call fn3(v2743, v998)
+    v2744 = iadd_imm v2584, 1272
+    call fn3(v2744, v988)
+    v2745 = iadd_imm v2584, 1280
+    call fn3(v2745, v978)
+    v2746 = iadd_imm v2584, 1288
+    call fn3(v2746, v968)
+    v2747 = iadd_imm v2584, 1296
+    call fn3(v2747, v958)
+    v2748 = iadd_imm v2584, 1304
+    call fn3(v2748, v948)
+    v2749 = iadd_imm v2584, 1312
+    call fn3(v2749, v938)
+    v2750 = iadd_imm v2584, 1320
+    call fn3(v2750, v928)
+    v2751 = iadd_imm v2584, 1328
+    call fn3(v2751, v918)
+    v2752 = iadd_imm v2584, 1336
+    call fn3(v2752, v908)
+    v2753 = iadd_imm v2584, 1344
+    call fn3(v2753, v898)
+    v2754 = iadd_imm v2584, 1352
+    call fn3(v2754, v888)
+    v2755 = iadd_imm v2584, 1360
+    call fn3(v2755, v878)
+    v2756 = iadd_imm v2584, 1368
+    call fn3(v2756, v868)
+    v2757 = iadd_imm v2584, 1376
+    call fn3(v2757, v858)
+    v2758 = iadd_imm v2584, 1384
+    call fn3(v2758, v848)
+    v2759 = iadd_imm v2584, 1392
+    call fn3(v2759, v838)
+    v2760 = iadd_imm v2584, 1400
+    call fn3(v2760, v828)
+    v2761 = iadd_imm v2584, 1408
+    call fn3(v2761, v818)
+    v2762 = iadd_imm v2584, 1416
+    call fn3(v2762, v808)
+    v2763 = iadd_imm v2584, 1424
+    call fn3(v2763, v798)
+    v2764 = iadd_imm v2584, 1432
+    call fn3(v2764, v788)
+    v2765 = iadd_imm v2584, 1440
+    call fn3(v2765, v778)
+    v2766 = iadd_imm v2584, 1448
+    call fn3(v2766, v768)
+    v2767 = iadd_imm v2584, 1456
+    call fn3(v2767, v758)
+    v2768 = iadd_imm v2584, 1464
+    call fn3(v2768, v748)
+    v2769 = iadd_imm v2584, 1472
+    call fn3(v2769, v738)
+    v2770 = iadd_imm v2584, 1480
+    call fn3(v2770, v728)
+    v2771 = iadd_imm v2584, 1488
+    call fn3(v2771, v718)
+    v2772 = iadd_imm v2584, 1496
+    call fn3(v2772, v708)
+    v2773 = iadd_imm v2584, 1504
+    call fn3(v2773, v698)
+    v2774 = iadd_imm v2584, 1512
+    call fn3(v2774, v688)
+    v2775 = iadd_imm v2584, 1520
+    call fn3(v2775, v678)
+    v2776 = iadd_imm v2584, 1528
+    call fn3(v2776, v668)
+    v2777 = iadd_imm v2584, 1536
+    call fn3(v2777, v658)
+    v2778 = iadd_imm v2584, 1544
+    call fn3(v2778, v648)
+    v2779 = iadd_imm v2584, 1552
+    call fn3(v2779, v638)
+    v2780 = iadd_imm v2584, 1560
+    call fn3(v2780, v628)
+    v2781 = iadd_imm v2584, 1568
+    call fn3(v2781, v618)
+    v2782 = iadd_imm v2584, 1576
+    call fn3(v2782, v608)
+    v2783 = iadd_imm v2584, 1584
+    call fn3(v2783, v598)
+    v2784 = iadd_imm v2584, 1592
+    call fn3(v2784, v588)
+    v2785 = iadd_imm v2584, 1600
+    call fn3(v2785, v578)
+    v2786 = iadd_imm v2584, 1608
+    call fn3(v2786, v568)
+    v2787 = iadd_imm v2584, 1616
+    call fn3(v2787, v558)
+    v2788 = iadd_imm v2584, 1624
+    call fn3(v2788, v548)
+    v2789 = iadd_imm v2584, 1632
+    call fn3(v2789, v538)
+    v2790 = iadd_imm v2584, 1640
+    call fn3(v2790, v528)
+    v2791 = iadd_imm v2584, 1648
+    call fn3(v2791, v518)
+    v2792 = iadd_imm v2584, 1656
+    call fn3(v2792, v508)
+    v2793 = iadd_imm v2584, 1664
+    call fn3(v2793, v498)
+    v2794 = iadd_imm v2584, 1672
+    call fn3(v2794, v488)
+    v2795 = iadd_imm v2584, 1680
+    call fn3(v2795, v478)
+    v2796 = iadd_imm v2584, 1688
+    call fn3(v2796, v468)
+    v2797 = iadd_imm v2584, 1696
+    call fn3(v2797, v458)
+    v2798 = iadd_imm v2584, 1704
+    call fn3(v2798, v448)
+    v2799 = iadd_imm v2584, 1712
+    call fn3(v2799, v438)
+    v2800 = iadd_imm v2584, 1720
+    call fn3(v2800, v428)
+    v2801 = iadd_imm v2584, 1728
+    call fn3(v2801, v418)
+    v2802 = iadd_imm v2584, 1736
+    call fn3(v2802, v408)
+    v2803 = iadd_imm v2584, 1744
+    call fn3(v2803, v398)
+    v2804 = iadd_imm v2584, 1752
+    call fn3(v2804, v388)
+    v2805 = iadd_imm v2584, 1760
+    call fn3(v2805, v378)
+    v2806 = iadd_imm v2584, 1768
+    call fn3(v2806, v368)
+    v2807 = iadd_imm v2584, 1776
+    call fn3(v2807, v358)
+    v2808 = iadd_imm v2584, 1784
+    call fn3(v2808, v348)
+    v2809 = iadd_imm v2584, 1792
+    call fn3(v2809, v338)
+    v2810 = iadd_imm v2584, 1800
+    call fn3(v2810, v328)
+    v2811 = iadd_imm v2584, 1808
+    call fn3(v2811, v318)
+    v2812 = iadd_imm v2584, 1816
+    call fn3(v2812, v308)
+    v2813 = iadd_imm v2584, 1824
+    call fn3(v2813, v298)
+    v2814 = iadd_imm v2584, 1832
+    call fn3(v2814, v288)
+    v2815 = iadd_imm v2584, 1840
+    call fn3(v2815, v278)
+    v2816 = iadd_imm v2584, 1848
+    call fn3(v2816, v268)
+    v2817 = iadd_imm v2584, 1856
+    call fn3(v2817, v258)
+    v2818 = iadd_imm v2584, 1864
+    call fn3(v2818, v248)
+    v2819 = iadd_imm v2584, 1872
+    call fn3(v2819, v238)
+    v2820 = iadd_imm v2584, 1880
+    call fn3(v2820, v228)
+    v2821 = iadd_imm v2584, 1888
+    call fn3(v2821, v218)
+    v2822 = iadd_imm v2584, 1896
+    call fn3(v2822, v208)
+    v2823 = iadd_imm v2584, 1904
+    call fn3(v2823, v198)
+    v2824 = iadd_imm v2584, 1912
+    call fn3(v2824, v188)
+    v2825 = iadd_imm v2584, 1920
+    call fn3(v2825, v178)
+    v2826 = iadd_imm v2584, 1928
+    call fn3(v2826, v168)
+    v2827 = iadd_imm v2584, 1936
+    call fn3(v2827, v158)
+    v2828 = iadd_imm v2584, 1944
+    call fn3(v2828, v148)
+    v2829 = iadd_imm v2584, 1952
+    call fn3(v2829, v138)
+    v2830 = iadd_imm v2584, 1960
+    call fn3(v2830, v128)
+    v2831 = iadd_imm v2584, 1968
+    call fn3(v2831, v118)
+    v2832 = iadd_imm v2584, 1976
+    call fn3(v2832, v108)
+    v2833 = iadd_imm v2584, 1984
+    call fn3(v2833, v98)
+    v2834 = iadd_imm v2584, 1992
+    call fn3(v2834, v88)
+    v2835 = iadd_imm v2584, 2000
+    call fn3(v2835, v78)
+    v2836 = iadd_imm v2584, 2008
+    call fn3(v2836, v68)
+    v2837 = iadd_imm v2584, 2016
+    call fn3(v2837, v58)
+    v2838 = iadd_imm v2584, 2024
+    call fn3(v2838, v48)
+    v2839 = iadd_imm v2584, 2032
+    call fn3(v2839, v38)
+    v2840 = iadd_imm v2584, 2040
+    call fn3(v2840, v28)
+    v2841 = iadd_imm v2584, 2048
+    call fn3(v2841, v18)
     jump block1
 
 block1:

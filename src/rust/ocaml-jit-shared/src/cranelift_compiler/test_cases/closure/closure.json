@@ -1,0 +1,1 @@
+{"arity":1,"blocks":[{"block_id":0,"predecessors":[],"block_type":"First","instructions":[{"Acc":0},{"Closure":[29519,1]},"Push",{"Const":3},"Push",{"Acc":1}],"exit":{"TailCall":{"args":1,"to_pop":3}},"start_stack_size":1,"end_stack_size":0,"sealed_blocks":[]}],"used_closures":[29519],"max_stack_size":3,"has_trap_handlers":false}

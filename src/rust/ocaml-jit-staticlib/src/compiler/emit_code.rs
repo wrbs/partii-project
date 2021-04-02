@@ -63,6 +63,7 @@ pub struct CompilerResults {
     pub entrypoint: EntryPoint,
     pub first_instruction: *const c_void,
     pub instructions: Option<Vec<Instruction<BytecodeRelativeOffset>>>,
+    pub closure_addresses: HashMap<usize, usize>,
 }
 
 // The stack frame for the interpreter state
@@ -150,6 +151,7 @@ pub fn compile_instructions(
     }
 
     cc.emit_shared_code();
+    let closure_offsets = cc.emit_closure_table();
 
     let ops = cc.ops;
     let buf = ops.finalize().unwrap();
@@ -157,11 +159,18 @@ pub fn compile_instructions(
     let entrypoint: EntryPoint = unsafe { std::mem::transmute(buf.ptr(entrypoint_offset)) };
     let first_instruction = buf.ptr(first_instr_offset) as *const c_void;
 
+    let closure_addresses = closure_offsets
+        .into_iter()
+        .map(|(bytecode_offset, asm_offset)| (bytecode_offset, buf.ptr(asm_offset) as usize))
+        .collect();
+
+
     CompilerResults {
         buffer: buf,
         entrypoint,
         first_instruction,
         instructions: instrs,
+        closure_addresses,
     }
 }
 
@@ -1609,7 +1618,6 @@ impl CompilerContext {
         self.emit_apply_shared();
         self.emit_process_events_shared();
         self.emit_longjmp_handler();
-        self.emit_closure_table();
     }
 
     fn emit_apply_shared(&mut self) {
@@ -1765,7 +1773,7 @@ impl CompilerContext {
         );
     }
 
-    fn emit_closure_table(&mut self) {
+    fn emit_closure_table(&mut self) -> Vec<(usize, AssemblyOffset)> {
         // This table contains a struct:
         //
         // Call count/status:
@@ -1785,8 +1793,10 @@ impl CompilerContext {
         // To make borrow checker happy, do a swap
         std::mem::swap(&mut closures, &mut self.closures);
 
+        let mut offsets = Vec::with_capacity(closures.len());
         for closure in closures.values() {
             let bca = self.get_label(&BytecodeRelativeOffset(closure.bytecode_addr));
+            let offset = self.ops.offset();
             oc_dynasm!(self.ops
                 ; =>closure.label
                 ; .qword 0       // call count
@@ -1795,7 +1805,11 @@ impl CompilerContext {
                 ; .dword closure.bytecode_addr as _
                 ; .qword (closure.arity - 1) as _
             );
+
+            offsets.push((closure.bytecode_addr, offset))
         }
+
+        offsets
     }
 
     fn emit_process_events_shared(&mut self) {
