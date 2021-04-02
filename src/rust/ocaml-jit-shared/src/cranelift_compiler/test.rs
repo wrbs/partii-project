@@ -22,6 +22,7 @@ fn run_test(
     expected_disasm: ExpectFile,
     expected_objdump: ExpectFile,
 ) {
+    env_logger::try_init();
     let closure: BasicClosure = serde_json::from_str(closure_json).unwrap();
 
     let isa = get_isa();
@@ -134,3 +135,4 @@ test_case!(arith_toplevel_t);
 test_case!(trigger_gc_please);
 test_case!(arith_not);
 test_case!(arith_neg);
+test_case!(calls);
