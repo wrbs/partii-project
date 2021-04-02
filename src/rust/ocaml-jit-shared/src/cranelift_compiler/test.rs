@@ -22,7 +22,7 @@ fn run_test(
     expected_disasm: ExpectFile,
     expected_objdump: ExpectFile,
 ) {
-    env_logger::try_init();
+    let _ = env_logger::try_init(); // Cranelift uses rust_log a lot internally and this allows setting RUST_LOG
     let closure: BasicClosure = serde_json::from_str(closure_json).unwrap();
 
     let isa = get_isa();
@@ -35,10 +35,14 @@ fn run_test(
 
     let mut compiler_output = CompilerOutput::default();
     let mut stack_maps = vec![];
+
+    let lookup_closure_code = |code| Some(0xDEADBEEF as *const u8);
+
     let _ = compiler
         .compile_closure(
             case_name,
             &closure,
+            lookup_closure_code,
             &options,
             Some(&mut compiler_output),
             &mut stack_maps,
@@ -136,3 +140,5 @@ test_case!(trigger_gc_please);
 test_case!(arith_not);
 test_case!(arith_neg);
 test_case!(calls);
+test_case!(closure);
+test_case!(printf_kprintf);

@@ -7,7 +7,7 @@ use crate::{
     basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicClosure},
     instructions::{ArithOp, Comp},
 };
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{anyhow, bail, ensure, Context, Result};
 use codegen::{
     binemit::{StackMap, StackMapSink},
     ir::{FuncRef, GlobalValue, Inst},
@@ -15,7 +15,7 @@ use codegen::{
 };
 use cranelift::prelude::*;
 use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
-use primitives::MAX_YOUNG_WOSIZE;
+use primitives::{CLOSURE_TAG, MAX_YOUNG_WOSIZE};
 use types::{I8, I32, I64, R64};
 
 use self::primitives::{CamlStateField, CraneliftPrimitiveFunction, CraneliftPrimitiveValue};
@@ -49,6 +49,10 @@ pub struct CraneliftCompiler<M: Module> {
     primitives: Primitives,
 }
 
+// A function that can be used to lookup closures
+pub trait LookupClosureCode: Fn(usize) -> Option<*const u8> {}
+impl<T> LookupClosureCode for T where T: Fn(usize) -> Option<*const u8> {}
+
 #[derive(Debug)]
 struct StackMaps<'a> {
     maps: &'a mut Vec<(u32, StackMap)>,
@@ -80,10 +84,11 @@ where
         })
     }
 
-    pub fn compile_closure(
+    pub fn compile_closure<F: LookupClosureCode>(
         &mut self,
         func_name: &str,
         closure: &BasicClosure,
+        lookup_closure_code: F,
         options: &CraneliftCompilerOptions,
         mut debug_output: Option<&mut CompilerOutput>,
         stack_maps: &mut Vec<(u32, StackMap)>,
@@ -111,7 +116,7 @@ where
         // Compile the function
         // TODO - share this once I stop having errors that stop it from being automatically cleared
         self.function_builder_context = FunctionBuilderContext::new();
-        let mut translator = self.create_translator(closure, options)?;
+        let mut translator = self.create_translator(closure, options, lookup_closure_code)?;
         for basic_block in &closure.blocks {
             translator.translate_block(basic_block).with_context(|| {
                 format!("Problem compiling basic block {}", basic_block.block_id)
@@ -174,11 +179,12 @@ where
         Ok(CompilationResult::SupportedClosure(func_id))
     }
 
-    fn create_translator<'a>(
+    fn create_translator<'a, F: LookupClosureCode>(
         &'a mut self,
         closure: &'a BasicClosure,
         options: &'a CraneliftCompilerOptions,
-    ) -> Result<FunctionTranslator<'a, M>> {
+        lookup_closure_code: F,
+    ) -> Result<FunctionTranslator<'a, M, F>> {
         let mut builder =
             FunctionBuilder::new(&mut self.ctx.func, &mut self.function_builder_context);
         let blocks: Vec<_> = (0..closure.blocks.len())
@@ -199,7 +205,10 @@ where
         };
 
         let acc = var(R64);
-        let stack_vars: Vec<_> = (0..closure.max_stack_size).map(|_| var(R64)).collect();
+
+        // Overhead allows implementing instructions like Closure by spilling the acc onto the stack
+        let to_allocate = closure.max_stack_size + 1;
+        let stack_vars: Vec<_> = (0..to_allocate).map(|_| var(R64)).collect();
         let return_extra_args_var = var(I64);
         let sp = var(I64);
 
@@ -215,6 +224,7 @@ where
         let mut ft = FunctionTranslator {
             builder,
             module: &mut self.module,
+            lookup_closure_code,
             stack_size,
             stack_vars,
             env,
@@ -276,12 +286,14 @@ struct CCall {
     arity: Arity,
 }
 
-struct FunctionTranslator<'a, M>
+struct FunctionTranslator<'a, M, F>
 where
     M: Module,
+    F: LookupClosureCode,
 {
     builder: FunctionBuilder<'a>,
     module: &'a mut M,
+    lookup_closure_code: F,
     stack_size: usize,
     stack_vars: Vec<Variable>,
     options: &'a CraneliftCompilerOptions,
@@ -300,9 +312,10 @@ where
     used_c_calls: HashMap<u32, FuncRef>,
 }
 
-impl<'a, M> FunctionTranslator<'a, M>
+impl<'a, M, F> FunctionTranslator<'a, M, F>
 where
     M: Module,
+    F: LookupClosureCode,
 {
     fn translate_block(&mut self, basic_block: &BasicBlock) -> Result<()> {
         // Start the block
@@ -313,10 +326,12 @@ where
         self.stack_size = basic_block.start_stack_size as usize;
 
         for instr in &basic_block.instructions {
-            self.translate_instruction(instr)?;
+            self.translate_instruction(instr)
+                .with_context(|| format!("Problem translating instruction {:?}", instr))?;
         }
 
-        self.translate_exit(&basic_block.exit)?;
+        self.translate_exit(&basic_block.exit)
+            .with_context(|| format!("Problem translating exit {:?}", &basic_block.exit))?;
 
         ensure!(self.stack_size == basic_block.end_stack_size as usize);
 
@@ -365,7 +380,32 @@ where
                 self.emit_apply(nvars)?;
                 self.pop(3)?;
             }
-            // BasicBlockInstruction::Closure(_, _) => {}
+            BasicBlockInstruction::Closure(codeval, nvars) => {
+                let nvars = *nvars;
+                if nvars > 0 {
+                    let accu = self.get_acc_ref();
+                    self.push_ref(accu)?;
+                }
+
+                let mut vars = vec![];
+                vars.push(None); // Will store codeval, but doesn't go through caml_initialize
+                for i in 0..nvars {
+                    vars.push(Some(self.pick_ref(i)?));
+                }
+                self.pop(nvars)?;
+
+                let block = self.alloc(&vars, CLOSURE_TAG)?;
+                let code_ptr = (self.lookup_closure_code)(*codeval)
+                    .ok_or_else(|| anyhow!("Could not find closure {:?}", codeval))?;
+
+                let block_addr = self.ref_to_int(block);
+                let code_ptr_loc = self.builder.ins().iconst(I64, code_ptr as i64);
+                self.builder
+                    .ins()
+                    .store(MemFlags::trusted(), code_ptr_loc, block_addr, 0);
+
+                self.set_acc_ref(block);
+            }
             // BasicBlockInstruction::ClosureRec(_, _) => {}
             BasicBlockInstruction::MakeBlock(0, tag) => {
                 bail!("unimplemented: atom");
@@ -374,50 +414,14 @@ where
                 let wosize = *wosize as usize;
                 let tag = *tag;
 
-                let block = if wosize <= MAX_YOUNG_WOSIZE {
-                    let block = self.alloc_small(wosize, tag)?;
-                    let accu = self.get_acc_ref();
-                    self.builder
-                        .ins()
-                        .store(MemFlags::trusted(), accu, block, 0);
+                let mut vars = vec![];
+                vars.push(Some(self.get_acc_ref()));
 
-                    for i in 1..wosize {
-                        let val = self.pick_ref((i - 1) as u32)?;
-                        self.builder
-                            .ins()
-                            .store(MemFlags::trusted(), val, block, i as i32 * 8);
-                    }
+                for i in 1..wosize {
+                    vars.push(Some(self.pick_ref((i - 1) as u32)?));
+                }
 
-                    block
-                } else {
-                    let wosize_val = self.builder.ins().iconst(I64, wosize as i64);
-                    let tag = self.builder.ins().iconst(I8, tag as i64);
-                    let call = self.call_primitive(
-                        CraneliftPrimitiveFunction::CamlAllocShr,
-                        &[wosize_val, tag],
-                    )?;
-
-                    let block = self.builder.inst_results(call)[0];
-
-                    let block_i = self.ref_to_int(block);
-
-                    let accu = self.get_acc_ref();
-                    self.call_primitive(
-                        CraneliftPrimitiveFunction::CamlInitialize,
-                        &[block_i, accu],
-                    )?;
-
-                    for i in 1..wosize {
-                        let val = self.pick_ref((i - 1) as u32)?;
-                        let addr = self.builder.ins().iadd_imm(block_i, i as i64 * 8);
-                        self.call_primitive(
-                            CraneliftPrimitiveFunction::CamlInitialize,
-                            &[addr, val],
-                        )?;
-                    }
-
-                    block
-                };
+                let block = self.alloc(&vars, tag)?;
 
                 self.set_acc_ref(block);
                 self.pop(wosize as u32 - 1)?;
@@ -1004,6 +1008,46 @@ where
 
     // Inlining of stuff
 
+    // The arguments are a list of either IR values corresponding to ML values to write (Some) or
+    // None (may be useful for non_heap ones)
+    fn alloc(&mut self, contents: &[Option<Value>], tag: u8) -> Result<Value> {
+        let wosize = contents.len();
+        if wosize <= MAX_YOUNG_WOSIZE {
+            // If it fits in the minor heap
+            let block = self.alloc_small(wosize, tag)?;
+
+            for (i, x) in contents.iter().cloned().enumerate() {
+                if let Some(value) = x {
+                    self.builder
+                        .ins()
+                        .store(MemFlags::trusted(), value, block, i as i32 * 8);
+                }
+            }
+
+            Ok(block)
+        } else {
+            let wosize_val = self.builder.ins().iconst(I64, wosize as i64);
+            let tag = self.builder.ins().iconst(I8, tag as i64);
+            let call =
+                self.call_primitive(CraneliftPrimitiveFunction::CamlAllocShr, &[wosize_val, tag])?;
+
+            let block = self.builder.inst_results(call)[0];
+            let block_i = self.ref_to_int(block);
+
+            for (i, x) in contents.iter().cloned().enumerate() {
+                if let Some(value) = x {
+                    let addr = self.builder.ins().iadd_imm(block_i, i as i64 * 8);
+                    self.call_primitive(
+                        CraneliftPrimitiveFunction::CamlInitialize,
+                        &[addr, value],
+                    )?;
+                }
+            }
+
+            Ok(block)
+        }
+    }
+
     fn alloc_small(&mut self, wosize: usize, tag: u8) -> Result<Value> {
         // From Memory.h
         // Note in our setup profinfo = 0 and track = CAML_DO_TRACK = 1
@@ -1071,10 +1115,10 @@ where
 
         //   Hd_hp (Caml_state_field(young_ptr)) =                                \
         //     Make_header_with_profinfo ((wosize), (tag), 0, profinfo);          \
-
         // This goes to Make_header(wosize, tag, color) as we don't use profinfo
         // here color is 0
-        let header = ((wosize as u64) << 10) + (tag as u64);
+
+        let header = make_header(wosize, tag);
         let header_val = self.builder.ins().iconst(I64, header as i64);
         self.builder
             .ins()
@@ -1195,6 +1239,11 @@ impl Primitives {
             }
         })
     }
+}
+
+fn make_header(wosize: usize, tag: u8) -> i64 {
+    let header = ((wosize as u64) << 10) + (tag as u64);
+    header as i64
 }
 
 fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Signature) {

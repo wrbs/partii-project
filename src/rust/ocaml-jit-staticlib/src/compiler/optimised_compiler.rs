@@ -91,9 +91,22 @@ impl OptimisedCompiler {
         let old_hook = panic::take_hook();
         let stack_maps = &mut self.stack_maps_todo;
 
+        let closure_addresses = &compiler_data.sections[section_number]
+            .as_ref()
+            .unwrap()
+            .closure_addresses;
+        let lookup_closure_code = |offset| closure_addresses.get(&offset).map(|x| *x as *const u8);
+
         let comp_res_res = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             compiler
-                .compile_closure(&func_name, &closure, &options, None, stack_maps)
+                .compile_closure(
+                    &func_name,
+                    &closure,
+                    lookup_closure_code,
+                    &options,
+                    None,
+                    stack_maps,
+                )
                 .context("Problem compiling with cranelift")
         }));
         panic::set_hook(old_hook);

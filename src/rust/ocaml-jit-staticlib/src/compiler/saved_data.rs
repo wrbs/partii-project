@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use dynasmrt::ExecutableBuffer;
 
 use ocaml_jit_shared::{BytecodeLocation, BytecodeRelativeOffset, Instruction};
@@ -31,6 +33,7 @@ pub struct Section {
     pub compiled_code: ExecutableBuffer,
     pub entrypoint: EntryPoint,
     pub first_instruction_location: usize,
+    pub closure_addresses: HashMap<usize, usize>,
 }
 
 impl CompilerData {
@@ -112,6 +115,7 @@ impl Section {
         entrypoint: EntryPoint,
         instructions: Option<Vec<Instruction<BytecodeRelativeOffset>>>,
         first_instruction_location: usize,
+        closure_addresses: HashMap<usize, usize>,
     ) -> Section {
         Section {
             section_number,
@@ -121,6 +125,7 @@ impl Section {
             instructions,
             compiled_code,
             first_instruction_location,
+            closure_addresses,
         }
     }
 

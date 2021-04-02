@@ -2,6 +2,7 @@ use strum::{EnumCount, IntoEnumIterator};
 use strum_macros::{EnumIter, IntoStaticStr};
 
 pub const MAX_YOUNG_WOSIZE: usize = 256;
+pub const CLOSURE_TAG: u8 = 247;
 
 #[derive(
     Copy,

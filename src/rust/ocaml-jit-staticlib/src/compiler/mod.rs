@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use emit_code::CompilerResults;
 pub use emit_code::{CompilerOptions, PrintTraces, DEFAULT_HOT_CLOSURE_THRESHOLD};
 pub use saved_data::{AsmCompiledPrimitive, CompilerData, EntryPoint, Section};
@@ -20,6 +22,7 @@ pub fn compile(
         entrypoint,
         first_instruction,
         instructions,
+        closure_addresses,
     } = emit_code::compile_instructions(section_number, bytecode, compiler_options);
 
     compiler_data.sections.push(Some(Section::new(
@@ -29,6 +32,7 @@ pub fn compile(
         entrypoint,
         instructions,
         first_instruction as usize,
+        closure_addresses,
     )));
 
     section_number
@@ -61,6 +65,7 @@ pub fn compile_callback_if_needed(
         entrypoint,
         None,
         first_instr as usize,
+        HashMap::new(),
     )));
 
     compiler_data.callback_compiled = true;
