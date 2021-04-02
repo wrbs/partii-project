@@ -145,3 +145,4 @@ test_case!(printf_kprintf);
 test_case!(simple_switch);
 test_case!(switch_ints);
 test_case!(switch_tags);
+test_case!(rec_closures);

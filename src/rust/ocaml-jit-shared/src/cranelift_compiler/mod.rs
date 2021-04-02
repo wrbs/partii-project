@@ -15,7 +15,7 @@ use codegen::{
 };
 use cranelift::{frontend::Switch, prelude::*};
 use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
-use primitives::{CLOSURE_TAG, MAX_YOUNG_WOSIZE};
+use primitives::{CLOSURE_TAG, INFIX_TAG, MAX_YOUNG_WOSIZE};
 use types::{I8, I32, I64, R64};
 
 use self::primitives::{CamlStateField, CraneliftPrimitiveFunction, CraneliftPrimitiveValue};
@@ -360,7 +360,9 @@ where
                 let v = self.get_acc_ref();
                 self.push_ref(v)?;
             }
-            // BasicBlockInstruction::Pop(_) => {}
+            BasicBlockInstruction::Pop(n) => {
+                self.pop(*n)?;
+            }
             // BasicBlockInstruction::Assign(_) => {}
             BasicBlockInstruction::Apply1 => {
                 self.emit_apply(1)?;
@@ -406,7 +408,69 @@ where
 
                 self.set_acc_ref(block);
             }
-            // BasicBlockInstruction::ClosureRec(_, _) => {}
+            BasicBlockInstruction::ClosureRec(funcs, nvars) => {
+                let nvars = *nvars;
+                let code_pointers_res: Result<Vec<_>> = funcs
+                    .iter()
+                    .map(|offset| {
+                        (self.lookup_closure_code)(*offset)
+                            .ok_or_else(|| anyhow!("Could not find closure {:?}", offset))
+                    })
+                    .collect();
+
+                let code_pointers = code_pointers_res?;
+
+                let mut contents = vec![];
+                for _ in 0..(funcs.len() * 2 - 1) {
+                    contents.push(None); // We'll fill this in later with infix headers/code pointers
+                }
+
+                if nvars > 0 {
+                    let accu = self.get_acc_ref();
+
+                    self.push_ref(accu)?;
+                    for i in 0..nvars {
+                        contents.push(Some(self.pick_ref(i)?));
+                    }
+                    self.pop(nvars)?;
+                }
+
+                let block = self.alloc(&contents, CLOSURE_TAG)?;
+                let block_base = self.ref_to_int(block);
+
+                // Now fill in the code pointers
+                for (i, code_pointer) in code_pointers.iter().enumerate() {
+                    let code_pointer_val = self.builder.ins().iconst(I64, *code_pointer as i64);
+                    if i == 0 {
+                        self.builder.ins().store(
+                            MemFlags::trusted(),
+                            code_pointer_val,
+                            block_base,
+                            0,
+                        );
+                        self.push_int(block_base)?;
+                    } else {
+                        let header_val = self
+                            .builder
+                            .ins()
+                            .iconst(I64, make_header(i * 2, INFIX_TAG));
+                        self.builder.ins().store(
+                            MemFlags::trusted(),
+                            header_val,
+                            block_base,
+                            (2 * i - 1) as i32,
+                        );
+                        self.builder.ins().store(
+                            MemFlags::trusted(),
+                            code_pointer_val,
+                            block_base,
+                            (2 * i) as i32,
+                        );
+                        let infix = self.builder.ins().iadd_imm(block_base, 2 * i as i64);
+                        self.push_int(infix)?;
+                    }
+                }
+            }
             BasicBlockInstruction::MakeBlock(0, tag) => {
                 bail!("unimplemented: atom");
             }
