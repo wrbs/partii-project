@@ -11,4 +11,16 @@ let run () =
     f4 0 1 2 3;
     f5 0 1 2 3 4
 
+let g1 x = 
+    let f y =
+        Printf.printf "%d %d" x y in
+    f 3
+
+let g2 x = 
+    let rec f y =
+        Printf.printf "%d %d" x y in
+    f 3
+
+let () = g1 2; g2 2
+
 let _ = run ()

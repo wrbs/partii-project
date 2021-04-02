@@ -29,6 +29,15 @@ arg_enum! {
     }
 }
 
+arg_enum! {
+    #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+    pub enum CraneliftErrorHandling {
+        Panic,
+        Log,
+        Ignore,
+    }
+}
+
 #[derive(Debug, StructOpt)]
 #[structopt(name = PROGRAM_NAME, about = "An experimental JIT compiler for OCaml bytecode")]
 pub struct Options {
@@ -66,6 +75,9 @@ pub struct Options {
 
     #[structopt(long, conflicts_with = "hot-threshold")]
     pub no_hot_threshold: bool,
+
+    #[structopt(long, default_value = "Panic")]
+    pub cranelift_error_handling: CraneliftErrorHandling,
 }
 
 impl Options {

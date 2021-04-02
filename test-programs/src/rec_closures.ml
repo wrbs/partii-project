@@ -3,7 +3,7 @@
 let show_int x =
   print_int x; print_newline ()
 
-let mk_mutrec x y =
+let mk_mutrec n x y =
   let rec f1 n a b =
     if n = 0 then () else
     print_endline "f1";
@@ -34,6 +34,8 @@ let mk_mutrec x y =
     f1 (n - 1) a b;
     f2 (n - 1) a b;
     f3 (n - 1) a b in
-  f1 2 3 4;
-  f2 2 3 4;
-  f3 2 3 4
+  f1 n 3 4;
+  f2 n 3 4;
+  f3 n 3 4
+
+let () = mk_mutrec 1 2 5

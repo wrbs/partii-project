@@ -25,6 +25,12 @@ mod test;
 
 pub mod primitives;
 
+#[derive(Debug)]
+pub enum CompilationResult {
+    UnsupportedClosure,
+    SupportedClosure(FuncId),
+}
+
 #[derive(Debug, Default)]
 pub struct CompilerOutput {
     ir_after_codegen: String,
@@ -81,7 +87,11 @@ where
         options: &CraneliftCompilerOptions,
         mut debug_output: Option<&mut CompilerOutput>,
         stack_maps: &mut Vec<(u32, StackMap)>,
-    ) -> Result<FuncId> {
+    ) -> Result<CompilationResult> {
+        if closure.has_trap_handlers {
+            return Ok(CompilationResult::UnsupportedClosure);
+        }
+
         self.module.clear_context(&mut self.ctx);
 
         // First arg -env
@@ -161,7 +171,7 @@ where
         }
 
 
-        Ok(func_id)
+        Ok(CompilationResult::SupportedClosure(func_id))
     }
 
     fn create_translator<'a>(

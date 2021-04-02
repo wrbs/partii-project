@@ -108,6 +108,7 @@ fn convert_dfs(
         used_closures: Vec::new(),
         finished: Vec::new(),
         max_stack_size: 0,
+        has_trap_handlers: false,
     };
     search_state.visit(entrypoint, None, arity as u32, BasicBlockType::First)?;
 
@@ -159,6 +160,7 @@ fn convert_dfs(
         blocks,
         used_closures: search_state.used_closures,
         max_stack_size: search_state.max_stack_size,
+        has_trap_handlers: search_state.has_trap_handlers,
     })
 }
 
@@ -168,6 +170,7 @@ struct SearchState<'a> {
     seen: HashMap<usize, PendingBlock>,
     used_closures: Vec<usize>,
     max_stack_size: u32,
+    has_trap_handlers: bool,
     // During the search this will hold things in post-order
     finished: Vec<FinishedBlock>,
 }
@@ -492,6 +495,7 @@ impl<'a> SearchState<'a> {
                             instructions.push(BoolNot);
                         }
                         Instruction::PushTrap(to) => {
+                            self.has_trap_handlers = true;
                             let trap = to.0;
                             let normal = inst_iter.current_position();
                             self.visit(trap, Some(entrypoint), stack_size, BasicBlockType::Normal)?;
