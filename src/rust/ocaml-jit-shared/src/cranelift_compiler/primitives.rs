@@ -48,6 +48,8 @@ pub enum CraneliftPrimitiveFunction {
     CamlInitialize,
     MakeBlockTrace,
     CamlRaiseZeroDivide,
+    CamlProcessPendingActions,
+    CamlRaise,
 }
 
 pub trait CraneliftPrimitive: Sized {
