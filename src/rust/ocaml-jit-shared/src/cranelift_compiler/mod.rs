@@ -343,14 +343,18 @@ where
             BasicBlockInstruction::Apply2 => {
                 self.emit_apply(2)?;
             }
-            // BasicBlockInstruction::Apply3 => {
-            //     let closure = self.get_acc_ref();
-            //     let args = &[self.pick_ref(0)?, self.pick_ref(1)?, self.pick_ref(2)?];
-            //     self.pop(3);
-            //     self.emit_apply(closure, args)?;
-            // }
-            // BasicBlockInstruction::PushRetAddr => { }
-            // BasicBlockInstruction::Apply(_) => {}
+            BasicBlockInstruction::Apply3 => {
+                self.emit_apply(3)?;
+            }
+            BasicBlockInstruction::PushRetAddr => {
+                self.push_dummy(3)?;
+            }
+            BasicBlockInstruction::Apply(nvars) => {
+                let nvars = *nvars as usize;
+                ensure!(nvars > 0);
+                self.emit_apply(nvars)?;
+                self.pop(3)?;
+            }
             // BasicBlockInstruction::Closure(_, _) => {}
             // BasicBlockInstruction::ClosureRec(_, _) => {}
             BasicBlockInstruction::MakeBlock(0, tag) => {
@@ -813,6 +817,14 @@ where
             .def_var(self.stack_vars[self.stack_size], value);
         self.stack_size += 1;
 
+        Ok(())
+    }
+
+    fn push_dummy(&mut self, size: usize) -> Result<()> {
+        let zero = self.builder.ins().null(R64);
+        for _ in 0..size {
+            self.push_ref(zero)?;
+        }
         Ok(())
     }
 

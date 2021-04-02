@@ -25,8 +25,8 @@ Block 1:
   Inst 13:   movq    %rax, %rsi
   Inst 14:   sarq    $1, %rsi
   Inst 15:   movq    %rcx, %rax
-  Inst 16:   cqo
-  Inst 17:   idiv    %rsi
+  Inst 16:   movl    $0, %edx
+  Inst 17:   srem $rax:$rdx, %rsi
   Inst 18:   movq    %rdx, %rsi
   Inst 19:   addq    %rdx, %rsi
   Inst 20:   addq    $1, %rsi
