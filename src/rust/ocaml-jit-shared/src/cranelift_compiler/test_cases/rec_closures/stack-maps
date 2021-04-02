@@ -1,0 +1,22 @@
+0xa1: StackMap {
+    bitmap: [
+        BitSet(
+            23,
+        ),
+    ],
+    mapped_words: 6,
+}0x177: StackMap {
+    bitmap: [
+        BitSet(
+            63,
+        ),
+    ],
+    mapped_words: 6,
+}0x1e0: StackMap {
+    bitmap: [
+        BitSet(
+            31,
+        ),
+    ],
+    mapped_words: 6,
+}

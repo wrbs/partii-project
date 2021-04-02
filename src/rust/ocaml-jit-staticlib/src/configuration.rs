@@ -38,7 +38,7 @@ arg_enum! {
     }
 }
 
-const DEFAULT_ERROR_HANDLING: &str = "Ignore";
+const DEFAULT_ERROR_HANDLING: &str = "Log";
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = PROGRAM_NAME, about = "An experimental JIT compiler for OCaml bytecode")]
