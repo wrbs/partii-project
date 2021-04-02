@@ -142,3 +142,6 @@ test_case!(arith_neg);
 test_case!(calls);
 test_case!(closure);
 test_case!(printf_kprintf);
+test_case!(simple_switch);
+test_case!(switch_ints);
+test_case!(switch_tags);

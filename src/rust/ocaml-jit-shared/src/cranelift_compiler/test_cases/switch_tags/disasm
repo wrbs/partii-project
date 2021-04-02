@@ -1,0 +1,70 @@
+VCode_ShowWithRRU {{
+  Entry block: 0
+Block 0:
+  (original IR block: block0)
+  (successor: Block 1)
+  (instruction range: 0 .. 11)
+  Inst 0:   pushq   %rbp
+  Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
+  Inst 2:   movq    %rsp, %rbp
+  Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 0 }
+  Inst 4:   load_ext_name u1:0+0, %rcx
+  Inst 5:   movq    0(%rsi), %rax
+  Inst 6:   movq    %rsi, %rdi
+  Inst 7:   addq    $8, %rdi
+  Inst 8:   movzbq  -8(%rax), %rsi
+  Inst 9:   movzbl  %sil, %esi
+  Inst 10:   jmp     label1
+Block 1:
+  (original IR block: block6)
+  (successor: Block 2)
+  (successor: Block 3)
+  (successor: Block 5)
+  (successor: Block 7)
+  (instruction range: 11 .. 13)
+  Inst 11:   cmpl    $3, %esi
+  Inst 12:   br_table %rsi
+Block 2:
+  (original IR block: block5)
+  (instruction range: 13 .. 14)
+      (safepoint: slots [] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 13:   ud2 unreachable
+Block 3:
+  (original IR block: block3)
+  (successor: Block 4)
+  (instruction range: 14 .. 16)
+  Inst 14:   movl    $7, %eax
+  Inst 15:   jmp     label4
+Block 4:
+  (successor: Block 9)
+  (instruction range: 16 .. 17)
+  Inst 16:   jmp     label9
+Block 5:
+  (original IR block: block2)
+  (successor: Block 6)
+  (instruction range: 17 .. 19)
+  Inst 17:   movl    $9, %eax
+  Inst 18:   jmp     label6
+Block 6:
+  (successor: Block 9)
+  (instruction range: 19 .. 20)
+  Inst 19:   jmp     label9
+Block 7:
+  (original IR block: block1)
+  (successor: Block 8)
+  (instruction range: 20 .. 22)
+  Inst 20:   movl    $11, %eax
+  Inst 21:   jmp     label8
+Block 8:
+  (successor: Block 9)
+  (instruction range: 22 .. 23)
+  Inst 22:   jmp     label9
+Block 9:
+  (original IR block: block4)
+  (instruction range: 23 .. 28)
+  Inst 23:   movq    %rdi, 152(%rcx)
+  Inst 24:   xorq    %rdx, %rdx
+  Inst 25:   movq    %rbp, %rsp
+  Inst 26:   popq    %rbp
+  Inst 27:   ret
+}}
