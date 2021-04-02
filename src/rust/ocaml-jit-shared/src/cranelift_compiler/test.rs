@@ -31,7 +31,7 @@ fn run_test(
     let options = CraneliftCompilerOptions {
         use_call_traces: false,
     };
-    let mut compiler = CraneliftCompiler::new(module).unwrap();
+    let mut compiler = CraneliftCompiler::new(module, 0x12121212).unwrap();
 
     let mut compiler_output = CompilerOutput::default();
     let mut stack_maps = vec![];
@@ -146,3 +146,4 @@ test_case!(simple_switch);
 test_case!(switch_ints);
 test_case!(switch_tags);
 test_case!(rec_closures);
+test_case!(arrays_failing);

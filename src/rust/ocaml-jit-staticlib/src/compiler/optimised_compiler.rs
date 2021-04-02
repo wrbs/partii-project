@@ -1,7 +1,7 @@
 use super::{
     c_primitives::{
-        caml_alloc_shr, caml_alloc_small_dispatch, caml_initialize, caml_raise_zero_divide,
-        get_global_data_addr,
+        caml_alloc_shr, caml_alloc_small_dispatch, caml_initialize, caml_process_pending_actions,
+        caml_raise, caml_raise_zero_divide, get_global_data_addr,
     },
     rust_primitives::make_block_trace,
     PrintTraces,
@@ -25,7 +25,9 @@ use ocaml_jit_shared::{
 use once_cell::unsync::OnceCell;
 use std::{collections::HashMap, panic};
 
-use crate::caml::{domain_state::get_caml_state_addr, misc::CAML_PRIMITIVE_TABLE};
+use crate::caml::{
+    domain_state::get_caml_state_addr, misc::CAML_PRIMITIVE_TABLE, mlvalues::get_atom_table_addr,
+};
 
 use super::{
     rust_primitives::{emit_c_call_trace, emit_return_trace},
@@ -72,7 +74,8 @@ impl OptimisedCompiler {
     ) -> Result<Option<usize>> {
         self.compiler.get_or_try_init(|| {
             let module = initialise_module(compiler_data);
-            CraneliftCompiler::new(module)
+            let atom_table_addr = get_atom_table_addr();
+            CraneliftCompiler::new(module, atom_table_addr)
         })?;
 
         self.stack_maps_todo.clear();
@@ -178,6 +181,8 @@ fn get_prim_function_addr(
         CraneliftPrimitiveFunction::CamlRaiseZeroDivide => caml_raise_zero_divide as _,
 
         CraneliftPrimitiveFunction::MakeBlockTrace => make_block_trace as _,
+        CraneliftPrimitiveFunction::CamlProcessPendingActions => caml_process_pending_actions as _,
+        CraneliftPrimitiveFunction::CamlRaise => caml_raise as _,
     }
 }
 

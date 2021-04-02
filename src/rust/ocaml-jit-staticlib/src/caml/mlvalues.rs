@@ -240,6 +240,10 @@ extern "C" {
     static mut caml_atom_table: [u64; 255];
 }
 
+pub fn get_atom_table_addr() -> usize {
+    unsafe { caml_atom_table.as_ptr() as usize }
+}
+
 impl BlockValue {
     pub fn atom(tag: Tag) -> Value {
         // This is safe in the context of the runtime, because this table is statically allocated

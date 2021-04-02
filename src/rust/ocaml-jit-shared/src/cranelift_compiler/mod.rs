@@ -47,6 +47,7 @@ pub struct CraneliftCompiler<M: Module> {
     ctx: codegen::Context,
     function_builder_context: FunctionBuilderContext,
     primitives: Primitives,
+    atom_table_addr: usize,
 }
 
 // A function that can be used to lookup closures
@@ -71,7 +72,7 @@ impl<M> CraneliftCompiler<M>
 where
     M: Module,
 {
-    pub fn new(mut module: M) -> Result<Self> {
+    pub fn new(mut module: M, atom_table_addr: usize) -> Result<Self> {
         let ctx = module.make_context();
         let function_builder_context = FunctionBuilderContext::new();
 
@@ -81,6 +82,7 @@ where
             ctx,
             function_builder_context,
             primitives: Primitives::default(),
+            atom_table_addr,
         })
     }
 
@@ -234,6 +236,7 @@ where
             options,
             return_extra_args_var,
             return_block,
+            atom_table_addr: self.atom_table_addr,
             primitives: &mut self.primitives,
             caml_state_addr: zero, // patched later - but we need a ft for the context of the primitive lookup
             used_c_calls: HashMap::new(),
@@ -306,6 +309,7 @@ where
     return_block: Block,
     // Primitives
     caml_state_addr: Value,
+    atom_table_addr: usize,
     primitives: &'a mut Primitives,
     used_values: HashMap<CraneliftPrimitiveValue, GlobalValue>,
     used_funcs: HashMap<CraneliftPrimitiveFunction, FuncRef>,
@@ -333,7 +337,13 @@ where
         self.translate_exit(&basic_block.exit)
             .with_context(|| format!("Problem translating exit {:?}", &basic_block.exit))?;
 
-        ensure!(self.stack_size == basic_block.end_stack_size as usize);
+        if self.stack_size != basic_block.end_stack_size as usize {
+            bail!(
+                "Expected stack size {}, got stack size {}",
+                basic_block.end_stack_size,
+                self.stack_size,
+            );
+        }
 
         // Seal any blocks this current block is the last predecessor of
         for sealed_block in &basic_block.sealed_blocks {
@@ -363,7 +373,10 @@ where
             BasicBlockInstruction::Pop(n) => {
                 self.pop(*n)?;
             }
-            // BasicBlockInstruction::Assign(_) => {}
+            BasicBlockInstruction::Assign(n) => {
+                let accu = self.get_acc_ref();
+                self.assign_ref(*n, accu);
+            }
             BasicBlockInstruction::Apply1 => {
                 self.emit_apply(1)?;
             }
@@ -472,7 +485,9 @@ where
                 }
             }
             BasicBlockInstruction::MakeBlock(0, tag) => {
-                bail!("unimplemented: atom");
+                let addr = self.atom_table_addr + *tag as usize;
+                let res = self.builder.ins().iconst(I64, addr as i64);
+                self.set_acc_int(res);
             }
             BasicBlockInstruction::MakeBlock(wosize, tag) => {
                 let wosize = *wosize as usize;
@@ -615,7 +630,12 @@ where
                 };
                 self.set_acc_int(result);
             }
-            // BasicBlockInstruction::IsInt => {}
+            BasicBlockInstruction::IsInt => {
+                let acc = self.get_acc_int();
+                let anded = self.builder.ins().band_imm(acc, 1);
+                let anded_i = self.long_to_value(anded);
+                self.set_acc_int(anded_i);
+            }
             BasicBlockInstruction::IntCmp(cmp) => {
                 let x = self.get_acc_int();
                 let y = self.pick_int(0)?;
@@ -648,7 +668,12 @@ where
                 self.c_call(id, Arity::VarArgs(nargs))?
             }
             // BasicBlockInstruction::VecTLength => {}
-            // BasicBlockInstruction::CheckSignals => {}
+            BasicBlockInstruction::CheckSignals => {
+                // FIXME check 'caml_something_to_do' before the call
+                self.save_extern_sp();
+                self.call_primitive(CraneliftPrimitiveFunction::CamlProcessPendingActions, &[])?;
+                self.load_extern_sp();
+            }
             // BasicBlockInstruction::PopTrap => {}
             // BasicBlockInstruction::GetMethod => {}
             // BasicBlockInstruction::SetupForPubMet(_) => {}
@@ -661,7 +686,10 @@ where
 
     fn translate_exit(&mut self, exit: &BasicBlockExit) -> Result<()> {
         match exit {
-            // BasicBlockExit::Branch(_) => {}
+            BasicBlockExit::Branch(to) => {
+                let dest = self.blocks[*to];
+                self.builder.ins().jump(dest, &[]);
+            }
             BasicBlockExit::BranchIf {
                 then_block,
                 else_block,
@@ -730,7 +758,11 @@ where
                 self.builder.ins().jump(self.return_block, &[]);
                 self.pop(*to_pop)?;
             }
-            // BasicBlockExit::Raise(_) => {}
+            BasicBlockExit::Raise(_type) => {
+                let accu = self.get_acc_ref();
+                self.call_primitive(CraneliftPrimitiveFunction::CamlRaise, &[accu])?;
+                self.unreachable();
+            }
             // BasicBlockExit::Stop => {}
             _ => bail!("Unimplemented exit: {:?}", exit),
         }
@@ -992,6 +1024,17 @@ where
         Ok(self
             .builder
             .use_var(self.stack_vars[self.stack_size - n - 1]))
+    }
+
+    fn assign_ref(&mut self, n: u32, value: Value) -> Result<()> {
+        let n = n as usize;
+        if n >= self.stack_size {
+            bail!("Stack underflow on assign");
+        }
+
+        self.builder
+            .def_var(self.stack_vars[self.stack_size - n - 1], value);
+        Ok(())
     }
 
     fn pick_int(&mut self, n: u32) -> Result<Value> {
@@ -1416,6 +1459,12 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         }
         CraneliftPrimitiveFunction::CamlRaiseZeroDivide => {
             // no params/returns
+        }
+        CraneliftPrimitiveFunction::CamlProcessPendingActions => {
+            // no params/returns
+        }
+        CraneliftPrimitiveFunction::CamlRaise => {
+            sig.params.push(AbiParam::new(R64));
         }
     }
 }
