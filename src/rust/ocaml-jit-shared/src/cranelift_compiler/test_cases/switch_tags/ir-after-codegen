@@ -1,0 +1,41 @@
+function u0:0(r64, i64) -> r64, i64 system_v {
+    gv0 = symbol u1:0
+    jt0 = jump_table [block3, block2, block1]
+
+block0(v0: r64, v1: i64):
+    v2 = null.r64 
+    v3 = iconst.i64 0
+    v17 -> v3
+    v4 = symbol_value.i64 gv0
+    v5 = load.r64 notrap aligned v1
+    v6 = iadd_imm v1, 8
+    v15 -> v6
+    v7 = load.i8 notrap aligned v5-8
+    v8 = uextend.i32 v7
+    jump block6
+
+block6:
+    br_table.i32 v8, block5, jt0
+
+block5:
+    trap unreachable
+
+block1:
+    v9 = iconst.i64 11
+    v10 = raw_bitcast.r64 v9
+    jump block4(v10)
+
+block2:
+    v11 = iconst.i64 9
+    v12 = raw_bitcast.r64 v11
+    jump block4(v12)
+
+block3:
+    v13 = iconst.i64 7
+    v14 = raw_bitcast.r64 v13
+    jump block4(v14)
+
+block4(v16: r64):
+    store.i64 notrap aligned v6, v4+152
+    return v16, v3
+}

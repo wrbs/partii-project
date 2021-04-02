@@ -13,7 +13,7 @@ use codegen::{
     ir::{FuncRef, GlobalValue, Inst},
     print_errors::pretty_error,
 };
-use cranelift::prelude::*;
+use cranelift::{frontend::Switch, prelude::*};
 use cranelift_module::{DataId, FuncId, Linkage, Module, ModuleError};
 use primitives::{CLOSURE_TAG, MAX_YOUNG_WOSIZE};
 use types::{I8, I32, I64, R64};
@@ -624,7 +624,35 @@ where
                     .br_icmp(cc, a, b, self.blocks[*then_block], &[]);
                 self.builder.ins().jump(self.blocks[*else_block], &[]);
             }
-            // BasicBlockExit::Switch { ints, tags } => {}
+            BasicBlockExit::Switch { ints, tags } => {
+                if ints.len() > 0 && tags.len() > 0 {
+                    // We need to check whether the value is an int or a pointer with a tag
+
+                    let ints_switch_block = self.builder.create_block();
+                    let tags_switch_blog = self.builder.create_block();
+
+                    let accu = self.get_acc_int();
+                    let lsb = self.builder.ins().band_imm(accu, 1);
+                    self.builder.ins().brz(lsb, tags_switch_blog, &[]);
+                    self.builder.ins().jump(ints_switch_block, &[]);
+
+                    self.builder.seal_block(ints_switch_block);
+                    self.builder.seal_block(tags_switch_blog);
+
+                    self.builder.switch_to_block(ints_switch_block);
+                    self.emit_int_switch(ints);
+
+                    self.builder.switch_to_block(tags_switch_blog);
+                    self.emit_tag_switch(tags);
+
+                    // Otherwise, we only need to emit one of them
+                } else if ints.len() > 0 {
+                    self.emit_int_switch(ints);
+                } else {
+                    ensure!(tags.len() > 0);
+                    self.emit_tag_switch(tags);
+                }
+            }
             // BasicBlockExit::PushTrap { normal, trap } => {}
             BasicBlockExit::Return(to_pop) => {
                 self.builder.ins().jump(self.return_block, &[]);
@@ -655,6 +683,7 @@ where
         let retval = self.get_acc_ref();
         let ret_extra_args = self.builder.use_var(self.return_extra_args_var);
         self.builder.ins().return_(&[retval, ret_extra_args]);
+
         self.builder.finalize();
 
         Ok(())
@@ -810,6 +839,49 @@ where
 
     fn unreachable(&mut self) {
         self.builder.ins().trap(TrapCode::UnreachableCodeReached);
+    }
+
+    // Switches
+
+    fn emit_int_switch(&mut self, ints: &[usize]) {
+        let mut switch = Switch::new();
+
+        for (i, block_num) in ints.iter().copied().enumerate() {
+            switch.set_entry(i as u128, self.blocks[block_num]);
+        }
+
+        let fallback_block = self.builder.create_block();
+
+        // Range reduce and convert to ocaml int
+        let accu_int = self.get_acc_int();
+        let reduced = self.builder.ins().ireduce(I32, accu_int);
+        let key = self.builder.ins().sshr_imm(reduced, 1);
+
+        switch.emit(&mut self.builder, key, fallback_block);
+
+        self.builder.seal_block(fallback_block);
+        self.builder.switch_to_block(fallback_block);
+        self.unreachable();
+    }
+
+    fn emit_tag_switch(&mut self, tags: &[usize]) {
+        let mut switch = Switch::new();
+
+        for (tag, block_num) in tags.iter().copied().enumerate() {
+            switch.set_entry(tag as u128, self.blocks[block_num]);
+        }
+        let fallback_block = self.builder.create_block();
+        let accu_ref = self.get_acc_ref();
+        // Assumes little endian - so value[-8] points to the LSBs of the header
+        let tag = self
+            .builder
+            .ins()
+            .load(I8, MemFlags::trusted(), accu_ref, -8);
+        switch.emit(&mut self.builder, tag, fallback_block);
+
+        self.builder.seal_block(fallback_block);
+        self.builder.switch_to_block(fallback_block);
+        self.unreachable();
     }
 
     // Casting
