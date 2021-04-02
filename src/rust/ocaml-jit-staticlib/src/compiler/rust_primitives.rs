@@ -5,6 +5,7 @@ use ocaml_jit_shared::{call_trace::CallTrace, BytecodeLocation, BytecodeRelative
 use super::{c_primitives::caml_fatal_error, emit_code::ClosureMetadataTableEntry};
 use crate::{
     caml::mlvalues::Value,
+    configuration::CraneliftErrorHandling,
     global_data::GlobalData,
     trace::{print_call_trace, print_instruction_trace, PrintTraceType},
 };
@@ -87,19 +88,33 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
         .expect("No such section");
     let code = unsafe { section.get_code() };
 
+    let error_handling = global_data.options.cranelift_error_handling;
+
     let GlobalData {
         compiler_data,
         optimised_compiler,
         ..
     } = &mut *global_data;
     match optimised_compiler.optimise_closure(section_number, code, entrypoint, compiler_data) {
-        Ok(new_code) => {
+        Ok(Some(new_code)) => {
             closure.compiled_location = new_code as u64;
             closure.execution_count_status = -2; // optimised
-            eprintln!("{}: {:#016x?}", entrypoint, closure);
+        }
+        Ok(None) => {
+            // This means the closure isn't supported by the compiler but in an expected way
+            closure.execution_count_status = -3; // Error, don't try again
         }
         Err(e) => {
-            eprintln!("{:?}", e);
+            match error_handling {
+                CraneliftErrorHandling::Ignore => {}
+                CraneliftErrorHandling::Log => {
+                    eprintln!("{:?}", e);
+                }
+                CraneliftErrorHandling::Panic => {
+                    eprintln!("{:?}", e);
+                    panic!("Problem compiling closure");
+                }
+            }
             closure.execution_count_status = -3; // Error, tells apply not to try again
         }
     }

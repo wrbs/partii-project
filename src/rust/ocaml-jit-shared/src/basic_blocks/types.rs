@@ -7,6 +7,9 @@ pub struct BasicClosure {
     pub blocks: Vec<BasicBlock>,
     pub used_closures: Vec<usize>,
     pub max_stack_size: u32,
+
+    #[serde(default = "bool::default")] // false
+    pub has_trap_handlers: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]

@@ -18,7 +18,7 @@ use ocaml_jit_shared::{
     cranelift_compiler::{
         format_c_call_name,
         primitives::{CraneliftPrimitive, CraneliftPrimitiveFunction, CraneliftPrimitiveValue},
-        CraneliftCompiler, CraneliftCompilerOptions,
+        CompilationResult, CraneliftCompiler, CraneliftCompilerOptions,
     },
     cranelift_module,
 };
@@ -52,7 +52,7 @@ impl OptimisedCompiler {
         code: &[i32],
         entrypoint: usize,
         compiler_data: &mut CompilerData,
-    ) -> Result<usize> {
+    ) -> Result<Option<usize>> {
         self.optimise_closure_impl(section_number, code, entrypoint, compiler_data)
             .with_context(|| {
                 format!(
@@ -69,7 +69,7 @@ impl OptimisedCompiler {
         code: &[i32],
         entrypoint: usize,
         compiler_data: &mut CompilerData,
-    ) -> Result<usize> {
+    ) -> Result<Option<usize>> {
         self.compiler.get_or_try_init(|| {
             let module = initialise_module(compiler_data);
             CraneliftCompiler::new(module)
@@ -91,13 +91,17 @@ impl OptimisedCompiler {
         let old_hook = panic::take_hook();
         let stack_maps = &mut self.stack_maps_todo;
 
-        let comp_res = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+        let comp_res_res = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             compiler
                 .compile_closure(&func_name, &closure, &options, None, stack_maps)
                 .context("Problem compiling with cranelift")
         }));
         panic::set_hook(old_hook);
-        let func_id = comp_res.map_err(|_| anyhow!("Panic during compilation"))??;
+        let comp_res = comp_res_res.map_err(|_| anyhow!("Panic during compilation"))??;
+        let func_id = match comp_res {
+            CompilationResult::UnsupportedClosure => return Ok(None),
+            CompilationResult::SupportedClosure(func_id) => func_id,
+        };
 
         compiler.module.finalize_definitions();
         let code = compiler.module.get_finalized_function(func_id);
@@ -105,7 +109,7 @@ impl OptimisedCompiler {
         for (offset, map) in self.stack_maps_todo.drain(..) {
             self.stack_maps.insert(code as u64 + offset as u64, map);
         }
-        Ok(code as usize)
+        Ok(Some(code as usize))
     }
 
     pub fn lookup_stack_map<F: FnMut(usize)>(&self, return_addr: u64, mut f: F) {
