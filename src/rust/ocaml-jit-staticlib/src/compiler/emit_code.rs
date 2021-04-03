@@ -1756,7 +1756,6 @@ impl CompilerContext {
 
             ; cmp [BYTE rbp + SF::ShouldReraise.offset()], 0
             ; je >act_ret
-            ; int 3
             ; mov rdi, r_accu
             ; mov rax, QWORD caml_raise as _
             ; call rax

@@ -41,7 +41,6 @@ CAMLexport void jit_support_perform_longjmp(struct longjmp_buffer *buf) {
       siglongjmp(*buf->data.buf, 1);
       break;
     case LONGJMP_BUFFER_ASM:
-    printf("buf=%p saved_bp=%p saved_pc=%p\n", buf, (void *) buf->data.asm_saved.bp, (void*) buf->data.asm_saved.pc);
       asm (
         "movq %0, %%rbp\n"
         "jmp *%1"
