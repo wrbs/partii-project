@@ -46,6 +46,7 @@ pub enum CraneliftPrimitiveFunction {
     CamlAllocSmallDispatch,
     CamlAllocShr,
     CamlInitialize,
+    CamlModify,
     MakeBlockTrace,
     CamlRaiseZeroDivide,
     CamlProcessPendingActions,

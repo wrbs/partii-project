@@ -539,7 +539,22 @@ where
                     .load(R64, MemFlags::trusted(), accu, *i as i32 * 8);
                 self.set_acc_ref(res);
             }
-            // BasicBlockInstruction::SetField(_) => {}
+            BasicBlockInstruction::SetField(i) => {
+                let offset = (*i * 8) as i64;
+                let accu = self.get_acc_int();
+                let ptr = if offset > 0 {
+                    self.builder.ins().iadd_imm(accu, offset)
+                } else {
+                    accu
+                };
+
+                let to_use = self.pick_ref(0)?;
+                self.pop(1)?;
+
+                self.call_primitive(CraneliftPrimitiveFunction::CamlModify, &[ptr, to_use]);
+                let unit = self.builder.ins().iconst(I64, 1);
+                self.set_acc_int(unit);
+            }
             // BasicBlockInstruction::GetFloatField(_) => {}
             // BasicBlockInstruction::SetFloatField(_) => {}
             // BasicBlockInstruction::GetVecTItem => {}
@@ -1455,6 +1470,9 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
             sig.returns.push(AbiParam::new(R64));
         }
         CraneliftPrimitiveFunction::CamlInitialize => {
+            sig.params.extend(&[AbiParam::new(I64), AbiParam::new(R64)]);
+        }
+        CraneliftPrimitiveFunction::CamlModify => {
             sig.params.extend(&[AbiParam::new(I64), AbiParam::new(R64)]);
         }
         CraneliftPrimitiveFunction::CamlRaiseZeroDivide => {

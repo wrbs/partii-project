@@ -379,7 +379,7 @@ impl<'a> SearchState<'a> {
                         Instruction::SetField(n) => {
                             ensure!(stack_size >= 1);
                             stack_size -= 1;
-                            instructions.push(GetField(n));
+                            instructions.push(SetField(n));
                         }
                         Instruction::GetFloatField(n) => {
                             instructions.push(GetFloatField(n));
@@ -405,12 +405,12 @@ impl<'a> SearchState<'a> {
                         Instruction::GetBytesChar => {
                             ensure!(stack_size >= 1);
                             stack_size -= 1;
-                            instructions.push(SetVecTItem);
+                            instructions.push(GetBytesChar);
                         }
                         Instruction::SetBytesChar => {
                             ensure!(stack_size >= 2);
                             stack_size -= 2;
-                            instructions.push(SetVecTItem);
+                            instructions.push(SetBytesChar);
                         }
                         Instruction::Branch(to) => {
                             let offset = to.0;
