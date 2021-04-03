@@ -2,6 +2,7 @@ use super::{
     c_primitives::{
         caml_alloc_shr, caml_alloc_small_dispatch, caml_initialize, caml_modify,
         caml_process_pending_actions, caml_raise, caml_raise_zero_divide, get_global_data_addr,
+        jit_support_vect_length,
     },
     rust_primitives::make_block_trace,
     PrintTraces,
@@ -184,6 +185,7 @@ fn get_prim_function_addr(
         CraneliftPrimitiveFunction::MakeBlockTrace => make_block_trace as _,
         CraneliftPrimitiveFunction::CamlProcessPendingActions => caml_process_pending_actions as _,
         CraneliftPrimitiveFunction::CamlRaise => caml_raise as _,
+        CraneliftPrimitiveFunction::JitSupportVectLength => jit_support_vect_length as _,
     }
 }
 
