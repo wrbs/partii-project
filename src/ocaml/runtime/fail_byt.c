@@ -34,8 +34,6 @@
 
 #ifdef USE_RUST_JIT
 CAMLexport void jit_support_perform_longjmp(struct longjmp_buffer *buf) {
-  printf("Doing a raise! %ld\n", buf->tag);
-
   switch (buf->tag) {
     case LONGJMP_BUFFER_SIGSETJMP:
       siglongjmp(*buf->data.buf, 1);

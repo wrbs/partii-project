@@ -1635,7 +1635,9 @@ impl CompilerContext {
                 ; cmp rsi, threshold as _
                 ; jl >bytecall
             );
-            self.emit_event(b"Hot closure detected, compiling\0");
+            if self.compiler_options.print_traces != None {
+                self.emit_event(b"Hot closure detected, compiling\0");
+            }
             oc_dynasm!(self.ops
                 // Branch to the optimised compiler
                 ; mov rdi, [r_accu]
