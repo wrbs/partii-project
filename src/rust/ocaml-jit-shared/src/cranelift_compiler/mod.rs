@@ -552,16 +552,54 @@ where
                 self.pop(1)?;
 
                 self.call_primitive(CraneliftPrimitiveFunction::CamlModify, &[ptr, to_use]);
-                let unit = self.builder.ins().iconst(I64, 1);
-                self.set_acc_int(unit);
+                self.set_acc_unit();
             }
             // BasicBlockInstruction::GetFloatField(_) => {}
             // BasicBlockInstruction::SetFloatField(_) => {}
             // BasicBlockInstruction::GetVecTItem => {}
             // BasicBlockInstruction::SetVecTItem => {}
-            // BasicBlockInstruction::GetBytesChar => {}
-            // BasicBlockInstruction::SetBytesChar => {}
-            // BasicBlockInstruction::OffsetRef(_) => {}
+            BasicBlockInstruction::GetBytesChar => {
+                let offset_val = self.pick_int(0)?;
+                self.pop(1)?;
+                let offset_long = self.value_to_long(offset_val);
+                let accu = self.get_acc_ref();
+                let byte = self.builder.ins().load_complex(
+                    I8,
+                    MemFlags::trusted(),
+                    &[accu, offset_long],
+                    0,
+                );
+                let byte_long = self.builder.ins().uextend(I64, byte);
+                let byte_val = self.long_to_value(byte_long);
+                self.set_acc_int(byte_val);
+            }
+            BasicBlockInstruction::SetBytesChar => {
+                let offset_val = self.pick_int(0)?;
+                let to_write_val = self.pick_int(1)?;
+                self.pop(2)?;
+                let offset_long = self.value_to_long(offset_val);
+                let accu = self.get_acc_ref();
+
+                let to_write_long = self.value_to_long(to_write_val);
+                let to_write_byte = self.builder.ins().ireduce(I8, to_write_long);
+
+                self.builder.ins().store_complex(
+                    MemFlags::trusted(),
+                    to_write_byte,
+                    &[accu, offset_long],
+                    0,
+                );
+
+                self.set_acc_unit();
+            }
+            BasicBlockInstruction::OffsetRef(i) => {
+                let offset = (*i as i64) << 1;
+                let accu = self.get_acc_ref();
+                let old = self.builder.ins().load(I64, MemFlags::trusted(), accu, 0);
+                let new = self.builder.ins().iadd_imm(old, offset);
+                self.builder.ins().store(MemFlags::trusted(), new, accu, 0);
+                self.set_acc_unit();
+            }
             BasicBlockInstruction::Const(i) => {
                 let ml_value = i64_to_value(*i as i64);
                 let int_value = self.builder.ins().iconst(I64, ml_value);
@@ -682,7 +720,13 @@ where
             &BasicBlockInstruction::CCallN { nargs, id } => {
                 self.c_call(id, Arity::VarArgs(nargs))?
             }
-            // BasicBlockInstruction::VecTLength => {}
+            BasicBlockInstruction::VecTLength => {
+                let accu = self.get_acc_ref();
+                let call =
+                    self.call_primitive(CraneliftPrimitiveFunction::JitSupportVectLength, &[accu])?;
+                let result = self.builder.inst_results(call)[0];
+                self.set_acc_ref(result);
+            }
             BasicBlockInstruction::CheckSignals => {
                 // FIXME check 'caml_something_to_do' before the call
                 self.save_extern_sp();
@@ -1076,6 +1120,11 @@ where
     fn set_acc_int(&mut self, value: Value) {
         let ref_val = self.int_to_ref(value);
         self.set_acc_ref(ref_val);
+    }
+
+    fn set_acc_unit(&mut self) {
+        let unit = self.builder.ins().iconst(I64, 1);
+        self.set_acc_int(unit);
     }
 
     fn get_acc_ref(&mut self) -> Value {
@@ -1484,6 +1533,10 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         }
         CraneliftPrimitiveFunction::CamlRaise => {
             sig.params.push(AbiParam::new(R64));
+        }
+        CraneliftPrimitiveFunction::JitSupportVectLength => {
+            sig.params.push(AbiParam::new(R64));
+            sig.returns.push(AbiParam::new(R64));
         }
     }
 }
