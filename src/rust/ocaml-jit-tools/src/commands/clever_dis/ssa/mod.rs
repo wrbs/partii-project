@@ -385,7 +385,6 @@ fn process_body_instruction(
         Instruction::GetMethod => {
             let v = vars.add_assignment(SSAExpr::GetMethod(state.pick(0), state.accu()));
             state.set_accu(v);
-            state.pop(1);
         }
         Instruction::SetupForPubMet(n) => {
             let accu = state.accu();
@@ -398,7 +397,6 @@ fn process_body_instruction(
                 object: state.pick(0),
             });
             state.set_accu(v);
-            state.pop(1);
         }
         Instruction::Break | Instruction::Event => {}
     }

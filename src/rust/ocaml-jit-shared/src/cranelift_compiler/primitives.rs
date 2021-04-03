@@ -52,6 +52,7 @@ pub enum CraneliftPrimitiveFunction {
     CamlProcessPendingActions,
     CamlRaise,
     JitSupportVectLength,
+    JitSupportGetDynMet,
 }
 
 pub trait CraneliftPrimitive: Sized {

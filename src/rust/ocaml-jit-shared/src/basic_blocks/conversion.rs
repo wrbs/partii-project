@@ -593,7 +593,6 @@ impl<'a> SearchState<'a> {
                         }
                         Instruction::GetMethod => {
                             ensure!(stack_size >= 1);
-                            stack_size -= 1;
                             instructions.push(GetMethod);
                         }
                         Instruction::SetupForPubMet(n) => {
@@ -603,7 +602,6 @@ impl<'a> SearchState<'a> {
                         }
                         Instruction::GetDynMet => {
                             ensure!(stack_size >= 1);
-                            stack_size -= 1;
                             instructions.push(GetDynMet);
                         }
                         Instruction::Stop => {
