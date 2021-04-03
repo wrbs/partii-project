@@ -1,0 +1,22 @@
+0x86: StackMap {
+    bitmap: [
+        BitSet(
+            7,
+        ),
+    ],
+    mapped_words: 4,
+}0xca: StackMap {
+    bitmap: [
+        BitSet(
+            15,
+        ),
+    ],
+    mapped_words: 4,
+}0xf7: StackMap {
+    bitmap: [
+        BitSet(
+            3,
+        ),
+    ],
+    mapped_words: 4,
+}

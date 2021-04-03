@@ -146,4 +146,4 @@ test_case!(simple_switch);
 test_case!(switch_ints);
 test_case!(switch_tags);
 test_case!(rec_closures);
-test_case!(arrays_failing);
+test_case!(buffer_add_char);
