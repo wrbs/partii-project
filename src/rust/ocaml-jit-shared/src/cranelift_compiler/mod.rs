@@ -556,8 +556,35 @@ where
             }
             // BasicBlockInstruction::GetFloatField(_) => {}
             // BasicBlockInstruction::SetFloatField(_) => {}
-            // BasicBlockInstruction::GetVecTItem => {}
-            // BasicBlockInstruction::SetVecTItem => {}
+            BasicBlockInstruction::GetVecTItem => {
+                let offset_val = self.pick_int(0)?;
+                self.pop(1)?;
+                let offset_xor = self.builder.ins().bxor_imm(offset_val, 1);
+                let offset_bytes = self.builder.ins().ishl_imm(offset_xor, 2);
+                let accu = self.get_acc_ref();
+                let item = self.builder.ins().load_complex(
+                    R64,
+                    MemFlags::trusted(),
+                    &[accu, offset_bytes],
+                    0,
+                );
+                self.set_acc_ref(item);
+            }
+            BasicBlockInstruction::SetVecTItem => {
+                let offset_val = self.pick_int(0)?;
+                let to_write = self.pick_ref(1)?;
+                self.pop(2)?;
+
+                // turn ...vvv1 -> ...vvv000 = the offset to use (aligned to 8 bytes)
+                let offset_xor = self.builder.ins().bxor_imm(offset_val, 1);
+                let offset_bytes = self.builder.ins().ishl_imm(offset_xor, 2);
+
+                let accu = self.get_acc_int();
+                let ptr = self.builder.ins().iadd(accu, offset_bytes);
+
+                self.call_primitive(CraneliftPrimitiveFunction::CamlModify, &[ptr, to_write]);
+                self.set_acc_unit();
+            }
             BasicBlockInstruction::GetBytesChar => {
                 let offset_val = self.pick_int(0)?;
                 self.pop(1)?;
