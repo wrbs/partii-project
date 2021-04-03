@@ -774,6 +774,7 @@ where
                 self.pop(*to_pop)?;
             }
             BasicBlockExit::Raise(_type) => {
+                self.save_extern_sp();
                 let accu = self.get_acc_ref();
                 self.call_primitive(CraneliftPrimitiveFunction::CamlRaise, &[accu])?;
                 self.unreachable();
