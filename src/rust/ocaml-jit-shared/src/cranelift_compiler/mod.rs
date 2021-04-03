@@ -485,7 +485,7 @@ where
                 }
             }
             BasicBlockInstruction::MakeBlock(0, tag) => {
-                let addr = self.atom_table_addr + *tag as usize;
+                let addr = self.atom_table_addr + 8 * (*tag as usize);
                 let res = self.builder.ins().iconst(I64, addr as i64);
                 self.set_acc_int(res);
             }
@@ -763,7 +763,16 @@ where
             // BasicBlockInstruction::PopTrap => {}
             // BasicBlockInstruction::GetMethod => {}
             // BasicBlockInstruction::SetupForPubMet(_) => {}
-            // BasicBlockInstruction::GetDynMet => {}
+            BasicBlockInstruction::GetDynMet => {
+                let accu = self.get_acc_ref();
+                let tos = self.pick_ref(0)?;
+                let call = self.call_primitive(
+                    CraneliftPrimitiveFunction::JitSupportGetDynMet,
+                    &[accu, tos],
+                )?;
+                let result = self.builder.inst_results(call)[0];
+                self.set_acc_ref(result);
+            }
             _ => bail!("Unimplemented instruction: {:?}", instruction),
         }
 
@@ -1563,6 +1572,10 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         }
         CraneliftPrimitiveFunction::JitSupportVectLength => {
             sig.params.push(AbiParam::new(R64));
+            sig.returns.push(AbiParam::new(R64));
+        }
+        CraneliftPrimitiveFunction::JitSupportGetDynMet => {
+            sig.params.extend(&[AbiParam::new(R64), AbiParam::new(R64)]);
             sig.returns.push(AbiParam::new(R64));
         }
     }

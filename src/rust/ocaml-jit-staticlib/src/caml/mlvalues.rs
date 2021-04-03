@@ -241,7 +241,7 @@ extern "C" {
 }
 
 pub fn get_atom_table_addr() -> usize {
-    unsafe { caml_atom_table.as_ptr() as usize }
+    unsafe { caml_atom_table[0] as usize + 8 }
 }
 
 impl BlockValue {
