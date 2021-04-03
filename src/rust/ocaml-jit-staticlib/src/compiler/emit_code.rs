@@ -1016,52 +1016,9 @@ impl CompilerContext {
                 );
             }
             Instruction::Raise(_kind) => {
-                // TODO backtraces, checking if the trapsp is above initial sp offset
                 oc_dynasm!(self.ops
-                    // Check if we've gone too high in the stack
-                    ; mov rsi, [r_cs + CS::TrapSp.offset()]
-                    ; mov rdi, [r_cs + CS::StackHigh.offset()]
-                    ; sub rdi, [BYTE rbp + SF::InitialSpOffset.offset()]
-                    ; cmp rsi, rdi
-                    ; jge >return_exception_result
-
-                    // Ok, not too high, can do the link stuff
-                    // Set the sp to the new trap sp
-                    ; mov r_sp, rsi
-                    // Set the new trap sp to the next one in the link
-                    ; mov rax, [r_sp + 8]
-                    ; mov [r_cs + CS::TrapSp.offset()], rax
-                    // Restore the env
-                    ; mov r_env, [r_sp + 16]
-                    // Restore the extra args - un-Val_long it
-                    ; mov r_extra_args, [r_sp + 24]
-                    ; shr r_extra_args, 1
-                    // Save location to jump, increment sp and go to it
-                    ; mov rax, [r_sp]
-                    ; add r_sp, 32
-                    ; jmp rax
-
-                    // Otherwise
-                    ; return_exception_result:
-
-                    // Restore initial external raise and sp (in rdi)
-                    ; mov rsi, [BYTE rbp + SF::InitialExternalRaise.offset()]
-                    ; mov [r_cs + CS::ExternalRaise.offset()], rsi
-                    ; mov [r_cs + CS::ExternSp.offset()], rdi
-
-                    ; cmp [BYTE rbp + SF::ShouldReraise.offset()], 0
-                    ; je >act_ret
-                    ; int 3
-                    ; mov rdi, r_accu
-                    ; mov rax, QWORD caml_raise as _
-                    ; call rax
-
-                    ; act_ret:
-
-                    ; mov rax, r_accu
-                    ; or rax, 2
+                    ; jmp ->raise
                 );
-                self.emit_return();
             }
             Instruction::CCall1(primno) => {
                 // TODO - possible optimisation, could load the static address
@@ -1763,6 +1720,54 @@ impl CompilerContext {
             ; jmp ->apply
         );
 
+        // Emit raise code
+        oc_dynasm!(self.ops
+            ; ->raise:
+            // Check if we've gone too high in the stack
+            ; mov rsi, [r_cs + CS::TrapSp.offset()]
+            ; mov rdi, [r_cs + CS::StackHigh.offset()]
+            ; sub rdi, [BYTE rbp + SF::InitialSpOffset.offset()]
+            ; cmp rsi, rdi
+            ; jge >return_exception_result
+
+            // Ok, not too high, can do the link stuff
+            // Set the sp to the new trap sp
+            ; mov r_sp, rsi
+            // Set the new trap sp to the next one in the link
+            ; mov rax, [r_sp + 8]
+            ; mov [r_cs + CS::TrapSp.offset()], rax
+            // Restore the env
+            ; mov r_env, [r_sp + 16]
+            // Restore the extra args - un-Val_long it
+            ; mov r_extra_args, [r_sp + 24]
+            ; shr r_extra_args, 1
+            // Save location to jump, increment sp and go to it
+            ; mov rax, [r_sp]
+            ; add r_sp, 32
+            ; jmp rax
+
+            // Otherwise
+            ; return_exception_result:
+
+            // Restore initial external raise and sp (in rdi)
+            ; mov rsi, [BYTE rbp + SF::InitialExternalRaise.offset()]
+            ; mov [r_cs + CS::ExternalRaise.offset()], rsi
+            ; mov [r_cs + CS::ExternSp.offset()], rdi
+
+            ; cmp [BYTE rbp + SF::ShouldReraise.offset()], 0
+            ; je >act_ret
+            ; int 3
+            ; mov rdi, r_accu
+            ; mov rax, QWORD caml_raise as _
+            ; call rax
+
+            ; act_ret:
+
+            ; mov rax, r_accu
+            ; or rax, 2
+        );
+        self.emit_return();
+
         // Emit the restart closure (see emit_closure_table for format)
         oc_dynasm!(self.ops
             ; ->restart_closure:
@@ -1864,27 +1869,15 @@ impl CompilerContext {
             // Restore caml_state
             ; mov r_cs, QWORD get_caml_state_addr() as _
 
-            // Restore the initial accu
+            // Load the exception value
             ; mov r_accu, [r_cs + CS::ExnBucket.offset()]
+            // Set the sp from externsp
+            ; mov r_sp, [r_cs + CS::ExternSp.offset()]
+            // Set the external roots
+            ; mov rax, [BYTE rbp + SF::InitialLocalRoots.offset()]
+            ; mov [r_cs + CS::LocalRoots.offset()], rax
 
-            // Set the sp from the trapsp
-            ; mov r_sp, [r_cs + CS::TrapSp.offset()]
-
-            // Set the new trap sp to the next one in the link
-            ; mov rax, [r_sp + 8]
-            ; mov [r_cs + CS::TrapSp.offset()], rax
-
-            // Restore the env
-            ; mov r_env, [r_sp + 16]
-
-            // Restore the extra args - un-Val_long it
-            ; mov r_extra_args, [r_sp + 24]
-            ; shr r_extra_args, 1
-
-            // Save location to jump, increment sp and go to it
-            ; mov rax, [r_sp]
-            ; add r_sp, 32
-            ; jmp rax
+            ; jmp ->raise
         );
     }
 

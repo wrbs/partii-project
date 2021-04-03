@@ -34,18 +34,22 @@
 
 #ifdef USE_RUST_JIT
 CAMLexport void jit_support_perform_longjmp(struct longjmp_buffer *buf) {
+  printf("Doing a raise! %ld\n", buf->tag);
+
   switch (buf->tag) {
     case LONGJMP_BUFFER_SIGSETJMP:
       siglongjmp(*buf->data.buf, 1);
       break;
-    default:
+    case LONGJMP_BUFFER_ASM:
+    printf("buf=%p saved_bp=%p saved_pc=%p\n", buf, (void *) buf->data.asm_saved.bp, (void*) buf->data.asm_saved.pc);
       asm (
         "movq %0, %%rbp\n"
-        "jmp %1"
+        "jmp *%1"
         :
         : "r" (buf->data.asm_saved.bp)
         , "r" (buf->data.asm_saved.pc)
       );
+    default:
       __builtin_unreachable();
   }
 }
