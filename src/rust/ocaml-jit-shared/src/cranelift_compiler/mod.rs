@@ -756,10 +756,7 @@ where
                 self.set_acc_ref(result);
             }
             BasicBlockInstruction::CheckSignals => {
-                // FIXME check 'caml_something_to_do' before the call
-                self.save_extern_sp();
-                self.call_primitive(CraneliftPrimitiveFunction::CamlProcessPendingActions, &[])?;
-                self.load_extern_sp();
+                self.check_signals()?;
             }
             // BasicBlockInstruction::PopTrap => {}
             // BasicBlockInstruction::GetMethod => {}
@@ -1288,6 +1285,33 @@ where
     }
 
     // Inlining of stuff
+
+
+    fn check_signals(&mut self) -> Result<()> {
+        let something_to_do_addr =
+            self.get_global_variable(I64, CraneliftPrimitiveValue::CamlSomethingToDoAddr)?;
+        let something_to_do =
+            self.builder
+                .ins()
+                .load(I32, MemFlags::trusted(), something_to_do_addr, 0);
+
+        let process_actions = self.builder.create_block();
+        let otherwise = self.builder.create_block();
+
+        self.builder.ins().brz(something_to_do, otherwise, &[]);
+        self.builder.ins().jump(process_actions, &[]);
+
+        self.builder.seal_block(process_actions);
+        self.builder.switch_to_block(process_actions);
+        self.save_extern_sp();
+        self.call_primitive(CraneliftPrimitiveFunction::CamlProcessPendingActions, &[])?;
+        self.load_extern_sp();
+        self.builder.ins().jump(otherwise, &[]);
+
+        self.builder.seal_block(otherwise);
+        self.builder.switch_to_block(otherwise);
+        Ok(())
+    }
 
     // The arguments are a list of either IR values corresponding to ML values to write (Some) or
     // None (may be useful for non_heap ones)

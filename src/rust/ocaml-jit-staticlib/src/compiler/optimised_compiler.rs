@@ -2,7 +2,7 @@ use super::{
     c_primitives::{
         caml_alloc_shr, caml_alloc_small_dispatch, caml_initialize, caml_modify,
         caml_process_pending_actions, caml_raise, caml_raise_zero_divide, get_global_data_addr,
-        jit_support_get_dyn_met, jit_support_vect_length,
+        get_something_to_do_addr, jit_support_get_dyn_met, jit_support_vect_length,
     },
     rust_primitives::make_block_trace,
     PrintTraces,
@@ -56,6 +56,7 @@ impl OptimisedCompiler {
         entrypoint: usize,
         compiler_data: &mut CompilerData,
     ) -> Result<Option<usize>> {
+        return Ok(None);
         self.optimise_closure_impl(section_number, code, entrypoint, compiler_data)
             .with_context(|| {
                 format!(
@@ -165,6 +166,7 @@ fn get_prim_value_addr(
             compiler_data.get_cranelift_apply_return_addr()
         }
         CraneliftPrimitiveValue::GlobalDataAddr => get_global_data_addr() as _,
+        CraneliftPrimitiveValue::CamlSomethingToDoAddr => get_something_to_do_addr() as _,
     }
 }
 

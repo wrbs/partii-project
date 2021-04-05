@@ -1,4 +1,4 @@
-After make clean, cargo build --all --release and cargo build --all
+After make clean in src/ocaml, make copy_lib in src
 
 in src/ocaml:
 
@@ -21,3 +21,10 @@ JIT_OPTIONS="-j --hot-threshold 100" MAKEFLAGS="-j16" make  708.93s user 31.36s 
 So original thing was a lot faster! Nice to know.
 
 But still, this is *slow*.
+
+Turning off JIT (return Ok(None)) gives
+
+JIT_OPTIONS="-j --hot-threshold 0" MAKEFLAGS="-j16" make  275.67s user 27.08s system 656% cpu 46.146 total
+JIT_OPTIONS="-j --no-hot-threshold" MAKEFLAGS="-j16" make  276.24s user 27.29s system 648% cpu 46.823 total
+
+So it's all in the JIT

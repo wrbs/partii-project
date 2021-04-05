@@ -23,6 +23,7 @@ pub enum CraneliftPrimitiveValue {
     CamlStateAddr,
     CallbackReturnAddr,
     GlobalDataAddr,
+    CamlSomethingToDoAddr,
 }
 
 #[derive(
