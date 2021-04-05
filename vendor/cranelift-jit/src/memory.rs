@@ -50,11 +50,13 @@ impl PtrLen {
             Ok(mut map) => {
                 // The order here is important; we assign the pointer first to get
                 // around compile time borrow errors.
-                Ok(Self {
+                let result = Self {
                     ptr: map.as_mut_ptr(),
                     map: Some(map),
                     len: alloc_size,
-                })
+                };
+
+                Ok(result)
             }
             Err(e) => Err(e.to_string()),
         }
@@ -69,10 +71,19 @@ impl PtrLen {
             let err = libc::posix_memalign(&mut ptr, page_size, alloc_size);
 
             if err == 0 {
-                Ok(Self {
+                let result = Self {
                     ptr: ptr as *mut u8,
                     len: alloc_size,
-                })
+                };
+
+                region::protect(
+                    result.ptr,
+                    result.len,
+                    region::Protection::READ_WRITE_EXECUTE,
+                )
+                .expect("unable to make memory readable+writeable+executable");
+
+                Ok(result)
             } else {
                 Err(errno::Errno(err).to_string())
             }
@@ -106,19 +117,21 @@ impl PtrLen {
     }
 }
 
+// Hack: we don't bother and just leak memory
+
 // `MMapMut` from `cfg(feature = "selinux-fix")` already deallocates properly.
-#[cfg(all(not(target_os = "windows"), not(feature = "selinux-fix")))]
-impl Drop for PtrLen {
-    fn drop(&mut self) {
-        if !self.ptr.is_null() {
-            unsafe {
-                region::protect(self.ptr, self.len, region::Protection::READ_WRITE)
-                    .expect("unable to unprotect memory");
-                libc::free(self.ptr as _);
-            }
-        }
-    }
-}
+// #[cfg(all(not(target_os = "windows"), not(feature = "selinux-fix")))]
+// impl Drop for PtrLen {
+//     fn drop(&mut self) {
+//         if !self.ptr.is_null() {
+//             unsafe {
+//                 region::protect(self.ptr, self.len, region::Protection::READ_WRITE)
+//                     .expect("unable to unprotect memory");
+//                 libc::free(self.ptr as _);
+//             }
+//         }
+//     }
+// }
 
 // TODO: add a `Drop` impl for `cfg(target_os = "windows")`
 
@@ -127,8 +140,6 @@ impl Drop for PtrLen {
 /// function pointers remain valid for the remainder of the
 /// program's life.
 pub(crate) struct Memory {
-    allocations: Vec<PtrLen>,
-    executable: usize,
     current: PtrLen,
     position: usize,
 }
@@ -136,16 +147,14 @@ pub(crate) struct Memory {
 impl Memory {
     pub(crate) fn new() -> Self {
         Self {
-            allocations: Vec::new(),
-            executable: 0,
             current: PtrLen::new(),
             position: 0,
         }
     }
 
     fn finish_current(&mut self) {
-        self.allocations
-            .push(mem::replace(&mut self.current, PtrLen::new()));
+        let old = mem::replace(&mut self.current, PtrLen::new());
+        mem::forget(old);
         self.position = 0;
     }
 
@@ -174,77 +183,79 @@ impl Memory {
 
     /// Set all memory allocated in this `Memory` up to now as readable and executable.
     pub(crate) fn set_readable_and_executable(&mut self) {
-        self.finish_current();
+        // Hack - we don't do this and instead allocate all memory as RWX
+        // self.finish_current();
 
-        #[cfg(feature = "selinux-fix")]
-        {
-            for &PtrLen { ref map, ptr, len } in &self.allocations[self.executable..] {
-                if len != 0 && map.is_some() {
-                    unsafe {
-                        region::protect(ptr, len, region::Protection::READ_EXECUTE)
-                            .expect("unable to make memory readable+executable");
-                    }
-                }
-            }
-        }
+        // #[cfg(feature = "selinux-fix")]
+        // {
+        //     for &PtrLen { ref map, ptr, len } in &self.allocations[self.executable..] {
+        //         if len != 0 && map.is_some() {
+        //             unsafe {
+        //                 region::protect(ptr, len, region::Protection::READ_EXECUTE)
+        //                     .expect("unable to make memory readable+executable");
+        //             }
+        //         }
+        //     }
+        // }
 
-        #[cfg(not(feature = "selinux-fix"))]
-        {
-            for &PtrLen { ptr, len } in &self.allocations[self.executable..] {
-                if len != 0 {
-                    unsafe {
-                        region::protect(ptr, len, region::Protection::READ_EXECUTE)
-                            .expect("unable to make memory readable+executable");
-                    }
-                }
-            }
-        }
+        // #[cfg(not(feature = "selinux-fix"))]
+        // {
+        //     for &PtrLen { ptr, len } in &self.allocations[self.executable..] {
+        //         if len != 0 {
+        //             unsafe {
+        //                 region::protect(ptr, len, region::Protection::READ_EXECUTE)
+        //                     .expect("unable to make memory readable+executable");
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     /// Set all memory allocated in this `Memory` up to now as readonly.
     pub(crate) fn set_readonly(&mut self) {
-        self.finish_current();
+        // Hack: we don't do this and instead allocate all memory as RWX
+        // self.finish_current();
 
-        #[cfg(feature = "selinux-fix")]
-        {
-            for &PtrLen { ref map, ptr, len } in &self.allocations[self.executable..] {
-                if len != 0 && map.is_some() {
-                    unsafe {
-                        region::protect(ptr, len, region::Protection::READ)
-                            .expect("unable to make memory readonly");
-                    }
-                }
-            }
-        }
+        // #[cfg(feature = "selinux-fix")]
+        // {
+        //     for &PtrLen { ref map, ptr, len } in &self.allocations[self.executable..] {
+        //         if len != 0 && map.is_some() {
+        //             unsafe {
+        //                 region::protect(ptr, len, region::Protection::READ)
+        //                     .expect("unable to make memory readonly");
+        //             }
+        //         }
+        //     }
+        // }
 
-        #[cfg(not(feature = "selinux-fix"))]
-        {
-            for &PtrLen { ptr, len } in &self.allocations[self.executable..] {
-                if len != 0 {
-                    unsafe {
-                        region::protect(ptr, len, region::Protection::READ)
-                            .expect("unable to make memory readonly");
-                    }
-                }
-            }
-        }
+        // #[cfg(not(feature = "selinux-fix"))]
+        // {
+        //     for &PtrLen { ptr, len } in &self.allocations[self.executable..] {
+        //         if len != 0 {
+        //             unsafe {
+        //                 region::protect(ptr, len, region::Protection::READ)
+        //                     .expect("unable to make memory readonly");
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     /// Frees all allocated memory regions that would be leaked otherwise.
     /// Likely to invalidate existing function pointers, causing unsafety.
     pub(crate) unsafe fn free_memory(&mut self) {
-        self.allocations.clear();
+        // self.allocations.clear();
     }
 }
 
-impl Drop for Memory {
-    fn drop(&mut self) {
-        // leak memory to guarantee validity of function pointers
-        mem::replace(&mut self.allocations, Vec::new())
-            .into_iter()
-            .for_each(mem::forget);
-    }
-}
+// impl Drop for Memory {
+//     fn drop(&mut self) {
+//         // leak memory to guarantee validity of function pointers
+//         mem::replace(&mut self.allocations, Vec::new())
+//             .into_iter()
+//             .for_each(mem::forget);
+//     }
+// }
 
 #[cfg(test)]
 mod tests {

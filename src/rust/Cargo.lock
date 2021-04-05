@@ -227,7 +227,6 @@ dependencies = [
 [[package]]
 name = "cranelift-jit"
 version = "0.72.0"
-source = "git+https://github.com/wrbs/wasmtime.git?branch=my-main#da334960635bda682cdbd54aa0c4a6858c2201a2"
 dependencies = [
  "anyhow",
  "cranelift-codegen",

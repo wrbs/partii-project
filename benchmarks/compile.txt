@@ -1,0 +1,23 @@
+After make clean, cargo build --all --release and cargo build --all
+
+in src/ocaml:
+
+1.
+
+JIT_OPTIONS="-j --no-hot-threshold" MAKEFLAGS="-j16" make  281.11s user 29.41s system 638% cpu 48.659 total
+
+JIT_OPTIONS="-j --hot-threshold 10" MAKEFLAGS="-j16" make  1125.45s user 33.27s system 739% cpu 2:36.70 total
+
+JIT_OPTIONS="-j --hot-threshold 0" MAKEFLAGS="-j16" make  1703.13s user 35.67s system 787% cpu 3:40.93 total
+
+JIT_OPTIONS="-j --hot-threshold 100" MAKEFLAGS="-j16" make  709.96s user 31.63s system 682% cpu 1:48.70 total
+
+Basically it's slower. By a lot.
+
+NO JIT:
+
+JIT_OPTIONS="-j --hot-threshold 100" MAKEFLAGS="-j16" make  708.93s user 31.36s system 688% cpu 1:47.53 total
+
+So original thing was a lot faster! Nice to know.
+
+But still, this is *slow*.

@@ -12,10 +12,13 @@ STATIC_LIB_FILE := libocaml_jit_staticlib.a
 RELEASE_COPIED := $(OCAML_DIR)/runtime/libocamljit.a
 
 .PHONY: all
-all:
+all: copy_lib
+	$(MAKE) -C $(OCAML_DIR)
+
+.PHONY: copy_lib 
+copy_lib:
 	$(MAKE) cargo_builds
 	$(MAKE) $(RELEASE_COPIED)
-	$(MAKE) -C $(OCAML_DIR)
 
 .PHONY: setup
 setup:
@@ -31,9 +34,7 @@ install:
 	$(MAKE) -C $(OCAML_DIR) install
 
 .PHONY: only_runtime
-only_runtime:
-	$(MAKE) cargo_builds
-	$(MAKE) $(RELEASE_COPIED)
+only_runtime: copy_lib
 	$(MAKE) -C $(OCAML_DIR)/runtime
 
 .PHONY: tests
