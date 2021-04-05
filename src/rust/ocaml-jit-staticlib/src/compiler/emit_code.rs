@@ -136,7 +136,7 @@ pub fn compile_instructions(
     };
 
     let entrypoint_offset = cc.emit_entrypoint(false);
-    let first_instr_offset = cc.initialise();
+    cc.initialise();
     let code_base = code.as_ptr();
 
     for (offset, instruction) in InstructionIterator::new(code.iter().copied()).enumerate() {
@@ -151,6 +151,7 @@ pub fn compile_instructions(
     }
 
     cc.emit_shared_code();
+    let first_instr_offset = cc.emit_first_instr_entry();
     let closure_offsets = cc.emit_closure_table();
 
     let ops = cc.ops;
@@ -285,7 +286,7 @@ pub fn emit_callback_entrypoint(
     };
 
     let entrypoint_offset = cc.emit_entrypoint(false);
-    let first_instr_offset = cc.initialise();
+    cc.initialise();
     let code_base = code.as_ptr();
 
     oc_dynasm!(&mut cc.ops
@@ -341,6 +342,7 @@ pub fn emit_callback_entrypoint(
 
     // Finish up
     cc.emit_shared_code();
+    let first_instr_offset = cc.emit_first_instr_entry();
 
     let ops = cc.ops;
     let buf = ops.finalize().unwrap();
@@ -468,15 +470,14 @@ impl CompilerContext {
         offset
     }
 
-    fn initialise(&mut self) -> AssemblyOffset {
+    fn initialise(&mut self) {
         oc_dynasm!(self.ops
             // Set up initial register values
             ; mov r_accu, caml_i32_of_int(0)
             ; mov r_env, QWORD BlockValue::atom(Tag(0)).0
             ; mov r_extra_args, 0
+            ; ->first_instr:
         );
-        let first_instr_offset = self.ops.offset();
-        first_instr_offset
     }
 
     fn emit_stop(&mut self) {
@@ -1777,6 +1778,19 @@ impl CompilerContext {
             ; .qword 0                 // Ignored
             ; .qword 0                 // Ignored
         );
+    }
+
+    fn emit_first_instr_entry(&mut self) -> AssemblyOffset {
+        let offset = self.ops.offset();
+
+        oc_dynasm!(self.ops
+            ; .qword -1  // Don't optimise
+            ; .qword ->first_instr
+            ; .qword 0
+            ; .qword 0
+        );
+
+        offset
     }
 
     fn emit_closure_table(&mut self) -> Vec<(usize, AssemblyOffset)> {

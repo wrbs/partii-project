@@ -472,15 +472,15 @@ where
                             MemFlags::trusted(),
                             header_val,
                             block_base,
-                            (2 * i - 1) as i32,
+                            (8 * (2 * i - 1)) as i32,
                         );
                         self.builder.ins().store(
                             MemFlags::trusted(),
                             code_pointer_val,
                             block_base,
-                            (2 * i) as i32,
+                            (8 * 2 * i) as i32,
                         );
-                        let infix = self.builder.ins().iadd_imm(block_base, 2 * i as i64);
+                        let infix = self.builder.ins().iadd_imm(block_base, 8 * 2 * i as i64);
                         self.push_int(infix)?;
                     }
                 }
