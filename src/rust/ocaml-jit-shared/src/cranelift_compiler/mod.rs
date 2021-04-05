@@ -376,6 +376,7 @@ where
             BasicBlockInstruction::Assign(n) => {
                 let accu = self.get_acc_ref();
                 self.assign_ref(*n, accu);
+                self.set_acc_unit();
             }
             BasicBlockInstruction::Apply1 => {
                 self.emit_apply(1)?;
