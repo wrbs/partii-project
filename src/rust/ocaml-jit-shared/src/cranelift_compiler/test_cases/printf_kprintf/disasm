@@ -4,7 +4,7 @@ Block 0:
   (original IR block: block0)
   (successor: Block 1)
   (successor: Block 2)
-  (instruction range: 0 .. 29)
+  (instruction range: 0 .. 28)
   Inst 0:   pushq   %rbp
   Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
   Inst 2:   movq    %rsp, %rbp
@@ -20,81 +20,82 @@ Block 0:
   Inst 12:   unwind SaveReg { clobber_offset: 24, reg: r28J }
   Inst 13:   movq    %r15, 64(%rsp)
   Inst 14:   unwind SaveReg { clobber_offset: 32, reg: r29J }
-  Inst 15:   movq    %rsi, %r12
-  Inst 16:   load_ext_name u1:0+0, %r13
-  Inst 17:   movq    0(%r12), %r15
-  Inst 18:   movq    8(%r12), %rbx
-  Inst 19:   movq    16(%r12), %rsi
-  Inst 20:   movq    0(%rsi), %r14
-  Inst 21:   movl    $1, %esi
-  Inst 22:   movq    %rsi, rsp(0 + virtual offset)
-  Inst 23:   movabsq $-32, %rsi
-  Inst 24:   addq    0(%r13), %rsi
-  Inst 25:   movq    %rsi, 0(%r13)
-  Inst 26:   movq    8(%r13), %rdi
-  Inst 27:   cmpq    %rdi, %rsi
-  Inst 28:   jnb     label1; j label2
+  Inst 15:   movq    %rsi, %r15
+  Inst 16:   movq    %rdx, %rbx
+  Inst 17:   load_ext_name u1:0+0, %r12
+  Inst 18:   movq    152(%r12), %r13
+  Inst 19:   movq    0(%rcx), %r14
+  Inst 20:   movl    $1, %esi
+  Inst 21:   movq    %rsi, rsp(0 + virtual offset)
+  Inst 22:   movabsq $-32, %rsi
+  Inst 23:   addq    0(%r12), %rsi
+  Inst 24:   movq    %rsi, 0(%r12)
+  Inst 25:   movq    8(%r12), %rdi
+  Inst 26:   cmpq    %rdi, %rsi
+  Inst 27:   jnb     label1; j label2
 Block 1:
   (successor: Block 4)
-  (instruction range: 29 .. 30)
-  Inst 29:   jmp     label4
+  (instruction range: 28 .. 29)
+  Inst 28:   jmp     label4
 Block 2:
   (original IR block: block2)
   (successor: Block 3)
-  (instruction range: 30 .. 44)
-  Inst 30:   movl    $3, %edi
-  Inst 31:   movl    $17, %esi
-  Inst 32:   movl    $1, %edx
-  Inst 33:   xorq    %rcx, %rcx
-  Inst 34:   load_ext_name u0:1+0, %rax
-  Inst 35:   movq    %rbx, rsp(8 + virtual offset)
-  Inst 36:   movq    %r15, rsp(16 + virtual offset)
-  Inst 37:   movq    %r14, rsp(24 + virtual offset)
+  (instruction range: 29 .. 43)
+  Inst 29:   movl    $3, %edi
+  Inst 30:   movl    $17, %esi
+  Inst 31:   movl    $1, %edx
+  Inst 32:   xorq    %rcx, %rcx
+  Inst 33:   load_ext_name u0:1+0, %rax
+  Inst 34:   movq    %rbx, rsp(8 + virtual offset)
+  Inst 35:   movq    %r15, rsp(16 + virtual offset)
+  Inst 36:   movq    %r14, rsp(24 + virtual offset)
       (safepoint: slots [S0, S1, S2, S3] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
-  Inst 38:   call    *%rax
-  Inst 39:   movq    rsp(8 + virtual offset), %rbx
-  Inst 40:   movq    rsp(16 + virtual offset), %r15
-  Inst 41:   movq    rsp(24 + virtual offset), %r14
-  Inst 42:   movq    0(%r13), %rsi
-  Inst 43:   jmp     label3
+  Inst 37:   call    *%rax
+  Inst 38:   movq    rsp(8 + virtual offset), %rbx
+  Inst 39:   movq    rsp(16 + virtual offset), %r15
+  Inst 40:   movq    rsp(24 + virtual offset), %r14
+  Inst 41:   movq    0(%r12), %rsi
+  Inst 42:   jmp     label3
 Block 3:
   (successor: Block 4)
-  (instruction range: 44 .. 45)
-  Inst 44:   jmp     label4
+  (instruction range: 43 .. 44)
+  Inst 43:   jmp     label4
 Block 4:
   (original IR block: block3)
   (successor: Block 5)
-  (instruction range: 45 .. 62)
-  Inst 45:   movl    $3319, %edi
-  Inst 46:   movq    %rdi, 0(%rsi)
-  Inst 47:   addq    $8, %rsi
-  Inst 48:   movq    %r15, 8(%rsi)
-  Inst 49:   movq    %rbx, 16(%rsi)
-  Inst 50:   movq    %rsi, %rdi
-  Inst 51:   movl    $-559038737, %eax
-  Inst 52:   movq    %rax, 0(%rdi)
-  Inst 53:   load_ext_name u1:1+0, %rdi
-  Inst 54:   movq    0(%rdi), %rdi
-  Inst 55:   movq    2384(%rdi), %rdi
-  Inst 56:   movq    48(%rdi), %rdi
-  Inst 57:   movq    %rsi, 0(%r12)
-  Inst 58:   movq    rsp(0 + virtual offset), %rsi
-  Inst 59:   movq    %rsi, 8(%r12)
-  Inst 60:   movq    %r14, 16(%r12)
-  Inst 61:   jmp     label5
+  (instruction range: 44 .. 63)
+  Inst 44:   movl    $3319, %edi
+  Inst 45:   movq    %rdi, 0(%rsi)
+  Inst 46:   addq    $8, %rsi
+  Inst 47:   movq    %r15, 8(%rsi)
+  Inst 48:   movq    %rbx, 16(%rsi)
+  Inst 49:   movq    %rsi, %rdi
+  Inst 50:   movl    $-559038737, %eax
+  Inst 51:   movq    %rax, 0(%rdi)
+  Inst 52:   load_ext_name u1:1+0, %rdi
+  Inst 53:   movq    0(%rdi), %rdi
+  Inst 54:   movq    2384(%rdi), %rdi
+  Inst 55:   movq    48(%rdi), %rdi
+  Inst 56:   movq    %r13, %rax
+  Inst 57:   addq    $-24, %rax
+  Inst 58:   movq    %rsi, -24(%r13)
+  Inst 59:   movq    rsp(0 + virtual offset), %rsi
+  Inst 60:   movq    %rsi, -16(%r13)
+  Inst 61:   movq    %r14, -8(%r13)
+  Inst 62:   jmp     label5
 Block 5:
   (original IR block: block1)
-  (instruction range: 62 .. 74)
-  Inst 62:   movq    %r12, 152(%r13)
-  Inst 63:   movl    $3, %edx
-  Inst 64:   movq    %rdi, %rax
-  Inst 65:   movq    32(%rsp), %r12
-  Inst 66:   movq    40(%rsp), %r13
-  Inst 67:   movq    48(%rsp), %r14
-  Inst 68:   movq    56(%rsp), %rbx
-  Inst 69:   movq    64(%rsp), %r15
-  Inst 70:   addq    $80, %rsp
-  Inst 71:   movq    %rbp, %rsp
-  Inst 72:   popq    %rbp
-  Inst 73:   ret
+  (instruction range: 63 .. 75)
+  Inst 63:   movq    %rax, 152(%r12)
+  Inst 64:   movl    $3, %edx
+  Inst 65:   movq    %rdi, %rax
+  Inst 66:   movq    32(%rsp), %r12
+  Inst 67:   movq    40(%rsp), %r13
+  Inst 68:   movq    48(%rsp), %r14
+  Inst 69:   movq    56(%rsp), %rbx
+  Inst 70:   movq    64(%rsp), %r15
+  Inst 71:   addq    $80, %rsp
+  Inst 72:   movq    %rbp, %rsp
+  Inst 73:   popq    %rbp
+  Inst 74:   ret
 }}

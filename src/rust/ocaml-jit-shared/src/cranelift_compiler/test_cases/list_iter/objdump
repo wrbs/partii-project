@@ -13,62 +13,62 @@ Disassembly of section .text:
   12:	4c 89 74 24 30       	mov    QWORD PTR [rsp+0x30],r14
   17:	48 89 5c 24 38       	mov    QWORD PTR [rsp+0x38],rbx
   1c:	49 89 fe             	mov    r14,rdi
-  1f:	49 bc 00 00 00 00 00 	movabs r12,0x0
-  26:	00 00 00 
-			21: R_X86_64_64	caml_state_addr
-  29:	4c 8b 2e             	mov    r13,QWORD PTR [rsi]
-  2c:	48 8b 46 08          	mov    rax,QWORD PTR [rsi+0x8]
-  30:	48 89 f7             	mov    rdi,rsi
-  33:	48 83 c7 10          	add    rdi,0x10
-  37:	48 89 c1             	mov    rcx,rax
-  3a:	ba 01 00 00 00       	mov    edx,0x1
-  3f:	48 39 d1             	cmp    rcx,rdx
-  42:	0f 85 0e 00 00 00    	jne    56 <list_iter+0x56>
-  48:	41 be 01 00 00 00    	mov    r14d,0x1
-  4e:	48 31 f6             	xor    rsi,rsi
-  51:	e9 81 00 00 00       	jmp    d7 <list_iter+0xd7>
-  56:	48 8b 58 08          	mov    rbx,QWORD PTR [rax+0x8]
-  5a:	48 8b 00             	mov    rax,QWORD PTR [rax]
-  5d:	48 b9 00 00 00 00 00 	movabs rcx,0x0
-  64:	00 00 00 
-			5f: R_X86_64_64	callback_return_addr
-  67:	49 89 bc 24 98 00 00 	mov    QWORD PTR [r12+0x98],rdi
-  6e:	00 
-  6f:	48 89 46 f0          	mov    QWORD PTR [rsi-0x10],rax
-  73:	48 89 4e f8          	mov    QWORD PTR [rsi-0x8],rcx
-  77:	bf 01 00 00 00       	mov    edi,0x1
-  7c:	48 89 3e             	mov    QWORD PTR [rsi],rdi
-  7f:	bf 01 00 00 00       	mov    edi,0x1
-  84:	48 89 7e 08          	mov    QWORD PTR [rsi+0x8],rdi
-  88:	4c 89 ef             	mov    rdi,r13
-  8b:	48 31 f6             	xor    rsi,rsi
-  8e:	48 b8 00 00 00 00 00 	movabs rax,0x0
-  95:	00 00 00 
-			90: R_X86_64_64	do_callback
-  98:	4c 89 2c 24          	mov    QWORD PTR [rsp],r13
-  9c:	48 89 5c 24 08       	mov    QWORD PTR [rsp+0x8],rbx
-  a1:	48 89 7c 24 10       	mov    QWORD PTR [rsp+0x10],rdi
-  a6:	4c 89 74 24 18       	mov    QWORD PTR [rsp+0x18],r14
-  ab:	ff d0                	call   rax
-  ad:	48 8b 5c 24 08       	mov    rbx,QWORD PTR [rsp+0x8]
-  b2:	4c 8b 2c 24          	mov    r13,QWORD PTR [rsp]
-  b6:	4c 8b 74 24 18       	mov    r14,QWORD PTR [rsp+0x18]
-  bb:	49 8b b4 24 98 00 00 	mov    rsi,QWORD PTR [r12+0x98]
-  c2:	00 
-  c3:	48 89 f7             	mov    rdi,rsi
-  c6:	48 83 c7 f0          	add    rdi,0xfffffffffffffff0
-  ca:	4c 89 6e f0          	mov    QWORD PTR [rsi-0x10],r13
-  ce:	48 89 5e f8          	mov    QWORD PTR [rsi-0x8],rbx
-  d2:	be 02 00 00 00       	mov    esi,0x2
-  d7:	49 89 bc 24 98 00 00 	mov    QWORD PTR [r12+0x98],rdi
-  de:	00 
-  df:	4c 89 f0             	mov    rax,r14
-  e2:	48 89 f2             	mov    rdx,rsi
-  e5:	4c 8b 64 24 20       	mov    r12,QWORD PTR [rsp+0x20]
-  ea:	4c 8b 6c 24 28       	mov    r13,QWORD PTR [rsp+0x28]
-  ef:	4c 8b 74 24 30       	mov    r14,QWORD PTR [rsp+0x30]
-  f4:	48 8b 5c 24 38       	mov    rbx,QWORD PTR [rsp+0x38]
-  f9:	48 83 c4 40          	add    rsp,0x40
-  fd:	48 89 ec             	mov    rsp,rbp
- 100:	5d                   	pop    rbp
- 101:	c3                   	ret    
+  1f:	49 89 f5             	mov    r13,rsi
+  22:	49 bc 00 00 00 00 00 	movabs r12,0x0
+  29:	00 00 00 
+			24: R_X86_64_64	caml_state_addr
+  2c:	49 8b b4 24 98 00 00 	mov    rsi,QWORD PTR [r12+0x98]
+  33:	00 
+  34:	48 89 d7             	mov    rdi,rdx
+  37:	b8 01 00 00 00       	mov    eax,0x1
+  3c:	48 39 c7             	cmp    rdi,rax
+  3f:	0f 85 0e 00 00 00    	jne    53 <list_iter+0x53>
+  45:	41 be 01 00 00 00    	mov    r14d,0x1
+  4b:	48 31 ff             	xor    rdi,rdi
+  4e:	e9 85 00 00 00       	jmp    d8 <list_iter+0xd8>
+  53:	48 8b 5a 08          	mov    rbx,QWORD PTR [rdx+0x8]
+  57:	48 8b 3a             	mov    rdi,QWORD PTR [rdx]
+  5a:	48 b8 00 00 00 00 00 	movabs rax,0x0
+  61:	00 00 00 
+			5c: R_X86_64_64	callback_return_addr
+  64:	49 89 b4 24 98 00 00 	mov    QWORD PTR [r12+0x98],rsi
+  6b:	00 
+  6c:	48 89 7e e0          	mov    QWORD PTR [rsi-0x20],rdi
+  70:	48 89 46 e8          	mov    QWORD PTR [rsi-0x18],rax
+  74:	bf 01 00 00 00       	mov    edi,0x1
+  79:	48 89 7e f0          	mov    QWORD PTR [rsi-0x10],rdi
+  7d:	bf 01 00 00 00       	mov    edi,0x1
+  82:	48 89 7e f8          	mov    QWORD PTR [rsi-0x8],rdi
+  86:	4c 89 ef             	mov    rdi,r13
+  89:	48 31 f6             	xor    rsi,rsi
+  8c:	48 b8 00 00 00 00 00 	movabs rax,0x0
+  93:	00 00 00 
+			8e: R_X86_64_64	do_callback
+  96:	4c 89 2c 24          	mov    QWORD PTR [rsp],r13
+  9a:	48 89 5c 24 08       	mov    QWORD PTR [rsp+0x8],rbx
+  9f:	48 89 7c 24 10       	mov    QWORD PTR [rsp+0x10],rdi
+  a4:	4c 89 74 24 18       	mov    QWORD PTR [rsp+0x18],r14
+  a9:	ff d0                	call   rax
+  ab:	48 8b 5c 24 08       	mov    rbx,QWORD PTR [rsp+0x8]
+  b0:	4c 8b 2c 24          	mov    r13,QWORD PTR [rsp]
+  b4:	4c 8b 74 24 18       	mov    r14,QWORD PTR [rsp+0x18]
+  b9:	49 8b b4 24 98 00 00 	mov    rsi,QWORD PTR [r12+0x98]
+  c0:	00 
+  c1:	48 89 f7             	mov    rdi,rsi
+  c4:	48 83 c7 f0          	add    rdi,0xfffffffffffffff0
+  c8:	4c 89 6e f0          	mov    QWORD PTR [rsi-0x10],r13
+  cc:	48 89 5e f8          	mov    QWORD PTR [rsi-0x8],rbx
+  d0:	48 89 fe             	mov    rsi,rdi
+  d3:	bf 02 00 00 00       	mov    edi,0x2
+  d8:	49 89 b4 24 98 00 00 	mov    QWORD PTR [r12+0x98],rsi
+  df:	00 
+  e0:	4c 89 f0             	mov    rax,r14
+  e3:	48 89 fa             	mov    rdx,rdi
+  e6:	4c 8b 64 24 20       	mov    r12,QWORD PTR [rsp+0x20]
+  eb:	4c 8b 6c 24 28       	mov    r13,QWORD PTR [rsp+0x28]
+  f0:	4c 8b 74 24 30       	mov    r14,QWORD PTR [rsp+0x30]
+  f5:	48 8b 5c 24 38       	mov    rbx,QWORD PTR [rsp+0x38]
+  fa:	48 83 c4 40          	add    rsp,0x40
+  fe:	48 89 ec             	mov    rsp,rbp
+ 101:	5d                   	pop    rbp
+ 102:	c3                   	ret    

@@ -1651,22 +1651,54 @@ impl CompilerContext {
 
                 ; optcall:
                 // Save extern sp
+                ; mov rax, r_sp
+                ; mov rdi, r_extra_args
+                ; sub rax, 8
                 ; mov [r_cs + CS::ExternSp.offset()], r_sp
                 ; lea rsi, [>actually_call_opt]
-                // Check signals then call
             );
             self.emit_check_signals(NextInstruction::UseRSI);
             oc_dynasm!(self.ops
+                // Check signals then call
                 ; actually_call_opt:
+                ; mov rax, [r_accu]
+                ; mov rsi, [rax + 0x18]    // load the required extra args from closure metadata
+                ; inc rsi
+                ; shl rsi, 3
+                ; mov rax, r_sp
+                ; add rax, rsi
+                ; mov [r_cs + CS::ExternSp.offset()], rax
+
                 ; mov rdi, r_accu
-                ; mov rsi, r_sp
+                ; mov rsi, [r_sp]
+
+                ; cmp rax, 1
+                ; jl >call
+
+                ; mov rdx, [r_sp + 0x8]
+
+                ; cmp rax, 2
+                ; jl >call
+
+                ; mov rcx, [r_sp + 0x10]
+
+                ; cmp rax, 3
+                ; jl >call
+
+                ; mov r8, [r_sp + 0x18]
+
+                ; cmp rax, 4
+                ; jl >call
+
+                ; mov r9, [r_sp + 0x20]
+
+                ; call:
                 ; mov rax, [r_accu]
                 ; mov rax, [rax + 8]
                 ; call rax
 
                 // Afterwards rax contains retval
                 // And rdx the extra_args offset
-                // and the initial statle pointer (at top of stack) the new sp
                 ; mov r_sp, [r_cs + CS::ExternSp.offset()]
                 ; mov r_accu, rax
                 ; add r_extra_args, rdx

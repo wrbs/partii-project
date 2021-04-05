@@ -7,22 +7,18 @@ Disassembly of section .text:
 0000000000000000 <arith_le>:
    0:	55                   	push   rbp
    1:	48 89 e5             	mov    rbp,rsp
-   4:	48 b8 00 00 00 00 00 	movabs rax,0x0
-   b:	00 00 00 
-			6: R_X86_64_64	caml_state_addr
-   e:	48 8b 0e             	mov    rcx,QWORD PTR [rsi]
-  11:	48 8b 56 08          	mov    rdx,QWORD PTR [rsi+0x8]
-  15:	48 89 f7             	mov    rdi,rsi
-  18:	48 83 c7 10          	add    rdi,0x10
-  1c:	49 89 c8             	mov    r8,rcx
-  1f:	be 03 00 00 00       	mov    esi,0x3
-  24:	b9 01 00 00 00       	mov    ecx,0x1
-  29:	49 39 d0             	cmp    r8,rdx
-  2c:	48 0f 4e ce          	cmovle rcx,rsi
-  30:	48 89 ce             	mov    rsi,rcx
-  33:	48 89 b8 98 00 00 00 	mov    QWORD PTR [rax+0x98],rdi
-  3a:	48 31 d2             	xor    rdx,rdx
-  3d:	48 89 f0             	mov    rax,rsi
-  40:	48 89 ec             	mov    rsp,rbp
-  43:	5d                   	pop    rbp
-  44:	c3                   	ret    
+   4:	48 89 f0             	mov    rax,rsi
+   7:	48 be 00 00 00 00 00 	movabs rsi,0x0
+   e:	00 00 00 
+			9: R_X86_64_64	caml_state_addr
+  11:	48 8b be 98 00 00 00 	mov    rdi,QWORD PTR [rsi+0x98]
+  18:	49 89 c0             	mov    r8,rax
+  1b:	b9 03 00 00 00       	mov    ecx,0x3
+  20:	b8 01 00 00 00       	mov    eax,0x1
+  25:	49 39 d0             	cmp    r8,rdx
+  28:	48 0f 4e c1          	cmovle rax,rcx
+  2c:	48 89 be 98 00 00 00 	mov    QWORD PTR [rsi+0x98],rdi
+  33:	48 31 d2             	xor    rdx,rdx
+  36:	48 89 ec             	mov    rsp,rbp
+  39:	5d                   	pop    rbp
+  3a:	c3                   	ret    

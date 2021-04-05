@@ -21,7 +21,7 @@ Block 0:
   Inst 14:   unwind SaveReg { clobber_offset: 32, reg: r29J }
   Inst 15:   movq    %rdi, %rbx
   Inst 16:   load_ext_name u1:0+0, %r12
-  Inst 17:   addq    $8, %rsi
+  Inst 17:   movq    152(%r12), %rsi
   Inst 18:   movl    $637, %edi
   Inst 19:   movq    %rsi, 152(%r12)
   Inst 20:   load_ext_name u0:1+0, %rsi

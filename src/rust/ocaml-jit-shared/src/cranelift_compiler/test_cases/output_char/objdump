@@ -12,12 +12,12 @@ Disassembly of section .text:
    d:	49 bc 00 00 00 00 00 	movabs r12,0x0
   14:	00 00 00 
 			f: R_X86_64_64	caml_state_addr
-  17:	48 8b 3e             	mov    rdi,QWORD PTR [rsi]
-  1a:	48 8b 46 08          	mov    rax,QWORD PTR [rsi+0x8]
-  1e:	48 83 c6 10          	add    rsi,0x10
-  22:	49 89 b4 24 98 00 00 	mov    QWORD PTR [r12+0x98],rsi
-  29:	00 
-  2a:	48 89 c6             	mov    rsi,rax
+  17:	49 8b bc 24 98 00 00 	mov    rdi,QWORD PTR [r12+0x98]
+  1e:	00 
+  1f:	49 89 bc 24 98 00 00 	mov    QWORD PTR [r12+0x98],rdi
+  26:	00 
+  27:	48 89 f7             	mov    rdi,rsi
+  2a:	48 89 d6             	mov    rsi,rdx
   2d:	48 b8 00 00 00 00 00 	movabs rax,0x0
   34:	00 00 00 
 			2f: R_X86_64_64	oc_prim264

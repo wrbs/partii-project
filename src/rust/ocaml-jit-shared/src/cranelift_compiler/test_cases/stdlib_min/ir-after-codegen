@@ -1,32 +1,30 @@
-function u0:0(r64, i64) -> r64, i64 system_v {
+function u0:0(r64, r64, r64) -> r64, i64 system_v {
     gv0 = symbol u1:0
     sig0 = (r64, r64) -> r64 system_v
     fn0 = u0:1 sig0
 
-block0(v0: r64, v1: i64):
-    v2 = null.r64 
-    v3 = iconst.i64 0
-    v14 -> v3
-    v4 = symbol_value.i64 gv0
-    v5 = load.r64 notrap aligned v1
-    v6 = load.r64 notrap aligned v1+8
-    v7 = iadd_imm v1, 16
-    store notrap aligned v7, v4+152
-    v8 = call fn0(v5, v6)
-    v9 = load.i64 notrap aligned v4+152
-    v12 -> v9
-    v10 = raw_bitcast.i64 v8
-    v11 = icmp_imm eq v10, 1
-    brz v11, block1
+block0(v0: r64, v1: r64, v2: r64):
+    v3 = null.r64 
+    v4 = iconst.i64 0
+    v13 -> v4
+    v5 = symbol_value.i64 gv0
+    v6 = load.i64 notrap aligned v5+152
+    store notrap aligned v6, v5+152
+    v7 = call fn0(v1, v2)
+    v8 = load.i64 notrap aligned v5+152
+    v11 -> v8
+    v9 = raw_bitcast.i64 v7
+    v10 = icmp_imm eq v9, 1
+    brz v10, block1
     jump block2
 
 block1:
-    jump block3(v5)
+    jump block3(v1)
 
 block2:
-    jump block3(v6)
+    jump block3(v2)
 
-block3(v13: r64):
-    store.i64 notrap aligned v9, v4+152
-    return v13, v3
+block3(v12: r64):
+    store.i64 notrap aligned v8, v5+152
+    return v12, v4
 }

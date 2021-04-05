@@ -81,6 +81,11 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
     let closure = unsafe { closure.as_mut().unwrap() };
     let section_number = closure.section as usize;
     let entrypoint = closure.bytecode_offset as usize;
+    let arity = closure.required_extra_args + 1;
+    if arity > 5 {
+        closure.execution_count_status = -3; // Error, don't try again
+        return;
+    }
 
     let mut global_data = GlobalData::get();
     let section = global_data.compiler_data.sections[closure.section as usize]

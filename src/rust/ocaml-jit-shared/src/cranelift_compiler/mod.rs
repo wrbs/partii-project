@@ -103,8 +103,12 @@ where
 
         // First arg -env
         self.ctx.func.signature.params.push(AbiParam::new(R64));
-        // Second arg - current SP
-        self.ctx.func.signature.params.push(AbiParam::new(I64));
+
+        ensure!(closure.arity <= 5);
+        // Then closure args
+        for _ in 0..closure.arity {
+            self.ctx.func.signature.params.push(AbiParam::new(R64));
+        }
 
         // Ret 1 = return value of closure / what closure to apply if tail-calling
         self.ctx.func.signature.returns.push(AbiParam::new(R64));
@@ -216,9 +220,13 @@ where
 
         let stack_size = closure.arity;
         let env = builder.block_params(blocks[0])[0];
-        let initial_sp = builder.block_params(blocks[0])[1];
 
-        builder.def_var(sp, initial_sp);
+        for i in 0..closure.arity {
+            builder.def_var(
+                stack_vars[closure.arity - i - 1],
+                builder.block_params(blocks[0])[i + 1],
+            );
+        }
 
         let zero = builder.ins().null(R64);
         let zero_i = builder.ins().iconst(I64, 0);
@@ -244,23 +252,13 @@ where
             used_values: HashMap::new(),
         };
 
+
         // This is where we patch it
         let caml_state_addr =
             ft.get_global_variable(I64, CraneliftPrimitiveValue::CamlStateAddr)?;
         ft.caml_state_addr = caml_state_addr;
 
-        // Declare the variables
-        let cur_sp = ft.builder.use_var(ft.sp);
-        for i in 0..closure.arity {
-            let arg = ft
-                .builder
-                .ins()
-                .load(R64, MemFlags::trusted(), cur_sp, 8 * i as i32);
-            ft.builder
-                .def_var(ft.stack_vars[closure.arity - i - 1], arg);
-        }
-        let new_sp = ft.builder.ins().iadd_imm(cur_sp, 8 * closure.arity as i64);
-        ft.builder.def_var(ft.sp, new_sp);
+        ft.load_extern_sp()?;
 
         // Zero-initialise the other vars
         ft.builder.def_var(acc, zero);

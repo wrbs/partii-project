@@ -4,27 +4,27 @@ Block 0:
   (original IR block: block0)
   (successor: Block 1)
   (successor: Block 3)
-  (instruction range: 0 .. 12)
+  (instruction range: 0 .. 11)
   Inst 0:   pushq   %rbp
   Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
   Inst 2:   movq    %rsp, %rbp
   Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 0 }
   Inst 4:   load_ext_name u1:0+0, %r8
-  Inst 5:   movq    0(%rsi), %rcx
-  Inst 6:   movq    8(%rsi), %rax
-  Inst 7:   movq    %rsi, %rdi
-  Inst 8:   addq    $16, %rdi
-  Inst 9:   movl    $1, %esi
-  Inst 10:   cmpq    %rsi, %rax
-  Inst 11:   jnz     label1; j label3
+  Inst 5:   movq    152(%r8), %rdi
+  Inst 6:   movq    %rsi, %rcx
+  Inst 7:   movq    %rdx, %rax
+  Inst 8:   movl    $1, %esi
+  Inst 9:   cmpq    %rsi, %rax
+  Inst 10:   jnz     label1; j label3
 Block 1:
   (original IR block: block3)
   (successor: Block 2)
-  (instruction range: 12 .. 22)
-  Inst 12:   sarq    $1, %rcx
-  Inst 13:   movq    %rax, %rsi
-  Inst 14:   sarq    $1, %rsi
-  Inst 15:   movq    %rcx, %rax
+  (instruction range: 11 .. 22)
+  Inst 11:   sarq    $1, %rcx
+  Inst 12:   movq    %rax, %rdx
+  Inst 13:   sarq    $1, %rdx
+  Inst 14:   movq    %rcx, %rax
+  Inst 15:   movq    %rdx, %rsi
   Inst 16:   movl    $0, %edx
   Inst 17:   srem $rax:$rdx, %rsi
   Inst 18:   movq    %rdx, %rsi

@@ -3,30 +3,26 @@ VCode_ShowWithRRU {{
 Block 0:
   (original IR block: block0)
   (successor: Block 1)
-  (instruction range: 0 .. 16)
+  (instruction range: 0 .. 13)
   Inst 0:   pushq   %rbp
   Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
   Inst 2:   movq    %rsp, %rbp
   Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 0 }
-  Inst 4:   load_ext_name u1:0+0, %rax
-  Inst 5:   movq    0(%rsi), %rcx
-  Inst 6:   movq    8(%rsi), %rdx
-  Inst 7:   movq    %rsi, %rdi
-  Inst 8:   addq    $16, %rdi
-  Inst 9:   movq    %rcx, %r8
-  Inst 10:   movl    $3, %esi
-  Inst 11:   movl    $1, %ecx
-  Inst 12:   cmpq    %rdx, %r8
-  Inst 13:   cmovleq %rsi, %rcx
-  Inst 14:   movq    %rcx, %rsi
-  Inst 15:   jmp     label1
+  Inst 4:   movq    %rsi, %rax
+  Inst 5:   load_ext_name u1:0+0, %rsi
+  Inst 6:   movq    152(%rsi), %rdi
+  Inst 7:   movq    %rax, %r8
+  Inst 8:   movl    $3, %ecx
+  Inst 9:   movl    $1, %eax
+  Inst 10:   cmpq    %rdx, %r8
+  Inst 11:   cmovleq %rcx, %rax
+  Inst 12:   jmp     label1
 Block 1:
   (original IR block: block1)
-  (instruction range: 16 .. 22)
-  Inst 16:   movq    %rdi, 152(%rax)
-  Inst 17:   xorq    %rdx, %rdx
-  Inst 18:   movq    %rsi, %rax
-  Inst 19:   movq    %rbp, %rsp
-  Inst 20:   popq    %rbp
-  Inst 21:   ret
+  (instruction range: 13 .. 18)
+  Inst 13:   movq    %rdi, 152(%rsi)
+  Inst 14:   xorq    %rdx, %rdx
+  Inst 15:   movq    %rbp, %rsp
+  Inst 16:   popq    %rbp
+  Inst 17:   ret
 }}

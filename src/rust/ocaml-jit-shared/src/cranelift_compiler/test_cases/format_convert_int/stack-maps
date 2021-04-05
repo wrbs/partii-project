@@ -1,11 +1,11 @@
-0x88: StackMap {
+0x89: StackMap {
     bitmap: [
         BitSet(
             15,
         ),
     ],
     mapped_words: 4,
-}0xcb: StackMap {
+}0xcc: StackMap {
     bitmap: [
         BitSet(
             15,

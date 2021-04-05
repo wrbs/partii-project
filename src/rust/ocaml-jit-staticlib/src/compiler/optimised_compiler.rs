@@ -56,7 +56,6 @@ impl OptimisedCompiler {
         entrypoint: usize,
         compiler_data: &mut CompilerData,
     ) -> Result<Option<usize>> {
-        return Ok(None);
         self.optimise_closure_impl(section_number, code, entrypoint, compiler_data)
             .with_context(|| {
                 format!(

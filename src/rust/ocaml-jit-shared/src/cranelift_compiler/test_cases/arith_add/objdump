@@ -7,18 +7,15 @@ Disassembly of section .text:
 0000000000000000 <arith_add>:
    0:	55                   	push   rbp
    1:	48 89 e5             	mov    rbp,rsp
-   4:	48 b8 00 00 00 00 00 	movabs rax,0x0
-   b:	00 00 00 
-			6: R_X86_64_64	caml_state_addr
-   e:	48 8b 0e             	mov    rcx,QWORD PTR [rsi]
-  11:	48 8b 56 08          	mov    rdx,QWORD PTR [rsi+0x8]
-  15:	48 89 f7             	mov    rdi,rsi
-  18:	48 83 c7 10          	add    rdi,0x10
-  1c:	48 01 d1             	add    rcx,rdx
-  1f:	48 83 c1 ff          	add    rcx,0xffffffffffffffff
-  23:	48 89 b8 98 00 00 00 	mov    QWORD PTR [rax+0x98],rdi
-  2a:	48 31 d2             	xor    rdx,rdx
-  2d:	48 89 c8             	mov    rax,rcx
-  30:	48 89 ec             	mov    rsp,rbp
-  33:	5d                   	pop    rbp
-  34:	c3                   	ret    
+   4:	48 89 f0             	mov    rax,rsi
+   7:	48 be 00 00 00 00 00 	movabs rsi,0x0
+   e:	00 00 00 
+			9: R_X86_64_64	caml_state_addr
+  11:	48 8b be 98 00 00 00 	mov    rdi,QWORD PTR [rsi+0x98]
+  18:	48 01 d0             	add    rax,rdx
+  1b:	48 83 c0 ff          	add    rax,0xffffffffffffffff
+  1f:	48 89 be 98 00 00 00 	mov    QWORD PTR [rsi+0x98],rdi
+  26:	48 31 d2             	xor    rdx,rdx
+  29:	48 89 ec             	mov    rsp,rbp
+  2c:	5d                   	pop    rbp
+  2d:	c3                   	ret    
