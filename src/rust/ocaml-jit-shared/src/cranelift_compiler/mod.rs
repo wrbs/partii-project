@@ -932,7 +932,7 @@ where
             self.set_sp(old_sp);
         }
 
-        let result = if num_args <= 1 {
+        let result = if num_args <= 2 {
             self.save_extern_sp();
             // Push a dummy frame
             let call = match num_args {
@@ -940,6 +940,11 @@ where
                     let args = &[closure, self.pick_ref(0)?];
                     self.pop(1)?;
                     self.call_primitive(CraneliftPrimitiveFunction::Apply1, args)?
+                }
+                2 => {
+                    let args = &[closure, self.pick_ref(0)?, self.pick_ref(1)?];
+                    self.pop(2)?;
+                    self.call_primitive(CraneliftPrimitiveFunction::Apply2, args)?
                 }
                 _ => unreachable!("Bad num_args!"),
             };
@@ -1679,6 +1684,12 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         }
         CraneliftPrimitiveFunction::Apply1 => {
             sig.params.extend(&[AbiParam::new(R64), AbiParam::new(R64)]);
+            sig.returns
+                .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
+        }
+        CraneliftPrimitiveFunction::Apply2 => {
+            sig.params
+                .extend(&[AbiParam::new(R64), AbiParam::new(R64), AbiParam::new(R64)]);
             sig.returns
                 .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
         }

@@ -417,11 +417,47 @@ pub fn emit_cranelift_callback_entrypoint(
         ; mov QWORD [r10 + 3 * 8], 0         // Save it to the top of the stack frame
         ; mov QWORD [r10 + 2 * 8], 0         // Save it to the top of the stack frame
         ; mov [r10 + 1 * 8], r11             // Save it to the top of the stack frame
-        ; mov [r10], rsi                     // Push first arg
+        ; mov [r10 + 0 * 8], rsi             // Push first arg
         ; mov rsi, 0                         // No extra args
         ; jmp >apply_n                       // Tail-call into slow call
     );
     let apply_2_offset = cc.ops.offset();
+    oc_dynasm!(cc.ops
+        // Get closure addr
+        ; mov rax, [rdi]
+
+        // Check if optimised yet
+        ; mov r11, [rax]
+        ; cmp r11, BYTE -2
+        ; jne >slowcall
+
+        // Check if arity = 1
+        ; mov r11, [rax + 0x18]
+        ; cmp r11, 1
+        ; jne >slowcall
+
+        // We're doing a fast call
+    );
+
+    oc_dynasm!(cc.ops
+        // Tail-call fast into C code for other closure
+        ; mov rax, [rax + 0x8]
+        ; jmp rax
+
+        ; slowcall:
+        ; mov rax, QWORD get_extern_sp_addr() as _
+        ; mov r10, [rax]                     // Load extern sp
+        ; sub r10, 8 * 5                     // Make space for return frame + arg
+        ; lea r11, [->retaddr_offset]        // Load address of the stop aftewards
+        ; mov QWORD [r10 + 4 * 8], 0         // Save it to the top of the stack frame
+        ; mov QWORD [r10 + 3 * 8], 0         // Save it to the top of the stack frame
+        ; mov [r10 + 2 * 8], r11             // Save it to the top of the stack frame
+        ; mov [r10 + 1 * 8], rdx             // Push second arg
+        ; mov [r10 + 0 * 8], rsi             // Push first arg
+        ; mov rsi, 1                         // 1 extra args
+        ; jmp >apply_n                       // Tail-call into slow call
+    );
+
     let apply_3_offset = cc.ops.offset();
     let apply_4_offset = cc.ops.offset();
     let apply_5_offset = cc.ops.offset();
