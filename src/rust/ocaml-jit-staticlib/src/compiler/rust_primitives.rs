@@ -125,16 +125,18 @@ pub extern "C" fn compile_closure_optimised(closure: *mut ClosureMetadataTableEn
     }
 }
 
-pub extern "C" fn emit_enter_apply_trace(
-    closure: *const ClosureMetadataTableEntry,
+pub unsafe extern "C" fn emit_enter_apply_trace(
+    code_ptr: *const *const ClosureMetadataTableEntry,
     sp: *const u64,
     extra_args: usize,
 ) {
     let nargs = extra_args + 1;
-    let args = (0..nargs).map(|i| unsafe { *(sp.add(i)) }).collect();
+    let needed = get_arity_from_closure(*code_ptr);
+
+    let args = (0..nargs).map(|i| *sp.add(i)).collect();
     do_call_trace(CallTrace::Enter {
-        closure: get_bytecode_location_from_closure(closure),
-        needed: get_arity_from_closure(closure),
+        closure: get_bytecode_location_from_closure(*code_ptr),
+        needed: get_arity_from_closure(*code_ptr),
         provided: args,
     });
 }

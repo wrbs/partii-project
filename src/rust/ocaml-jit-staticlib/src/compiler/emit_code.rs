@@ -106,11 +106,11 @@ pub struct ClosureMetadataTableEntry {
     // -1 = restart, don't optimise
     // -2 = has been optimised
     // -3 = error while optimising, ignore this closure
-    pub execution_count_status: i64,
-    pub compiled_location: u64,
-    pub section: u32,
-    pub bytecode_offset: u32,
-    pub required_extra_args: u64,
+    pub execution_count_status: i64, // 0x0
+    pub compiled_location: u64,      // 0x8
+    pub section: u32,                // 0x10
+    pub bytecode_offset: u32,        // 0x14
+    pub required_extra_args: u64,    // 0x18
 }
 
 const VAL_UNIT: i8 = 1;
@@ -385,7 +385,42 @@ pub fn emit_cranelift_callback_entrypoint(
         current_instruction_offset: BytecodeRelativeOffset(0),
     };
 
+    // The apply_{1..5} offsets uses scratch registers only to allow easy tail calling
     let apply_1_offset = cc.ops.offset();
+    oc_dynasm!(cc.ops
+        // Get closure addr
+        ; mov rax, [rdi]
+
+        // Check if optimised yet
+        ; mov r11, [rax]
+        ; cmp r11, BYTE -2
+        ; jne >slowcall
+
+        // Check if arity = 1
+        ; mov r11, [rax + 0x18]
+        ; cmp r11, 0
+        ; jne >slowcall
+
+        // We're doing a fast call
+    );
+
+    oc_dynasm!(cc.ops
+        // Tail-call fast into C code for other closure
+        ; mov rax, [rax + 0x8]
+        ; jmp rax
+
+        ; slowcall:
+        ; mov rax, QWORD get_extern_sp_addr() as _
+        ; mov r10, [rax]                     // Load extern sp
+        ; sub r10, 8 * 4                     // Make space for return frame + arg
+        ; lea r11, [->retaddr_offset]        // Load address of the stop aftewards
+        ; mov QWORD [r10 + 3 * 8], 0         // Save it to the top of the stack frame
+        ; mov QWORD [r10 + 2 * 8], 0         // Save it to the top of the stack frame
+        ; mov [r10 + 1 * 8], r11             // Save it to the top of the stack frame
+        ; mov [r10], rsi                     // Push first arg
+        ; mov rsi, 0                         // No extra args
+        ; jmp >apply_n                       // Tail-call into slow call
+    );
     let apply_2_offset = cc.ops.offset();
     let apply_3_offset = cc.ops.offset();
     let apply_4_offset = cc.ops.offset();
@@ -393,6 +428,9 @@ pub fn emit_cranelift_callback_entrypoint(
 
     // The signature is
     // (rdi: closure to apply, rsi: extra_args) -> value
+    oc_dynasm!(cc.ops
+        ; apply_n:
+    );
     let apply_n_offset = cc.emit_entrypoint(true);
     oc_dynasm!(cc.ops
         // Now aligned - set up initial state
@@ -402,12 +440,17 @@ pub fn emit_cranelift_callback_entrypoint(
         ; shl rsi, 3
         ; sub r_sp, rsi
         ; sub r_sp, 8 * 4
+
+        // Now we do the apply
+        ; jmp ->apply
     );
-    // Now we do the apply
-    cc.perform_apply();
 
 
     let retaddr_offset = cc.ops.offset();
+    oc_dynasm!(cc.ops
+        ; ->retaddr_offset:
+        ; mov rdx, 0  // no extra args if we get here
+    );
     cc.emit_stop();
     cc.emit_shared_code();
 
@@ -500,6 +543,9 @@ impl CompilerContext {
     }
 
     fn emit_stop(&mut self) {
+        // IMPORTANT: don't trash rdx which is used as the second return value
+        // in niche cases involving cranelift (just trust me this is right)
+
         // Call the function so that the entrypoint and code that uses it is visually nearby
         // for easier changes
         oc_dynasm!(self.ops
@@ -707,6 +753,8 @@ impl CompilerContext {
                         ; call rax
                     );
                 }
+
+                // Actual fast implementation
                 let nargs = *nargs as i32;
                 let slotsize = *slotsize as i32;
                 // for now we're calling into C for the offset
@@ -722,6 +770,14 @@ impl CompilerContext {
                 self.perform_apply();
             }
             Instruction::Return(to_pop) => {
+                if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+                    oc_dynasm!(self.ops
+                        ; mov rdi, r_accu
+                        ; mov rax, QWORD emit_return_trace as i64
+                        ; call rax
+                    );
+                }
+
                 oc_dynasm!(self.ops
                     ; add r_sp, (*to_pop as i32) * 8
                 );
@@ -1528,22 +1584,34 @@ impl CompilerContext {
             );
         }
     }
+
     fn perform_apply(&mut self) {
         // This used to inline the stuff, but I'm changing it to jump to one apply function
+        // Emit a call trace if we're doing that
+        if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+            oc_dynasm!(self.ops
+                ; mov rdi, r_accu
+                ; mov rsi, r_sp
+                ; mov rdx, r_extra_args
+                ; mov rax, QWORD emit_enter_apply_trace as i64
+                ; call rax
+                ; mov rax, [r_accu]
+            );
+        }
         oc_dynasm!(self.ops
             ; jmp ->apply
         );
     }
 
     fn perform_return(&mut self) {
-        // Emit a return trace if we're doing that
-        if self.compiler_options.print_traces == Some(PrintTraces::Call) {
-            oc_dynasm!(self.ops
-                ; mov rdi, r_accu
-                ; mov rax, QWORD emit_return_trace as i64
-                ; call rax
-            );
-        }
+        // // Emit a return trace if we're doing that
+        // if self.compiler_options.print_traces == Some(PrintTraces::Call) {
+        // oc_dynasm!(self.ops
+        // ; mov rdi, r_accu
+        // ; mov rax, QWORD emit_return_trace as i64
+        // ; call rax
+        // );
+        // }
 
         oc_dynasm!(self.ops
             ; test r_extra_args, r_extra_args
@@ -1619,18 +1687,6 @@ impl CompilerContext {
             ; cmp rsi, -1
             ; je >bytecall             // If it's a restart, jump to call
         );
-
-        // Emit a call trace if we're doing that
-        if self.compiler_options.print_traces == Some(PrintTraces::Call) {
-            oc_dynasm!(self.ops
-                ; mov rdi, rax
-                ; mov rsi, r_sp
-                ; mov rdx, r_extra_args
-                ; mov rax, QWORD emit_enter_apply_trace as i64
-                ; call rax
-                ; mov rax, [r_accu]
-            );
-        }
 
         oc_dynasm!(self.ops
             // Check for extra args (performs GRAB, but at call time)

@@ -23,4 +23,4 @@ let g2 x =
 
 let () = g1 2; g2 2
 
-let _ = run ()
+let _ = run (); run ()

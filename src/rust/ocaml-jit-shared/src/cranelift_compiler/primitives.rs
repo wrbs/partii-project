@@ -41,9 +41,11 @@ pub enum CraneliftPrimitiveValue {
 )]
 #[strum(serialize_all = "snake_case")]
 pub enum CraneliftPrimitiveFunction {
+    EmitApplyTrace,
     EmitCCallTrace,
     EmitReturnTrace,
-    DoCallback,
+    Apply1,
+    ApplyN,
     CamlAllocSmallDispatch,
     CamlAllocShr,
     CamlInitialize,

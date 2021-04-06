@@ -838,10 +838,20 @@ where
             }
             // BasicBlockExit::PushTrap { normal, trap } => {}
             BasicBlockExit::Return(to_pop) => {
+                if self.options.use_call_traces {
+                    let result = self.get_acc_ref();
+                    self.call_primitive(CraneliftPrimitiveFunction::EmitReturnTrace, &[result])?;
+                }
+
                 self.builder.ins().jump(self.return_block, &[]);
                 self.pop(*to_pop)?;
             }
             BasicBlockExit::TailCall { args, to_pop } => {
+                if self.options.use_call_traces {
+                    let result = self.get_acc_ref();
+                    self.call_primitive(CraneliftPrimitiveFunction::EmitReturnTrace, &[result])?;
+                }
+
                 let args = *args as usize;
                 self.push_last_n_items_for_real(args)?;
                 let extra_args = self.builder.ins().iconst(I64, args as i64);
@@ -909,32 +919,137 @@ where
 
     fn emit_apply(&mut self, num_args: usize) -> Result<()> {
         let closure = self.get_acc_ref();
-        let extra_args_val = self.builder.ins().iconst(I64, (num_args - 1) as i64);
 
-        let mut closure_args = vec![];
-        for i in 0..num_args {
-            closure_args.push(self.pick_ref(i as u32)?);
+        if self.options.use_call_traces {
+            let old_sp = self.get_sp();
+            let new_sp = self.push_last_n_items_for_real(num_args)?;
+            let extra_args_val = self.builder.ins().iconst(I64, (num_args - 1) as i64);
+
+            self.call_primitive(
+                CraneliftPrimitiveFunction::EmitApplyTrace,
+                &[closure, new_sp, extra_args_val],
+            )?;
+            self.set_sp(old_sp);
         }
-        self.pop(num_args as u32)?;
 
-        let one = self.builder.ins().iconst(I64, 1);
-        let ret_addr =
-            self.get_global_variable(I64, CraneliftPrimitiveValue::CallbackReturnAddr)?;
-        closure_args.push(ret_addr);
-        closure_args.push(one);
-        closure_args.push(one);
+        let result = if num_args <= 1 {
+            self.save_extern_sp();
+            // Push a dummy frame
+            let call = match num_args {
+                1 => {
+                    let args = &[closure, self.pick_ref(0)?];
+                    self.pop(1)?;
+                    self.call_primitive(CraneliftPrimitiveFunction::Apply1, args)?
+                }
+                _ => unreachable!("Bad num_args!"),
+            };
 
-        let cur_sp = self.get_sp();
-        self.save_extern_sp()?;
-        let _new_sp = self.push_to_ocaml_stack(cur_sp, &closure_args)?;
-        // We don't save the newsp - this is due to interactions with exception handling
-        // and callbacks
+            // The complexity is we may need to deal with tail calls here
 
-        let call = self.call_primitive(
-            CraneliftPrimitiveFunction::DoCallback,
-            &[closure, extra_args_val],
-        )?;
-        let result = self.builder.inst_results(call)[0];
+            let first_ret = self.builder.inst_results(call)[0];
+            let tail_args = self.builder.inst_results(call)[1];
+
+            let no_tailcall = self.builder.create_block();
+            self.builder.append_block_param(no_tailcall, R64);
+            let tailcall = self.builder.create_block();
+
+            self.builder.ins().brz(tail_args, no_tailcall, &[first_ret]);
+            self.builder.ins().jump(tailcall, &[]);
+
+            self.builder.seal_block(tailcall);
+            self.builder.switch_to_block(tailcall);
+
+            // Tailcall case - treat return value as a new closure and apply it
+            // to the args which are now on the ocaml stack.
+
+            self.load_extern_sp();
+
+            let sp = self.get_sp();
+            let new_extra_args = self.builder.ins().iadd_imm(tail_args, -1);
+
+            // First give this a new trace if we need to
+            if self.options.use_call_traces {
+                self.call_primitive(
+                    CraneliftPrimitiveFunction::EmitApplyTrace,
+                    &[first_ret, sp, new_extra_args],
+                )?;
+            }
+
+            // Args are already on the stack
+            // but we need to make space for a ret frame and slide with a memmove
+            let copy_size = self.builder.ins().ishl_imm(tail_args, 3);
+            let orig_sp = self.builder.ins().iadd(sp, copy_size);
+            let dest = self.builder.ins().iadd_imm(sp, 3 * -8);
+            // memove deals with overlaps
+            self.builder
+                .call_memmove(self.module.target_config(), dest, sp, copy_size);
+
+            let one = self.builder.ins().iconst(I64, 1);
+            let ret_addr =
+                self.get_global_variable(I64, CraneliftPrimitiveValue::CallbackReturnAddr)?;
+            self.builder
+                .ins()
+                .store(MemFlags::trusted(), one, orig_sp, 1 * -8);
+            self.builder
+                .ins()
+                .store(MemFlags::trusted(), one, orig_sp, 2 * -8);
+            self.builder
+                .ins()
+                .store(MemFlags::trusted(), ret_addr, orig_sp, 3 * -8);
+
+
+            // for the interaction between exception handling + callbacks,
+            // we want the SP to be below this - i.e. the sp before the callback
+            // asked for a tail call
+            self.set_sp(orig_sp);
+            self.save_extern_sp();
+
+
+            let call = self.call_primitive(
+                CraneliftPrimitiveFunction::ApplyN,
+                &[first_ret, new_extra_args],
+            )?;
+            let second_ret = self.builder.inst_results(call)[0];
+
+            self.builder.ins().jump(no_tailcall, &[second_ret]);
+
+            // Join up with the non-tailcall case
+
+            self.builder.seal_block(no_tailcall);
+            self.builder.switch_to_block(no_tailcall);
+            let ret = self.builder.block_params(no_tailcall)[0];
+
+
+            ret
+        } else {
+            let extra_args_val = self.builder.ins().iconst(I64, (num_args - 1) as i64);
+
+            let mut closure_args = vec![];
+            for i in 0..num_args {
+                closure_args.push(self.pick_ref(i as u32)?);
+            }
+            self.pop(num_args as u32)?;
+
+            let one = self.builder.ins().iconst(I64, 1);
+            let ret_addr =
+                self.get_global_variable(I64, CraneliftPrimitiveValue::CallbackReturnAddr)?;
+            closure_args.push(ret_addr);
+            closure_args.push(one);
+            closure_args.push(one);
+
+            let cur_sp = self.get_sp();
+            let new_sp = self.push_to_ocaml_stack(cur_sp, &closure_args)?;
+            self.save_extern_sp()?;
+            // We don't save the newsp - this is due to interactions with exception handling
+            // and callbacks
+
+            let call = self.call_primitive(
+                CraneliftPrimitiveFunction::ApplyN,
+                &[closure, extra_args_val],
+            )?;
+            self.builder.inst_results(call)[0]
+        };
+
         self.set_acc_ref(result);
         self.load_extern_sp()?;
         Ok(())
@@ -1551,6 +1666,10 @@ fn make_header(wosize: usize, tag: u8) -> i64 {
 
 fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Signature) {
     match function {
+        CraneliftPrimitiveFunction::EmitApplyTrace => {
+            sig.params
+                .extend(&[AbiParam::new(R64), AbiParam::new(I64), AbiParam::new(I64)]);
+        }
         CraneliftPrimitiveFunction::EmitCCallTrace => {
             sig.params
                 .extend(&[AbiParam::new(I32), AbiParam::new(I64), AbiParam::new(I64)]);
@@ -1558,7 +1677,12 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         CraneliftPrimitiveFunction::EmitReturnTrace => {
             sig.params.push(AbiParam::new(R64));
         }
-        CraneliftPrimitiveFunction::DoCallback => {
+        CraneliftPrimitiveFunction::Apply1 => {
+            sig.params.extend(&[AbiParam::new(R64), AbiParam::new(R64)]);
+            sig.returns
+                .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
+        }
+        CraneliftPrimitiveFunction::ApplyN => {
             sig.params.extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
             sig.returns
                 .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);

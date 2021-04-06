@@ -4,7 +4,7 @@ use super::{
         caml_process_pending_actions, caml_raise, caml_raise_zero_divide, get_global_data_addr,
         get_something_to_do_addr, jit_support_get_dyn_met, jit_support_vect_length,
     },
-    rust_primitives::make_block_trace,
+    rust_primitives::{emit_enter_apply_trace, make_block_trace},
     PrintTraces,
 };
 use cranelift_jit::{JITBuilder, JITModule};
@@ -174,9 +174,13 @@ fn get_prim_function_addr(
     primitive: CraneliftPrimitiveFunction,
 ) -> *const u8 {
     match primitive {
+        CraneliftPrimitiveFunction::EmitApplyTrace => emit_enter_apply_trace as _,
         CraneliftPrimitiveFunction::EmitCCallTrace => emit_c_call_trace as _,
         CraneliftPrimitiveFunction::EmitReturnTrace => emit_return_trace as _,
-        CraneliftPrimitiveFunction::DoCallback => {
+        CraneliftPrimitiveFunction::Apply1 => {
+            compiler_data.get_cranelift_apply_addresses().apply_1 as _
+        }
+        CraneliftPrimitiveFunction::ApplyN => {
             compiler_data.get_cranelift_apply_addresses().apply_n as _
         }
         CraneliftPrimitiveFunction::CamlAllocSmallDispatch => caml_alloc_small_dispatch as _,
