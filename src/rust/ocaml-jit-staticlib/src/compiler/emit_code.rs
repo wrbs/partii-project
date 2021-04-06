@@ -113,6 +113,8 @@ pub struct ClosureMetadataTableEntry {
     pub required_extra_args: u64,
 }
 
+const VAL_UNIT: i8 = 1;
+
 pub fn compile_instructions(
     section_number: usize,
     code: &[i32],
@@ -616,7 +618,7 @@ impl CompilerContext {
                 let offset = (n * 8) as i32;
                 oc_dynasm!(self.ops
                     ; mov [r_sp + offset], r_accu
-                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; mov r_accu, BYTE VAL_UNIT as _
                 );
             }
             // There are two ways to call something in OCaml bytecode
@@ -817,7 +819,7 @@ impl CompilerContext {
                     ; mov rsi, r_accu
                     ; mov rax, QWORD caml_modify as i64
                     ; call rax
-                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; mov r_accu, BYTE VAL_UNIT as _
                 );
             }
             Instruction::Const(i) => {
@@ -884,7 +886,7 @@ impl CompilerContext {
                     ; mov rsi, [r_sp]
                     ; mov rax, QWORD caml_modify as i64
                     ; call rax
-                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; mov r_accu, BYTE VAL_UNIT as _
                     ; add r_sp, 8
                 );
             }
@@ -912,7 +914,7 @@ impl CompilerContext {
                     ; mov rdx, [r_sp]
                     ; mov rax, QWORD jit_support_set_float_field as i64
                     ; call rax
-                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; mov r_accu, BYTE VAL_UNIT as _
                     ; add r_sp, 8
                 );
             }
@@ -940,7 +942,7 @@ impl CompilerContext {
                     ; mov rsi, [r_sp + 8]
                     ; mov rax, QWORD caml_modify as i64
                     ; call rax
-                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; mov r_accu, BYTE VAL_UNIT as _
                     ; add r_sp, 2*8
                 );
             }
@@ -1416,7 +1418,7 @@ impl CompilerContext {
                     ; shl ecx, BYTE 1
                     ; movsxd rax, ecx
                     ; add [r_accu], rax
-                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; mov r_accu, BYTE VAL_UNIT as _
                 );
             }
             Instruction::IsInt => {
@@ -1444,7 +1446,7 @@ impl CompilerContext {
                     ; shr rax, BYTE 1
                     ; mov BYTE [r_accu + rsi], al
                     ; add r_sp, BYTE 16
-                    ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                    ; mov r_accu, BYTE VAL_UNIT as _
                 );
             }
             Instruction::Stop => {
@@ -1596,6 +1598,7 @@ impl CompilerContext {
     }
 
     fn emit_apply_shared(&mut self) {
+        // Main apply entrypoint
         // Check stacks, checks signals then jumps to the closure stored in the accu
         oc_dynasm!(self.ops
             ; ->apply:
@@ -1605,7 +1608,11 @@ impl CompilerContext {
             ; mov rax, QWORD jit_support_check_stacks as i64
             ; call rax
             ; mov r_sp, rax
-
+            ; lea rsi, [>after_check_signals]
+        );
+        self.emit_check_signals(NextInstruction::UseRSI);
+        oc_dynasm!(self.ops
+            ; after_check_signals:
             // Check if we're doing a restart
             ; mov rax, [r_accu]
             ; mov rsi, [rax]
@@ -1665,19 +1672,17 @@ impl CompilerContext {
                 // If compilation failed, the status will reflect that
                 // and we'll no longer try to re-run
                 ; jmp <check_opt
+            );
 
+            // Call optimised function
+            oc_dynasm!(self.ops
                 ; optcall:
                 // Save extern sp
                 ; mov rax, r_sp
                 ; mov rdi, r_extra_args
                 ; sub rax, 8
                 ; mov [r_cs + CS::ExternSp.offset()], r_sp
-                ; lea rsi, [>actually_call_opt]
-            );
-            self.emit_check_signals(NextInstruction::UseRSI);
-            oc_dynasm!(self.ops
-                // Check signals then call
-                ; actually_call_opt:
+
                 ; mov rax, [r_accu]
                 ; mov rsi, [rax + 0x18]    // load the required extra args from closure metadata
                 ; inc rsi
@@ -1690,26 +1695,17 @@ impl CompilerContext {
                 ; mov rsi, [r_sp]
 
                 ; cmp rax, 1
-                ; jl >call
-
-                ; mov rdx, [r_sp + 0x8]
+                ; cmovge rdx, [r_sp + 0x8]
 
                 ; cmp rax, 2
-                ; jl >call
-
-                ; mov rcx, [r_sp + 0x10]
+                ; cmovge rcx, [r_sp + 0x10]
 
                 ; cmp rax, 3
-                ; jl >call
-
-                ; mov r8, [r_sp + 0x18]
+                ; cmovge r8, [r_sp + 0x18]
 
                 ; cmp rax, 4
-                ; jl >call
+                ; cmovge r9, [r_sp + 0x20]
 
-                ; mov r9, [r_sp + 0x20]
-
-                ; call:
                 ; mov rax, [r_accu]
                 ; mov rax, [rax + 8]
                 ; call rax
@@ -1722,18 +1718,20 @@ impl CompilerContext {
             );
             self.perform_return();
         }
+
+        // Bytecall
         oc_dynasm!(self.ops
             ; bytecall:
-            // Check signals - then jump to the PC saved in the closure
-            ; mov rsi, [rax + 8]
         );
         if self.compiler_options.print_traces == Some(PrintTraces::Instruction) {
             // Needed for the trace comparison code to be happy, but not needed when actually running
             oc_dynasm!(self.ops
-                ; mov r_accu, mlvalues::LongValue::UNIT.0 as i32
+                ; mov r_accu, BYTE VAL_UNIT as _
             );
         }
-        self.emit_check_signals(NextInstruction::UseRSI);
+        oc_dynasm!(self.ops
+            ; jmp QWORD [rax + 8]
+        );
 
         // Code for making a new closure on partial application, replacing Grab
         oc_dynasm!(self.ops
@@ -1893,7 +1891,7 @@ impl CompilerContext {
 
         oc_dynasm!(self.ops
             // Setup_for_event
-            ; mov rax, mlvalues::LongValue::UNIT.0 as i32
+            ; mov rax, BYTE VAL_UNIT as _
             ; sub r_sp, 6 * 8           // Push frame
             ; mov [r_sp], r_accu        // Accu
             ; mov [r_sp + 8], rax       // Val_unit
