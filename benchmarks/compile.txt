@@ -28,3 +28,12 @@ JIT_OPTIONS="-j --hot-threshold 0" MAKEFLAGS="-j16" make  275.67s user 27.08s sy
 JIT_OPTIONS="-j --no-hot-threshold" MAKEFLAGS="-j16" make  276.24s user 27.29s system 648% cpu 46.823 total
 
 So it's all in the JIT
+
+AFTER TWEAKS
+
+JIT_OPTIONS="-j --no-hot-threshold" MAKEFLAGS="-j16" make  279.07s user 27.75s system 650% cpu 47.135 total
+JIT_OPTIONS="-j --hot-threshold 10" MAKEFLAGS="-j16" make  1334.62s user 32.30s system 764% cpu 2:58.87 total
+
+JIT_OPTIONS="-j --hot-threshold 50" MAKEFLAGS="-j16" make  969.66s user 31.66s system 711% cpu 2:20.83 total
+
+It's slower (!)
