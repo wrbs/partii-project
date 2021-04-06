@@ -932,7 +932,7 @@ where
             self.set_sp(old_sp);
         }
 
-        let result = if num_args <= 2 {
+        let result = if num_args <= 5 {
             self.save_extern_sp();
             // Push a dummy frame
             let call = match num_args {
@@ -945,6 +945,39 @@ where
                     let args = &[closure, self.pick_ref(0)?, self.pick_ref(1)?];
                     self.pop(2)?;
                     self.call_primitive(CraneliftPrimitiveFunction::Apply2, args)?
+                }
+                3 => {
+                    let args = &[
+                        closure,
+                        self.pick_ref(0)?,
+                        self.pick_ref(1)?,
+                        self.pick_ref(2)?,
+                    ];
+                    self.pop(3)?;
+                    self.call_primitive(CraneliftPrimitiveFunction::Apply3, args)?
+                }
+                4 => {
+                    let args = &[
+                        closure,
+                        self.pick_ref(0)?,
+                        self.pick_ref(1)?,
+                        self.pick_ref(2)?,
+                        self.pick_ref(3)?,
+                    ];
+                    self.pop(4)?;
+                    self.call_primitive(CraneliftPrimitiveFunction::Apply4, args)?
+                }
+                5 => {
+                    let args = &[
+                        closure,
+                        self.pick_ref(0)?,
+                        self.pick_ref(1)?,
+                        self.pick_ref(2)?,
+                        self.pick_ref(3)?,
+                        self.pick_ref(4)?,
+                    ];
+                    self.pop(5)?;
+                    self.call_primitive(CraneliftPrimitiveFunction::Apply5, args)?
                 }
                 _ => unreachable!("Bad num_args!"),
             };
@@ -1690,6 +1723,39 @@ fn create_function_signature(function: CraneliftPrimitiveFunction, sig: &mut Sig
         CraneliftPrimitiveFunction::Apply2 => {
             sig.params
                 .extend(&[AbiParam::new(R64), AbiParam::new(R64), AbiParam::new(R64)]);
+            sig.returns
+                .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
+        }
+        CraneliftPrimitiveFunction::Apply3 => {
+            sig.params.extend(&[
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+            ]);
+            sig.returns
+                .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
+        }
+        CraneliftPrimitiveFunction::Apply4 => {
+            sig.params.extend(&[
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+            ]);
+            sig.returns
+                .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
+        }
+        CraneliftPrimitiveFunction::Apply5 => {
+            sig.params.extend(&[
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+                AbiParam::new(R64),
+            ]);
             sig.returns
                 .extend(&[AbiParam::new(R64), AbiParam::new(I64)]);
         }

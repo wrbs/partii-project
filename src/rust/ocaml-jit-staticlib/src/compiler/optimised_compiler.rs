@@ -183,6 +183,15 @@ fn get_prim_function_addr(
         CraneliftPrimitiveFunction::Apply2 => {
             compiler_data.get_cranelift_apply_addresses().apply_2 as _
         }
+        CraneliftPrimitiveFunction::Apply3 => {
+            compiler_data.get_cranelift_apply_addresses().apply_3 as _
+        }
+        CraneliftPrimitiveFunction::Apply4 => {
+            compiler_data.get_cranelift_apply_addresses().apply_4 as _
+        }
+        CraneliftPrimitiveFunction::Apply5 => {
+            compiler_data.get_cranelift_apply_addresses().apply_5 as _
+        }
         CraneliftPrimitiveFunction::ApplyN => {
             compiler_data.get_cranelift_apply_addresses().apply_n as _
         }
