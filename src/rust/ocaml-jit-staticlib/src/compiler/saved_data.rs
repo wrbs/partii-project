@@ -17,9 +17,19 @@ pub struct AsmCompiledPrimitive<T> {
     pub entrypoint: T,
 }
 
+pub struct CraneliftApplyAddresses {
+    pub apply_1: usize,
+    pub apply_2: usize,
+    pub apply_3: usize,
+    pub apply_4: usize,
+    pub apply_5: usize,
+    pub apply_n: usize,
+    pub return_addr: usize,
+}
+
 pub struct CompilerData {
     pub sections: Vec<Option<Section>>,
-    pub cranelift_apply: Option<AsmCompiledPrimitive<(usize, usize)>>,
+    pub cranelift_apply: Option<AsmCompiledPrimitive<CraneliftApplyAddresses>>,
     pub callback_compiled: bool,
     pub compiler_options: CompilerOptions,
 }
@@ -45,26 +55,13 @@ impl CompilerData {
             compiler_options,
         }
     }
-    pub fn get_cranelift_apply_addr(&mut self) -> *const u8 {
+    pub fn get_cranelift_apply_addresses(&mut self) -> &CraneliftApplyAddresses {
         let options = self.compiler_options;
-        let (addr, _) = self
+        &self
             .cranelift_apply
             .get_or_insert_with(|| emit_cranelift_callback_entrypoint(options))
-            .entrypoint;
-
-        addr as *const u8
+            .entrypoint
     }
-
-    pub fn get_cranelift_apply_return_addr(&mut self) -> *const u8 {
-        let options = self.compiler_options;
-        let (_, ret) = self
-            .cranelift_apply
-            .get_or_insert_with(|| emit_cranelift_callback_entrypoint(options))
-            .entrypoint;
-
-        ret as *const u8
-    }
-
 
     fn actual_sections(&self) -> impl Iterator<Item = &Section> {
         self.sections.iter().filter_map(|x| match x {

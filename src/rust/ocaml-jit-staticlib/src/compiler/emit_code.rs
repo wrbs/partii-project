@@ -27,7 +27,11 @@ use crate::{
     compiler::saved_data::AsmCompiledPrimitive,
 };
 
-use super::{c_primitives::*, rust_primitives::*, saved_data::EntryPoint};
+use super::{
+    c_primitives::*,
+    rust_primitives::*,
+    saved_data::{CraneliftApplyAddresses, EntryPoint},
+};
 
 pub const DEFAULT_HOT_CLOSURE_THRESHOLD: Option<usize> = Some(10);
 
@@ -366,7 +370,7 @@ fn caml_i32_of_int(orig: i64) -> i32 {
 // Returns (function call entrypoint, callback entrypoint (push this on the frame))
 pub fn emit_cranelift_callback_entrypoint(
     compiler_options: CompilerOptions,
-) -> AsmCompiledPrimitive<(usize, usize)> {
+) -> AsmCompiledPrimitive<CraneliftApplyAddresses> {
     // We don't actually use the labels, but we need it for a context
     let labels = vec![None; 0];
     let ops = Assembler::new().unwrap();
@@ -379,9 +383,15 @@ pub fn emit_cranelift_callback_entrypoint(
         current_instruction_offset: BytecodeRelativeOffset(0),
     };
 
+    let apply_1_offset = cc.ops.offset();
+    let apply_2_offset = cc.ops.offset();
+    let apply_3_offset = cc.ops.offset();
+    let apply_4_offset = cc.ops.offset();
+    let apply_5_offset = cc.ops.offset();
+
     // The signature is
     // (rdi: closure to apply, rsi: extra_args) -> value
-    let start_offset = cc.emit_entrypoint(true);
+    let apply_n_offset = cc.emit_entrypoint(true);
     oc_dynasm!(cc.ops
         // Now aligned - set up initial state
         ; mov r_accu, rdi
@@ -401,12 +411,19 @@ pub fn emit_cranelift_callback_entrypoint(
 
     let buf = cc.ops.finalize().unwrap();
 
-    let start = buf.ptr(start_offset) as usize;
-    let ret = buf.ptr(retaddr_offset) as usize;
+    let entrypoint = CraneliftApplyAddresses {
+        apply_1: buf.ptr(apply_1_offset) as usize,
+        apply_2: buf.ptr(apply_2_offset) as usize,
+        apply_3: buf.ptr(apply_3_offset) as usize,
+        apply_4: buf.ptr(apply_4_offset) as usize,
+        apply_5: buf.ptr(apply_5_offset) as usize,
+        apply_n: buf.ptr(apply_n_offset) as usize,
+        return_addr: buf.ptr(retaddr_offset) as usize,
+    };
 
     AsmCompiledPrimitive {
         compiled_code: buf,
-        entrypoint: (start, ret),
+        entrypoint: entrypoint,
     }
 }
 

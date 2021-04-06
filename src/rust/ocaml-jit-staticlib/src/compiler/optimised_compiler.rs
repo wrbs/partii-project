@@ -162,7 +162,7 @@ fn get_prim_value_addr(
     match primitive {
         CraneliftPrimitiveValue::CamlStateAddr => get_caml_state_addr(),
         CraneliftPrimitiveValue::CallbackReturnAddr => {
-            compiler_data.get_cranelift_apply_return_addr()
+            compiler_data.get_cranelift_apply_addresses().return_addr as _
         }
         CraneliftPrimitiveValue::GlobalDataAddr => get_global_data_addr() as _,
         CraneliftPrimitiveValue::CamlSomethingToDoAddr => get_something_to_do_addr() as _,
@@ -176,7 +176,9 @@ fn get_prim_function_addr(
     match primitive {
         CraneliftPrimitiveFunction::EmitCCallTrace => emit_c_call_trace as _,
         CraneliftPrimitiveFunction::EmitReturnTrace => emit_return_trace as _,
-        CraneliftPrimitiveFunction::DoCallback => compiler_data.get_cranelift_apply_addr(),
+        CraneliftPrimitiveFunction::DoCallback => {
+            compiler_data.get_cranelift_apply_addresses().apply_n as _
+        }
         CraneliftPrimitiveFunction::CamlAllocSmallDispatch => caml_alloc_small_dispatch as _,
         CraneliftPrimitiveFunction::CamlAllocShr => caml_alloc_shr as _,
         CraneliftPrimitiveFunction::CamlInitialize => caml_initialize as _,
