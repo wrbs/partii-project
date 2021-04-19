@@ -1,4 +1,73 @@
-@misc{ Nobody06,
-       author = "Nobody Jr",
-       title = "My Article",
-       year = "2006" }
+@article{jithist,
+  author     = {Aycock, John},
+  title      = {A Brief History of Just-in-Time},
+  year       = {2003},
+  issue_date = {June 2003},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {35},
+  number     = {2},
+  issn       = {0360-0300},
+  url        = {https://doi.org/10.1145/857076.857077},
+  doi        = {10.1145/857076.857077},
+  abstract   = {Software systems have been using "just-in-time" compilation (JIT) techniques since the 1960s. Broadly, JIT compilation includes any translation performed dynamically, after a program has started execution. We examine the motivation behind JIT compilation and constraints imposed on JIT compilation systems, and present a classification scheme for such systems. This classification emerges as we survey forty years of JIT work, from 1960--2000.},
+  journal    = {ACM Comput. Surv.},
+  month      = jun,
+  pages      = {97–113},
+  numpages   = {17},
+  keywords   = {Just-in-time compilation, dynamic compilation}
+}
+
+@article{pyket,
+  author     = {Bauman, Spenser and Bolz, Carl Friedrich and Hirschfeld, Robert and Kirilichev, Vasily and Pape, Tobias and Siek, Jeremy G. and Tobin-Hochstadt, Sam},
+  title      = {Pycket: A Tracing JIT for a Functional Language},
+  year       = {2015},
+  issue_date = {September 2015},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {50},
+  number     = {9},
+  issn       = {0362-1340},
+  url        = {https://doi.org/10.1145/2858949.2784740},
+  doi        = {10.1145/2858949.2784740},
+  abstract   = { We present Pycket, a high-performance tracing JIT compiler for Racket. Pycket supports a wide variety of the sophisticated features in Racket such as contracts, continuations, classes, structures, dynamic binding, and more. On average, over a standard suite of benchmarks, Pycket outperforms existing compilers, both Racket's JIT and other highly-optimizing Scheme compilers. Further, Pycket provides much better performance for Racket proxies than existing systems, dramatically reducing the overhead of contracts and gradual typing. We validate this claim with performance evaluation on multiple existing benchmark suites. The Pycket implementation is of independent interest as an application of the RPython meta-tracing framework (originally created for PyPy), which automatically generates tracing JIT compilers from interpreters. Prior work on meta-tracing focuses on bytecode interpreters, whereas Pycket is a high-level interpreter based on the CEK abstract machine and operates directly on abstract syntax trees. Pycket supports proper tail calls and first-class continuations. In the setting of a functional language, where recursion and higher-order functions are more prevalent than explicit loops, the most significant performance challenge for a tracing JIT is identifying which control flows constitute a loop---we discuss two strategies for identifying loops and measure their impact. },
+  journal    = {SIGPLAN Not.},
+  month      = aug,
+  pages      = {22–34},
+  numpages   = {13},
+  keywords   = {JIT compilers, functional languages, Racket, tracing, contracts}
+}
+  
+@misc{ocjit2,
+  title         = {OCamlJIT 2.0 - Faster Objective Caml},
+  author        = {Benedikt Meurer},
+  year          = {2011},
+  eprint        = {1011.1783},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.PL}
+}
+
+@misc{ocjit1,
+  title  = {OCAMLJIT a faster Just-In-Time Ocaml Implementation},
+  author = {Basile Starynkevitch},
+  year   = {2004},
+  url    = {https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.140.9297&rep=rep1&type=pdf}
+}
+
+@misc{dynasmrs,
+  title  = {dynasm-rs},
+  author = {CensoredUsername},
+  url    = {https://github.com/CensoredUsername/dynasm-rs}
+}
+
+@misc{dynasm,
+  title  = {DynASM},
+  author = {Mike Pall},
+  url    = {http://luajit.org/dynasm.html}
+}
+
+@misc{cranelift,
+  title  = {cranelift},
+  author = {Bytecode Alliance},
+  url    = {https://github.com/bytecodealliance/wasmtime/tree/main/cranelift}
+}

@@ -1,4 +1,162 @@
 % !TeX root = ../dissertation.tex
 \chapter{Implementation}
 
-\section{I did this}
+\section{OCaml runtime}
+
+In order to understand the implementation I have added a short introduction into the inner workings
+of the interpreter.
+
+\subsection{Data representation}
+
+OCaml has a uniform data representation for its values. Values are 64 bits long. Pointers to
+heap-allocated values are
+stored directly - but due to alignment they are guaranteed to have a 0 in the LSB. Integers are 63
+bits long
+with the unused LSB storing a value of 1.
+
+Every heap allocated value has a \texttt{u64} header containing the number of words stored (called
+the \texttt{wosize}) and a \texttt{u8} tag. Most tag values correspond to a block which can be
+thought of as a tagged tuple containing \texttt{wosize} fields. Each field is treated as an OCaml
+value by the garbage collector.
+
+There are special tag values and cases in the garbage collector for things like floating point
+numbers\footnote{which due to the uniform representation must be stored boxed on the heap},
+closures, objects and \texttt{f64}/\texttt{u8} arrays.
+
+\subsection{The OCaml abstract machine}
+
+The OCaml abstract machine is not particularly well-defined. The reference I used was the
+interpreter source itself located at \texttt{src/ocaml/runtime/interp.c}.
+
+\subsubsection{Registers}
+
+The OCaml abstract machine uses five registers:
+
+\begin{itemize}
+    \item \texttt{sp} is a stack pointer for the OCaml stack which is used extensively
+          in the bytecode.
+    \item \texttt{accu} is an accumulator register used for the return values of functions
+          and primitives as well as for most arithmatic operations.
+    \item \texttt{env} holds a pointer to the current closure (an OCaml block) which is used for
+          referencing
+          closure variables (stored as fields in the block)
+    \item \texttt{extra\_args} is used for the interpreters implicit method for currying and
+          tail-call explained in section TODO
+    \item \texttt{pc} contains the pointer to the bytecode instruction to be interpreted next
+\end{itemize}
+
+In addition to these registers there is the \texttt{Caml\_state} struct whose fields can be
+considered as another 30 or so registers. They are used by the interpreter mainly for supporting
+the garbage collector, exceptions and growing and reallocating the OCaml stack.
+
+\subsubsection{Instruction format}
+
+There are 149 opcodes defined. Each opcode takes a certain\footnote{or in the case of
+    \texttt{SWITCH}, variable} number of arguments. Opcodes and arguments are stored as
+\texttt{i32}
+values.
+
+However many opcodes are the composition of a few simpler opcodes to save space in the
+format. For example \texttt{PUSHGETGLOBALFIELD(x, y)} can be expanded to \texttt{PUSH,
+    GETGLOBAL(x), GETFIELD(y)} or \texttt{ACC2} (only opcode) is the same as \texttt{ACC(2)} (with
+the 2 as the operand).
+
+For my JIT I did these expansions to arrive at 62 instructions\footnote{where all binary
+    arithmetic and comparison instructions use the same instruction type -- so in practice about
+    80 distinct instructions}.
+
+Most operations are fairly standard for a stack based machine with an accumulator - there are
+commands for stack manipulation and loading and storing the accumulator to the stack, performing
+arithmetic using the accumulator and the stack,
+conditional branches, switch statements, calling C primitives and allocation of OCaml blocks.
+
+However I will draw attention to the apply thing here
+
+\section{The first compiler}
+
+The first compiler uses a fairly direct translation from OCaml bytecode to assembly.
+
+The x86\_64 registers \texttt{r12-r15} (callee-saved in the System V calling convention) are used
+to store the OCaml registers - however the system PC is used instead of the bytecode pointer.
+
+I set up aliases for these mappings - in \texttt{dynasm\_rs} assembly things like \texttt{r\_accu}
+and
+\texttt{r\_sp} map to the actual registers used.
+
+The compiler is triggered on the first time a `section' is loaded - for normal programs this is at
+startup and for programs using the OCaml toplevel REPL this is after every statement is typed.
+
+The compiler first emits a standard function header entrypoint which saves callee-saved registers
+used by the compiler and aligns the C stack. A longjmp handler is set up for exceptions triggered
+by C primitives, then for each bytecode instruction assembly with the same semantics is emitted.
+
+During this process \texttt{dynasm-rs} dynamic labels are used to set up relocations: these
+labels are defined before every bytecode instruction and can be referenced by any other instruction
+
+After all instructions are done, some shared code used by the instructions is emitted.
+\texttt{dynasm-rs} then uses
+\texttt{mmap} to mark the region of code as executable and returns a pointer to the first
+instruction and
+
+The main meat of this compiler is the large Rust pattern match. As a somewhat simple example
+consider the implementation of the 'ADD' instruction:
+
+In the original interpreter it is implemented as so\footnote{the decrement is to support the OCaml
+    integer representation}
+
+\inputminted{c}{snippets/add.c}
+
+In my compiler I emit this as the template:
+
+\inputminted{rust}{snippets/add.rs}
+
+which has exactly the same semantics.
+
+I repeated this process for every bytecode instruction. More involved instructions call into
+OCaml runtime or custom-written C functions - the state of the registers is pushed to the stack
+and interpreted as a struct by the calling functions.
+
+\subsection{Testing}
+
+\subsubsection{Trace comparison}
+
+Although at a high level this is a simple and fairly direct translation it proved to error-prone.
+
+In order to ensure I had covered as many corner cases as possible I wrote support for emitting
+traces of every instruction executed as JSON and added this to both the existing interpreter
+and the new JIT. At every trace the entire machine state is logged.
+
+A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a program with ASLR disabled and
+tracing enabled twice
+simultaneously - one run uses the JIT and the other the existing interpreter.
+
+Then for every trace entry printed it prints the two lines and if there is a difference highlights
+it in red and exits.
+
+I implemented support for doing this very early on in the implementation of the compiler. This
+allowed a quick iteration of getting increasingly complicated programs running incrementally,
+adding support for new instructions and fixing bugs found by the old ones.
+
+I was initially concerned that non-determinism would be an issue in this approach - especially
+due to malloc and how the OS splits up the virtual memory for each process. However in practice
+once no-aslr was disabled if the first line of traces matched they kept matching throughout the
+execution of the programs.
+
+This can fail for longer running programs which end up triggering a major GC, however none of the
+test programs used were.
+
+Once this was done, I used the compiler's test suite to discover some latent bugs and added new
+test cases to expose them and fix them using the tracing method.
+
+\subsubsection{Testing}
+
+Once I was happy that I had implemented everything, I used the OCaml compiler's internal test
+suite.
+
+This found a few bugs which I fixed by the creation of new trace comparison test programs before
+eventually passing
+everything \footnote{except for the debugger and backtraces which are explicitly not supported}.
+
+Then I tested self-hosting the compiler using the JIT which was a success. At this point I
+considered the phase 1 compiler finished and moved on to the benchmark suite. This is described in
+section REF.
