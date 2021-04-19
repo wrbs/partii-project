@@ -1,4 +1,4 @@
 {
   "url": "../../src",
-  "jit": "-j"
+  "jit": "-j --no-hot-threshold"
 }

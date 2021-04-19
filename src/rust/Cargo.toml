@@ -12,4 +12,4 @@ debug-assertions = true # while testing
 
 
 [patch.crates-io]
-regalloc = { path = "../../vendor/regalloc-0.0.31" }
+regalloc = { path = "../vendor/regalloc-0.0.31" }

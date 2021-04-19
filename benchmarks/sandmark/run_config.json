@@ -63,8 +63,7 @@
       "tags": [
         "lt_1s",
         "macro_bench",
-        "run_in_ci",
-        "bytecode"
+        "run_in_ci"
       ],
       "runs": [
         {
@@ -620,8 +619,7 @@
       "tags": [
         "1s_10s",
         "macro_bench",
-        "run_in_ci",
-        "bytecode"
+        "run_in_ci"
       ],
       "runs": [
         {
