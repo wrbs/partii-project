@@ -1,76 +1,63 @@
 % !TeX root = ../dissertation.tex
 \chapter{Implementation}
 
-\section{OCaml runtime}
+\section{Overview}
 
-In order to understand the implementation I have added a short introduction into the inner workings
-of the interpreter.
+\section{Overview of repository}
 
-\subsection{Data representation}
+\dirtree{%
+    .1 /.
+    .2 benchmarks.
+    .3 sandmark\DTcomment{fork of the Sandmark benchmark suite to support bytecode}.
+    .3 analysis\DTcomment{Jupyter notebooks analysing benchmark results}.
+    .2 docs\DTcomment{{\LaTeX} source of proposal, report and this document}.
+    .2 scripts\DTcomment{scripts to run tests and graph basic blocks}.
+    .3 run\_tests.sh\DTcomment{runs the entire suite of benchmark tests}.
+    .2 src.
+    .3 rust.
+    .4 ocaml-jit-shared\DTcomment{shared library between the other two crates}.
+    .4 ocaml-jit-staticlib\DTcomment{crate linked in to OCaml runtime}.
+    .4 ocaml-jit-tools\DTcomment{standalone tools used for testing}.
+    .3 ocaml\DTcomment{contains a fork of the entire OCaml compiler}.
+    .4 runtime\DTcomment{where most modifications to the OCaml compiler happened}.
+    .5 jit\_support.c\DTcomment{contains C primitives used by the compiled code}.
+    .3 vendor\DTcomment{contains forked Rust dependencies}.
+    .2 test-programs\DTcomment{OCaml source for the test programs used by the scripts}.
+    .2 no-aslr\DTcomment{A simple wrapper to run a program without ASLR}.
+}
 
-OCaml has a uniform data representation for its values. Values are 64 bits long. Pointers to
-heap-allocated values are
-stored directly - but due to alignment they are guaranteed to have a 0 in the LSB. Integers are 63
-bits long
-with the unused LSB storing a value of 1.
+\subsection{ocaml-jit-shared crate}
 
-Every heap allocated value has a \texttt{u64} header containing the number of words stored (called
-the \texttt{wosize}) and a \texttt{u8} tag. Most tag values correspond to a block which can be
-thought of as a tagged tuple containing \texttt{wosize} fields. Each field is treated as an OCaml
-value by the garbage collector.
+\dirtree{%
+    .1 src/rust/ocaml-jit-shared.
+    .2 Cargo.toml\DTcomment{specifies dependencies}.
+    .2 src.
+    .3 basic\_blocks\DTcomment{contains types and algorithm for converting an instruction stream to
+        basic blocks}.
+    .3 cranelift\_compiler.
+    .4 mod.rs\DTcomment{Contains the bulk of the implementation of the optimised compiler}.
+    .4 test\_cases\DTcomment{Contains many expect-test cases}.
+    .3 instructions.
+    .4 parse.rs\DTcomment{contains the parser for OCaml bytecode}.
+    .4 types.rs\DTcomment{defines the core instruction types used everywhere}.
+}
 
-There are special tag values and cases in the garbage collector for things like floating point
-numbers\footnote{which due to the uniform representation must be stored boxed on the heap},
-closures, objects and \texttt{f64}/\texttt{u8} arrays.
+\subsection{ocaml-jit-staticlib crate}
 
-\subsection{The OCaml abstract machine}
-
-The OCaml abstract machine is not particularly well-defined. The reference I used was the
-interpreter source itself located at \texttt{src/ocaml/runtime/interp.c}.
-
-\subsubsection{Registers}
-
-The OCaml abstract machine uses five registers:
-
-\begin{itemize}
-    \item \texttt{sp} is a stack pointer for the OCaml stack which is used extensively
-          in the bytecode.
-    \item \texttt{accu} is an accumulator register used for the return values of functions
-          and primitives as well as for most arithmatic operations.
-    \item \texttt{env} holds a pointer to the current closure (an OCaml block) which is used for
-          referencing
-          closure variables (stored as fields in the block)
-    \item \texttt{extra\_args} is used for the interpreters implicit method for currying and
-          tail-call explained in section TODO
-    \item \texttt{pc} contains the pointer to the bytecode instruction to be interpreted next
-\end{itemize}
-
-In addition to these registers there is the \texttt{Caml\_state} struct whose fields can be
-considered as another 30 or so registers. They are used by the interpreter mainly for supporting
-the garbage collector, exceptions and growing and reallocating the OCaml stack.
-
-\subsubsection{Instruction format}
-
-There are 149 opcodes defined. Each opcode takes a certain\footnote{or in the case of
-    \texttt{SWITCH}, variable} number of arguments. Opcodes and arguments are stored as
-\texttt{i32}
-values.
-
-However many opcodes are the composition of a few simpler opcodes to save space in the
-format. For example \texttt{PUSHGETGLOBALFIELD(x, y)} can be expanded to \texttt{PUSH,
-    GETGLOBAL(x), GETFIELD(y)} or \texttt{ACC2} (only opcode) is the same as \texttt{ACC(2)} (with
-the 2 as the operand).
-
-For my JIT I did these expansions to arrive at 62 instructions\footnote{where all binary
-    arithmetic and comparison instructions use the same instruction type -- so in practice about
-    80 distinct instructions}.
-
-Most operations are fairly standard for a stack based machine with an accumulator - there are
-commands for stack manipulation and loading and storing the accumulator to the stack, performing
-arithmetic using the accumulator and the stack,
-conditional branches, switch statements, calling C primitives and allocation of OCaml blocks.
-
-However I will draw attention to the apply thing here
+\dirtree{%
+    .1 src/rust/ocaml-jit-staticlib.
+    .2 Cargo.toml\DTcomment{specifies dependencies}.
+    .2 src.
+    .3 caml\DTcomment{contains Rust wrappers for OCaml headers}.
+    .3 compiler.
+    .4 c\_primitives.rs\DTcomment{imports C primitives from the OCaml runtime}.
+    .4 emit\_code.rs\DTcomment{contains the bulk of the implementation of the initial compiler}.
+    .4 rust\_primitives.rs\DTcomment{contains primitives written in Rust called by JITed code}.
+    .4 saved\_data.rs\DTcomment{defines the persistent data structures the compiler adds}.
+    .3 c\_entrypoints.rs\DTcomment{glue for C to Rust FFI}.
+    .3 configuration.rs\DTcomment{defines the env-var options the JIT has}.
+    .3 lib.rs\DTcomment{contains the entrypoints into the Rust code}.
+}
 
 \section{The first compiler}
 
@@ -160,3 +147,9 @@ everything \footnote{except for the debugger and backtraces which are explicitly
 Then I tested self-hosting the compiler using the JIT which was a success. At this point I
 considered the phase 1 compiler finished and moved on to the benchmark suite. This is described in
 section REF.
+
+\section{Modifications to support dynamic recompilation}
+
+\section{Optimised compiler}
+
+\section{Disassembly tools}

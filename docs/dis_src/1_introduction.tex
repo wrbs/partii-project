@@ -4,36 +4,82 @@
 \section{Overview}
 
 The OCaml compiler has two main backends: an optimised target-specific native code compiler and a
-compiler to bytecode to be run on the interpreter.
+compiler to bytecode which is later run by the interpreter, \texttt{ocamlrun}.
 
-My project aimed to increase the performance of the bytecode interpreter by using the technique
-just-in-time (JIT) compilation to x86\_64 machine code. I used the Rust programming language to
-implement the compiler.
+My project set out to create a just-in-time (JIT) compiler from OCaml bytecode to x86\_64 machine
+code with the hope of achieving performance benefits.
 
-I implemented two different compilers of differing compilation speed - all bytecode is processed by
-the fast but less optimised compiler and functions determined to be 'hot' are processed by the
-slower but more sophisticated compiler.
+The project achieved on schedule three core goals as set out in the proposal:
+
+\begin{enumerate}
+    \item There is a JIT compiler implemented into the existing OCaml source
+          replacing the interpreter with all functionality but debugging
+          and introspection.
+    \item There is a comprehensive and automated suite of benchmarks built
+          comparing its performance to other alternatives.
+    \item It performs favourably to the interpreter when discounting
+          initial compile time for all programs and overall for longer running
+          programs.
+\end{enumerate}
+
+This gave some time for a significant extension project; this consisted of creating a slower but
+more optimising compiler being conditionally used for functions which are called often.
+
+I will refer to the faster but less intelligent compiler as the `first' or `initial' compiler and
+the slower but more optimising compiler as the `second' or `optimising' compiler.
+
+\section{OCaml bytecode}
+
+Using the bytecode interpreter is significantly slower than the native code compiler - however
+the design of the interpreter is very sophisticated. Its design descends from that of the ZINC
+Abstract Machine (ZAM) \cite{zinc}.
+
+Although most users of OCaml use the native code compiler nearly exclusively, the bytecode
+compiler is still useful. It is used primarily:
+
+\begin{enumerate}
+    \item To run the OCaml REPL (`toplevel')
+    \item As a more stable binary format for tools such as \texttt{js\_of\_ocaml} to use as input
+    \item As a portable executable format for different machines
+    \item To run programs under a debugger
+    \item To allow language developers to experiment with new language features without needing
+          to write target specific code generation
+\end{enumerate}
 
 \section{Related work}
 
-I discovered fairly soon into the project that this had been attempted at least twice: with
-\textsc{OCamlJit} in 2004 \cite{ocjit1} and \textsc{OCamlJit2} in 2010 \cite{ocjit2}. On advice
-of my supervisor I decided not to closely read these papers until after implementation - my
-less-optimised compiler independently ended up working in a similar way to \textsc{OCamlJit2} and
-my second was more sophisticated than either project.
+This project has been attempted at least twice: with \textsc{OCamlJit} in 2004 \cite{ocjit1} and
+\textsc{OCamlJit2} in 2010 \cite{ocjit2}. On advice of my supervisor I decided not to closely
+read these papers until after implementation - my first compiler independently ended up working
+in a similar way to \textsc{OCamlJit2} and my second was more sophisticated than either project.
 
-This project fits into work on JITs as a method-based (as opposed to trace-based) compiler
-\cite{pyket}. The first compiler uses \texttt{dynasm-rs} \cite{dynasmrs} which works as a Rust
-macro
-turning assembly instructions into pre-assembled code and calls into a simple runtime for
-relocation. Its design is based on that of \texttt{DynASM} used in the \texttt{LuaJIT} project
-\cite{dynasm}.
+This project fits into the space of JITs more generally as a method-based (as opposed to
+trace-based) compiler \cite{pyket}. The first compiler uses \texttt{dynasm-rs} \cite{dynasmrs}
+which works as a Rust macro turning assembly instructions into pre-assembled code and calls into
+a simple runtime for relocation. Its design is based on that of \texttt{DynASM} used in the
+\texttt{LuaJIT} project \cite{dynasm}.
 
-The second compiler uses the \texttt{cranelift} \cite{cranelift} which is a low-level retargetable
-code generator with an emphasis on use in JITs.
+The second compiler uses the \texttt{cranelift} \cite{cranelift} library which is a low-level
+retargetable
+code generator with an emphasis on use in JITs\footnote{It's largest use is for JIT-compiling
+    webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar to LLVM but lower
+level and much simpler. It cannot perform many optimisations LLVM can but has significantly lower
+compilation time.
 
-\section{Starting point}
+\section{Implementation constraints}
 
-The starting point of this project was a fork of the OCaml compiler version 4.11.1 with support for
-linking in a Rust static library into the runtime interpreter. I had started work on a simple
-disassembler of OCaml bytecode
+In order to limit the scope of the project some decisions were made upfront.
+
+\begin{enumerate}
+    \item This project only modifies the runtime components of the OCaml compiler and does not
+          modify the bytecode format or behaviour of the compiler, even if this would make life
+          simpler
+    \item The only target considered is x86\_64 Linux
+    \item Correctness should be prioritised over completeness and existing OCaml semantics should
+          be preserved
+\end{enumerate}
+
+Despite the third item, the initial compiler is both correct and can run fully JIT-compiled every
+OCaml program I have tested. The features not supported are the debugger and backtraces - however
+these are optional things that need to be explicitly requested by the user. A significant milestone
+achieved was allowing the compiler to self-host.

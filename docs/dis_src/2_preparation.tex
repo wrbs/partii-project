@@ -1,15 +1,232 @@
 % !TeX root = ../dissertation.tex
 \chapter{Preparation}
 
-Preparation
+\section{The OCaml bytecode interpreter}
 
-\section{The OCaml interpreter abstract machine}
+\subsection{Core design decisions}
 
-The format of OCaml bytecode and
+The interpreter has its roots in the ZAM\cite{zinc} in many ways. The most significant of these for
+this project was the model used for calling functions and dealing with the functional language
+concepts of tail calls and partial application. In a 2005 talk at the KAZAM workshop
+\cite{xavtalk}, Xavier Leroy describes the concept
+of a distinction between the `eval-apply' and `push-enter' models. Leroy attributes this
+distinction to Simon Peyton Jones.
 
-\section{Integration of Rust and OCaml code}
+Consider a simple de Bruijin-indexed lambda calculus:
 
-Before starting work on serious implementation it was important to verify that Rust code could be
-linked in to the OCaml runtime and ensure FFI can take place bidirectionally.
+\begin{align*}
+    e \Coloneqq | & 0 | 1 | \ldots \qq{Variable} \\
+    |             & \lambda e \qq{Abstraction}   \\
+    |             & e\: e \qq{Application}       \\
+\end{align*}
 
-\section{Learning}
+\subsubsection{Simple scheme}
+
+A simple scheme\footnote{Similar to that of the Part IB Compiler Construction course} is to define
+the following:
+
+\newcommand{\compile}[1]{\ensuremath{\mathcal{C}\llbracket #1 \rrbracket}}
+
+\begin{align*}
+    \compile{n}          & = \texttt{ACCESS}(n)                             \\
+    \compile{\lambda e}  & = \texttt{CLOSURE}(\compile{a}; \texttt{RETURN}) \\
+    \compile{e_1 \: e_2} & = \compile{e_1}; \compile{e_2}; \texttt{APPLY}   \\
+\end{align*}
+
+The machine has code, an environment and a stack (where all behave someone like linked lists). The
+transitions are:
+
+\begin{tabular}{llllll}\toprule
+    \multicolumn{3}{c}{Before} & \multicolumn{3}{c}{After}
+    \\\cmidrule(lr){1-3}\cmidrule(lr){4-6}
+    Code                       & Env                       & Stack                          & Code
+                               & Env                       & Stack
+    \\\midrule
+    \(\texttt{ACCESS}(n);c\)   & \(e\)                     & \(s\)                          & \(c\)
+                               & \(e\)                     & \(e(n);s\)
+    \\
+    \(\texttt{CLOSURE}(c');c\) & \(e\)                     & \(s\)                          & \(c\)
+                               & \(e\)                     & \(\langle c',
+    e'\rangle;s\)
+    \\
+    \(\texttt{APPLY};c\)       & \(e\)                     & \(v;\langle c', e\rangle ; s\) &
+    \(c'\)
+                               & \(v; e\)                  & \(c; e; s\)
+    \\
+    \(\texttt{RETURN}(n);c\)   & \(e\)                     & \(v;c';e';s\)                  &
+    \(c'\)
+                               & \(e'\)                    & \(v;s\)
+    \\\bottomrule
+\end{tabular}
+
+\(\langle c, e\rangle\) denotes a closure
+
+While conceptually simple, this module has problems with multiple argument curried functions.
+Calling any multiple-function argument requires creating
+and then discarding multiple closures. In order to deal with this we need special support.
+
+\subsubsection{Eval-apply model}
+
+In Leroy's eval-apply model the callee always receives exactly the number of arguments it expects.
+
+This is true of most imperative languages but is also a viable strategy for implementing functional
+languages:
+
+When compiling the caller, the compiler knows of any arity mismatches and can insert the code for
+partial applications/tail calls at compile time. This is what the OCaml native code compiler does.
+
+\subsubsection{Push-enter}
+
+\emph{THIS IS CONFUSING}
+
+By contrast, in the push-enter model it is the job of the callee to check the arguments it has been
+given and deal with the cases itself.
+
+In the OCaml interpreter this is done in a somewhat involved way. There is a machine register
+called
+\texttt{extra\_args} which is set by the caller of a function. Arguments are passed on the stack
+followed by a
+return frame. \texttt{extra\_args} contains 1 less than the number of passed arguments.
+
+If a function takes more than 1 argument, the first instruction is \( \texttt{GRAB}(n) \). If
+\(\texttt{extra\_args} \ge n\), it decrements \texttt{extra\_args} by \(n\).
+
+However, if this is not the case then the function has been
+partially applied and \(\texttt{extra\_args} < n\). The instruction instead returns a
+closure containing in its environment the arguments that were passed and a special code pointer
+to an instruction called \texttt{RESTART}.
+
+When \texttt{RESTART} is executed it pops those arguments back on to the stack behind the
+arguments now provided but before the return frame and jumps to try the GRAB again.
+
+This represents partial application. Consider the OCaml function:
+
+\mint{ocaml}|let f a b = a + b|
+
+\mintinline{ocaml}{f 1 2} returns an integer but \mintinline{ocaml}{f 1} returns a new
+partially-applied function that remembers the 1 passed to instruction.
+
+\subsubsection{Implications}
+
+The push-enter/`callee deals with arity mismatch' model was one of the biggest complexities
+involved with
+making this JIT. In the bytecode compiler every single call is an indirect lookup through a
+closure, whereas the eval-apply model allows calls to be translated down to simple direct function
+calls.
+
+\subsection{Data representation}
+
+OCaml has a uniform data representation for its values. Values are 64 bits long. Pointers to
+heap-allocated values are
+stored directly - but due to alignment they are guaranteed to have a 0 in the LSB. Integers are 63
+bits long
+with the unused LSB storing a value of 1.
+
+Every heap allocated value has a \texttt{u64} header containing the number of words stored (called
+the \texttt{wosize}) and a \texttt{u8} tag. Most tag values correspond to a block which can be
+thought of as a tagged tuple containing \texttt{wosize} fields. Each field is treated as an OCaml
+value by the garbage collector.
+
+There are special tag values and cases in the garbage collector for things like floating point
+numbers\footnote{which due to the uniform representation must be stored boxed on the heap},
+closures, objects and \texttt{f64}/\texttt{u8} arrays.
+
+\subsubsection{Registers}
+
+The OCaml abstract machine uses five registers:
+
+\begin{itemize}
+    \item \texttt{sp} is a stack pointer for the OCaml stack which is used extensively
+          in the bytecode.
+    \item \texttt{accu} is an accumulator register used for the return values of functions
+          and primitives as well as for most arithmatic operations.
+    \item \texttt{env} holds a pointer to the current closure (an OCaml block) which is used for
+          referencing
+          closure variables (stored as fields in the block)
+    \item \texttt{extra\_args} is used for the interpreters implicit method for currying and
+          tail-call explained in section TODO
+    \item \texttt{pc} contains the pointer to the bytecode instruction to be interpreted next
+\end{itemize}
+
+In addition to these registers there is the \texttt{Caml\_state} struct whose fields can be
+considered as another 30 or so registers. They are used by the interpreter mainly for supporting
+the garbage collector, exceptions and growing and reallocating the OCaml stack.
+
+\subsection{Garbage collector}
+
+OCaml is a garbage collected language - memory is managed by the runtime and released once it is
+no longer reachable from any other live object.
+
+As it is a functional language, short-lived immutable values are created and dropped very
+frequently. For this reason
+OCaml uses a generational garbage collector: there is a minor heap and a major heap. Allocations
+are done by pointer bump in the minor heap
+until it becomes full. At that point the runtime branches into the garbage collector which compacts
+anything alive in the minor heap.
+
+After something survives for a while they are moved to the major heap which is collected much less
+frequently.
+
+OCaml also requires a write barrier for every assignment to a field.
+
+\subsubsection{Safepoints}
+
+A useful abstraction in the implementation of code interacting with a GC is that of the safepoint.
+This is a point in the program (usually a function call) where pointers might end up relocated.
+
+For OCaml this can happen:
+
+\begin{itemize}
+    \item when the minor heap is full during an allocation and the allocation routine branches into
+          the
+          GC
+    \item when a C primitive is called	(which may itself allocate memory and trigger the GC)
+    \item when responding to signal handlers
+\end{itemize}
+
+As the garbage collector relocates objects, it is important the runtime can find all GC roots
+(pointers to heap-allocated values). For the interpreter, all roots are stored on the stack. For
+this reason the interpreter spills the accu and env to the stack at every safepoint.
+
+\subsubsection{Instruction format}
+
+There are 149 opcodes defined. Each opcode takes a certain\footnote{or in the case of
+    \texttt{SWITCH}, variable} number of arguments. Opcodes and arguments are stored as
+\texttt{i32}
+values.
+
+However many opcodes are the composition of a few simpler opcodes to save space in the
+format. For example \texttt{PUSHGETGLOBALFIELD(x, y)} can be expanded to \texttt{PUSH,
+    GETGLOBAL(x), GETFIELD(y)} or \texttt{ACC2} (only opcode) is the same as \texttt{ACC(2)} (with
+the 2 as the operand).
+
+For my JIT I did these expansions to arrive at 62 instructions\footnote{where all binary
+    arithmetic and comparison instructions use the same instruction type -- so in practice about
+    80 distinct instructions}.
+
+Most operations are fairly standard for a stack based machine with an accumulator - there are
+commands for stack manipulation and loading and storing the accumulator to the stack, performing
+arithmetic using the accumulator and the stack,
+conditional branches, switch statements, calling C primitives and allocation of OCaml blocks.
+
+\section{Emitting assembly}
+
+\section{Starting point}
+
+\subsection{Before formal start}
+
+Before formal project start I forked the OCaml compiler (version 4.11.1) and implemented a proof
+of concept bidirectional FFI between C and Rust.
+
+I also wrote a parser from the bytecode into Rust data types and a simple disassembler that uses
+it.
+
+\subsection{Dependencies forked during the project}
+
+I use a lot of open source libraries/crates (as is usual to do in Rust). Some dependencies needed
+to be
+tweaked slightly and where that is the case they are vendored in to the source tree.
+
+I based my benchmark suite from the excellent Sandmark project by OCaml Labs at Cambridge but
+made a large amount of mechanical modifications to modify the tool to support bytecode
+benchmarks.
