@@ -1,7 +1,233 @@
 % !TeX root = ../dissertation.tex
 \chapter{Implementation}
 
-\section{Overview}
+\section{Architectual Overview}
+
+\input{graphs/arch.tex}
+
+I have implemented a Rust static library which is linked in to the OCaml runtime library and
+\texttt{ocamlrun} (the interpreter).
+\texttt{ocamlrun} hooks into this library when it loads bytecode and when it starts
+interpreting it.
+If the JIT is enabled (either by setting an environment variable or enabling it by default at
+compile time),
+when the bytecode load hook is run the \textbf{initial compiler} will execute.
+
+The initial compiler parses the bytecode into a stream of instructions and for each bytecode
+instruction
+it emits assembly with the same semantics to a buffer. After all code has been emitted (including
+headers
+and footers with shared routines) relocations are performed and the buffer is marked as executable.
+
+When \texttt{ocamlrun} then calls the hook to start interpretation, the library instead jumps to
+this assembly code which then performs the same operations as the interpreter - except that every
+instruction has effectively been inlined.
+
+When an OCaml closure is applied\footnote{all non-primitive function calls are translated to
+    closure application}
+a closure execution count is incremented. Once this count passes a configurable threshold the code
+instead
+branches in to the \textbf{optimising compiler}.
+
+The optimising compiler operates on the level of a single function. It starts by doing a
+depth-first search to discover all the basic blocks in the function. It then iterates over this
+again producing Cranelift IR Format (CLIF) which is passed to the machinery of
+\textbf{cranelift}. The CLIF code produced abstracts away the use of the stack allowing cranelift
+to perform its register allocation. The function's code pointer is updated and any future calls
+(including the originally triggering call) will use the optimised implementation.
+
+\section{The initial compiler}
+
+There were two milestones in the project where the initial compiler was complete: after the
+implementation of the initial compiler and after the integration with the optimising compiler. The
+essential difference between them is the addition of a level of pointer indirection at function
+calls to allow patching the address of a function after it has been optimised.
+
+I will describe the first implementation in this section and describe the modifications made to
+support dynamic recompilation in the subsequent section REF.
+
+\subsection{Overview of design}
+
+In order to ensure correctness, the initial compiler produces assembly with \emph{exactly the same
+    semantics} as the interpreter does (with minor exceptions covered later). The exact same
+operations
+are performed in the same order as the bytecode running in the interpreter performs.
+
+The only difference is rather than use bytecode, the operations are inlined into direct assembly.
+Bytecode branches are translated to machine code branches. There are two reasons why it is
+reasonable to expect this to be faster:
+
+\begin{enumerate}
+    \item This design integrates much better into the instruction pipelines, branch prediction and
+          out-of-order execution modern CPUs are capable of
+    \item Operands can be hard-coded into the machine code rather than requiring another memory
+          lookup. For example, rather than performing generalised pointer addition when looking up
+          a field
+          the exact offset can be included in the addressing mode.
+\end{enumerate}
+
+\subsection{Main library used}
+
+The project makes use of the \texttt{dynasm-rs} library. The design of this library allows for
+writing assembly code snippets in the source code. The assembly is validated and mostly assembled
+at compile time using Rust procedural macros and a much smaller runtime library deals with any
+relocations and labels.
+
+This library was a great success as it allowed me to operate at the level of the library without
+being concerned about how the assembly maps to binary. The ahead-of-time aspects means there was
+very little overhead at runtime - much less than alternative approaches like making an assembly
+builder or printing assembly and forking out to an assembler would use.
+
+\subsection{Mapping of the abstract machine}
+
+The first compiler uses a fairly direct translation from OCaml bytecode to assembly.
+
+The x86\_64 registers \texttt{r12-r15} (callee-saved in the System V calling convention) are used
+to store the OCaml registers - however the system PC is used instead of the bytecode pointer.
+
+\subsection{Implementation overview}
+
+The compiler is triggered on the first time a `section' is loaded - for normal programs this is at
+startup and for programs using the OCaml toplevel REPL this is after every statement is typed.
+
+The compiler first emits a standard function header entrypoint which saves callee-saved registers
+used by the compiler and aligns the C stack. A longjmp handler is set up for exceptions and then
+for each bytecode instruction assembly with the same semantics is emitted.
+
+During this process \texttt{dynasm-rs} dynamic labels are used to set up relocations: these
+labels are defined before every bytecode instruction and can be referenced by any other
+instruction. DynASM translates these at runtime into pc-relative jumps.
+
+After all instructions are done, some shared code used by the instructions is emitted.
+\texttt{dynasm-rs} then performs relocations and uses \texttt{mmap} to mark the region of code as
+executable.
+
+The overall signature of the assembly produced by this process is a single function taking no
+arguments and returning an OCaml value. OCaml closure applications (function calls) do not produce
+a stack frame on the C stack - the existing machinery using the OCaml stack is used instead.
+
+The main code of the compiler itself is contained in a 2000 line file
+(\texttt{src/rust/ocaml-jit-staticlib/src/compiler/emit\_code.rs}). Most of this is taken up by a
+Rust large pattern match for each of the bytecode instructions. As a very simple example of what
+the code looks like consider the implemenation of the \texttt{Add} instruction. It adds the value
+at the top of the OCaml stack to the accumulator and stores the result in the accumulator. Note
+that the OCaml integer format means a decrement is required. In the original assembler it is
+implemented as so:
+
+\inputminted{c}{snippets/add.c}
+
+In the compiler the case is instead:
+
+\inputminted{rust}{snippets/add.rs}
+
+which has exactly the same semantics. Note \texttt{r\_accu} and \texttt{r\_sp}
+are aliases for \texttt{r13} and \texttt{r15}.
+
+I repeated this process for every bytecode instruction. More involved instructions call into
+OCaml runtime or custom-written C functions - the state of the registers is pushed to the stack
+and interpreted as a struct by the calling functions.
+
+\subsection{Further details}
+
+The above explanation is an over-simplification. Here is an non-exhaustive list of complicating
+factors:
+
+\begin{itemize}
+    \item There is extensive optional support to support tracing instructions and events (described
+          in section \ref{tracing})
+    \item Callbacks from C to OCaml code require special handling
+    \item The compiler returns a pointer to the first instruction to support OCaml's
+          metaprogramming \texttt{ocaml\_reify\_bytecode} program used in the implementation of
+          things like the
+          toplevel \texttt{ocaml} program.
+    \item Function application is a fairly involved process and there are checks to resize the
+          stack and check for signals as well as the fundamental complexity of the push-enter
+          model.
+    \item Registers need to be saved and restored at safepoints to allow the garbage collector to
+          use them
+    \item Certain operations are involved enough that instead of inline the definition in
+          hand-written assembly, I push the registers to the C stack and call a C primitive to
+          implement the
+          operation (taking the registers as a struct)
+    \item The compiler stores a persistent data structure of the sections to allow mapping bytecode
+          addresses to
+          machine code addresses and allow for cleanup after a section is freed.
+\end{itemize}
+
+Some of these are covered later but for some I will only mention them here to note their existence
+- the actual details are in the code.
+
+\subsection{Implementation strategy}
+
+Implementation followed an incremental and highly test-driven strategy over multiple weeks. The
+initial focus was on building a system sophisticated enough to run a hello world program
+implementing the bare minimum instructions to support this.
+
+I then slowly expanded the complexity of programs using them to drive the implementation of new
+instructions and the fixing of bugs in the previous programs.
+
+As is mostly inevitable in a project of this complexity hand-writing assembly there were a
+significant number of bugs. Traditional debugging methods like print debugging or using a debugger
+could not be as easily applied. Some errors resulted in confusing segfaults without any clear
+indication
+of what went wrong (although by poking around in the memory with GDB I was able to fix them).
+
+Despite this the actual implementation was remarkably efficient. This is mainly due to the trace
+comparison tooling I developed at the very start of the project and continued to expand throughout
+the project.
+
+\subsection{Trace comparison} \label{tracing}
+
+There is no formal specification for the OCaml interpeter. The semantics of the interpreter are
+what
+\texttt{interp.c} and other files in the runtime say they are. Given this I decided to build
+tooling to test the behaviour of my JIT-compiled code directly against the behaviour of the
+interpreter.
+
+In order to ensure I had covered as many corner cases as possible I wrote support for emitting
+traces of every instruction executed as JSON and added this to both the existing interpreter
+and the new JIT. At every trace the entire machine state is logged.
+
+A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a program with ASLR disabled and
+tracing enabled twice
+simultaneously - one run uses the JIT and the other the existing interpreter.
+
+Then for every trace entry printed it prints the two lines and if there is a difference highlights
+it in red and exits.
+
+I implemented support for doing this very early on in the implementation of the compiler. This
+allowed a quick iteration of getting increasingly complicated programs running incrementally,
+adding support for new instructions and fixing bugs found by the old ones.
+
+I was initially concerned that non-determinism would be an issue in this approach - especially
+due to malloc and how the OS splits up the virtual memory for each process. However in practice
+once no-aslr was disabled if the first line of traces matched they kept matching throughout the
+execution of the programs.
+
+This can fail for longer running programs which end up triggering a major GC, however none of the
+test programs used were.
+
+Once this was done, I used the compiler's test suite to discover some latent bugs and added new
+test cases to expose them and fix them using the tracing method.
+
+\subsubsection{Testing}
+
+Once I was happy that I had implemented everything, I used the OCaml compiler's internal test
+suite.
+
+This found a few bugs which I fixed by the creation of new trace comparison test programs before
+eventually passing
+everything \footnote{except for the debugger and backtraces which are explicitly not supported}.
+
+Then I tested self-hosting the compiler using the JIT which was a success. At this point I
+considered the phase 1 compiler finished and moved on to the benchmark suite. This is described in
+section REF.
+
+\section{Modifications to support dynamic recompilation}
+
+\section{Optimised compiler}
+
+\section{Disassembly tools}
 
 \section{Overview of repository}
 
@@ -58,98 +284,3 @@
     .3 configuration.rs\DTcomment{defines the env-var options the JIT has}.
     .3 lib.rs\DTcomment{contains the entrypoints into the Rust code}.
 }
-
-\section{The first compiler}
-
-The first compiler uses a fairly direct translation from OCaml bytecode to assembly.
-
-The x86\_64 registers \texttt{r12-r15} (callee-saved in the System V calling convention) are used
-to store the OCaml registers - however the system PC is used instead of the bytecode pointer.
-
-I set up aliases for these mappings - in \texttt{dynasm\_rs} assembly things like \texttt{r\_accu}
-and
-\texttt{r\_sp} map to the actual registers used.
-
-The compiler is triggered on the first time a `section' is loaded - for normal programs this is at
-startup and for programs using the OCaml toplevel REPL this is after every statement is typed.
-
-The compiler first emits a standard function header entrypoint which saves callee-saved registers
-used by the compiler and aligns the C stack. A longjmp handler is set up for exceptions triggered
-by C primitives, then for each bytecode instruction assembly with the same semantics is emitted.
-
-During this process \texttt{dynasm-rs} dynamic labels are used to set up relocations: these
-labels are defined before every bytecode instruction and can be referenced by any other instruction
-
-After all instructions are done, some shared code used by the instructions is emitted.
-\texttt{dynasm-rs} then uses
-\texttt{mmap} to mark the region of code as executable and returns a pointer to the first
-instruction and
-
-The main meat of this compiler is the large Rust pattern match. As a somewhat simple example
-consider the implementation of the 'ADD' instruction:
-
-In the original interpreter it is implemented as so\footnote{the decrement is to support the OCaml
-    integer representation}
-
-\inputminted{c}{snippets/add.c}
-
-In my compiler I emit this as the template:
-
-\inputminted{rust}{snippets/add.rs}
-
-which has exactly the same semantics.
-
-I repeated this process for every bytecode instruction. More involved instructions call into
-OCaml runtime or custom-written C functions - the state of the registers is pushed to the stack
-and interpreted as a struct by the calling functions.
-
-\subsection{Testing}
-
-\subsubsection{Trace comparison}
-
-Although at a high level this is a simple and fairly direct translation it proved to error-prone.
-
-In order to ensure I had covered as many corner cases as possible I wrote support for emitting
-traces of every instruction executed as JSON and added this to both the existing interpreter
-and the new JIT. At every trace the entire machine state is logged.
-
-A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a program with ASLR disabled and
-tracing enabled twice
-simultaneously - one run uses the JIT and the other the existing interpreter.
-
-Then for every trace entry printed it prints the two lines and if there is a difference highlights
-it in red and exits.
-
-I implemented support for doing this very early on in the implementation of the compiler. This
-allowed a quick iteration of getting increasingly complicated programs running incrementally,
-adding support for new instructions and fixing bugs found by the old ones.
-
-I was initially concerned that non-determinism would be an issue in this approach - especially
-due to malloc and how the OS splits up the virtual memory for each process. However in practice
-once no-aslr was disabled if the first line of traces matched they kept matching throughout the
-execution of the programs.
-
-This can fail for longer running programs which end up triggering a major GC, however none of the
-test programs used were.
-
-Once this was done, I used the compiler's test suite to discover some latent bugs and added new
-test cases to expose them and fix them using the tracing method.
-
-\subsubsection{Testing}
-
-Once I was happy that I had implemented everything, I used the OCaml compiler's internal test
-suite.
-
-This found a few bugs which I fixed by the creation of new trace comparison test programs before
-eventually passing
-everything \footnote{except for the debugger and backtraces which are explicitly not supported}.
-
-Then I tested self-hosting the compiler using the JIT which was a success. At this point I
-considered the phase 1 compiler finished and moved on to the benchmark suite. This is described in
-section REF.
-
-\section{Modifications to support dynamic recompilation}
-
-\section{Optimised compiler}
-
-\section{Disassembly tools}

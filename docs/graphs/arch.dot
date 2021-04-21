@@ -1,0 +1,36 @@
+digraph G {
+    mindist=0.5;
+
+    node [shape=box];
+
+    ocaml_runtime [label="OCaml Runtime"];
+
+    subgraph {
+        rank=same;
+        instruction_parser [label="Instruction Parser"]
+        optimising_compiler [label="Optimising Compiler"]
+    }
+
+    subgraph {
+        rank=same;
+        cranelift [label="cranelift"]
+        initial_compiler [label="Initial Compiler"]
+    }
+
+    subgraph {
+        rank=same;
+        compiled_code [label="Initial Code"]
+        optimised_code [label="Optimised Code"]
+    }
+
+    ocaml_runtime -> instruction_parser [label="bytecode"];
+    instruction_parser -> initial_compiler [label="instructions"];
+    initial_compiler -> compiled_code [label="machine code"];
+    compiled_code -> optimised_code [color="red", dir=both];
+
+    compiled_code -> optimising_compiler [color="red"];
+    optimising_compiler -> cranelift [label="cranelift IR"];
+    instruction_parser -> optimising_compiler [dir=both];
+    cranelift -> optimised_code [label="machine code"];
+
+}

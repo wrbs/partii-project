@@ -15,9 +15,9 @@
         "-interaction=nonstopmode",
         "-file-line-error",
         "-pdf",
-        "-shell-escape",
         "-outdir=%OUTDIR%",
         "-pdflatex=lualatex",
+        "-shell-escape",
         "%DOC%"
       ],
       "env": {}
