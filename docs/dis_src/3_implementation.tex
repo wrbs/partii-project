@@ -36,6 +36,16 @@ again producing Cranelift IR Format (CLIF) which is passed to the machinery of
 to perform its register allocation. The function's code pointer is updated and any future calls
 (including the originally triggering call) will use the optimised implementation.
 
+\section{Development methodology}
+
+\section{Instruction parsing}
+
+\subsection{Types}
+
+Maybe I should talk about the Instruction type that gets used everywhere
+
+\subsection{Parser}
+
 \section{The initial compiler}
 
 There were two milestones in the project where the initial compiler was complete: after the
@@ -184,50 +194,256 @@ what
 tooling to test the behaviour of my JIT-compiled code directly against the behaviour of the
 interpreter.
 
-In order to ensure I had covered as many corner cases as possible I wrote support for emitting
-traces of every instruction executed as JSON and added this to both the existing interpreter
-and the new JIT. At every trace the entire machine state is logged.
+\subsubsection{Tracing}
 
-A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a program with ASLR disabled and
-tracing enabled twice
-simultaneously - one run uses the JIT and the other the existing interpreter.
+In order to do this I added support for tracing after every instruction in both the existing
+interpreter and the JIT-compiled code. The log entry contains the instruction executed, state of
+all of the OCaml registers and the top 5 entries on the stack.
 
-Then for every trace entry printed it prints the two lines and if there is a difference highlights
-it in red and exits.
+There are a few log formats that it can print - for this application I used \texttt{serde} to
+serialize and deserialize the trace entries as JSON. The trace comparison program launches the
+program: once with the interpreter and once using the JITed code
 
-I implemented support for doing this very early on in the implementation of the compiler. This
-allowed a quick iteration of getting increasingly complicated programs running incrementally,
-adding support for new instructions and fixing bugs found by the old ones.
+\subsubsection{Comparison}
 
-I was initially concerned that non-determinism would be an issue in this approach - especially
-due to malloc and how the OS splits up the virtual memory for each process. However in practice
-once no-aslr was disabled if the first line of traces matched they kept matching throughout the
-execution of the programs.
+A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a sepcified program with
+tracing enabled twice simultaneously - one run uses the JIT and the other the
+existing interpreter.
 
-This can fail for longer running programs which end up triggering a major GC, however none of the
-test programs used were.
+Then for every trace entry received it compares the two lines. If there is a difference between the
+lines
+it shows a diff and then exits.
 
-Once this was done, I used the compiler's test suite to discover some latent bugs and added new
-test cases to expose them and fix them using the tracing method.
+As many of the values are pointers there is a risk of non-determinism making this comparison fail.
+I used a small wrapper program I found caled \texttt{no-aslr} to disable ASLR. In order to ensure
+that the Rust code doesn't cause them to become unaligned I ran the compiler regardless of whether
+JITed code was enabled when tracing was enabled. These two things together worked well enough that
+all of the memory addresses were aligned and deterministic. This is unlikely to be true in general
+for all OS kernels and malloc implemenations but worked for me.
 
-\subsubsection{Testing}
+The only expected difference comes from the use of the machine PC rather than the bytecode PC -
+instruction pointers like return addresses on the stack could differ. This required a special case
+during the check.
 
-Once I was happy that I had implemented everything, I used the OCaml compiler's internal test
-suite.
+I added a script to run about 10 test programs that together mostly covered the entire instruction
+set. Running this frequently allowed me to test for regressions when making changes.
 
-This found a few bugs which I fixed by the creation of new trace comparison test programs before
-eventually passing
-everything \footnote{except for the debugger and backtraces which are explicitly not supported}.
+\subsection{Towards full correctness}
 
-Then I tested self-hosting the compiler using the JIT which was a success. At this point I
-considered the phase 1 compiler finished and moved on to the benchmark suite. This is described in
-section REF.
+Once I was happy that I had implemented every instruction, I started using
+the OCaml compiler's internal test suite. I discovered some subtle bugs and used it to add new test
+programs and fix them by trace comparison. One test heavily used callbacks from C to OCaml and I
+discovered my initial implementation was too slow.
+
+I eventually managed to get nearly all tests in the test suite working - the only failures were
+testing the backtrace support and the debugger.
+
+After this I successfuly managed to bootstrap the compiler using the JIT which gave me a high level
+of confidence in the accuracy of the JIT-compiled code.
+
+\subsection{Next steps}
+
+The next steps were to add the benchmark suite. More detail is given later in the evaluation
+chapter but the summary is the results were good and validated that this approach could be
+performant. I had some time left to work on significant extensions.
+
+\subsubsection{Initial plan and SSA form}
+
+I noticed from looking at the structure of the compiled code that a large source of inefficiency
+was the reliance on the stack machine model. This made nearly every operation involve reading from
+or pushing to memory and made little use of hardware registers. Values would be pushed to memory
+only to be dropped by a \texttt{Pop} operation later and all function arguments needed to be placed
+on the stack.
+
+To futher investigate the feasibility of doing something more feasible I decided to produce a
+system which would parse the bytecode into an SSA-type intermediate representation where the OCaml
+stack or accumulator registers were not explicitly used. To test this idea in isolation I decided
+to develop it as a dissasembler. The output of the dissasembler is GraphViz \texttt{dot} files for
+each functions which are converted into hyperlinked \texttt{svg} files.
+
+The final version of the optimised compiler did the same conversion from explicit stack to implicit
+stack with SSA but performed it in a different way. The reasons for these differences are explained
+later in section REF. However the code still appears in the final deliverable as part of the
+`clever' dissasembler.
+
+\subsubsection{Optimised compiler}
+
+Having developed this SSA form I had two choices for how to proceed.
+
+\begin{enumerate}
+    \item write an x86\_64 compiler backend from scratch
+    \item use a compiler framework to do the translation from an IR that is closer in semantics to
+          the existing SSA
+\end{enumerate}
+
+With the limited time remaining and considering the scope of the project I decided that the first
+option was infeasible. For the second, the typical choice to use is LLVM. LLVM is developed by
+Apple and used to support many languages and compilers including Rust, Swift and Clang for C.
+Although typically used for ahead-of-time compilation it has support for use in JIT compilation. It
+additionally contains some support for garbage collection including a model that can be used for
+safepoints.
+
+I initially decided to go with LLVM but as the implementation started I ran into some limitations.
+
+\begin{itemize}
+    \item LLVM is very large and bloated - compiling it with multiple jobs caused my machine to run
+          out of memory and linking it in massively bloated the binary size of \texttt{ocamlrun}
+    \item The safepoint GC support while somewhat mature is messy and would require writing
+          patching the C++ source of LLVM to add new options as well as diving very deep into
+          internal data
+          structures
+    \item LLVM has about 3 different JIT interfaces (\texttt{MCJit}, \texttt{orc}, \texttt{orc2}),
+          all of which had different limitations when used in a project such as mine
+    \item Although there are some very good Rust bindings, not all features of the C++ api are
+          exposed. This is especially true with the garbage collector support.
+    \item LLVM is somewhat heavyweight and slow to compile which makes it inherently less well
+          suited for use in this project
+\end{itemize}
+
+It was at this point that I discovered the \texttt{cranelift} project which seemed in many ways to
+be exactly what I needed.
+
+\begin{itemize}
+    \item It is written in Rust which means the API is fairly idiomatic when using it in Rust
+    \item It is designed primarily for JITs and focuses heavily on compilation performance
+    \item The project is actively developed and I could communicate with the developers when I had
+          questions who were very responsive.
+    \item Although the support for garbage collection is not as extensible, with the help of the
+          developers I was able to come up with a model that is a good fit for the OCaml garbage
+          collector's
+          requirements.
+    \item When I encountered any bugs or missing features I could easily submit and get merged
+          patches to the project which uses a familiar Github workflow rathter than the LLVM
+          project's legacy
+          systems.
+\end{itemize}
+
+There were still some missing features in Cranelift which are described later but for the most
+part it was a good fit for my needs and was in a large part responsible for my being able to
+finish this project in time.
 
 \section{Modifications to support dynamic recompilation}
 
+\subsection{Closure metadata table}
+
+OCaml closures consist of a heap-allocated block containing a code pointer and the closure env
+variables. In the original interpreter this code pointer pointed at a bytecode instruction. In this
+second this was replaced with a pointer to the machine code.
+
+However, different closures can use the same code pionter. The optimsed compiler optimises the code
+in isolation rather than the specific instance in the closure. We also need to keep a count of the
+number of times a section of code is executed to know when to branch into the compiler.
+
+To do these tasks, I extended the initial compiler to have a pass to discover all of the closures
+referenced in the program. For each of these I allocate a 32 byte entry in a table and modified the
+code pointers in closusres to point to these values.
+
+The format of this is INCLUDE THE FORMAT HERE.
+
+\subsection{Transforming partially to eval-apply}
+
+As described in section REFTODO, the OCaml interpreter uses a push-enter model for function calls.
+Projects like Cranelift and LLVM tend to use a calling model which is closer to that of C to
+support the platform ABI. This is also what the CPUs themseleves are optimsed to do.
+
+For this reason I decided to convert from the push-enter model (callee deals with arity mismatch)
+to an eval-apply model (caller deals with arity mismatch).
+
+There is already some shared tasks performed on every apply - checking for stack resizing and
+checking signals. I modified every apply in such a way that dealing with
+
+For simplicity, I only decided to support the optimisation of functions taking 5 or fewer arguments
+which is the vast majority of them. Arguments are passed according to the C calling convention with
+the closure environment always passed as the first argument.
+
+\textbf{MENTION needing to support optimised calls from cranelifted to cranelifted}
+
 \section{Optimised compiler}
 
+\subsection{Cranelift design}
+
+Cranelift is a THING similar to LLVM.
+
+This means that a goal is to have a mostly target-independent format which can be shared between
+the backends.
+
+Cranelift IR is in SSA. In order to make this easier to use cranelift includes an online IR builder
+based on the work of LINKPAPERFORCRANELIFTSHIT.
+
+Unlike LLVM, cranelift uses block parameters rather than Phi nodes. Link to the paper. In practice,
+this is a slightly nicer model to work with.
+
+Cranelift is a typed IR with integer types, functions and crucially for our needs reference types.
+These were originally created to support webaseembly reference types whose garbage collection uses
+reference counting but it's fully precise (DEFINE) nature means it can be used to fit our needs.
+
+\subsection{The optimised compiler}
+
+The steps taken are
+
+\begin{enumerate}
+    \item Convert the instructions into basic blocks and analyse stack starts
+    \item Translate each basic block into Cranelift instructions using cranelift variables to deal
+          with variable positions
+    \item Run cranelift on the source
+    \item Store stack maps emitted by cranelift in the hashmap for garbage collection
+\end{enumerate}
+
+\subsection{Basic block conversion and stack starts}
+
+The compiler starts by parsing the instructions into basic block instructions. The algorithm is
+essentially a depth first search where the stack pointer is updated.
+
+Give pseudo-code for the search
+
+Once this is done we are ready to convert the basic blocks to the form that cranelift expects.
+
+\subsection{Conversion to Cranelift IR}
+
+The structure of this is remarkably similar to the interpreter, and the original compiler. The only
+difference is rather than pushing and popping.
+
+Cranelift works with the concept of an IR builder which is based around the core Value type. For
+example \texttt{2 + 3} might naively be translated into this sequence of calls
+
+\begin{minted}{rust}
+let av = self.builder.ins().iconst(types::I64, 2); // av : Value
+let bv = self.builder.ins().iconst(types::I64, 3); // bv : value
+let result = self.builder.ins().iadd(av, bv);      // result: Value
+\end{minted}
+
+\section{Trace comparison for the Cranelift compiler}
+
+In order to have any hope of creating a correct mapping for cranelift code to
+
+Talk about apply tracing using the existing compiler as the gold standard
+
+\subsection{Garbage collection support}
+
+Talk about R64 and I64 types, conversion between them and what Cranelift does RE spilling and stack
+slots
+
+\subsubsection{Unwinding with \texttt{libunwind}}
+
+Talk about problems with using libunwind and generic DWARF debug info
+
+\subsubsection{\texttt{rbp} unwinding}
+
+Compiling with no emit frame pointer made this much easier
+
+\subsubsection{Final design}
+
+\subsection{Bigger picture}
+
+test
+
 \section{Disassembly tools}
+
+\subsection{SSA dissassembler}
+
+\subsubsection{Unifying stack variables}
+
+\subsubsection{Parsing debug info}
 
 \section{Overview of repository}
 
