@@ -28,7 +28,27 @@
 
 \usepackage{graphviz}
 
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+% for the DFS alg bit
+\DeclareMathOperator{\dfsexit}{exit}
+\DeclareMathOperator{\dfsfallthrough}{fallthrough}
+\DeclareMathOperator{\dfslabels}{labels}
+
 \begin{document}
+
+\algnewcommand\algorithmicmatch{\textbf{match}}
+\algnewcommand\algorithmiccase{\textbf{case}}
+\algnewcommand\algorithmicassert{\textbf{assert}}
+\algnewcommand\Assert[1]{\State \algorithmicassert\ #1}%
+
+\algdef{SE}[MATCH]{Match}{EndMatch}[1]{\algorithmicmatch\ #1\ \algorithmicdo}{\algorithmicend\
+    \algorithmicswitch}%
+\algdef{SE}[CASE]{Case}{EndCase}[1]{\algorithmiccase\ #1}{\algorithmicend\
+    \algorithmiccase}%
+\algtext*{EndMatch}%
+\algtext*{EndCase}%
 
 \include{dis_src/0_frontmatter}
 \include{dis_src/1_introduction}
