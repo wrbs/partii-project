@@ -1,0 +1,35 @@
+Arity: 3
+Max stack size: 9
+
+# Block 0 (stack_start = 3)
+Acc(2)
+Push
+Acc(2)
+Push
+EnvAcc(1)
+ClosureRec([2624, 2681, 2732], 3)
+Const(4)
+Push
+Const(3)
+Push
+Acc(5)
+Push
+Acc(5)
+Apply3
+Const(4)
+Push
+Const(3)
+Push
+Acc(5)
+Push
+Acc(4)
+Apply3
+Const(4)
+Push
+Const(3)
+Push
+Acc(5)
+Push
+Acc(3)
+Exit: TailCall { args: 3, to_pop: 9 }
+

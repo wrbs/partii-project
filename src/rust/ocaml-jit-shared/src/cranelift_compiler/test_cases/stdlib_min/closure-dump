@@ -1,0 +1,18 @@
+Arity: 2
+Max stack size: 3
+
+# Block 0 (stack_start = 2)
+Acc(1)
+Push
+Acc(1)
+CCall2(233)
+Exit: BranchIf { then_block: 1, else_block: 2 }
+
+# Block 1 (stack_start = 2)
+Acc(0)
+Exit: Return(2)
+
+# Block 2 (stack_start = 2)
+Acc(1)
+Exit: Return(2)
+

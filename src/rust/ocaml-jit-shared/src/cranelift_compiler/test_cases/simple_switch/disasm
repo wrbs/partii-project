@@ -4,125 +4,123 @@ Block 0:
   (original IR block: block0)
   (successor: Block 1)
   (successor: Block 10)
-  (instruction range: 0 .. 11)
+  (instruction range: 0 .. 9)
   Inst 0:   pushq   %rbp
   Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
   Inst 2:   movq    %rsp, %rbp
   Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 0 }
-  Inst 4:   load_ext_name u1:0+0, %rcx
-  Inst 5:   movq    152(%rcx), %rdi
-  Inst 6:   movq    %rsi, %rax
-  Inst 7:   movq    %rax, %rdx
-  Inst 8:   andq    $1, %rdx
-  Inst 9:   testq   %rdx, %rdx
-  Inst 10:   jz      label1; j label10
+  Inst 4:   movq    %rsi, %rdi
+  Inst 5:   movq    %rdi, %rax
+  Inst 6:   andq    $1, %rax
+  Inst 7:   testq   %rax, %rax
+  Inst 8:   jz      label1; j label10
 Block 1:
   (original IR block: block9)
   (successor: Block 2)
-  (instruction range: 11 .. 14)
-  Inst 11:   movzbq  -8(%rsi), %rsi
-  Inst 12:   movzbl  %sil, %esi
-  Inst 13:   jmp     label2
+  (instruction range: 9 .. 12)
+  Inst 9:   movzbq  -8(%rsi), %rsi
+  Inst 10:   movzbl  %sil, %esi
+  Inst 11:   jmp     label2
 Block 2:
   (original IR block: block13)
   (successor: Block 3)
   (successor: Block 4)
   (successor: Block 6)
   (successor: Block 8)
-  (instruction range: 14 .. 16)
-  Inst 14:   cmpl    $3, %esi
-  Inst 15:   br_table %rsi
+  (instruction range: 12 .. 14)
+  Inst 12:   cmpl    $3, %esi
+  Inst 13:   br_table %rsi
 Block 3:
   (original IR block: block12)
-  (instruction range: 16 .. 17)
+  (instruction range: 14 .. 15)
       (safepoint: slots [] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
-  Inst 16:   ud2 unreachable
+  Inst 14:   ud2 unreachable
 Block 4:
   (original IR block: block3)
   (successor: Block 5)
-  (instruction range: 17 .. 19)
-  Inst 17:   movl    $7, %eax
-  Inst 18:   jmp     label5
+  (instruction range: 15 .. 17)
+  Inst 15:   movl    $7, %esi
+  Inst 16:   jmp     label5
 Block 5:
   (successor: Block 19)
-  (instruction range: 19 .. 20)
-  Inst 19:   jmp     label19
+  (instruction range: 17 .. 18)
+  Inst 17:   jmp     label19
 Block 6:
   (original IR block: block2)
   (successor: Block 7)
-  (instruction range: 20 .. 22)
-  Inst 20:   movl    $9, %eax
-  Inst 21:   jmp     label7
+  (instruction range: 18 .. 20)
+  Inst 18:   movl    $9, %esi
+  Inst 19:   jmp     label7
 Block 7:
   (successor: Block 19)
-  (instruction range: 22 .. 23)
-  Inst 22:   jmp     label19
+  (instruction range: 20 .. 21)
+  Inst 20:   jmp     label19
 Block 8:
   (original IR block: block1)
   (successor: Block 9)
-  (instruction range: 23 .. 25)
-  Inst 23:   movl    $11, %eax
-  Inst 24:   jmp     label9
+  (instruction range: 21 .. 23)
+  Inst 21:   movl    $11, %esi
+  Inst 22:   jmp     label9
 Block 9:
   (successor: Block 19)
-  (instruction range: 25 .. 26)
-  Inst 25:   jmp     label19
+  (instruction range: 23 .. 24)
+  Inst 23:   jmp     label19
 Block 10:
   (original IR block: block8)
   (successor: Block 11)
-  (instruction range: 26 .. 28)
-  Inst 26:   sarl    $1, %eax
-  Inst 27:   jmp     label11
+  (instruction range: 24 .. 26)
+  Inst 24:   sarl    $1, %edi
+  Inst 25:   jmp     label11
 Block 11:
   (original IR block: block11)
   (successor: Block 12)
   (successor: Block 13)
   (successor: Block 15)
   (successor: Block 17)
-  (instruction range: 28 .. 30)
-  Inst 28:   cmpl    $3, %eax
-  Inst 29:   br_table %rax
+  (instruction range: 26 .. 28)
+  Inst 26:   cmpl    $3, %edi
+  Inst 27:   br_table %rdi
 Block 12:
   (original IR block: block10)
-  (instruction range: 30 .. 31)
+  (instruction range: 28 .. 29)
       (safepoint: slots [] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
-  Inst 30:   ud2 unreachable
+  Inst 28:   ud2 unreachable
 Block 13:
   (original IR block: block6)
   (successor: Block 14)
-  (instruction range: 31 .. 33)
-  Inst 31:   movl    $1, %eax
-  Inst 32:   jmp     label14
+  (instruction range: 29 .. 31)
+  Inst 29:   movl    $1, %esi
+  Inst 30:   jmp     label14
 Block 14:
   (successor: Block 19)
-  (instruction range: 33 .. 34)
-  Inst 33:   jmp     label19
+  (instruction range: 31 .. 32)
+  Inst 31:   jmp     label19
 Block 15:
   (original IR block: block5)
   (successor: Block 16)
-  (instruction range: 34 .. 36)
-  Inst 34:   movl    $3, %eax
-  Inst 35:   jmp     label16
+  (instruction range: 32 .. 34)
+  Inst 32:   movl    $3, %esi
+  Inst 33:   jmp     label16
 Block 16:
   (successor: Block 19)
-  (instruction range: 36 .. 37)
-  Inst 36:   jmp     label19
+  (instruction range: 34 .. 35)
+  Inst 34:   jmp     label19
 Block 17:
   (original IR block: block4)
   (successor: Block 18)
-  (instruction range: 37 .. 39)
-  Inst 37:   movl    $5, %eax
-  Inst 38:   jmp     label18
+  (instruction range: 35 .. 37)
+  Inst 35:   movl    $5, %esi
+  Inst 36:   jmp     label18
 Block 18:
   (successor: Block 19)
-  (instruction range: 39 .. 40)
-  Inst 39:   jmp     label19
+  (instruction range: 37 .. 38)
+  Inst 37:   jmp     label19
 Block 19:
   (original IR block: block7)
-  (instruction range: 40 .. 45)
-  Inst 40:   movq    %rdi, 152(%rcx)
-  Inst 41:   xorq    %rdx, %rdx
-  Inst 42:   movq    %rbp, %rsp
-  Inst 43:   popq    %rbp
-  Inst 44:   ret
+  (instruction range: 38 .. 43)
+  Inst 38:   xorq    %rdx, %rdx
+  Inst 39:   movq    %rsi, %rax
+  Inst 40:   movq    %rbp, %rsp
+  Inst 41:   popq    %rbp
+  Inst 42:   ret
 }}

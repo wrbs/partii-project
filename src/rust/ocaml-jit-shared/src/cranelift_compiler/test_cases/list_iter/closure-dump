@@ -1,0 +1,29 @@
+Arity: 2
+Max stack size: 6
+
+# Block 0 (stack_start = 2)
+Acc(1)
+Exit: BranchIf { then_block: 1, else_block: 2 }
+
+# Block 1 (stack_start = 2)
+Acc(1)
+GetField(1)
+Push
+Acc(2)
+GetField(0)
+Push
+Acc(0)
+Push
+Acc(3)
+Apply1
+Acc(1)
+Push
+Acc(3)
+Push
+OffsetClosure(0)
+Exit: TailCall { args: 2, to_pop: 6 }
+
+# Block 2 (stack_start = 2)
+Const(0)
+Exit: Return(2)
+

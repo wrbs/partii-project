@@ -5,71 +5,67 @@ function u0:0(r64, r64) -> r64, i64 system_v {
 
 block0(v0: r64, v1: r64):
     v3 = iconst.i64 0
-    v27 -> v3
-    v4 = symbol_value.i64 gv0
-    v5 = load.i64 notrap aligned v4+152
-    v25 -> v5
-    v6 = raw_bitcast.i64 v1
-    v8 -> v6
-    v28 = iconst.i64 1
-    v23 -> v28
-    v7 = band v6, v28
-    brz v7, block9
+    v25 -> v3
+    v5 = raw_bitcast.i64 v1
+    v7 -> v5
+    v26 = iconst.i64 1
+    v22 -> v26
+    v6 = band v5, v26
+    brz v6, block9
     jump block8
 
 block8:
-    v9 = ireduce.i32 v6
-    v29 = iconst.i32 1
-    v10 = sshr v9, v29
+    v8 = ireduce.i32 v5
+    v27 = iconst.i32 1
+    v9 = sshr v8, v27
     jump block11
 
 block11:
-    br_table.i32 v10, block10, jt0
+    br_table.i32 v9, block10, jt0
 
 block10:
     trap unreachable
 
 block9:
-    v11 = load.i8 notrap aligned v1-8
-    v12 = uextend.i32 v11
+    v10 = load.i8 notrap aligned v1-8
+    v11 = uextend.i32 v10
     jump block13
 
 block13:
-    br_table.i32 v12, block12, jt1
+    br_table.i32 v11, block12, jt1
 
 block12:
     trap unreachable
 
 block1:
-    v13 = iconst.i64 11
-    v14 = raw_bitcast.r64 v13
-    jump block7(v14)
+    v12 = iconst.i64 11
+    v13 = raw_bitcast.r64 v12
+    jump block7(v13)
 
 block2:
-    v15 = iconst.i64 9
-    v16 = raw_bitcast.r64 v15
-    jump block7(v16)
+    v14 = iconst.i64 9
+    v15 = raw_bitcast.r64 v14
+    jump block7(v15)
 
 block3:
-    v17 = iconst.i64 7
-    v18 = raw_bitcast.r64 v17
-    jump block7(v18)
+    v16 = iconst.i64 7
+    v17 = raw_bitcast.r64 v16
+    jump block7(v17)
 
 block4:
-    v19 = iconst.i64 5
-    v20 = raw_bitcast.r64 v19
-    jump block7(v20)
+    v18 = iconst.i64 5
+    v19 = raw_bitcast.r64 v18
+    jump block7(v19)
 
 block5:
-    v21 = iconst.i64 3
-    v22 = raw_bitcast.r64 v21
-    jump block7(v22)
+    v20 = iconst.i64 3
+    v21 = raw_bitcast.r64 v20
+    jump block7(v21)
 
 block6:
-    v24 = raw_bitcast.r64 v28
-    jump block7(v24)
+    v23 = raw_bitcast.r64 v26
+    jump block7(v23)
 
-block7(v26: r64):
-    store.i64 notrap aligned v5, v4+152
-    return v26, v3
+block7(v24: r64):
+    return v24, v3
 }

@@ -1,29 +1,85 @@
-0x8c: StackMap {
-    bitmap: [
-        BitSet(
-            7,
-        ),
-    ],
-    mapped_words: 6,
-}0xf1: StackMap {
+0x67: StackMap {
     bitmap: [
         BitSet(
             15,
         ),
     ],
-    mapped_words: 6,
-}0x15b: StackMap {
+    mapped_words: 12,
+}0xb1: StackMap {
+    bitmap: [
+        BitSet(
+            11,
+        ),
+    ],
+    mapped_words: 12,
+}0xfc: StackMap {
+    bitmap: [
+        BitSet(
+            11,
+        ),
+    ],
+    mapped_words: 12,
+}0x136: StackMap {
+    bitmap: [
+        BitSet(
+            95,
+        ),
+    ],
+    mapped_words: 12,
+}0x180: StackMap {
+    bitmap: [
+        BitSet(
+            15,
+        ),
+    ],
+    mapped_words: 12,
+}0x1cb: StackMap {
+    bitmap: [
+        BitSet(
+            15,
+        ),
+    ],
+    mapped_words: 12,
+}0x212: StackMap {
+    bitmap: [
+        BitSet(
+            479,
+        ),
+    ],
+    mapped_words: 12,
+}0x25c: StackMap {
     bitmap: [
         BitSet(
             31,
         ),
     ],
-    mapped_words: 6,
-}0x1d2: StackMap {
+    mapped_words: 12,
+}0x2a7: StackMap {
     bitmap: [
         BitSet(
-            63,
+            31,
         ),
     ],
-    mapped_words: 6,
+    mapped_words: 12,
+}0x2fb: StackMap {
+    bitmap: [
+        BitSet(
+            2015,
+        ),
+    ],
+    mapped_words: 12,
+}0x345: StackMap {
+    bitmap: [
+        BitSet(
+            95,
+        ),
+    ],
+    mapped_words: 12,
+}0x390: StackMap {
+    bitmap: [
+        BitSet(
+            95,
+        ),
+    ],
+    mapped_words: 12,
 }

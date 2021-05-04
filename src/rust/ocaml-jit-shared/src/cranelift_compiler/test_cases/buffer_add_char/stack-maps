@@ -1,22 +1,36 @@
-0x87: StackMap {
+0x60: StackMap {
+    bitmap: [
+        BitSet(
+            31,
+        ),
+    ],
+    mapped_words: 6,
+}0xaf: StackMap {
     bitmap: [
         BitSet(
             7,
         ),
     ],
-    mapped_words: 4,
-}0xcb: StackMap {
+    mapped_words: 6,
+}0xf5: StackMap {
+    bitmap: [
+        BitSet(
+            7,
+        ),
+    ],
+    mapped_words: 6,
+}0x127: StackMap {
     bitmap: [
         BitSet(
             15,
         ),
     ],
-    mapped_words: 4,
-}0xf8: StackMap {
+    mapped_words: 6,
+}0x14d: StackMap {
     bitmap: [
         BitSet(
             3,
         ),
     ],
-    mapped_words: 4,
+    mapped_words: 6,
 }

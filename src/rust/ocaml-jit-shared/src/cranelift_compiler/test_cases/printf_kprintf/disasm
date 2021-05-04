@@ -4,7 +4,7 @@ Block 0:
   (original IR block: block0)
   (successor: Block 1)
   (successor: Block 2)
-  (instruction range: 0 .. 28)
+  (instruction range: 0 .. 26)
   Inst 0:   pushq   %rbp
   Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
   Inst 2:   movq    %rsp, %rbp
@@ -20,39 +20,39 @@ Block 0:
   Inst 12:   unwind SaveReg { clobber_offset: 24, reg: r28J }
   Inst 13:   movq    %r15, 64(%rsp)
   Inst 14:   unwind SaveReg { clobber_offset: 32, reg: r29J }
-  Inst 15:   movq    %rsi, %r15
-  Inst 16:   movq    %rdx, %rbx
+  Inst 15:   movq    %rsi, %rbx
+  Inst 16:   movq    %rdx, %r15
   Inst 17:   load_ext_name u1:0+0, %r12
-  Inst 18:   movq    152(%r12), %r13
-  Inst 19:   movq    0(%rcx), %r14
-  Inst 20:   movl    $1, %esi
-  Inst 21:   movq    %rsi, rsp(0 + virtual offset)
-  Inst 22:   movabsq $-32, %rsi
-  Inst 23:   addq    0(%r12), %rsi
-  Inst 24:   movq    %rsi, 0(%r12)
-  Inst 25:   movq    8(%r12), %rdi
-  Inst 26:   cmpq    %rdi, %rsi
-  Inst 27:   jnb     label1; j label2
+  Inst 18:   movq    0(%rcx), %r13
+  Inst 19:   movl    $1, %r14d
+  Inst 20:   movabsq $-32, %rsi
+  Inst 21:   addq    0(%r12), %rsi
+  Inst 22:   movq    %rsi, 0(%r12)
+  Inst 23:   movq    8(%r12), %rdi
+  Inst 24:   cmpq    %rdi, %rsi
+  Inst 25:   jnb     label1; j label2
 Block 1:
   (successor: Block 4)
-  (instruction range: 28 .. 29)
-  Inst 28:   jmp     label4
+  (instruction range: 26 .. 27)
+  Inst 26:   jmp     label4
 Block 2:
   (original IR block: block2)
   (successor: Block 3)
-  (instruction range: 29 .. 43)
-  Inst 29:   movl    $3, %edi
-  Inst 30:   movl    $17, %esi
-  Inst 31:   movl    $1, %edx
-  Inst 32:   xorq    %rcx, %rcx
-  Inst 33:   load_ext_name u0:1+0, %rax
-  Inst 34:   movq    %rbx, rsp(8 + virtual offset)
-  Inst 35:   movq    %r15, rsp(16 + virtual offset)
-  Inst 36:   movq    %r14, rsp(24 + virtual offset)
+  (instruction range: 27 .. 43)
+  Inst 27:   movl    $3, %edi
+  Inst 28:   movl    $17, %esi
+  Inst 29:   movl    $1, %edx
+  Inst 30:   xorq    %rcx, %rcx
+  Inst 31:   load_ext_name u0:1+0, %rax
+  Inst 32:   movq    %r15, rsp(0 + virtual offset)
+  Inst 33:   movq    %r13, rsp(8 + virtual offset)
+  Inst 34:   movq    %rbx, rsp(16 + virtual offset)
+  Inst 35:   movq    %r14, rsp(24 + virtual offset)
       (safepoint: slots [S0, S1, S2, S3] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
-  Inst 37:   call    *%rax
-  Inst 38:   movq    rsp(8 + virtual offset), %rbx
-  Inst 39:   movq    rsp(16 + virtual offset), %r15
+  Inst 36:   call    *%rax
+  Inst 37:   movq    rsp(0 + virtual offset), %r15
+  Inst 38:   movq    rsp(8 + virtual offset), %r13
+  Inst 39:   movq    rsp(16 + virtual offset), %rbx
   Inst 40:   movq    rsp(24 + virtual offset), %r14
   Inst 41:   movq    0(%r12), %rsi
   Inst 42:   jmp     label3
@@ -63,12 +63,12 @@ Block 3:
 Block 4:
   (original IR block: block3)
   (successor: Block 5)
-  (instruction range: 44 .. 63)
+  (instruction range: 44 .. 64)
   Inst 44:   movl    $3319, %edi
   Inst 45:   movq    %rdi, 0(%rsi)
   Inst 46:   addq    $8, %rsi
-  Inst 47:   movq    %r15, 8(%rsi)
-  Inst 48:   movq    %rbx, 16(%rsi)
+  Inst 47:   movq    %rbx, 8(%rsi)
+  Inst 48:   movq    %r15, 16(%rsi)
   Inst 49:   movq    %rsi, %rdi
   Inst 50:   movl    $-559038737, %eax
   Inst 51:   movq    %rax, 0(%rdi)
@@ -76,17 +76,17 @@ Block 4:
   Inst 53:   movq    0(%rdi), %rdi
   Inst 54:   movq    2384(%rdi), %rdi
   Inst 55:   movq    48(%rdi), %rdi
-  Inst 56:   movq    %r13, %rax
-  Inst 57:   addq    $-24, %rax
-  Inst 58:   movq    %rsi, -24(%r13)
-  Inst 59:   movq    rsp(0 + virtual offset), %rsi
-  Inst 60:   movq    %rsi, -16(%r13)
-  Inst 61:   movq    %r14, -8(%r13)
-  Inst 62:   jmp     label5
+  Inst 56:   movq    152(%r12), %rax
+  Inst 57:   movq    %rax, %rcx
+  Inst 58:   addq    $-24, %rcx
+  Inst 59:   movq    %rsi, -24(%rax)
+  Inst 60:   movq    %r14, -16(%rax)
+  Inst 61:   movq    %r13, -8(%rax)
+  Inst 62:   movq    %rcx, 152(%r12)
+  Inst 63:   jmp     label5
 Block 5:
   (original IR block: block1)
-  (instruction range: 63 .. 75)
-  Inst 63:   movq    %rax, 152(%r12)
+  (instruction range: 64 .. 75)
   Inst 64:   movl    $3, %edx
   Inst 65:   movq    %rdi, %rax
   Inst 66:   movq    32(%rsp), %r12

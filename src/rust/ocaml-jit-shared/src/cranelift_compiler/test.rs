@@ -21,9 +21,12 @@ fn run_test(
     expected_stack_maps: ExpectFile,
     expected_disasm: ExpectFile,
     expected_objdump: ExpectFile,
+    expected_closuredump: ExpectFile,
 ) {
     let _ = env_logger::try_init(); // Cranelift uses rust_log a lot internally and this allows setting RUST_LOG
     let closure: BasicClosure = serde_json::from_str(closure_json).unwrap();
+
+    expected_closuredump.assert_eq(&dump_closure(&closure));
 
     let isa = get_isa();
     let object_builder = ObjectBuilder::new(isa, case_name, default_libcall_names()).unwrap();
@@ -118,6 +121,7 @@ macro_rules! test_case {
                 expect_file![concat!("./test_cases/", stringify!($case), "/stack-maps")],
                 expect_file![concat!("./test_cases/", stringify!($case), "/disasm")],
                 expect_file![concat!("./test_cases/", stringify!($case), "/objdump")],
+                expect_file![concat!("./test_cases/", stringify!($case), "/closure-dump")],
             );
         }
     };
@@ -147,3 +151,31 @@ test_case!(switch_ints);
 test_case!(switch_tags);
 test_case!(rec_closures);
 test_case!(buffer_add_char);
+
+fn dump_closure(closure: &BasicClosure) -> String {
+    let mut s = String::new();
+
+    writeln!(s, "Arity: {}", closure.arity).unwrap();
+    writeln!(s, "Max stack size: {}", closure.max_stack_size).unwrap();
+
+    writeln!(s);
+
+    for (block_num, block) in closure.blocks.iter().enumerate() {
+        writeln!(
+            s,
+            "# Block {} (stack_start = {})",
+            block_num, block.start_stack_size
+        )
+        .unwrap();
+        for instr in &block.instructions {
+            writeln!(s, "{:?}", instr).unwrap();
+        }
+
+        writeln!(s, "Exit: {:?}", block.exit).unwrap();
+
+        writeln!(s).unwrap();
+    }
+
+    s
+}
+test_case!(clamp);

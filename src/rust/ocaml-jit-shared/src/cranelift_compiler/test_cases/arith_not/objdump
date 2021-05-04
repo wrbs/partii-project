@@ -8,13 +8,8 @@ Disassembly of section .text:
    0:	55                   	push   rbp
    1:	48 89 e5             	mov    rbp,rsp
    4:	48 89 f0             	mov    rax,rsi
-   7:	48 be 00 00 00 00 00 	movabs rsi,0x0
-   e:	00 00 00 
-			9: R_X86_64_64	caml_state_addr
-  11:	48 8b be 98 00 00 00 	mov    rdi,QWORD PTR [rsi+0x98]
-  18:	48 83 f0 02          	xor    rax,0x2
-  1c:	48 89 be 98 00 00 00 	mov    QWORD PTR [rsi+0x98],rdi
-  23:	48 31 d2             	xor    rdx,rdx
-  26:	48 89 ec             	mov    rsp,rbp
-  29:	5d                   	pop    rbp
-  2a:	c3                   	ret    
+   7:	48 83 f0 02          	xor    rax,0x2
+   b:	48 31 d2             	xor    rdx,rdx
+   e:	48 89 ec             	mov    rsp,rbp
+  11:	5d                   	pop    rbp
+  12:	c3                   	ret    

@@ -7,33 +7,28 @@ Disassembly of section .text:
 0000000000000000 <switch_ints>:
    0:	55                   	push   rbp
    1:	48 89 e5             	mov    rbp,rsp
-   4:	48 b9 00 00 00 00 00 	movabs rcx,0x0
-   b:	00 00 00 
-			6: R_X86_64_64	caml_state_addr
-   e:	48 8b b9 98 00 00 00 	mov    rdi,QWORD PTR [rcx+0x98]
-  15:	48 89 f0             	mov    rax,rsi
-  18:	c1 f8 01             	sar    eax,0x1
-  1b:	83 f8 03             	cmp    eax,0x3
-  1e:	0f 83 1f 00 00 00    	jae    43 <switch_ints+0x43>
-  24:	8b c0                	mov    eax,eax
-  26:	48 8d 35 0a 00 00 00 	lea    rsi,[rip+0xa]        # 37 <switch_ints+0x37>
-  2d:	48 63 44 86 00       	movsxd rax,DWORD PTR [rsi+rax*4+0x0]
-  32:	48 01 c6             	add    rsi,rax
-  35:	ff e6                	jmp    rsi
-  37:	0e                   	(bad)  
-  38:	00 00                	add    BYTE PTR [rax],al
-  3a:	00 18                	add    BYTE PTR [rax],bl
-  3c:	00 00                	add    BYTE PTR [rax],al
-  3e:	00 22                	add    BYTE PTR [rdx],ah
-  40:	00 00                	add    BYTE PTR [rax],al
-  42:	00 0f                	add    BYTE PTR [rdi],cl
-  44:	0b b8 01 00 00 00    	or     edi,DWORD PTR [rax+0x1]
-  4a:	e9 0f 00 00 00       	jmp    5e <switch_ints+0x5e>
-  4f:	b8 03 00 00 00       	mov    eax,0x3
-  54:	e9 05 00 00 00       	jmp    5e <switch_ints+0x5e>
-  59:	b8 05 00 00 00       	mov    eax,0x5
-  5e:	48 89 b9 98 00 00 00 	mov    QWORD PTR [rcx+0x98],rdi
-  65:	48 31 d2             	xor    rdx,rdx
-  68:	48 89 ec             	mov    rsp,rbp
-  6b:	5d                   	pop    rbp
-  6c:	c3                   	ret    
+   4:	c1 fe 01             	sar    esi,0x1
+   7:	83 fe 03             	cmp    esi,0x3
+   a:	0f 83 1f 00 00 00    	jae    2f <switch_ints+0x2f>
+  10:	8b fe                	mov    edi,esi
+  12:	48 8d 35 0a 00 00 00 	lea    rsi,[rip+0xa]        # 23 <switch_ints+0x23>
+  19:	48 63 7c be 00       	movsxd rdi,DWORD PTR [rsi+rdi*4+0x0]
+  1e:	48 01 fe             	add    rsi,rdi
+  21:	ff e6                	jmp    rsi
+  23:	0e                   	(bad)  
+  24:	00 00                	add    BYTE PTR [rax],al
+  26:	00 18                	add    BYTE PTR [rax],bl
+  28:	00 00                	add    BYTE PTR [rax],al
+  2a:	00 22                	add    BYTE PTR [rdx],ah
+  2c:	00 00                	add    BYTE PTR [rax],al
+  2e:	00 0f                	add    BYTE PTR [rdi],cl
+  30:	0b be 01 00 00 00    	or     edi,DWORD PTR [rsi+0x1]
+  36:	e9 0f 00 00 00       	jmp    4a <switch_ints+0x4a>
+  3b:	be 03 00 00 00       	mov    esi,0x3
+  40:	e9 05 00 00 00       	jmp    4a <switch_ints+0x4a>
+  45:	be 05 00 00 00       	mov    esi,0x5
+  4a:	48 31 d2             	xor    rdx,rdx
+  4d:	48 89 f0             	mov    rax,rsi
+  50:	48 89 ec             	mov    rsp,rbp
+  53:	5d                   	pop    rbp
+  54:	c3                   	ret    

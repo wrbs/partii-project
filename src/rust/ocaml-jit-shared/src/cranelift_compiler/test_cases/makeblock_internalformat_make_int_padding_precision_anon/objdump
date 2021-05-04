@@ -7,91 +7,120 @@ Disassembly of section .text:
 0000000000000000 <makeblock_internalformat_make_int_padding_precision_anon>:
    0:	55                   	push   rbp
    1:	48 89 e5             	mov    rbp,rsp
-   4:	48 83 ec 50          	sub    rsp,0x50
-   8:	4c 89 64 24 20       	mov    QWORD PTR [rsp+0x20],r12
-   d:	4c 89 6c 24 28       	mov    QWORD PTR [rsp+0x28],r13
-  12:	4c 89 74 24 30       	mov    QWORD PTR [rsp+0x30],r14
-  17:	48 89 5c 24 38       	mov    QWORD PTR [rsp+0x38],rbx
-  1c:	4c 89 7c 24 40       	mov    QWORD PTR [rsp+0x40],r15
-  21:	49 89 fd             	mov    r13,rdi
-  24:	48 89 f0             	mov    rax,rsi
-  27:	49 bc 00 00 00 00 00 	movabs r12,0x0
-  2e:	00 00 00 
-			29: R_X86_64_64	caml_state_addr
-  31:	49 8b b4 24 98 00 00 	mov    rsi,QWORD PTR [r12+0x98]
-  38:	00 
-  39:	49 8b 4d 30          	mov    rcx,QWORD PTR [r13+0x30]
-  3d:	49 8b 7d 28          	mov    rdi,QWORD PTR [r13+0x28]
-  41:	48 ba 00 00 00 00 00 	movabs rdx,0x0
-  48:	00 00 00 
-			43: R_X86_64_64	callback_return_addr
-  4b:	49 89 b4 24 98 00 00 	mov    QWORD PTR [r12+0x98],rsi
-  52:	00 
-  53:	48 89 4e d8          	mov    QWORD PTR [rsi-0x28],rcx
-  57:	48 89 46 e0          	mov    QWORD PTR [rsi-0x20],rax
-  5b:	48 89 56 e8          	mov    QWORD PTR [rsi-0x18],rdx
-  5f:	b8 01 00 00 00       	mov    eax,0x1
-  64:	48 89 46 f0          	mov    QWORD PTR [rsi-0x10],rax
-  68:	b8 01 00 00 00       	mov    eax,0x1
-  6d:	48 89 46 f8          	mov    QWORD PTR [rsi-0x8],rax
-  71:	be 01 00 00 00       	mov    esi,0x1
-  76:	48 b8 00 00 00 00 00 	movabs rax,0x0
-  7d:	00 00 00 
-			78: R_X86_64_64	do_callback
-  80:	48 89 3c 24          	mov    QWORD PTR [rsp],rdi
-  84:	4c 89 6c 24 08       	mov    QWORD PTR [rsp+0x8],r13
-  89:	ff d0                	call   rax
-  8b:	4c 8b 6c 24 08       	mov    r13,QWORD PTR [rsp+0x8]
-  90:	49 89 c7             	mov    r15,rax
-  93:	4d 8b b4 24 98 00 00 	mov    r14,QWORD PTR [r12+0x98]
-  9a:	00 
-  9b:	49 8b 75 20          	mov    rsi,QWORD PTR [r13+0x20]
-  9f:	48 89 34 24          	mov    QWORD PTR [rsp],rsi
-  a3:	49 8b 5d 18          	mov    rbx,QWORD PTR [r13+0x18]
-  a7:	48 c7 c6 e8 ff ff ff 	mov    rsi,0xffffffffffffffe8
-  ae:	49 03 34 24          	add    rsi,QWORD PTR [r12]
-  b2:	49 89 34 24          	mov    QWORD PTR [r12],rsi
-  b6:	49 8b 7c 24 08       	mov    rdi,QWORD PTR [r12+0x8]
-  bb:	48 39 fe             	cmp    rsi,rdi
-  be:	0f 83 40 00 00 00    	jae    104 <makeblock_internalformat_make_int_padding_precision_anon+0x104>
-  c4:	bf 02 00 00 00       	mov    edi,0x2
-  c9:	be 11 00 00 00       	mov    esi,0x11
-  ce:	ba 01 00 00 00       	mov    edx,0x1
-  d3:	48 31 c9             	xor    rcx,rcx
-  d6:	48 b8 00 00 00 00 00 	movabs rax,0x0
-  dd:	00 00 00 
-			d8: R_X86_64_64	caml_alloc_small_dispatch
-  e0:	48 89 5c 24 08       	mov    QWORD PTR [rsp+0x8],rbx
-  e5:	4c 89 7c 24 10       	mov    QWORD PTR [rsp+0x10],r15
-  ea:	4c 89 6c 24 18       	mov    QWORD PTR [rsp+0x18],r13
-  ef:	ff d0                	call   rax
-  f1:	48 8b 5c 24 08       	mov    rbx,QWORD PTR [rsp+0x8]
-  f6:	4c 8b 7c 24 10       	mov    r15,QWORD PTR [rsp+0x10]
-  fb:	4c 8b 6c 24 18       	mov    r13,QWORD PTR [rsp+0x18]
- 100:	49 8b 34 24          	mov    rsi,QWORD PTR [r12]
- 104:	bf 04 08 00 00       	mov    edi,0x804
- 109:	48 89 3e             	mov    QWORD PTR [rsi],rdi
- 10c:	48 83 c6 08          	add    rsi,0x8
- 110:	48 89 1e             	mov    QWORD PTR [rsi],rbx
- 113:	4c 89 7e 08          	mov    QWORD PTR [rsi+0x8],r15
- 117:	49 8b 4d 10          	mov    rcx,QWORD PTR [r13+0x10]
- 11b:	49 8b 7d 08          	mov    rdi,QWORD PTR [r13+0x8]
- 11f:	4c 89 f0             	mov    rax,r14
- 122:	48 83 c0 e8          	add    rax,0xffffffffffffffe8
- 126:	49 89 4e e8          	mov    QWORD PTR [r14-0x18],rcx
- 12a:	49 89 76 f0          	mov    QWORD PTR [r14-0x10],rsi
- 12e:	48 8b 34 24          	mov    rsi,QWORD PTR [rsp]
- 132:	49 89 76 f8          	mov    QWORD PTR [r14-0x8],rsi
- 136:	49 89 84 24 98 00 00 	mov    QWORD PTR [r12+0x98],rax
- 13d:	00 
- 13e:	ba 03 00 00 00       	mov    edx,0x3
- 143:	48 89 f8             	mov    rax,rdi
- 146:	4c 8b 64 24 20       	mov    r12,QWORD PTR [rsp+0x20]
- 14b:	4c 8b 6c 24 28       	mov    r13,QWORD PTR [rsp+0x28]
- 150:	4c 8b 74 24 30       	mov    r14,QWORD PTR [rsp+0x30]
- 155:	48 8b 5c 24 38       	mov    rbx,QWORD PTR [rsp+0x38]
- 15a:	4c 8b 7c 24 40       	mov    r15,QWORD PTR [rsp+0x40]
- 15f:	48 83 c4 50          	add    rsp,0x50
- 163:	48 89 ec             	mov    rsp,rbp
- 166:	5d                   	pop    rbp
- 167:	c3                   	ret    
+   4:	48 83 ec 60          	sub    rsp,0x60
+   8:	4c 89 64 24 30       	mov    QWORD PTR [rsp+0x30],r12
+   d:	4c 89 6c 24 38       	mov    QWORD PTR [rsp+0x38],r13
+  12:	4c 89 74 24 40       	mov    QWORD PTR [rsp+0x40],r14
+  17:	48 89 5c 24 48       	mov    QWORD PTR [rsp+0x48],rbx
+  1c:	4c 89 7c 24 50       	mov    QWORD PTR [rsp+0x50],r15
+  21:	48 89 7c 24 08       	mov    QWORD PTR [rsp+0x8],rdi
+  26:	48 89 f2             	mov    rdx,rsi
+  29:	49 bc 00 00 00 00 00 	movabs r12,0x0
+  30:	00 00 00 
+			2b: R_X86_64_64	caml_state_addr
+  33:	48 8b 74 24 08       	mov    rsi,QWORD PTR [rsp+0x8]
+  38:	48 8b 76 30          	mov    rsi,QWORD PTR [rsi+0x30]
+  3c:	48 8b 7c 24 08       	mov    rdi,QWORD PTR [rsp+0x8]
+  41:	48 8b 7f 28          	mov    rdi,QWORD PTR [rdi+0x28]
+  45:	48 b8 00 00 00 00 00 	movabs rax,0x0
+  4c:	00 00 00 
+			47: R_X86_64_64	apply2
+  4f:	48 89 34 24          	mov    QWORD PTR [rsp],rsi
+  53:	48 89 7c 24 10       	mov    QWORD PTR [rsp+0x10],rdi
+  58:	48 89 54 24 18       	mov    QWORD PTR [rsp+0x18],rdx
+  5d:	ff d0                	call   rax
+  5f:	48 89 c6             	mov    rsi,rax
+  62:	48 89 34 24          	mov    QWORD PTR [rsp],rsi
+  66:	49 89 d6             	mov    r14,rdx
+  69:	4d 85 f6             	test   r14,r14
+  6c:	0f 85 09 00 00 00    	jne    7b <makeblock_internalformat_make_int_padding_precision_anon+0x7b>
+  72:	48 8b 1c 24          	mov    rbx,QWORD PTR [rsp]
+  76:	e9 7a 00 00 00       	jmp    f5 <makeblock_internalformat_make_int_padding_precision_anon+0xf5>
+  7b:	49 8b 9c 24 98 00 00 	mov    rbx,QWORD PTR [r12+0x98]
+  82:	00 
+  83:	4d 89 f7             	mov    r15,r14
+  86:	49 83 c7 ff          	add    r15,0xffffffffffffffff
+  8a:	4c 89 f2             	mov    rdx,r14
+  8d:	48 c1 e2 03          	shl    rdx,0x3
+  91:	49 89 dd             	mov    r13,rbx
+  94:	49 01 d5             	add    r13,rdx
+  97:	48 89 df             	mov    rdi,rbx
+  9a:	48 83 c7 e8          	add    rdi,0xffffffffffffffe8
+  9e:	48 89 de             	mov    rsi,rbx
+  a1:	48 b8 00 00 00 00 00 	movabs rax,0x0
+  a8:	00 00 00 
+			a3: R_X86_64_64	memmove
+  ab:	ff d0                	call   rax
+  ad:	48 be 00 00 00 00 00 	movabs rsi,0x0
+  b4:	00 00 00 
+			af: R_X86_64_64	callback_return_addr
+  b7:	bf 01 00 00 00       	mov    edi,0x1
+  bc:	4a 89 7c f3 f8       	mov    QWORD PTR [rbx+r14*8-0x8],rdi
+  c1:	bf 01 00 00 00       	mov    edi,0x1
+  c6:	4a 89 7c f3 f0       	mov    QWORD PTR [rbx+r14*8-0x10],rdi
+  cb:	4a 89 74 f3 e8       	mov    QWORD PTR [rbx+r14*8-0x18],rsi
+  d0:	4d 89 ac 24 98 00 00 	mov    QWORD PTR [r12+0x98],r13
+  d7:	00 
+  d8:	48 8b 34 24          	mov    rsi,QWORD PTR [rsp]
+  dc:	48 89 f7             	mov    rdi,rsi
+  df:	4c 89 fe             	mov    rsi,r15
+  e2:	48 b8 00 00 00 00 00 	movabs rax,0x0
+  e9:	00 00 00 
+			e4: R_X86_64_64	apply_n
+  ec:	48 89 3c 24          	mov    QWORD PTR [rsp],rdi
+  f0:	ff d0                	call   rax
+  f2:	48 89 c3             	mov    rbx,rax
+  f5:	48 8b 74 24 08       	mov    rsi,QWORD PTR [rsp+0x8]
+  fa:	4c 8b 76 20          	mov    r14,QWORD PTR [rsi+0x20]
+  fe:	48 8b 74 24 08       	mov    rsi,QWORD PTR [rsp+0x8]
+ 103:	4c 8b 7e 18          	mov    r15,QWORD PTR [rsi+0x18]
+ 107:	48 c7 c6 e8 ff ff ff 	mov    rsi,0xffffffffffffffe8
+ 10e:	49 03 34 24          	add    rsi,QWORD PTR [r12]
+ 112:	49 89 34 24          	mov    QWORD PTR [r12],rsi
+ 116:	49 8b 7c 24 08       	mov    rdi,QWORD PTR [r12+0x8]
+ 11b:	48 39 fe             	cmp    rsi,rdi
+ 11e:	0f 83 40 00 00 00    	jae    164 <makeblock_internalformat_make_int_padding_precision_anon+0x164>
+ 124:	bf 02 00 00 00       	mov    edi,0x2
+ 129:	be 11 00 00 00       	mov    esi,0x11
+ 12e:	ba 01 00 00 00       	mov    edx,0x1
+ 133:	48 31 c9             	xor    rcx,rcx
+ 136:	48 b8 00 00 00 00 00 	movabs rax,0x0
+ 13d:	00 00 00 
+			138: R_X86_64_64	caml_alloc_small_dispatch
+ 140:	48 89 5c 24 10       	mov    QWORD PTR [rsp+0x10],rbx
+ 145:	4c 89 7c 24 18       	mov    QWORD PTR [rsp+0x18],r15
+ 14a:	4c 89 74 24 20       	mov    QWORD PTR [rsp+0x20],r14
+ 14f:	ff d0                	call   rax
+ 151:	48 8b 5c 24 10       	mov    rbx,QWORD PTR [rsp+0x10]
+ 156:	4c 8b 7c 24 18       	mov    r15,QWORD PTR [rsp+0x18]
+ 15b:	4c 8b 74 24 20       	mov    r14,QWORD PTR [rsp+0x20]
+ 160:	49 8b 34 24          	mov    rsi,QWORD PTR [r12]
+ 164:	bf 04 08 00 00       	mov    edi,0x804
+ 169:	48 89 3e             	mov    QWORD PTR [rsi],rdi
+ 16c:	48 83 c6 08          	add    rsi,0x8
+ 170:	4c 89 3e             	mov    QWORD PTR [rsi],r15
+ 173:	48 89 5e 08          	mov    QWORD PTR [rsi+0x8],rbx
+ 177:	48 8b 7c 24 08       	mov    rdi,QWORD PTR [rsp+0x8]
+ 17c:	48 8b 47 10          	mov    rax,QWORD PTR [rdi+0x10]
+ 180:	48 8b 7c 24 08       	mov    rdi,QWORD PTR [rsp+0x8]
+ 185:	48 8b 7f 08          	mov    rdi,QWORD PTR [rdi+0x8]
+ 189:	49 8b 8c 24 98 00 00 	mov    rcx,QWORD PTR [r12+0x98]
+ 190:	00 
+ 191:	48 89 ca             	mov    rdx,rcx
+ 194:	48 83 c2 e8          	add    rdx,0xffffffffffffffe8
+ 198:	48 89 41 e8          	mov    QWORD PTR [rcx-0x18],rax
+ 19c:	48 89 71 f0          	mov    QWORD PTR [rcx-0x10],rsi
+ 1a0:	4c 89 71 f8          	mov    QWORD PTR [rcx-0x8],r14
+ 1a4:	49 89 94 24 98 00 00 	mov    QWORD PTR [r12+0x98],rdx
+ 1ab:	00 
+ 1ac:	ba 03 00 00 00       	mov    edx,0x3
+ 1b1:	48 89 f8             	mov    rax,rdi
+ 1b4:	4c 8b 64 24 30       	mov    r12,QWORD PTR [rsp+0x30]
+ 1b9:	4c 8b 6c 24 38       	mov    r13,QWORD PTR [rsp+0x38]
+ 1be:	4c 8b 74 24 40       	mov    r14,QWORD PTR [rsp+0x40]
+ 1c3:	48 8b 5c 24 48       	mov    rbx,QWORD PTR [rsp+0x48]
+ 1c8:	4c 8b 7c 24 50       	mov    r15,QWORD PTR [rsp+0x50]
+ 1cd:	48 83 c4 60          	add    rsp,0x60
+ 1d1:	48 89 ec             	mov    rsp,rbp
+ 1d4:	5d                   	pop    rbp
+ 1d5:	c3                   	ret    

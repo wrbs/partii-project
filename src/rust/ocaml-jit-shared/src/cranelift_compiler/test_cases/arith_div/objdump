@@ -7,32 +7,26 @@ Disassembly of section .text:
 0000000000000000 <arith_div>:
    0:	55                   	push   rbp
    1:	48 89 e5             	mov    rbp,rsp
-   4:	49 b8 00 00 00 00 00 	movabs r8,0x0
-   b:	00 00 00 
-			6: R_X86_64_64	caml_state_addr
-   e:	49 8b b8 98 00 00 00 	mov    rdi,QWORD PTR [r8+0x98]
-  15:	48 89 f1             	mov    rcx,rsi
-  18:	48 89 d0             	mov    rax,rdx
-  1b:	be 01 00 00 00       	mov    esi,0x1
-  20:	48 39 f0             	cmp    rax,rsi
-  23:	0f 84 2f 00 00 00    	je     58 <arith_div+0x58>
-  29:	48 c1 f9 01          	sar    rcx,0x1
-  2d:	48 89 c6             	mov    rsi,rax
-  30:	48 c1 fe 01          	sar    rsi,0x1
-  34:	48 89 c8             	mov    rax,rcx
-  37:	48 99                	cqo    
-  39:	48 f7 fe             	idiv   rsi
-  3c:	48 89 c6             	mov    rsi,rax
-  3f:	48 01 c6             	add    rsi,rax
-  42:	48 83 c6 01          	add    rsi,0x1
-  46:	49 89 b8 98 00 00 00 	mov    QWORD PTR [r8+0x98],rdi
-  4d:	48 31 d2             	xor    rdx,rdx
-  50:	48 89 f0             	mov    rax,rsi
-  53:	48 89 ec             	mov    rsp,rbp
-  56:	5d                   	pop    rbp
-  57:	c3                   	ret    
-  58:	48 be 00 00 00 00 00 	movabs rsi,0x0
-  5f:	00 00 00 
-			5a: R_X86_64_64	caml_raise_zero_divide
-  62:	ff d6                	call   rsi
-  64:	0f 0b                	ud2    
+   4:	48 89 f7             	mov    rdi,rsi
+   7:	48 89 d6             	mov    rsi,rdx
+   a:	b8 01 00 00 00       	mov    eax,0x1
+   f:	48 39 c6             	cmp    rsi,rax
+  12:	0f 84 25 00 00 00    	je     3d <arith_div+0x3d>
+  18:	48 c1 ff 01          	sar    rdi,0x1
+  1c:	48 c1 fe 01          	sar    rsi,0x1
+  20:	48 89 f8             	mov    rax,rdi
+  23:	48 99                	cqo    
+  25:	48 f7 fe             	idiv   rsi
+  28:	48 89 c6             	mov    rsi,rax
+  2b:	48 01 c6             	add    rsi,rax
+  2e:	48 83 c6 01          	add    rsi,0x1
+  32:	48 89 f0             	mov    rax,rsi
+  35:	48 31 d2             	xor    rdx,rdx
+  38:	48 89 ec             	mov    rsp,rbp
+  3b:	5d                   	pop    rbp
+  3c:	c3                   	ret    
+  3d:	48 be 00 00 00 00 00 	movabs rsi,0x0
+  44:	00 00 00 
+			3f: R_X86_64_64	caml_raise_zero_divide
+  47:	ff d6                	call   rsi
+  49:	0f 0b                	ud2    

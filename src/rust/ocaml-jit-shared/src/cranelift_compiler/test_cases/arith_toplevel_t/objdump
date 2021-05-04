@@ -7,18 +7,14 @@ Disassembly of section .text:
 0000000000000000 <arith_toplevel_t>:
    0:	55                   	push   rbp
    1:	48 89 e5             	mov    rbp,rsp
-   4:	48 b9 00 00 00 00 00 	movabs rcx,0x0
-   b:	00 00 00 
-			6: R_X86_64_64	caml_state_addr
-   e:	48 8b b9 98 00 00 00 	mov    rdi,QWORD PTR [rcx+0x98]
-  15:	b8 05 00 00 00       	mov    eax,0x5
-  1a:	48 39 f0             	cmp    rax,rsi
-  1d:	0f 8c 0a 00 00 00    	jl     2d <arith_toplevel_t+0x2d>
-  23:	b8 0f 00 00 00       	mov    eax,0xf
-  28:	e9 05 00 00 00       	jmp    32 <arith_toplevel_t+0x32>
-  2d:	b8 0b 00 00 00       	mov    eax,0xb
-  32:	48 89 b9 98 00 00 00 	mov    QWORD PTR [rcx+0x98],rdi
-  39:	48 31 d2             	xor    rdx,rdx
-  3c:	48 89 ec             	mov    rsp,rbp
-  3f:	5d                   	pop    rbp
-  40:	c3                   	ret    
+   4:	bf 05 00 00 00       	mov    edi,0x5
+   9:	48 39 f7             	cmp    rdi,rsi
+   c:	0f 8c 0a 00 00 00    	jl     1c <arith_toplevel_t+0x1c>
+  12:	be 0f 00 00 00       	mov    esi,0xf
+  17:	e9 05 00 00 00       	jmp    21 <arith_toplevel_t+0x21>
+  1c:	be 0b 00 00 00       	mov    esi,0xb
+  21:	48 31 d2             	xor    rdx,rdx
+  24:	48 89 f0             	mov    rax,rsi
+  27:	48 89 ec             	mov    rsp,rbp
+  2a:	5d                   	pop    rbp
+  2b:	c3                   	ret    

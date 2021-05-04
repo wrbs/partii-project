@@ -1,0 +1,45 @@
+function u0:0(r64, r64, r64, r64) -> r64, i64 system_v {
+    gv0 = symbol u1:0
+
+block0(v0: r64, v1: r64, v2: r64, v3: r64):
+    v4 = null.r64 
+    v5 = iconst.i64 0
+    v26 -> v5
+    v6 = symbol_value.i64 gv0
+    v7 = raw_bitcast.i64 v1
+    v8 = raw_bitcast.i64 v3
+    v9 = ifcmp v7, v8
+    v10 = iconst.i64 3
+    v11 = iconst.i64 1
+    v12 = selectif.i64 slt v9, v10, v11
+    v13 = raw_bitcast.r64 v12
+    v14 = raw_bitcast.i64 v13
+    v15 = icmp_imm eq v14, 1
+    brz v15, block1
+    jump block2
+
+block1:
+    jump block5(v1)
+
+block2:
+    v16 = raw_bitcast.i64 v2
+    v17 = raw_bitcast.i64 v3
+    v18 = ifcmp v16, v17
+    v19 = iconst.i64 3
+    v20 = iconst.i64 1
+    v21 = selectif.i64 sgt v18, v19, v20
+    v22 = raw_bitcast.r64 v21
+    v23 = raw_bitcast.i64 v22
+    v24 = icmp_imm eq v23, 1
+    brz v24, block3
+    jump block4
+
+block3:
+    jump block5(v2)
+
+block4:
+    jump block5(v3)
+
+block5(v25: r64):
+    return v25, v5
+}

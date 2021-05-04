@@ -5,15 +5,13 @@ block0(v0: r64, v1: r64, v2: r64):
     v3 = null.r64 
     v4 = iconst.i64 0
     v5 = symbol_value.i64 gv0
-    v6 = load.i64 notrap aligned v5+152
-    v7 = raw_bitcast.i64 v1
-    v8 = raw_bitcast.i64 v2
-    v9 = iadd v7, v8
-    v10 = iadd_imm v9, -1
-    v11 = raw_bitcast.r64 v10
+    v6 = raw_bitcast.i64 v1
+    v7 = raw_bitcast.i64 v2
+    v8 = iadd v6, v7
+    v9 = iadd_imm v8, -1
+    v10 = raw_bitcast.r64 v9
     jump block1
 
 block1:
-    store.i64 notrap aligned v6, v5+152
-    return v11, v4
+    return v10, v4
 }

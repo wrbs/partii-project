@@ -1,0 +1,12 @@
+Arity: 1
+Max stack size: 3
+
+# Block 0 (stack_start = 1)
+Acc(0)
+Closure(29519, 1)
+Push
+Const(3)
+Push
+Acc(1)
+Exit: TailCall { args: 1, to_pop: 3 }
+

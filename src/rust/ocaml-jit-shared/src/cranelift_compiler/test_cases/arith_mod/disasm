@@ -4,48 +4,42 @@ Block 0:
   (original IR block: block0)
   (successor: Block 1)
   (successor: Block 3)
-  (instruction range: 0 .. 11)
+  (instruction range: 0 .. 9)
   Inst 0:   pushq   %rbp
   Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
   Inst 2:   movq    %rsp, %rbp
   Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 0 }
-  Inst 4:   load_ext_name u1:0+0, %r8
-  Inst 5:   movq    152(%r8), %rdi
-  Inst 6:   movq    %rsi, %rcx
-  Inst 7:   movq    %rdx, %rax
-  Inst 8:   movl    $1, %esi
-  Inst 9:   cmpq    %rsi, %rax
-  Inst 10:   jnz     label1; j label3
+  Inst 4:   movq    %rsi, %rdi
+  Inst 5:   movq    %rdx, %rsi
+  Inst 6:   movl    $1, %eax
+  Inst 7:   cmpq    %rax, %rsi
+  Inst 8:   jnz     label1; j label3
 Block 1:
   (original IR block: block3)
   (successor: Block 2)
-  (instruction range: 11 .. 22)
-  Inst 11:   sarq    $1, %rcx
-  Inst 12:   movq    %rax, %rdx
-  Inst 13:   sarq    $1, %rdx
-  Inst 14:   movq    %rcx, %rax
-  Inst 15:   movq    %rdx, %rsi
-  Inst 16:   movl    $0, %edx
-  Inst 17:   srem $rax:$rdx, %rsi
-  Inst 18:   movq    %rdx, %rsi
-  Inst 19:   addq    %rdx, %rsi
-  Inst 20:   addq    $1, %rsi
-  Inst 21:   jmp     label2
+  (instruction range: 9 .. 18)
+  Inst 9:   sarq    $1, %rdi
+  Inst 10:   sarq    $1, %rsi
+  Inst 11:   movq    %rdi, %rax
+  Inst 12:   movl    $0, %edx
+  Inst 13:   srem $rax:$rdx, %rsi
+  Inst 14:   movq    %rdx, %rax
+  Inst 15:   addq    %rdx, %rax
+  Inst 16:   addq    $1, %rax
+  Inst 17:   jmp     label2
 Block 2:
   (original IR block: block1)
-  (instruction range: 22 .. 28)
-  Inst 22:   movq    %rdi, 152(%r8)
-  Inst 23:   xorq    %rdx, %rdx
-  Inst 24:   movq    %rsi, %rax
-  Inst 25:   movq    %rbp, %rsp
-  Inst 26:   popq    %rbp
-  Inst 27:   ret
+  (instruction range: 18 .. 22)
+  Inst 18:   xorq    %rdx, %rdx
+  Inst 19:   movq    %rbp, %rsp
+  Inst 20:   popq    %rbp
+  Inst 21:   ret
 Block 3:
   (original IR block: block2)
-  (instruction range: 28 .. 31)
-  Inst 28:   load_ext_name u0:1+0, %rsi
+  (instruction range: 22 .. 25)
+  Inst 22:   load_ext_name u0:1+0, %rsi
       (safepoint: slots [] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
-  Inst 29:   call    *%rsi
+  Inst 23:   call    *%rsi
       (safepoint: slots [] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
-  Inst 30:   ud2 unreachable
+  Inst 24:   ud2 unreachable
 }}

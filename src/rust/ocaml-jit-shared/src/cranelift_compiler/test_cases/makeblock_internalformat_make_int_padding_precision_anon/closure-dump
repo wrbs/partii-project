@@ -1,0 +1,23 @@
+Arity: 1
+Max stack size: 5
+
+# Block 0 (stack_start = 1)
+Acc(0)
+Push
+EnvAcc(6)
+Push
+EnvAcc(5)
+Apply2
+Push
+EnvAcc(4)
+Push
+Acc(1)
+Push
+EnvAcc(3)
+MakeBlock(2, 4)
+Push
+EnvAcc(2)
+Push
+EnvAcc(1)
+Exit: TailCall { args: 3, to_pop: 5 }
+

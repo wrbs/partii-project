@@ -5,46 +5,45 @@ function u0:0(r64, r64) -> r64, i64 system_v {
 
 block0(v0: r64, v1: r64):
     v3 = iconst.i64 0
-    v13 -> v3
+    v12 -> v3
     v4 = symbol_value.i64 gv0
-    v5 = load.i64 notrap aligned v4+152
-    v22 -> v5
-    v6 = load.i64 notrap aligned v4
-    v25 = iconst.i64 -24
-    v7 = iadd v6, v25
-    store notrap aligned v7, v4
-    v8 = load.i64 notrap aligned v4+8
-    v26 = icmp uge v7, v8
-    brnz v26, block3(v7)
+    v5 = load.i64 notrap aligned v4
+    v24 = iconst.i64 -24
+    v6 = iadd v5, v24
+    store notrap aligned v6, v4
+    v7 = load.i64 notrap aligned v4+8
+    v25 = icmp uge v6, v7
+    brnz v25, block3(v6)
     jump block2
 
 block2:
-    v10 = iconst.i64 2
-    v11 = iconst.i32 17
-    v12 = iconst.i32 1
-    call fn0(v10, v11, v12, v3)
-    v14 = load.i64 notrap aligned v4
-    jump block3(v14)
+    v9 = iconst.i64 2
+    v10 = iconst.i32 17
+    v11 = iconst.i32 1
+    call fn0(v9, v10, v11, v3)
+    v13 = load.i64 notrap aligned v4
+    jump block3(v13)
 
-block3(v9: i64):
-    v15 = iconst.i64 2295
-    store notrap aligned v15, v9
-    v27 = iconst.i64 8
-    v16 = iadd v9, v27
-    v17 = raw_bitcast.r64 v16
-    store.r64 notrap aligned v1, v17+8
-    v18 = raw_bitcast.i64 v17
-    v19 = iconst.i64 0xdead_beef
-    store notrap aligned v19, v18
-    v20 = iconst.i64 7
-    v21 = raw_bitcast.r64 v20
-    v28 = iconst.i64 -8
-    v23 = iadd.i64 v5, v28
-    store notrap aligned v21, v23
-    v24 = iconst.i64 1
+block3(v8: i64):
+    v14 = iconst.i64 2295
+    store notrap aligned v14, v8
+    v26 = iconst.i64 8
+    v15 = iadd v8, v26
+    v16 = raw_bitcast.r64 v15
+    store.r64 notrap aligned v1, v16+8
+    v17 = raw_bitcast.i64 v16
+    v18 = iconst.i64 0xdead_beef
+    store notrap aligned v18, v17
+    v19 = iconst.i64 7
+    v20 = raw_bitcast.r64 v19
+    v21 = load.i64 notrap aligned v4+152
+    v27 = iconst.i64 -8
+    v22 = iadd v21, v27
+    store notrap aligned v20, v22
+    store notrap aligned v22, v4+152
+    v23 = iconst.i64 1
     jump block1
 
 block1:
-    store.i64 notrap aligned v23, v4+152
-    return v17, v24
+    return v16, v23
 }

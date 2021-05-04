@@ -216,7 +216,6 @@ where
         let to_allocate = closure.max_stack_size + 1;
         let stack_vars: Vec<_> = (0..to_allocate).map(|_| var(R64)).collect();
         let return_extra_args_var = var(I64);
-        let sp = var(I64);
 
         let stack_size = closure.arity;
         let env = builder.block_params(blocks[0])[0];
@@ -239,7 +238,6 @@ where
             stack_vars,
             env,
             acc,
-            sp,
             blocks,
             options,
             return_extra_args_var,
@@ -258,7 +256,6 @@ where
             ft.get_global_variable(I64, CraneliftPrimitiveValue::CamlStateAddr)?;
         ft.caml_state_addr = caml_state_addr;
 
-        ft.load_extern_sp()?;
 
         // Zero-initialise the other vars
         ft.builder.def_var(acc, zero);
@@ -301,7 +298,6 @@ where
     env: Value,
     acc: Variable,
     return_extra_args_var: Variable,
-    sp: Variable,
     // Represents the blocks in my basic block translation
     blocks: Vec<Block>,
     return_block: Block,
@@ -860,7 +856,6 @@ where
                 self.pop(*to_pop)?;
             }
             BasicBlockExit::Raise(_type) => {
-                self.save_extern_sp();
                 let accu = self.get_acc_ref();
                 self.call_primitive(CraneliftPrimitiveFunction::CamlRaise, &[accu])?;
                 self.unreachable();
@@ -875,8 +870,6 @@ where
     fn finalise(mut self) -> Result<()> {
         self.builder.switch_to_block(self.return_block);
         self.builder.seal_block(self.return_block);
-
-        self.save_extern_sp()?;
 
         let retval = self.get_acc_ref();
         let ret_extra_args = self.builder.use_var(self.return_extra_args_var);
@@ -933,7 +926,6 @@ where
         }
 
         let result = if num_args <= 5 {
-            self.save_extern_sp();
             // Push a dummy frame
             let call = match num_args {
                 1 => {
@@ -1000,7 +992,6 @@ where
             // Tailcall case - treat return value as a new closure and apply it
             // to the args which are now on the ocaml stack.
 
-            self.load_extern_sp();
 
             let sp = self.get_sp();
             let new_extra_args = self.builder.ins().iadd_imm(tail_args, -1);
@@ -1040,7 +1031,6 @@ where
             // we want the SP to be below this - i.e. the sp before the callback
             // asked for a tail call
             self.set_sp(orig_sp);
-            self.save_extern_sp();
 
 
             let call = self.call_primitive(
@@ -1077,7 +1067,6 @@ where
 
             let cur_sp = self.get_sp();
             let new_sp = self.push_to_ocaml_stack(cur_sp, &closure_args)?;
-            self.save_extern_sp()?;
             // We don't save the newsp - this is due to interactions with exception handling
             // and callbacks
 
@@ -1089,7 +1078,6 @@ where
         };
 
         self.set_acc_ref(result);
-        self.load_extern_sp()?;
         Ok(())
     }
 
@@ -1164,11 +1152,9 @@ where
             // Note we're not saving the new_sp to extern_sp - which is equivalent here to a pop
         }
 
-        self.save_extern_sp()?;
         let call = self.builder.ins().call(local_callee, &args);
         let result = self.builder.inst_results(call)[0];
         self.set_acc_ref(result);
-        self.load_extern_sp()?;
 
         if self.options.use_call_traces {
             self.call_primitive(CraneliftPrimitiveFunction::EmitReturnTrace, &[result])?;
@@ -1323,27 +1309,11 @@ where
 
     // Mopdifying sp
     fn set_sp(&mut self, value: Value) {
-        self.builder.def_var(self.sp, value)
+        self.set_caml_state_field(CamlStateField::ExternSp, value)
     }
 
     fn get_sp(&mut self) -> Value {
-        self.builder.use_var(self.sp)
-    }
-
-    // Interfacing with the OCaml interpreter stack
-
-    fn save_extern_sp(&mut self) -> Result<()> {
-        let cur_sp = self.get_sp();
-        self.set_caml_state_field(CamlStateField::ExternSp, cur_sp);
-
-        Ok(())
-    }
-
-    fn load_extern_sp(&mut self) -> Result<()> {
-        let new_sp = self.get_caml_state_field(CamlStateField::ExternSp, I64);
-        self.set_sp(new_sp);
-
-        Ok(())
+        self.get_caml_state_field(CamlStateField::ExternSp, I64)
     }
 
     // Pushes count items form the virtual stack to the real stack
@@ -1454,9 +1424,7 @@ where
 
         self.builder.seal_block(process_actions);
         self.builder.switch_to_block(process_actions);
-        self.save_extern_sp();
         self.call_primitive(CraneliftPrimitiveFunction::CamlProcessPendingActions, &[])?;
-        self.load_extern_sp();
         self.builder.ins().jump(otherwise, &[]);
 
         self.builder.seal_block(otherwise);

@@ -1,0 +1,10 @@
+Arity: 2
+Max stack size: 3
+
+# Block 0 (stack_start = 2)
+Acc(1)
+Push
+Acc(1)
+ArithInt(Mod)
+Exit: Return(2)
+

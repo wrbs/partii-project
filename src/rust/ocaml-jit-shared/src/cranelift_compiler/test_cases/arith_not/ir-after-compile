@@ -3,15 +3,12 @@ function u0:0(r64, r64) -> r64, i64 system_v {
 
 block0(v0: r64, v1: r64):
     v3 = iconst.i64 0
-    v4 = symbol_value.i64 gv0
-    v5 = load.i64 notrap aligned v4+152
-    v6 = raw_bitcast.i64 v1
-    v9 = iconst.i64 2
-    v7 = bxor v6, v9
-    v8 = raw_bitcast.r64 v7
+    v5 = raw_bitcast.i64 v1
+    v8 = iconst.i64 2
+    v6 = bxor v5, v8
+    v7 = raw_bitcast.r64 v6
     jump block1
 
 block1:
-    store.i64 notrap aligned v5, v4+152
-    return v8, v3
+    return v7, v3
 }

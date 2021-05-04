@@ -1,0 +1,19 @@
+Arity: 1
+Max stack size: 1
+
+# Block 0 (stack_start = 1)
+Acc(0)
+Exit: Switch { ints: [], tags: [3, 2, 1] }
+
+# Block 1 (stack_start = 1)
+Const(5)
+Exit: Return(1)
+
+# Block 2 (stack_start = 1)
+Const(4)
+Exit: Return(1)
+
+# Block 3 (stack_start = 1)
+Const(3)
+Exit: Return(1)
+

@@ -4,38 +4,34 @@ function u0:0(r64, r64) -> r64, i64 system_v {
 
 block0(v0: r64, v1: r64):
     v3 = iconst.i64 0
-    v17 -> v3
-    v4 = symbol_value.i64 gv0
-    v5 = load.i64 notrap aligned v4+152
-    v15 -> v5
-    v6 = raw_bitcast.i64 v1
-    v7 = ireduce.i32 v6
-    v18 = iconst.i32 1
-    v8 = sshr v7, v18
+    v15 -> v3
+    v5 = raw_bitcast.i64 v1
+    v6 = ireduce.i32 v5
+    v16 = iconst.i32 1
+    v7 = sshr v6, v16
     jump block6
 
 block6:
-    br_table.i32 v8, block5, jt0
+    br_table.i32 v7, block5, jt0
 
 block5:
     trap unreachable
 
 block1:
-    v9 = iconst.i64 5
-    v10 = raw_bitcast.r64 v9
-    jump block4(v10)
+    v8 = iconst.i64 5
+    v9 = raw_bitcast.r64 v8
+    jump block4(v9)
 
 block2:
-    v11 = iconst.i64 3
-    v12 = raw_bitcast.r64 v11
-    jump block4(v12)
+    v10 = iconst.i64 3
+    v11 = raw_bitcast.r64 v10
+    jump block4(v11)
 
 block3:
-    v13 = iconst.i64 1
-    v14 = raw_bitcast.r64 v13
-    jump block4(v14)
+    v12 = iconst.i64 1
+    v13 = raw_bitcast.r64 v12
+    jump block4(v13)
 
-block4(v16: r64):
-    store.i64 notrap aligned v5, v4+152
-    return v16, v3
+block4(v14: r64):
+    return v14, v3
 }

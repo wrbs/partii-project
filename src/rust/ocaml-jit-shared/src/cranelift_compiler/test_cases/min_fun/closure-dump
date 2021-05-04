@@ -1,0 +1,28 @@
+Arity: 1
+Max stack size: 7
+
+# Block 0 (stack_start = 1)
+Acc(0)
+GetField(1)
+Push
+Acc(1)
+GetField(0)
+Push
+Acc(1)
+Push
+Acc(1)
+Push
+GetGlobal(45)
+GetField(15)
+Apply2
+Push
+Acc(2)
+Push
+Acc(2)
+Push
+GetGlobal(316)
+Push
+GetGlobal(315)
+GetField(1)
+Exit: TailCall { args: 4, to_pop: 7 }
+

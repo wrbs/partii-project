@@ -1,0 +1,72 @@
+VCode_ShowWithRRU {{
+  Entry block: 0
+Block 0:
+  (original IR block: block0)
+  (successor: Block 1)
+  (successor: Block 6)
+  (instruction range: 0 .. 14)
+  Inst 0:   pushq   %rbp
+  Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
+  Inst 2:   movq    %rsp, %rbp
+  Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 0 }
+  Inst 4:   movq    %rsi, %rax
+  Inst 5:   movq    %rcx, %r9
+  Inst 6:   movl    $3, %r8d
+  Inst 7:   movl    $1, %edi
+  Inst 8:   cmpq    %r9, %rax
+  Inst 9:   movq    %rdi, %rax
+  Inst 10:   cmovlq  %r8, %rax
+  Inst 11:   movl    $1, %edi
+  Inst 12:   cmpq    %rdi, %rax
+  Inst 13:   jz      label1; j label6
+Block 1:
+  (original IR block: block2)
+  (successor: Block 2)
+  (successor: Block 4)
+  (instruction range: 14 .. 22)
+  Inst 14:   movq    %rdx, %rax
+  Inst 15:   movl    $3, %esi
+  Inst 16:   movl    $1, %edi
+  Inst 17:   cmpq    %r9, %rax
+  Inst 18:   cmovnleq %rsi, %rdi
+  Inst 19:   movl    $1, %esi
+  Inst 20:   cmpq    %rsi, %rdi
+  Inst 21:   jz      label2; j label4
+Block 2:
+  (original IR block: block4)
+  (successor: Block 3)
+  (instruction range: 22 .. 23)
+  Inst 22:   jmp     label3
+Block 3:
+  (successor: Block 8)
+  (instruction range: 23 .. 24)
+  Inst 23:   jmp     label8
+Block 4:
+  (original IR block: block3)
+  (successor: Block 5)
+  (instruction range: 24 .. 25)
+  Inst 24:   jmp     label5
+Block 5:
+  (successor: Block 8)
+  (instruction range: 25 .. 27)
+  Inst 25:   movq    %rdx, %rcx
+  Inst 26:   jmp     label8
+Block 6:
+  (original IR block: block1)
+  (successor: Block 7)
+  (instruction range: 27 .. 28)
+  Inst 27:   jmp     label7
+Block 7:
+  (successor: Block 8)
+  (instruction range: 28 .. 30)
+  Inst 28:   movq    %rsi, %rcx
+  Inst 29:   jmp     label8
+Block 8:
+  (original IR block: block5)
+  (instruction range: 30 .. 35)
+  Inst 30:   xorq    %rdx, %rdx
+  Inst 31:   movq    %rcx, %rax
+  Inst 32:   movq    %rbp, %rsp
+  Inst 33:   popq    %rbp
+  Inst 34:   ret
+}}
