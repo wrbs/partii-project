@@ -1,0 +1,52 @@
+digraph G {
+info [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left">
+<TR><TD BORDER="1"><B>Closure 2624</B></TD></TR>
+<TR><TD ALIGN="left">Module: Dis_examples  </TD></TR>
+
+<TR><TD ALIGN="left">Def name: Dis_examples.clamp  </TD></TR>
+
+<TR><TD ALIGN="left">File: build/dis_examples.ml  </TD></TR>
+
+</TABLE>>];
+info -> n0;
+n0 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1" COLSPAN="2"><B>Block 0</B></TD></TR>
+<TR><TD ALIGN="left">Grab(2)  </TD><TD ALIGN="left">grab 2   </TD></TR>
+<TR><TD ALIGN="left">Acc(2)  </TD><TD ALIGN="left">&lt;0_0&gt; = &lt;arg:0&gt; &lt; &lt;arg:2&gt;   </TD></TR>
+<TR><TD ALIGN="left">Push  </TD><TD ALIGN="left">Exit: jump_if &lt;0_0&gt; t:2 f:1   </TD></TR>
+<TR><TD ALIGN="left">Acc(1)  </TD><TD style="invis"></TD></TR>
+<TR><TD ALIGN="left">IntCmp(Lt)  </TD><TD style="invis"></TD></TR>
+<TR><TD ALIGN="left">BranchIfNot(1)  </TD><TD style="invis"></TD></TR>
+</TABLE>>];
+n0 -> n1;
+n0 -> n2;
+n1 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1" COLSPAN="2"><B>Block 1</B></TD></TR>
+<TR><TD ALIGN="left">Acc(2)  </TD><TD ALIGN="left">&lt;1_0&gt; = &lt;arg:1&gt; &gt; &lt;arg:2&gt;   </TD></TR>
+<TR><TD ALIGN="left">Push  </TD><TD ALIGN="left">Exit: jump_if &lt;1_0&gt; t:4 f:3   </TD></TR>
+<TR><TD ALIGN="left">Acc(2)  </TD><TD style="invis"></TD></TR>
+<TR><TD ALIGN="left">IntCmp(Gt)  </TD><TD style="invis"></TD></TR>
+<TR><TD ALIGN="left">BranchIfNot(3)  </TD><TD style="invis"></TD></TR>
+</TABLE>>];
+n1 -> n3;
+n1 -> n4;
+n2 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1" COLSPAN="2"><B>Block 2</B></TD></TR>
+<TR><TD ALIGN="left">Acc(0)  </TD><TD ALIGN="left">Exit: return &lt;arg:0&gt;   </TD></TR>
+<TR><TD ALIGN="left">Return(3)  </TD><TD style="invis"></TD></TR>
+</TABLE>>];
+n2 -> return;
+n3 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1" COLSPAN="2"><B>Block 3</B></TD></TR>
+<TR><TD ALIGN="left">Acc(2)  </TD><TD ALIGN="left">Exit: return &lt;arg:2&gt;   </TD></TR>
+<TR><TD ALIGN="left">Return(3)  </TD><TD style="invis"></TD></TR>
+</TABLE>>];
+n3 -> return;
+n4 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1" COLSPAN="2"><B>Block 4</B></TD></TR>
+<TR><TD ALIGN="left">Acc(1)  </TD><TD ALIGN="left">Exit: return &lt;arg:1&gt;   </TD></TR>
+<TR><TD ALIGN="left">Return(3)  </TD><TD style="invis"></TD></TR>
+</TABLE>>];
+n4 -> return;
+return [shape=box label="Return"];
+}

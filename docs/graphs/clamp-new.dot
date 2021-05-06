@@ -1,0 +1,43 @@
+digraph G {
+    d2tfigpreamble="\ttfamily";
+
+n0 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1"><B>Block 0</B></TD></TR>
+<TR><TD ALIGN="left">Acc(2)  </TD></TR>
+<TR><TD ALIGN="left">Push  </TD></TR>
+<TR><TD ALIGN="left">Acc(1)  </TD></TR>
+<TR><TD ALIGN="left">IntCmp(Lt)  </TD></TR>
+<TR><TD ALIGN="left">BranchIf { then_block: 1, else_block: 2 }  </TD></TR>
+</TABLE>>];
+n0 -> n1 [headlabel=" then"];
+n0 -> n2 [headlabel=" else"];
+n1 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1"><B>Block 1</B></TD></TR>
+<TR><TD ALIGN="left">Acc(0)  </TD></TR>
+<TR><TD ALIGN="left">Return(3)  </TD></TR>
+</TABLE>>];
+n1 -> return;
+n2 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1"><B>Block 2</B></TD></TR>
+<TR><TD ALIGN="left">Acc(2)  </TD></TR>
+<TR><TD ALIGN="left">Push  </TD></TR>
+<TR><TD ALIGN="left">Acc(2)  </TD></TR>
+<TR><TD ALIGN="left">IntCmp(Gt)  </TD></TR>
+<TR><TD ALIGN="left">BranchIf { then_block: 3, else_block: 4 }  </TD></TR>
+</TABLE>>];
+n2 -> n3 [headlabel=" then"];
+n2 -> n4 [headlabel=" else"];
+n3 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1"><B>Block 3</B></TD></TR>
+<TR><TD ALIGN="left">Acc(1)  </TD></TR>
+<TR><TD ALIGN="left">Return(3)  </TD></TR>
+</TABLE>>];
+n3 -> return;
+n4 [shape=plain label=<<TABLE BORDER="1" CELLBORDER="0" ALIGN="left" COLUMNS="*">
+<TR><TD BORDER="1"><B>Block 4</B></TD></TR>
+<TR><TD ALIGN="left">Acc(2)  </TD></TR>
+<TR><TD ALIGN="left">Return(3)  </TD></TR>
+</TABLE>>];
+n4 -> return;
+return [shape=box label="Return"];
+}

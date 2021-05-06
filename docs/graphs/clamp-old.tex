@@ -1,0 +1,134 @@
+
+\begin{tikzpicture}[>=latex,line join=bevel,]
+  \pgfsetlinewidth{1bp}
+%%
+\pgfsetcolor{black}
+  % Edge: info -> n0
+  \draw [->] (400.5bp,533.86bp) .. controls (400.5bp,525.77bp) and (400.5bp,517.08bp)  .. (400.5bp,498.24bp);
+  % Edge: n0 -> n1
+  \draw [->] (330.24bp,344.88bp) .. controls (321.52bp,335.5bp) and (312.63bp,325.93bp)  .. (297.07bp,309.18bp);
+  % Edge: n0 -> n2
+  \draw [->] (470.76bp,344.88bp) .. controls (489.78bp,324.41bp) and (509.66bp,303.02bp)  .. (533.06bp,277.84bp);
+  % Edge: n1 -> n3
+  \draw [->] (184.57bp,176.72bp) .. controls (177.07bp,167.29bp) and (169.52bp,157.81bp)  .. (156.28bp,141.16bp);
+  % Edge: n1 -> n4
+  \draw [->] (319.01bp,176.72bp) .. controls (331.66bp,166.71bp) and (344.38bp,156.65bp)  .. (363.95bp,141.16bp);
+  % Edge: n2 -> return
+  \draw [->] (570.05bp,208.18bp) .. controls (574.19bp,170.87bp) and (574.77bp,110.95bp)  .. (544.5bp,72.0bp) .. controls (521.86bp,42.869bp) and (481.14bp,29.742bp)  .. (439.53bp,22.091bp);
+  % Edge: n3 -> return
+  \draw [->] (236.99bp,71.933bp) .. controls (281.28bp,58.102bp) and (330.04bp,42.878bp)  .. (373.4bp,29.337bp);
+  % Edge: n4 -> return
+  \draw [->] (406.5bp,71.809bp) .. controls (406.5bp,63.365bp) and (406.5bp,54.41bp)  .. (406.5bp,36.297bp);
+  % Node: info
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (282.5bp,600.0bp) -- (282.5bp,621.0bp) -- (518.5bp,621.0bp) -- (518.5bp,600.0bp) -- cycle;
+  \draw (348.0bp,607.8bp) node[right] {Closure 2624};
+  \draw (284.5bp,584.8bp) node[right] {Module: Dis\_examples  };
+  \draw (284.5bp,563.8bp) node[right] {Def name: Dis\_examples.clamp  };
+  \draw (284.5bp,542.8bp) node[right] {File: build/dis\_examples.ml  };
+  \draw (279.5bp,534.0bp) -- (279.5bp,624.0bp) -- (521.5bp,624.0bp) -- (521.5bp,534.0bp) -- cycle;
+\end{scope}
+  % Node: n0
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (223.5bp,473.5bp) -- (223.5bp,494.5bp) -- (578.5bp,494.5bp) -- (578.5bp,473.5bp) -- cycle;
+  \draw (371.5bp,481.3bp) node[right] {Block 0};
+  \draw (225.5bp,458.3bp) node[right] {Grab(2)  };
+  \draw (348.5bp,458.3bp) node[right] {grab 2   };
+  \draw (225.5bp,437.3bp) node[right] {Acc(2)  };
+  \draw (348.5bp,437.3bp) node[right] {<0\_0> = <arg:0> < <arg:2>   };
+  \draw (225.5bp,416.3bp) node[right] {Push  };
+  \draw (348.5bp,416.3bp) node[right] {Exit: jump\_if <0\_0> t:2 f:1   };
+  \draw (225.5bp,395.3bp) node[right] {Acc(1)  };
+  \draw (225.5bp,374.3bp) node[right] {IntCmp(Lt)  };
+  \draw (225.5bp,353.3bp) node[right] {BranchIfNot(1)  };
+  \definecolor{fillcol}{rgb}{0.0,0.0,0.0};
+  \pgfsetfillcolor{fillcol}
+  \filldraw (345.5bp,451.5bp) -- (345.5bp,472.5bp) -- (345.5bp,472.5bp) -- (345.5bp,451.5bp) -- cycle;
+  \filldraw (345.5bp,430.5bp) -- (345.5bp,451.5bp) -- (345.5bp,451.5bp) -- (345.5bp,430.5bp) -- cycle;
+  \filldraw (345.5bp,409.5bp) -- (345.5bp,430.5bp) -- (345.5bp,430.5bp) -- (345.5bp,409.5bp) -- cycle;
+  \filldraw (345.5bp,388.5bp) -- (345.5bp,409.5bp) -- (345.5bp,409.5bp) -- (345.5bp,388.5bp) -- cycle;
+  \filldraw (345.5bp,367.5bp) -- (345.5bp,388.5bp) -- (345.5bp,388.5bp) -- (345.5bp,367.5bp) -- cycle;
+  \filldraw (345.5bp,344.5bp) -- (345.5bp,367.5bp) -- (345.5bp,367.5bp) -- (345.5bp,344.5bp) -- cycle;
+  \draw (220.0bp,345.0bp) -- (220.0bp,498.0bp) -- (581.0bp,498.0bp) -- (581.0bp,345.0bp) -- cycle;
+\end{scope}
+  % Node: n1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (59.5bp,285.0bp) -- (59.5bp,306.0bp) -- (414.5bp,306.0bp) -- (414.5bp,285.0bp) -- cycle;
+  \draw (207.5bp,292.8bp) node[right] {Block 1};
+  \draw (61.5bp,269.8bp) node[right] {Acc(2)  };
+  \draw (184.5bp,269.8bp) node[right] {<1\_0> = <arg:1> > <arg:2>   };
+  \draw (61.5bp,248.8bp) node[right] {Push  };
+  \draw (184.5bp,248.8bp) node[right] {Exit: jump\_if <1\_0> t:4 f:3   };
+  \draw (61.5bp,227.8bp) node[right] {Acc(2)  };
+  \draw (61.5bp,206.8bp) node[right] {IntCmp(Gt)  };
+  \draw (61.5bp,185.8bp) node[right] {BranchIfNot(3)  };
+  \definecolor{fillcol}{rgb}{0.0,0.0,0.0};
+  \pgfsetfillcolor{fillcol}
+  \filldraw (181.5bp,263.0bp) -- (181.5bp,284.0bp) -- (181.5bp,284.0bp) -- (181.5bp,263.0bp) -- cycle;
+  \filldraw (181.5bp,242.0bp) -- (181.5bp,263.0bp) -- (181.5bp,263.0bp) -- (181.5bp,242.0bp) -- cycle;
+  \filldraw (181.5bp,221.0bp) -- (181.5bp,242.0bp) -- (181.5bp,242.0bp) -- (181.5bp,221.0bp) -- cycle;
+  \filldraw (181.5bp,200.0bp) -- (181.5bp,221.0bp) -- (181.5bp,221.0bp) -- (181.5bp,200.0bp) -- cycle;
+  \filldraw (181.5bp,177.0bp) -- (181.5bp,200.0bp) -- (181.5bp,200.0bp) -- (181.5bp,177.0bp) -- cycle;
+  \draw (56.0bp,177.0bp) -- (56.0bp,309.0bp) -- (417.0bp,309.0bp) -- (417.0bp,177.0bp) -- cycle;
+\end{scope}
+  % Node: n2
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (438.5bp,253.0bp) -- (438.5bp,274.0bp) -- (691.5bp,274.0bp) -- (691.5bp,253.0bp) -- cycle;
+  \draw (535.5bp,260.8bp) node[right] {Block 2};
+  \draw (440.5bp,237.8bp) node[right] {Acc(0)  };
+  \draw (525.5bp,237.8bp) node[right] {Exit: return <arg:0>   };
+  \draw (440.5bp,216.8bp) node[right] {Return(3)  };
+  \definecolor{fillcol}{rgb}{0.0,0.0,0.0};
+  \pgfsetfillcolor{fillcol}
+  \filldraw (522.5bp,231.0bp) -- (522.5bp,252.0bp) -- (522.5bp,252.0bp) -- (522.5bp,231.0bp) -- cycle;
+  \filldraw (522.5bp,208.0bp) -- (522.5bp,231.0bp) -- (522.5bp,231.0bp) -- (522.5bp,208.0bp) -- cycle;
+  \draw (435.0bp,208.5bp) -- (435.0bp,277.5bp) -- (694.0bp,277.5bp) -- (694.0bp,208.5bp) -- cycle;
+\end{scope}
+  % Node: n3
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (3.5bp,116.5bp) -- (3.5bp,137.5bp) -- (256.5bp,137.5bp) -- (256.5bp,116.5bp) -- cycle;
+  \draw (100.5bp,124.3bp) node[right] {Block 3};
+  \draw (5.5bp,101.3bp) node[right] {Acc(2)  };
+  \draw (90.5bp,101.3bp) node[right] {Exit: return <arg:2>   };
+  \draw (5.5bp,80.3bp) node[right] {Return(3)  };
+  \definecolor{fillcol}{rgb}{0.0,0.0,0.0};
+  \pgfsetfillcolor{fillcol}
+  \filldraw (87.5bp,94.5bp) -- (87.5bp,115.5bp) -- (87.5bp,115.5bp) -- (87.5bp,94.5bp) -- cycle;
+  \filldraw (87.5bp,71.5bp) -- (87.5bp,94.5bp) -- (87.5bp,94.5bp) -- (87.5bp,71.5bp) -- cycle;
+  \draw (0.0bp,72.0bp) -- (0.0bp,141.0bp) -- (259.0bp,141.0bp) -- (259.0bp,72.0bp) -- cycle;
+\end{scope}
+  % Node: n4
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (280.5bp,116.5bp) -- (280.5bp,137.5bp) -- (533.5bp,137.5bp) -- (533.5bp,116.5bp) -- cycle;
+  \draw (377.5bp,124.3bp) node[right] {Block 4};
+  \draw (282.5bp,101.3bp) node[right] {Acc(1)  };
+  \draw (367.5bp,101.3bp) node[right] {Exit: return <arg:1>   };
+  \draw (282.5bp,80.3bp) node[right] {Return(3)  };
+  \definecolor{fillcol}{rgb}{0.0,0.0,0.0};
+  \pgfsetfillcolor{fillcol}
+  \filldraw (364.5bp,94.5bp) -- (364.5bp,115.5bp) -- (364.5bp,115.5bp) -- (364.5bp,94.5bp) -- cycle;
+  \filldraw (364.5bp,71.5bp) -- (364.5bp,94.5bp) -- (364.5bp,94.5bp) -- (364.5bp,71.5bp) -- cycle;
+  \draw (277.0bp,72.0bp) -- (277.0bp,141.0bp) -- (536.0bp,141.0bp) -- (536.0bp,72.0bp) -- cycle;
+\end{scope}
+  % Node: return
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (439.5bp,36.0bp) -- (373.5bp,36.0bp) -- (373.5bp,0.0bp) -- (439.5bp,0.0bp) -- cycle;
+  \draw (406.5bp,18.0bp) node {Return};
+\end{scope}
+%
+\end{tikzpicture}
+

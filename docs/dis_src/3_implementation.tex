@@ -1090,6 +1090,8 @@ Acc(2)
 Exit: Return(3)
 \end{verbatim}
 
+\input{graphs/clamp-new.tex}
+
 \subsubsection{Cranelift IR basics}
 
 Cranelift, much like LLVM, uses an IR with a binary, in-memory and textual representation. The
@@ -1485,9 +1487,79 @@ cranelift's source code a bit.
 
 \subsection{Closure table}
 
-\subsection{Efficient exception handling}
+\section{Implementation strategy}
 
-\section{Testing}
+Implementation followed an incremental and highly test-driven strategy over multiple weeks. The
+initial focus was on building a system sophisticated enough to run a hello world program
+implementing the bare minimum instructions to support this.
+
+I then slowly expanded the complexity of programs using them to drive the implementation of new
+instructions and the fixing of bugs in the previous programs.
+
+As is mostly inevitable in a project of this complexity hand-writing assembly there were a
+significant number of bugs. Traditional debugging methods like print debugging or using a debugger
+could not be as easily applied. Some errors resulted in confusing segfaults without any clear
+indication
+of what went wrong (although by poking around in the memory with GDB I was able to fix them).
+
+Despite this the actual implementation was remarkably efficient. This is mainly due to the trace
+comparison tooling I developed at the very start of the project and continued to expand throughout
+the project.
+
+\subsection{Trace comparison} \label{tracing}
+
+There is no formal specification for the OCaml interpeter. The semantics of the interpreter are
+what
+\texttt{interp.c} and other files in the runtime say they are. Given this I decided to build
+tooling to test the behaviour of my JIT-compiled code directly against the behaviour of the
+interpreter.
+
+\subsubsection{Tracing}
+
+In order to do this I added support for tracing after every instruction in both the existing
+interpreter and the JIT-compiled code. The log entry contains the instruction executed, state of
+all of the OCaml registers and the top 5 entries on the stack.
+
+There are a few log formats that it can print - for this application I used \texttt{serde} to
+serialize and deserialize the trace entries as JSON. The trace comparison program launches the
+program: once with the interpreter and once using the JITed code
+
+\subsubsection{Comparison}
+
+A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a sepcified program with
+tracing enabled twice simultaneously - one run uses the JIT and the other the
+existing interpreter.
+
+Then for every trace entry received it compares the two lines. If there is a difference between the
+lines
+it shows a diff and then exits.
+
+As many of the values are pointers there is a risk of non-determinism making this comparison fail.
+I used a small wrapper program I found caled \texttt{no-aslr} to disable ASLR. In order to ensure
+that the Rust code doesn't cause them to become unaligned I ran the compiler regardless of whether
+JITed code was enabled when tracing was enabled. These two things together worked well enough that
+all of the memory addresses were aligned and deterministic. This is unlikely to be true in general
+for all OS kernels and malloc implemenations but worked for me.
+
+The only expected difference comes from the use of the machine PC rather than the bytecode PC -
+instruction pointers like return addresses on the stack could differ. This required a special case
+during the check.
+
+I added a script to run about 10 test programs that together mostly covered the entire instruction
+set. Running this frequently allowed me to test for regressions when making changes.
+
+\subsection{Towards full correctness}
+
+Once I was happy that I had implemented every instruction, I started using
+the OCaml compiler's internal test suite. I discovered some subtle bugs and used it to add new test
+programs and fix them by trace comparison. One test heavily used callbacks from C to OCaml and I
+discovered my initial implementation was too slow.
+
+I eventually managed to get nearly all tests in the test suite working - the only failures were
+testing the backtrace support and the debugger.
+
+After this I successfuly managed to bootstrap the compiler using the JIT which gave me a high level
+of confidence in the accuracy of the JIT-compiled code.
 
 \subsection{Trace comparison}
 
