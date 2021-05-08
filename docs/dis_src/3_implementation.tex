@@ -721,9 +721,7 @@ Although the basic structure as described holds, some details are omitted but ap
             freed.
 \end{itemize}
 
-\section{Optimising compiler}
-
-\subsection{Motivation and design}
+\section{Extension}
 
 Once the initial compiler was complete there was time to dedicate to a significant extension.
 Although the initial compiler was performant, it lacked any optimisations between multiple
@@ -738,7 +736,216 @@ decision made would be to focus on combining two concepts:
 \end{itemize}
 
 The details of the first extension are explained later in section \ref{dyn-recomp} and the second
-extension forms the basis of the optimised compiler the first extension calls.
+extension forms the basis of the optimised compiler described in section \ref{opt-comp}.
+
+\section{Dynamic recompilation} \label{dyn-recomp}
+
+\subsection{Motivations}
+
+Although the initial compiler is impressive there is nothing that could not inherently be done
+ahead-of-time. The main benefit to operating as a JIT is it allows for OCaml toplevel sessions to
+be
+JIT-compiled.
+
+The structure of the bytecode means it is natural to make the optimised compiler operate at the
+granularity of a whole function, rather than a basic block or execution trace.	Counting calls and
+only branching to the optimising compiler above a certain threshold is a natural method for
+determining hot functions and the method I decided to use.
+
+However, allowing this required some changes to the initial compiler. In order to explain these
+changes I will first need to give an overview of how the OCaml interpreter deals with efficient
+implementation of multiple arguments in the context of a functional language with partial
+application.
+
+\subsection{Existing OCaml calls} \label{exist-ocaml}
+
+All functions in OCaml are implemented as closures - a heap allocated tuple of a code pointer and a
+list of data.
+
+Function calls look something like this:
+
+\begin{minted}{c}
+check_stacks_and_signals(regs);
+struct closure *c = (struct closure *) regs->env;
+call_function(regs, f->code_ptr);
+\end{minted}
+
+Note the actual call logic is done in hand-written assembly and these structs do not exist anywhere
+- this and subsequent examples are just pseudo-code. However, it is easier to understand the logic
+at a higher level. \texttt{regs} is a pointer to a struct containing the OCaml registers - in the
+actual assembly these are machine registers.
+
+\subsubsection{Partial applications}
+
+OCaml uses curried arguments allowing for the use of partial application:
+
+\begin{minted}{ocaml}
+# let add a b = a + b
+val add : int -> int -> int = <fun>
+# add 2 3
+- : int = 5
+# let add3 = add 3
+val add3: int -> int = <fun>
+# add3 5
+- : int = 8
+\end{minted}
+
+In order to avoid making too many intermediate closures, OCaml has special support for this
+extensively used pattern. All arguments are passed in order on the stack and the
+\texttt{extra\_args}
+register is used to mark how many arguments were used.
+
+The number of arguments passed minus 1 is stored in the \texttt{extra\_args} register. The compiler
+will insert a \texttt{GRAB(req\_extra\_args)} instruction at the start of any functions which take
+more than one argument.
+
+This instruction will return immediately from the function if \texttt{extra\_args} <
+\texttt{passed\_extra\_args}. The return value will be a closure itself - this represents partial
+application of curried functions. The data of this closure will be the arguments that were passed.
+The code pointer of this returned closure points to a \texttt{RESTART} opcode immediately
+preceeding the grab, which moves the passed arguments off of the closure's data section onto the
+stack, sliding them on top of any additional arguments passed.
+
+Otherwise, it will subtract \texttt{required\_extra\_args} from the \texttt{extra\_args} register
+and continue executing.
+
+This model is categorised as a push-enter model because it is the responsibility of the callee to
+deal with arity mismatches.
+
+% \subsubsection{Returns}
+
+% Another way we could have written the above example is explicitly curried:
+
+% \begin{minted}{ocaml}
+% # let add' a =
+% printf "Making an adder with %d\n";
+% fun b -> a + b
+% val make_adder : int -> int -> int = <fun>
+% # let add3 = add' 3
+% Making an adder with 3
+% val add3 : int -> int = <fun>
+% # add3 5
+% - : int = 8
+% # add' 2 4
+% Making an adder with 2
+% - : int = 6
+% \end{minted}
+
+% Although this looks similar, OCaml can no longer use the partial application support. Rather than
+% compiling this to one function taking two arguments, it is forced by the print statement to compile
+% it to a function taking one argument and returning a function. These are semantically the same but
+% differ in implementation.
+
+% The key opcode is the \texttt{Return} instruction which like \texttt{Grab} behaves differently based
+% on the value of \texttt{extra\_args}.
+
+% If \texttt{make\_adder} is called with one argument (\texttt{extra\_args} = 0), it will return the
+% closure. However if \texttt{make\_adder} is called with two arguments, \texttt{extra\_args} will be 1.
+
+% \texttt{Return} will check if \texttt{extra\_args} $> 0$ and if so will try to call the return value
+% with the additional arguments.
+
+\subsection{Function table}
+
+In order to support dynamic recompilation it is necessary to store the call count somewhere. A
+naive method would be to store this in the closure as an extra data item, but this cannot support
+optimising cases where the same code is used with different closure environments.
+
+Instead, I modified the code pointer to point to a structure in memory. This structure is shared
+between all closures using the same code. For now imagine it contains only one field: the code
+pointer.
+
+Calls became:
+
+\begin{minted}{c}
+check_stacks_and_signals(regs);
+struct closure *c = (struct closure *) regs->env;
+struct function_metadata *f = c->code_ptr;
+call_function(regs, f->code);
+\end{minted}
+
+\subsection{Moving the responsibility to the caller - eval/apply model}
+
+I do not wish for optimised functions to do any of the work described in section \ref{exist-ocaml}.
+As is described later, most of the speed increases of the optimised compiler comes from completely
+eliminating use of the OCaml stack and the call method above makes heavy use of it.
+
+Instead I shift the work to logically be done by the caller. The way this is done is by adding a
+field storing \texttt{required\_extra\_args} to the function table and transorming the function
+code call to look something like this:
+
+\begin{minted}{c}
+check_stacks_and_signals(regs);
+struct closure *c = (struct closure *) regs->env;
+struct function_metadata *f = c->code_ptr;
+if (regs->extra_args < f->required_extra_args) {
+      // return partial application doing work of GRAB
+} else {
+      regs->extra_args -= f->required_extra_args;
+      call_function(regs, f->code);
+}
+\end{minted}
+
+I then modified the assembly translation of \texttt{GRAB} to be a no-op. The exact same work is
+performed but now it is the responsibility of the caller.
+
+\subsection{Call counts and dynamic recompilation}
+
+I added two new fields to the function table struct: a reference to the original bytecode location
+of the function and a count/status variable.
+
+The count/status is initialised to 0. Calls become:
+
+\begin{minted}{c}
+check_stacks_and_signals(regs);
+struct closure *c = (struct closure *) regs->env;
+struct function_metadata *f = c->code_ptr;
+if (regs->extra_args < f->required_extra_args) {
+      // return partial application doing work of GRAB
+} else { 
+      regs->extra_args -= f->required_extra_args;
+      if (f->count_status == -1) {
+            // Call the optimised function
+            call_opt(regs, f->code);
+      } else if (f->count_status == THRESHOLD_CALLS) {
+            // Run the optimising compiler then call the optimised function
+            f->code = optimising_compiler(f->original_bytecode_location);
+            f->count_status = -1;
+            call_opt(regs, f->code);
+      } else {
+            // Increment count and call the unoptimised function 
+            f->count_status++;
+            call_function(regs, f->code);
+      }
+}
+\end{minted}
+
+\subsection{Actual implementation}
+
+Even though most of the above snippets are pseudo-code the function metadata struct as listed with
+its four fields (code pointer, original bytecode location, required extra args, count/status)
+actually exists. The initial compiler was first modified to generate, store and use it.
+
+In order to generate this, I added another pass to the initial compiler which discovers the
+bytecode locations of all closures. This is done by iterating through all functions. When a
+\texttt{Closure(bytecode\_location, num\_vars)} bytecode operation is found (which creates a
+closure) the code pointer is inspected. By inspecting the first instruction found at the bytecode
+location, it is possible to find the value of the \texttt{required\_extra\_args} field.
+
+After all the code is emitted, the function table is emitted. \texttt{dynasm-rs}'s relocations are
+used to load the initial code pointers into the function table and link to the struct in the
+closure table when compiling \texttt{Closure(...)} operations.
+
+Due to the change from single to double level of pointer indirection for function calls these
+changes added some overhead. However they were
+
+\section{Optimising compiler} \label{opt-comp}
+
+\subsection{Motivation and design}
+
+We have from the work in the previous section a way to determine hot closures and dynamically call
+into an optimising compiler. This section describes the implementation of this optimising compiler
+and how calls are done.
 
 The time left meant building a complete x86\_64 compiler backend (with register allocation,
 instruction selection, etc.) from scratch was infeasible. The usual toolkit used to avoid
@@ -802,7 +1009,9 @@ first instruction in the function to be optimised.
 
 The first output is a pointer to a compiled function that can be called to execute the code
 represented by that function. The second output is a vector of stack map entries which are used
-to support finding GC roots (see section \ref{optgc}).
+to support finding GC roots (explained in \ref{optgc}). The first output becomes the new code
+pointer
+in the function metadata table.
 
 The compiler consists of three major components.
 
@@ -1022,11 +1231,11 @@ We would like to avoid the stack in hot paths, so instead use an eval-apply mode
 passed according to the System V calling convention and a function is only called with all the
 arguments it expects.
 
-\textbf{TODO: flesh this out}
+\textbf{TODO: flesh this out with some actual example prototypes}
 
 \subsection{IR generation} \label{opt-irgen}
 
-\textbf{TODO: code ref}
+\textbf{TODO: integrate the examples better}
 
 \subsubsection{Example: Add}
 
@@ -1236,7 +1445,7 @@ The combination of cranelift and my virtual stack allows me to write code which 
 correspondance with the interpreter source while compiling to register-using optimised machine
 code. All of this is done while remaing fairly quick (at least compared to its competitors)
 
-\subsection{GC support}
+\subsection{GC support} \label{gc-support}
 
 A key aspect of the OCaml runtime is its garbage collection support. In the bytecode interpreter no
 particular effort is needed for this as every value is stored on the OCaml stack. However, for my
@@ -1481,13 +1690,7 @@ design decisions make it fill a unique niche where LLVM cannot. I have no hesita
 reccomending it for JIT projects, as long as the user is comfortable with digging around in
 cranelift's source code a bit.
 
-\section{Dynamic recompilation} \label{dyn-recomp}
-
-\subsection{Motivations}
-
-\subsection{Closure table}
-
-\section{Implementation strategy}
+\section{Implementation strategy} \label{impl-strategy}
 
 Implementation followed an incremental and highly test-driven strategy over multiple weeks. The
 initial focus was on building a system sophisticated enough to run a hello world program
@@ -1561,21 +1764,16 @@ testing the backtrace support and the debugger.
 After this I successfuly managed to bootstrap the compiler using the JIT which gave me a high level
 of confidence in the accuracy of the JIT-compiled code.
 
-\subsection{Trace comparison}
+\subsection{Testing strategy for the optimised compiler}
 
-\subsection{Expect tests}
+\subsubsection{Call trace comparison}
 
-\subsection{OCaml test suite}
+After the success of the trace comparison against gold standard approach for the initial compiler I
+decided to develop the optimised compiler in a simmilar way. However, as the steps performed are no
+longer
+one-to-one with the bytecode instructions.the optimised compiler
 
-\subsection{Self hosting}
-
-\section{Benchmark suite}
-
-\subsection{About Sandmark}
-
-\subsection{Modifications made}
-
-\subsection{Analysis}
+\textbf{TODO finish}
 
 % \section{Introspection tools}
 % 

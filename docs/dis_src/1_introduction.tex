@@ -3,6 +3,8 @@
 
 \section{Overview}
 
+OCaml is a compiled functional programming language with a strong, static type system.
+
 The OCaml compiler has two main backends: an optimised target-specific native code compiler and a
 compiler to bytecode which is later run by the interpreter, \texttt{ocamlrun}.
 
@@ -12,23 +14,35 @@ code with the hope of achieving performance benefits.
 The project achieved on schedule three core goals as set out in the proposal:
 
 \begin{enumerate}
-    \item There is a JIT compiler implemented into the existing OCaml source
-          replacing the interpreter with all functionality but debugging
-          and introspection.
-    \item There is a comprehensive and automated suite of benchmarks built
-          comparing its performance to other alternatives.
-    \item It performs favourably to the interpreter when discounting
-          initial compile time for all programs and overall for longer running
-          programs.
+      \item There is a JIT compiler implemented into the existing OCaml source
+            replacing the interpreter with all functionality but debugging
+            and introspection.
+      \item There is a comprehensive and automated suite of benchmarks built
+            comparing its performance to other alternatives.
+      \item It performs favourably to the interpreter when discounting
+            initial compile time for all programs and overall for longer running
+            programs.
 \end{enumerate}
 
 This gave some time for a significant extension project; this consisted of creating a slower but
 more optimising compiler being conditionally used for functions which are called often.
 
+The project is primarily written in the Rust programming language.
+
 I will refer to the faster but less intelligent compiler as the `first' or `initial' compiler and
 the slower but more optimising compiler as the `second' or `optimising' compiler.
 
-\section{OCaml bytecode}
+\section{Summary of results}
+
+The JIT compiler produced is very complete. It is capable of compiling and executing all OCaml
+bytecode instructions and every test program I have tested.. The only features not supported are
+the
+debugger and backtraces. All of the OCaml compiler test suite passes with the exception of tests of
+the debugger and backtraces. The JIT compiler can be used to bootstrap the entire OCaml compiler.
+
+Performance is better for most of the benchmark programs tested. The average speedup was 1.y.
+
+\section{Motivations}
 
 Using the bytecode interpreter is significantly slower than the native code compiler - however
 the design of the interpreter is very sophisticated. Its design descends from that of the ZINC
@@ -38,13 +52,22 @@ Although most users of OCaml use the native code compiler nearly exclusively, th
 compiler is still useful. It is used primarily:
 
 \begin{enumerate}
-    \item To run the OCaml REPL (`toplevel')
-    \item As a more stable binary format for tools such as \texttt{js\_of\_ocaml} to use as input
-    \item As a portable executable format for different machines
-    \item To run programs under a debugger
-    \item To allow language developers to experiment with new language features without needing
-          to write target specific code generation
+      \item To run the OCaml REPL (`toplevel')
+      \item As a more stable binary format for tools such as \texttt{js\_of\_ocaml} to use as input
+      \item As a portable executable format for different machines
+      \item To run programs under a debugger
+      \item To allow language developers to experiment with new language features without needing
+            to write target specific code generation
 \end{enumerate}
+
+This project demonstrates how JIT compilation techniques can be applied to the OCaml interpreter
+with benefit while retaining the bytecode format and semantics. As the toplevel can only use
+bytecode, the JIT could be lead to better performance in interactive OCaml environments such as the
+OCaml toplevel.
+
+Additionally, this project demonstrates two contrasting approaches to writing a JIT compiler in
+Rust
+and shows how they can be integrated together for performance better than either individually.
 
 \section{Related work}
 
@@ -62,7 +85,8 @@ a simple runtime for relocation. Its design is based on that of \texttt{DynASM} 
 The second compiler uses the \texttt{cranelift} \cite{cranelift} library which is a low-level
 retargetable
 code generator with an emphasis on use in JITs\footnote{It's largest use is for JIT-compiling
-    webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar to LLVM but lower
+      webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar to LLVM but
+lower
 level and much simpler. It cannot perform many optimisations LLVM can but has significantly lower
 compilation time.
 
@@ -71,15 +95,32 @@ compilation time.
 In order to limit the scope of the project some decisions were made upfront.
 
 \begin{enumerate}
-    \item This project only modifies the runtime components of the OCaml compiler and does not
-          modify the bytecode format or behaviour of the compiler, even if this would make life
-          simpler
-    \item The only target considered is x86\_64 Linux
-    \item Correctness should be prioritised over completeness and existing OCaml semantics should
-          be preserved
+      \item This project only modifies the runtime components of the OCaml compiler and does not
+            modify the bytecode format or behaviour of the compiler, even if this would make life
+            simpler
+      \item The only target considered is x86\_64 Linux
+      \item Correctness should be prioritised over completeness and existing OCaml semantics should
+            be preserved
 \end{enumerate}
 
-Despite the third item, the initial compiler is both correct and can run fully JIT-compiled every
-OCaml program I have tested. The features not supported are the debugger and backtraces - however
-these are optional things that need to be explicitly requested by the user. A significant milestone
-achieved was allowing the compiler to self-host.
+Although it was not a priority, the initial compiler is both correct and can run fully
+JIT-compiled every OCaml program I have tested. With the exception of the debugger and backtraces,
+both correctness and completeness were achieved.
+
+\section{Development methodology}
+
+\textbf{todo- expand}
+
+Incremental method inspired by agile methods but simplified by only dealing with one developer.
+Guided by major milestones.  Developed using my own machine. Code primarily in Rust with some
+written in C. No modifications to the OCaml compiler source made - only OCaml. Some bash scripts
+were used but more complicated scripts written in Rust.
+
+Highly test-driven implementation strategy described in section \ref{impl-strategy}. Single Git
+repository used for all aspects of the project including vendoring dependencies. The various build
+systems of the OCaml compiler and Rust (\texttt{cargo}) were managed by top-level Makefiles. The
+project is capable of being built by \texttt{opam} which helped with testing different compiler
+configurations for benchmarking.
+
+Backing up was done to GitHub. The repository contains everything needed to bootstrap the project
+assuming a \texttt{x86\_64} Linux system with the required compilers and system libraries.

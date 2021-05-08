@@ -1,27 +1,48 @@
 % !TeX root = ../dissertation.tex
 \chapter{Evaluation}
 
-\section{Overview}
-
 \section{Correctness}
 
-The initial compiler fully covered the entire instructino set
+The initial compiler fully covered the entire instruction set
 
-Nearly all tests passed
+Nearly all tests passed except expected failures
 
 The second compiler could not do everything the initial compiler could but this was ok because it
-fell back correctly.
+failed gracefully with fallback to the initial compiler.
 
 \section{The benchmark suite - Sandmark}
 
-The OCaml Labs team here at cambridge
+Project by OCaml labs here at the CL. For multicore ocaml but good single core too. Most complete
+effort (mention previous effort used by flambda). Mention OPAM/dune tooling.
+
+Explain criteria for selection of bytecode. Explain implicit bias by longer running programs.
 
 \section{Benchmark results}
 
+Show impressive graph with summary of all results
+
 \subsection{Initial compiler}
+
+Show table of some results and graph of speedups. Mention distinction between tracing code + it
+disabled.
 
 \subsection{Overhead of supporting recompilation}
 
+Show table/graph showing performance loss by extra indirection
+
 \subsection{Optimsed compiler}
 
+Show table graph
+
 \section{Evaluation of results and design trade-offs}
+
+Write some stuff about when to use which compiler. Explain why certain ones were good/bad.
+
+Quantify overhead for shorter running programs and explain it's likely to be slower. Use
+self-hosting the compiler as a particularly bad case for the system.
+
+Go into better cases for it and explain why it works. Possibly include code snippets.
+
+\section{Summary}
+
+Reiterate 100\% correctness. Reiterate performance numbers.
