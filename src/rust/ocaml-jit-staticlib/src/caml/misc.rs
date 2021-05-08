@@ -17,10 +17,6 @@ pub struct ExtTable {
 }
 
 impl ExtTable {
-    pub fn get(&self, index: usize) -> usize {
-        unsafe { *self.contents.add(index) }
-    }
-
     pub fn as_slice(&self) -> &[usize] {
         unsafe { std::slice::from_raw_parts(self.contents, self.size as usize) }
     }

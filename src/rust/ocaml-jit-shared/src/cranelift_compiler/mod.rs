@@ -1,7 +1,4 @@
-use std::{
-    collections::{hash_map::VacantEntry, HashMap},
-    fmt::Write,
-};
+use std::{collections::HashMap, fmt::Write};
 
 use crate::{
     basic_blocks::{BasicBlock, BasicBlockExit, BasicBlockInstruction, BasicClosure},
@@ -72,10 +69,9 @@ impl<M> CraneliftCompiler<M>
 where
     M: Module,
 {
-    pub fn new(mut module: M, atom_table_addr: usize) -> Result<Self> {
+    pub fn new(module: M, atom_table_addr: usize) -> Result<Self> {
         let ctx = module.make_context();
         let function_builder_context = FunctionBuilderContext::new();
-
 
         Ok(Self {
             module,
@@ -369,7 +365,7 @@ where
             }
             BasicBlockInstruction::Assign(n) => {
                 let accu = self.get_acc_ref();
-                self.assign_ref(*n, accu);
+                self.assign_ref(*n, accu)?;
                 self.set_acc_unit();
             }
             BasicBlockInstruction::Apply1 => {
@@ -546,7 +542,7 @@ where
                 let to_use = self.pick_ref(0)?;
                 self.pop(1)?;
 
-                self.call_primitive(CraneliftPrimitiveFunction::CamlModify, &[ptr, to_use]);
+                self.call_primitive(CraneliftPrimitiveFunction::CamlModify, &[ptr, to_use])?;
                 self.set_acc_unit();
             }
             // BasicBlockInstruction::GetFloatField(_) => {}
@@ -577,7 +573,7 @@ where
                 let accu = self.get_acc_int();
                 let ptr = self.builder.ins().iadd(accu, offset_bytes);
 
-                self.call_primitive(CraneliftPrimitiveFunction::CamlModify, &[ptr, to_write]);
+                self.call_primitive(CraneliftPrimitiveFunction::CamlModify, &[ptr, to_write])?;
                 self.set_acc_unit();
             }
             BasicBlockInstruction::GetBytesChar => {
@@ -804,7 +800,7 @@ where
                 self.builder.ins().jump(self.blocks[*else_block], &[]);
             }
             BasicBlockExit::Switch { ints, tags } => {
-                if ints.len() > 0 && tags.len() > 0 {
+                if !ints.is_empty() && !tags.is_empty() {
                     // We need to check whether the value is an int or a pointer with a tag
 
                     let ints_switch_block = self.builder.create_block();
@@ -825,10 +821,10 @@ where
                     self.emit_tag_switch(tags);
 
                     // Otherwise, we only need to emit one of them
-                } else if ints.len() > 0 {
+                } else if !ints.is_empty() {
                     self.emit_int_switch(ints);
                 } else {
-                    ensure!(tags.len() > 0);
+                    ensure!(!tags.is_empty());
                     self.emit_tag_switch(tags);
                 }
             }
@@ -1018,7 +1014,7 @@ where
                 self.get_global_variable(I64, CraneliftPrimitiveValue::CallbackReturnAddr)?;
             self.builder
                 .ins()
-                .store(MemFlags::trusted(), one, orig_sp, 1 * -8);
+                .store(MemFlags::trusted(), one, orig_sp, -8);
             self.builder
                 .ins()
                 .store(MemFlags::trusted(), one, orig_sp, 2 * -8);
@@ -1066,7 +1062,7 @@ where
             closure_args.push(one);
 
             let cur_sp = self.get_sp();
-            let new_sp = self.push_to_ocaml_stack(cur_sp, &closure_args)?;
+            self.push_to_ocaml_stack(cur_sp, &closure_args)?;
             // We don't save the newsp - this is due to interactions with exception handling
             // and callbacks
 
@@ -1132,9 +1128,8 @@ where
                 self.pop(4)?;
                 5
             }
-            Arity::VarArgs(n) => {
-                unimplemented!("VarArgs c_call");
-                n
+            Arity::VarArgs(_) => {
+                bail!("Unimplemented: VarArgs c_call");
             }
         };
 

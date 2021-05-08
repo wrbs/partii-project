@@ -632,7 +632,9 @@ impl Module for JITModule {
             .expect("TODO: handle OOM etc.");
 
         let mut reloc_sink = JITRelocSink::default();
-        unsafe { ctx.emit_to_memory(&*self.isa, ptr, &mut reloc_sink, trap_sink, stack_map_sink) };
+        unsafe {
+            ctx.emit_to_memory(&*self.isa, ptr, &mut reloc_sink, trap_sink, stack_map_sink)
+        };
 
         self.record_function_for_perf(ptr, size, &decl.name);
         self.compiled_functions[id] = Some(CompiledBlob {
@@ -775,11 +777,15 @@ impl Module for JITModule {
                 panic!("data is not initialized yet");
             }
             Init::Zeros { .. } => {
-                unsafe { ptr::write_bytes(ptr, 0, size) };
+                unsafe {
+                    ptr::write_bytes(ptr, 0, size)
+                };
             }
             Init::Bytes { ref contents } => {
                 let src = contents.as_ptr();
-                unsafe { ptr::copy_nonoverlapping(src, ptr, size) };
+                unsafe {
+                    ptr::copy_nonoverlapping(src, ptr, size)
+                };
             }
         }
 

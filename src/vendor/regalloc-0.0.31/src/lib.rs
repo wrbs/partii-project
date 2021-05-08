@@ -7,6 +7,8 @@
 //! to use this library in your own code, you would be well advised to read
 //! the comments in this file very carefully.
 
+#![allow(clippy::all)]
+
 // Make the analysis module public for fuzzing.
 #[cfg(feature = "fuzzing")]
 pub mod analysis_main;

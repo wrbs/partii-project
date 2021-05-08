@@ -136,7 +136,7 @@ pub unsafe extern "C" fn emit_enter_apply_trace(
     let args = (0..nargs).map(|i| *sp.add(i)).collect();
     do_call_trace(CallTrace::Enter {
         closure: get_bytecode_location_from_closure(*code_ptr),
-        needed: get_arity_from_closure(*code_ptr),
+        needed,
         provided: args,
     });
 }

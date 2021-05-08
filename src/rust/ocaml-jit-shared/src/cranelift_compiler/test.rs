@@ -7,12 +7,13 @@ use cranelift_codegen::{
     isa::TargetIsa,
     settings::{self, Configurable},
 };
-use cranelift_module::{default_libcall_names, Module};
+use cranelift_module::default_libcall_names;
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use expect_test::{expect_file, ExpectFile};
 use std::fmt::Write as FmtWrite;
 use tempfile::NamedTempFile;
 
+#[allow(clippy::clippy::too_many_arguments)]
 fn run_test(
     case_name: &str,
     closure_json: &str,
@@ -39,7 +40,7 @@ fn run_test(
     let mut compiler_output = CompilerOutput::default();
     let mut stack_maps = vec![];
 
-    let lookup_closure_code = |code| Some(0xDEADBEEF as *const u8);
+    let lookup_closure_code = |_| Some(0xDEADBEEF as *const u8);
 
     let _ = compiler
         .compile_closure(
@@ -158,7 +159,7 @@ fn dump_closure(closure: &BasicClosure) -> String {
     writeln!(s, "Arity: {}", closure.arity).unwrap();
     writeln!(s, "Max stack size: {}", closure.max_stack_size).unwrap();
 
-    writeln!(s);
+    writeln!(s).unwrap();
 
     for (block_num, block) in closure.blocks.iter().enumerate() {
         writeln!(

@@ -21,7 +21,6 @@ use crate::{
     caml::{
         domain_state,
         domain_state::get_extern_sp_addr,
-        mlvalues,
         mlvalues::{BlockValue, LongValue, Tag, Value},
     },
     compiler::saved_data::AsmCompiledPrimitive,
@@ -412,8 +411,8 @@ pub fn emit_cranelift_callback_entrypoint(
         ; lea r11, [->retaddr_offset]        // Load address of the stop aftewards
         ; mov QWORD [r10 + 3 * 8], 0         // Save it to the top of the stack frame
         ; mov QWORD [r10 + 2 * 8], 0         // Save it to the top of the stack frame
-        ; mov [r10 + 1 * 8], r11             // Save it to the top of the stack frame
-        ; mov [r10 + 0 * 8], rsi             // Push first arg
+        ; mov [r10 + 8], r11             // Save it to the top of the stack frame
+        ; mov [r10], rsi             // Push first arg
         ; mov rsi, 0                         // No extra args
         ; jmp >apply_n                       // Tail-call into slow call
     );
@@ -445,8 +444,8 @@ pub fn emit_cranelift_callback_entrypoint(
         ; mov QWORD [r10 + 4 * 8], 0         // Save it to the top of the stack frame
         ; mov QWORD [r10 + 3 * 8], 0         // Save it to the top of the stack frame
         ; mov [r10 + 2 * 8], r11             // Save it to the top of the stack frame
-        ; mov [r10 + 1 * 8], rdx             // Push second arg
-        ; mov [r10 + 0 * 8], rsi             // Push first arg
+        ; mov [r10 + 8], rdx             // Push second arg
+        ; mov [r10], rsi             // Push first arg
         ; mov rsi, 1                         // 1 extra args
         ; jmp >apply_n                       // Tail-call into slow call
     );
@@ -479,8 +478,8 @@ pub fn emit_cranelift_callback_entrypoint(
         ; mov QWORD [r10 + 4 * 8], 0         // Save it to the top of the stack frame
         ; mov [r10 + 3 * 8], r11             // Save it to the top of the stack frame
         ; mov [r10 + 2 * 8], rcx             // Push third arg
-        ; mov [r10 + 1 * 8], rdx             // Push second arg
-        ; mov [r10 + 0 * 8], rsi             // Push first arg
+        ; mov [r10 + 8], rdx             // Push second arg
+        ; mov [r10], rsi             // Push first arg
         ; mov rsi, 2                         // 2 extra args
         ; jmp >apply_n                       // Tail-call into slow call
     );
@@ -514,8 +513,8 @@ pub fn emit_cranelift_callback_entrypoint(
         ; mov [r10 + 4 * 8], r11             // Save it to the top of the stack frame
         ; mov [r10 + 3 * 8], r8              // Push foruth arg
         ; mov [r10 + 2 * 8], rcx             // Push third arg
-        ; mov [r10 + 1 * 8], rdx             // Push second arg
-        ; mov [r10 + 0 * 8], rsi             // Push first arg
+        ; mov [r10 + 8], rdx             // Push second arg
+        ; mov [r10], rsi             // Push first arg
         ; mov rsi, 3                         // 3 extra args
         ; jmp >apply_n                       // Tail-call into slow call
     );
@@ -550,8 +549,8 @@ pub fn emit_cranelift_callback_entrypoint(
         ; mov [r10 + 4 * 8], r9              // Push fifth arg
         ; mov [r10 + 3 * 8], r8              // Push fourth arg
         ; mov [r10 + 2 * 8], rcx             // Push third arg
-        ; mov [r10 + 1 * 8], rdx             // Push second arg
-        ; mov [r10 + 0 * 8], rsi             // Push first arg
+        ; mov [r10 + 8], rdx             // Push second arg
+        ; mov [r10 + 0], rsi             // Push first arg
         ; mov rsi, 4                         // 4 extra args
         ; jmp >apply_n                       // Tail-call into slow call
     );
@@ -598,7 +597,7 @@ pub fn emit_cranelift_callback_entrypoint(
 
     AsmCompiledPrimitive {
         compiled_code: buf,
-        entrypoint: entrypoint,
+        entrypoint,
     }
 }
 

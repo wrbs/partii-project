@@ -10,7 +10,7 @@ use global_data::GlobalData;
 
 use crate::{
     caml::mlvalues::LongValue,
-    compiler::{compile, compile_callback_if_needed, get_entrypoint, EntryPoint, Section},
+    compiler::{compile, compile_callback_if_needed, get_entrypoint, Section},
     trace::{print_instruction_trace, PrintTraceType},
 };
 

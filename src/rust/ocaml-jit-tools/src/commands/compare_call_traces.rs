@@ -10,10 +10,7 @@ use colored::Colorize;
 use os_pipe::{pipe, PipeReader};
 use structopt::StructOpt;
 
-use ocaml_jit_shared::{
-    call_trace::{compare_call_traces, CallTrace},
-    compare_instruction_traces, InstructionTraceEntry, InstructionTraceLocation, Opcode,
-};
+use ocaml_jit_shared::call_trace::{compare_call_traces, CallTrace};
 
 #[derive(StructOpt)]
 #[structopt(about = "compare call traces between the slower and the optimised JIT")]
