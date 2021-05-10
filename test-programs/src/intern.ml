@@ -27,7 +27,8 @@ let precompute_marshalled_data lo hi =
   for len = lo to hi do
     if not (Hashtbl.mem marshalled_data len) then
       Hashtbl.add marshalled_data len (Marshal.to_string (t_of_len len) [])
-  done
+  done;
+  Printf.printf "done pcmd\n%!"
 
 let root = ref []
 let[@inline never] do_intern lo hi cnt keep =
@@ -49,7 +50,7 @@ let check_nosample () =
   do_intern 2 3000 1 false;
   stop ()
 
-let () = check_nosample ()
+(* let () = check_nosample () *)
 
 let check_counts_full_major force_promote =
   Printf.printf "check_counts_full_major\n%!";
@@ -101,9 +102,9 @@ let check_counts_full_major force_promote =
   end;
   stop ()
 
-let () =
+(* let () =
   check_counts_full_major false;
-  check_counts_full_major true
+  check_counts_full_major true *)
 
 let check_no_nested () =
   Printf.printf "check_no_nested\n%!";
@@ -128,7 +129,7 @@ let check_no_nested () =
   do_intern 100 200 1 false;
   stop ()
 
-let () = check_no_nested ()
+(* let () = check_no_nested () *)
 
 let check_distrib lo hi cnt rate =
   Printf.printf "check_distrib %d %d %d %f\n%!" lo hi cnt rate;
@@ -163,10 +164,10 @@ let check_distrib lo hi cnt rate =
   assert (abs_float (mean -. float !smp) <= stddev *. 5.7)
 
 let () =
-  check_distrib 2 3000 3 0.00001;
-  check_distrib 2 3000 1 0.0001;
-  check_distrib 2 2000 1 0.01;
-  check_distrib 2 2000 1 0.9;
+  (*check_distrib 2 3000 3 0.00001; *)
+  (*check_distrib 2 3000 1 0.0001; *)
+  (*check_distrib 2 2000 1 0.01; *)
+  (*check_distrib 2 2000 1 0.9; *)
   check_distrib 300000 300000 20 0.1
 
 let () =

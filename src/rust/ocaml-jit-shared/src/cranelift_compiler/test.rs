@@ -180,3 +180,4 @@ fn dump_closure(closure: &BasicClosure) -> String {
     s
 }
 test_case!(clamp);
+test_case!(intern_segfault);

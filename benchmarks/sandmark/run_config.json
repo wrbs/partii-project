@@ -316,8 +316,7 @@
       "name": "regexredux2",
       "tags": [
         "10s_100s",
-        "macro_bench",
-        "bytecode"
+        "macro_bench"
       ],
       "runs": [
         {

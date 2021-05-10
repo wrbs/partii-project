@@ -1,0 +1,238 @@
+VCode_ShowWithRRU {{
+  Entry block: 0
+Block 0:
+  (original IR block: block0)
+  (successor: Block 1)
+  (successor: Block 17)
+  (instruction range: 0 .. 19)
+  Inst 0:   pushq   %rbp
+  Inst 1:   unwind PushFrameRegs { offset_upward_to_caller_sp: 16 }
+  Inst 2:   movq    %rsp, %rbp
+  Inst 3:   unwind DefineNewFrame { offset_upward_to_caller_sp: 16, offset_downward_to_clobbers: 48 }
+  Inst 4:   subq    $64, %rsp
+  Inst 5:   movq    %r12, 16(%rsp)
+  Inst 6:   unwind SaveReg { clobber_offset: 0, reg: r25J }
+  Inst 7:   movq    %r13, 24(%rsp)
+  Inst 8:   unwind SaveReg { clobber_offset: 8, reg: r26J }
+  Inst 9:   movq    %r14, 32(%rsp)
+  Inst 10:   unwind SaveReg { clobber_offset: 16, reg: r27J }
+  Inst 11:   movq    %rbx, 40(%rsp)
+  Inst 12:   unwind SaveReg { clobber_offset: 24, reg: r28J }
+  Inst 13:   movq    %r15, 48(%rsp)
+  Inst 14:   unwind SaveReg { clobber_offset: 32, reg: r29J }
+  Inst 15:   load_ext_name u1:0+0, %r12
+  Inst 16:   movl    $3, %eax
+  Inst 17:   cmpq    %rsi, %rax
+  Inst 18:   jl      label1; j label17
+Block 1:
+  (original IR block: block2)
+  (successor: Block 2)
+  (successor: Block 4)
+  (instruction range: 19 .. 22)
+  Inst 19:   movl    $5, %eax
+  Inst 20:   cmpq    %rsi, %rax
+  Inst 21:   jz      label2; j label4
+Block 2:
+  (original IR block: block6)
+  (successor: Block 3)
+  (instruction range: 22 .. 26)
+  Inst 22:   load_ext_name u1:1+0, %rsi
+  Inst 23:   movq    0(%rsi), %rsi
+  Inst 24:   movq    3264(%rsi), %rsi
+  Inst 25:   jmp     label3
+Block 3:
+  (successor: Block 16)
+  (instruction range: 26 .. 27)
+  Inst 26:   jmp     label16
+Block 4:
+  (original IR block: block3)
+  (successor: Block 5)
+  (successor: Block 7)
+  (instruction range: 27 .. 30)
+  Inst 27:   movl    $7, %eax
+  Inst 28:   cmpq    %rsi, %rax
+  Inst 29:   jz      label5; j label7
+Block 5:
+  (original IR block: block5)
+  (successor: Block 6)
+  (instruction range: 30 .. 34)
+  Inst 30:   load_ext_name u1:1+0, %rsi
+  Inst 31:   movq    0(%rsi), %rsi
+  Inst 32:   movq    3256(%rsi), %rsi
+  Inst 33:   jmp     label6
+Block 6:
+  (successor: Block 16)
+  (instruction range: 34 .. 35)
+  Inst 34:   jmp     label16
+Block 7:
+  (original IR block: block4)
+  (successor: Block 8)
+  (successor: Block 9)
+  (instruction range: 35 .. 45)
+  Inst 35:   addq    $-4, %rsi
+  Inst 36:   load_ext_name u0:3+0, %rax
+  Inst 37:   movq    %rsi, rsp(0 + virtual offset)
+  Inst 38:   movq    %rdi, rsp(8 + virtual offset)
+      (safepoint: slots [S0, S1] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 39:   call    *%rax
+  Inst 40:   movq    %rax, %rsi
+  Inst 41:   movq    %rsi, rsp(0 + virtual offset)
+  Inst 42:   movq    %rdx, %r14
+  Inst 43:   testq   %r14, %r14
+  Inst 44:   jz      label8; j label9
+Block 8:
+  (successor: Block 11)
+  (instruction range: 45 .. 47)
+  Inst 45:   movq    rsp(0 + virtual offset), %r13
+  Inst 46:   jmp     label11
+Block 9:
+  (original IR block: block11)
+  (successor: Block 10)
+  (instruction range: 47 .. 73)
+  Inst 47:   movq    152(%r12), %r15
+  Inst 48:   movq    %r14, %rbx
+  Inst 49:   addq    $-1, %rbx
+  Inst 50:   movq    %r14, %rdx
+  Inst 51:   shlq    $3, %rdx
+  Inst 52:   movq    %r15, %r13
+  Inst 53:   addq    %rdx, %r13
+  Inst 54:   movq    %r15, %rdi
+  Inst 55:   addq    $-24, %rdi
+  Inst 56:   movq    %r15, %rsi
+  Inst 57:   load_ext_name %Memmove+0, %rax
+      (safepoint: slots [S0] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 58:   call    *%rax
+  Inst 59:   load_ext_name u1:2+0, %rsi
+  Inst 60:   movl    $1, %edi
+  Inst 61:   movq    %rdi, -8(%r15,%r14,8)
+  Inst 62:   movl    $1, %edi
+  Inst 63:   movq    %rdi, -16(%r15,%r14,8)
+  Inst 64:   movq    %rsi, -24(%r15,%r14,8)
+  Inst 65:   movq    %r13, 152(%r12)
+  Inst 66:   movq    rsp(0 + virtual offset), %rsi
+  Inst 67:   movq    %rsi, %rdi
+  Inst 68:   movq    %rbx, %rsi
+  Inst 69:   load_ext_name u0:4+0, %rax
+  Inst 70:   movq    %rdi, rsp(0 + virtual offset)
+      (safepoint: slots [S0] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 71:   call    *%rax
+  Inst 72:   jmp     label10
+Block 10:
+  (successor: Block 11)
+  (instruction range: 73 .. 75)
+  Inst 73:   movq    %rax, %r13
+  Inst 74:   jmp     label11
+Block 11:
+  (original IR block: block10)
+  (successor: Block 12)
+  (successor: Block 13)
+  (instruction range: 75 .. 81)
+  Inst 75:   movabsq $-16, %rsi
+  Inst 76:   addq    0(%r12), %rsi
+  Inst 77:   movq    %rsi, 0(%r12)
+  Inst 78:   movq    8(%r12), %rdi
+  Inst 79:   cmpq    %rdi, %rsi
+  Inst 80:   jnb     label12; j label13
+Block 12:
+  (successor: Block 15)
+  (instruction range: 81 .. 82)
+  Inst 81:   jmp     label15
+Block 13:
+  (original IR block: block12)
+  (successor: Block 14)
+  (instruction range: 82 .. 92)
+  Inst 82:   movl    $1, %edi
+  Inst 83:   movl    $17, %esi
+  Inst 84:   movl    $1, %edx
+  Inst 85:   xorq    %rcx, %rcx
+  Inst 86:   load_ext_name u0:1+0, %rax
+  Inst 87:   movq    %r13, rsp(8 + virtual offset)
+      (safepoint: slots [S1] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 88:   call    *%rax
+  Inst 89:   movq    rsp(8 + virtual offset), %r13
+  Inst 90:   movq    0(%r12), %rsi
+  Inst 91:   jmp     label14
+Block 14:
+  (successor: Block 15)
+  (instruction range: 92 .. 93)
+  Inst 92:   jmp     label15
+Block 15:
+  (original IR block: block13)
+  (successor: Block 16)
+  (instruction range: 93 .. 98)
+  Inst 93:   movl    $1026, %edi
+  Inst 94:   movq    %rdi, 0(%rsi)
+  Inst 95:   addq    $8, %rsi
+  Inst 96:   movq    %r13, 0(%rsi)
+  Inst 97:   jmp     label16
+Block 16:
+  (original IR block: block7)
+  (instruction range: 98 .. 109)
+  Inst 98:   xorq    %rdx, %rdx
+  Inst 99:   movq    %rsi, %rax
+  Inst 100:   movq    16(%rsp), %r12
+  Inst 101:   movq    24(%rsp), %r13
+  Inst 102:   movq    32(%rsp), %r14
+  Inst 103:   movq    40(%rsp), %rbx
+  Inst 104:   movq    48(%rsp), %r15
+  Inst 105:   addq    $64, %rsp
+  Inst 106:   movq    %rbp, %rsp
+  Inst 107:   popq    %rbp
+  Inst 108:   ret
+Block 17:
+  (original IR block: block1)
+  (successor: Block 18)
+  (successor: Block 19)
+  (instruction range: 109 .. 120)
+  Inst 109:   load_ext_name u1:1+0, %rsi
+  Inst 110:   movq    0(%rsi), %rdi
+  Inst 111:   movq    3248(%rdi), %r13
+  Inst 112:   movq    0(%rsi), %rsi
+  Inst 113:   movq    80(%rsi), %r14
+  Inst 114:   movabsq $-24, %rsi
+  Inst 115:   addq    0(%r12), %rsi
+  Inst 116:   movq    %rsi, 0(%r12)
+  Inst 117:   movq    8(%r12), %rdi
+  Inst 118:   cmpq    %rdi, %rsi
+  Inst 119:   jnb     label18; j label19
+Block 18:
+  (successor: Block 21)
+  (instruction range: 120 .. 121)
+  Inst 120:   jmp     label21
+Block 19:
+  (original IR block: block8)
+  (successor: Block 20)
+  (instruction range: 121 .. 133)
+  Inst 121:   movl    $2, %edi
+  Inst 122:   movl    $17, %esi
+  Inst 123:   movl    $1, %edx
+  Inst 124:   xorq    %rcx, %rcx
+  Inst 125:   load_ext_name u0:1+0, %rax
+  Inst 126:   movq    %r13, rsp(0 + virtual offset)
+  Inst 127:   movq    %r14, rsp(8 + virtual offset)
+      (safepoint: slots [S0, S1] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 128:   call    *%rax
+  Inst 129:   movq    rsp(0 + virtual offset), %r13
+  Inst 130:   movq    rsp(8 + virtual offset), %r14
+  Inst 131:   movq    0(%r12), %rsi
+  Inst 132:   jmp     label20
+Block 20:
+  (successor: Block 21)
+  (instruction range: 133 .. 134)
+  Inst 133:   jmp     label21
+Block 21:
+  (original IR block: block9)
+  (instruction range: 134 .. 144)
+  Inst 134:   movl    $2048, %edi
+  Inst 135:   movq    %rdi, 0(%rsi)
+  Inst 136:   addq    $8, %rsi
+  Inst 137:   movq    %rsi, %rdi
+  Inst 138:   movq    %r14, 0(%rdi)
+  Inst 139:   movq    %r13, 8(%rdi)
+  Inst 140:   load_ext_name u0:2+0, %rsi
+  Inst 141:   movq    %rdi, rsp(0 + virtual offset)
+      (safepoint: slots [S0] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 142:   call    *%rsi
+      (safepoint: slots [] with EmitState EmitState { virtual_sp_offset: 0, nominal_sp_to_fp: 0, stack_map: None, cur_srcloc: SourceLoc(4294967295) })
+  Inst 143:   ud2 unreachable
+}}
