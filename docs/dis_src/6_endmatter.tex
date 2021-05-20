@@ -9,6 +9,156 @@
 
 \cleardoublepage
 
+\chapter{Extended optimised compiler example} \label{appendix-example}
+
+We will consider the clamp function which calculates
+
+\[
+    \text{clamp}(h, l, x) = \begin{cases*}
+        h & \text{if }h < x  \\
+        l & \text{if }l > x  \\
+        x & \text{otherwise} \\
+    \end{cases*}
+\]
+
+In OCaml it can be defined
+
+\begin{minted}{ocaml}
+(% clamp : int -> int -> int %)
+let clamp h l (x : int) =
+  if h < x then
+    h
+  else if l > x then
+    l
+  else
+    x
+\end{minted}
+
+It is compiled to bytecode which basic block conversions parses to:
+
+% \begin{verbatim}
+% Arity: 3
+% Max stack size: 4
+% 
+% # Block 0 (stack_start = 3)
+% Acc(2)
+% Push
+% Acc(1)
+% IntCmp(Lt)
+% Exit: BranchIf { then_block: 1, else_block: 2 }
+% 
+% # Block 1 (stack_start = 3)
+% Acc(0)
+% Exit: Return(3)
+% 
+% # Block 2 (stack_start = 3)
+% Acc(2)
+% Push
+% Acc(2)
+% IntCmp(Gt)
+% Exit: BranchIf { then_block: 3, else_block: 4 }
+% 
+% # Block 3 (stack_start = 3)
+% Acc(1)
+% Exit: Return(3)
+% 
+% # Block 4 (stack_start = 3)
+% Acc(2)
+% Exit: Return(3)
+% \end{verbatim}
+
+\input{graphs/clamp-new.tex}
+
+My CLIF generation produces this:
+
+\begin{verbatim}
+function u0:0(r64, r64, r64, r64) -> r64, i64 system_v {
+    gv0 = symbol u1:0
+
+block0(v0: r64, v1: r64, v2: r64, v3: r64):
+    v4 = null.r64 
+    v5 = iconst.i64 0
+    v26 -> v5
+    v6 = symbol_value.i64 gv0
+    v7 = raw_bitcast.i64 v1
+    v8 = raw_bitcast.i64 v3
+    v9 = ifcmp v7, v8
+    v10 = iconst.i64 3
+    v11 = iconst.i64 1
+    v12 = selectif.i64 slt v9, v10, v11
+    v13 = raw_bitcast.r64 v12
+    v14 = raw_bitcast.i64 v13
+    v15 = icmp_imm eq v14, 1
+    brz v15, block1
+    jump block2
+
+block1:
+    jump block5(v1)
+
+block2:
+    v16 = raw_bitcast.i64 v2
+    v17 = raw_bitcast.i64 v3
+    v18 = ifcmp v16, v17
+    v19 = iconst.i64 3
+    v20 = iconst.i64 1
+    v21 = selectif.i64 sgt v18, v19, v20
+    v22 = raw_bitcast.r64 v21
+    v23 = raw_bitcast.i64 v22
+    v24 = icmp_imm eq v23, 1
+    brz v24, block3
+    jump block4
+
+block3:
+    jump block5(v2)
+
+block4:
+    jump block5(v3)
+
+block5(v25: r64):
+    return v25, v5
+}
+\end{verbatim}
+
+When cranelift compiles to
+
+\begin{verbatim}
+0000000000000000 <clamp>:
+   0:	55                   	push   rbp
+   1:	48 89 e5             	mov    rbp,rsp
+   4:	48 89 f0             	mov    rax,rsi
+   7:	49 89 c9             	mov    r9,rcx
+   a:	41 b8 03 00 00 00    	mov    r8d,0x3
+  10:	bf 01 00 00 00       	mov    edi,0x1
+  15:	4c 39 c8             	cmp    rax,r9
+  18:	48 89 f8             	mov    rax,rdi
+  1b:	49 0f 4c c0          	cmovl  rax,r8
+  1f:	bf 01 00 00 00       	mov    edi,0x1
+  24:	48 39 f8             	cmp    rax,rdi
+  27:	0f 85 2a 00 00 00    	jne    57 <clamp+0x57>
+  2d:	48 89 d0             	mov    rax,rdx
+  30:	be 03 00 00 00       	mov    esi,0x3
+  35:	bf 01 00 00 00       	mov    edi,0x1
+  3a:	4c 39 c8             	cmp    rax,r9
+  3d:	48 0f 4f fe          	cmovg  rdi,rsi
+  41:	be 01 00 00 00       	mov    esi,0x1
+  46:	48 39 f7             	cmp    rdi,rsi
+  49:	0f 84 0b 00 00 00    	je     5a <clamp+0x5a>
+  4f:	48 89 d1             	mov    rcx,rdx
+  52:	e9 03 00 00 00       	jmp    5a <clamp+0x5a>
+  57:	48 89 f1             	mov    rcx,rsi
+  5a:	48 31 d2             	xor    rdx,rdx
+  5d:	48 89 c8             	mov    rax,rcx
+  60:	48 89 ec             	mov    rsp,rbp
+  63:	5d                   	pop    rbp
+  64:	c3                   	ret    
+
+\end{verbatim}
+
+Cranelift's simple optimisation passes have performed jump coalescing, live variable analysis and
+register allocation
+to produce fairly well optimised assembly. My code enabled this by translating uses of the OCaml
+stack to its primitive values.
+
 \chapter{Complete benchmark results}
 
 Big table (maybe landscape orientation/multiple pages) with all of the benchmark data.

@@ -21,7 +21,7 @@ thought of as a tagged tuple containing \texttt{wosize} fields. Each field is tr
 value by the garbage collector.
 
 There are special tag values and cases in the garbage collector for things like floating point
-numbers\footnote{which due to the uniform representation must be stored boxed on the heap},
+numbers (which due to the uniform representation must be stored boxed on the heap),
 closures, objects and \texttt{f64}/\texttt{u8} arrays.
 
 \subsection{Registers}
@@ -143,16 +143,16 @@ precise and generational stop-the-world garbage collector.
 
 \subsubsection{Generational}
 
-As it is a functional language, short-lived immutable values are created and dropped very
+As OCaml is a functional language, short-lived immutable values are created and dropped very
 frequently. For this reason OCaml uses a generational garbage collector: there is a minor heap and
 a major heap. Allocations are done by pointer bump in the minor heap
 until it becomes full. At that point the runtime branches into the garbage collector which compacts
 anything alive in the minor heap.
 
-After something survives for a while they are moved to the major heap which is collected much less
+Values that survie for some period of time are moved to the major heap which is collected much less
 frequently.
 
-OCaml also requires a write barrier for every assignment to a field.
+OCaml requires a write barrier for every assignment to a field.
 
 \subsubsection{Precise}
 
@@ -185,22 +185,20 @@ As the garbage collector relocates objects, it is important the runtime can find
 (pointers to heap-allocated values). For the interpreter, all roots are stored on the stack. For
 this reason the interpreter spills the accu and env to the stack at every safepoint.
 
-\subsection{Instruction format}
+\subsection{Instruction format} \label{ocaml-bytecode-format}
 
-There are 149 opcodes defined. Each opcode takes a certain\footnote{or in the case of
-    \texttt{SWITCH}, variable} number of arguments. Opcodes and arguments are stored as
-\texttt{i32}
-values.
+Opcodes and arguments are all stored as \texttt{i32} values. There are 149 distinct opcodes taking
+various
+different numbers of arguments.
 
-However many opcodes are the composition of a few simpler opcodes to save space in the
-format. For example \texttt{PUSHGETGLOBALFIELD(x, y)} can be expanded to \texttt{PUSH,
+However many opcodes are just the composition of a few simpler opcodes to save space in the format.
+For example \texttt{PUSHGETGLOBALFIELD(x, y)} can be expanded to \texttt{PUSH,
     GETGLOBAL(x), GETFIELD(y)} or \texttt{ACC2} (only opcode) is the same as \texttt{ACC(2)}
-(with
-the 2 as the operand).
+(\texttt{ACC} opcode with the 2 as the operand).
 
-For my JIT I did these expansions to arrive at 62 instructions\footnote{where all binary
-    arithmetic and comparison instructions use the same instruction type -- so in practice about
-    80 distinct instructions}.
+For this project I expanded these aliases to arrive at 62 instructions\footnote{where all binary
+    arithmetic and comparison instructions use the same instruction type -- so in practice about 80
+    distinct instructions}.
 
 Most operations are fairly standard for a stack based machine with an accumulator - there are
 commands for stack manipulation and loading and storing the accumulator to the stack, performing

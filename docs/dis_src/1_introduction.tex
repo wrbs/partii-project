@@ -1,6 +1,9 @@
 % !TeX root = ../dissertation.tex
 \chapter{Introduction}
 
+This project introduces two just-in-time (JIT) compilers for the OCaml programming language - one
+focussing on correctness and compile speed and the other on performance of the compiled code
+
 \section{Overview}
 
 OCaml is a compiled functional programming language with a strong, static type system.
@@ -19,15 +22,14 @@ The project achieved on schedule three core goals as set out in the proposal:
             and introspection.
       \item There is a comprehensive and automated suite of benchmarks built
             comparing its performance to other alternatives.
-      \item It performs favourably to the interpreter when discounting
-            initial compile time for all programs and overall for longer running
-            programs.
+      \item It performs favourably compared to the original interpreter on benchmark programs
 \end{enumerate}
 
-This gave some time for a significant extension project; this consisted of creating a slower but
+I then implemented a significant extension project --- a slower but
 more optimising compiler being conditionally used for functions which are called often.
 
-The project is primarily written in the Rust programming language.
+The project is primarily written in the Rust and C programming languages, integrating into the
+framework of the existing OCaml runtime.
 
 I will refer to the faster but less intelligent compiler as the `first' or `initial' compiler and
 the slower but more optimising compiler as the `second' or `optimising' compiler.
@@ -35,20 +37,23 @@ the slower but more optimising compiler as the `second' or `optimising' compiler
 \section{Summary of results}
 
 The JIT compiler produced is very complete. It is capable of compiling and executing all OCaml
-bytecode instructions and every test program I have tested.. The only features not supported are
+bytecode instructions and every test program I have tested. The only features not supported are
 the
 debugger and backtraces. All of the OCaml compiler test suite passes with the exception of tests of
 the debugger and backtraces. The JIT compiler can be used to bootstrap the entire OCaml compiler.
 
-Performance is better for most of the benchmark programs tested. The average speedup was 1.y.
+Performance results were good; across the benchmark suite mean speedup was $1.46$ (range $[0.81,
+                  2.20]$,
+$\sigma = 0.40$, $n = 36$).
 
 \section{Motivations}
 
-Using the bytecode interpreter is significantly slower than the native code compiler - however
+The default bytecode interpreter in OCaml is significantly slower than the native code compiler -
+however
 the design of the interpreter is very sophisticated. Its design descends from that of the ZINC
 Abstract Machine (ZAM) \cite{zinc}.
 
-Although most users of OCaml use the native code compiler nearly exclusively, the bytecode
+Although most users of OCaml use the native code compiler, the bytecode
 compiler is still useful. It is used primarily:
 
 \begin{enumerate}
@@ -57,13 +62,12 @@ compiler is still useful. It is used primarily:
       \item As a portable executable format for different machines
       \item To run programs under a debugger
       \item To allow language developers to experiment with new language features without needing
-            to write target specific code generation
+            to write target-specific code
 \end{enumerate}
 
 This project demonstrates how JIT compilation techniques can be applied to the OCaml interpreter
-with benefit while retaining the bytecode format and semantics. As the toplevel can only use
-bytecode, the JIT could be lead to better performance in interactive OCaml environments such as the
-OCaml toplevel.
+with benefit while retaining the bytecode format and semantics. As the `toplevel' can only use
+bytecode, the JIT could be lead to better performance in interactive OCaml environments.
 
 Additionally, this project demonstrates two contrasting approaches to writing a JIT compiler in
 Rust
@@ -96,8 +100,7 @@ In order to limit the scope of the project some decisions were made upfront.
 
 \begin{enumerate}
       \item This project only modifies the runtime components of the OCaml compiler and does not
-            modify the bytecode format or behaviour of the compiler, even if this would make life
-            simpler
+            modify the bytecode format or behaviour of the compiler
       \item The only target considered is x86\_64 Linux
       \item Correctness should be prioritised over completeness and existing OCaml semantics should
             be preserved
