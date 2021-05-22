@@ -169,8 +169,6 @@ control between basic blocks.
 
 \subsection{SSA form}
 
-\textbf{Todo: add simple running example: if x = 2 then 5 else 7?}
-
 A useful intermediate form used in compilers is single static assignment (SSA) form. If a program
 is in this form,
 every variable is assigned to only once and only binds a single immutable value.
@@ -186,12 +184,75 @@ of branching. The successor blocks have a node which marks the value that should
 case
 of each entry edge into the function.
 
+\begin{figure}
+    \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \begin{tikzpicture}[auto,
+                node distance = 12mm,
+                start chain = going below,
+                box/.style = {draw, rounded corners, blur shadow, fill=white, on chain,
+                        align=center}
+            ]
+
+            \node[box] (b1) {$\bm{b_1}$ \\ $v_1 \leftarrow x + y$ \\ $(v_1 >= 0)$? $b_2$ : $b_3$};
+            \node[box] (b2) [below left=of b1,xshift=15mm]{$\bm{b_2}$ \\ $v_2 \leftarrow 5$ \\
+                jump
+                $b_4$};
+            \node[box] (b3) [below right=of b1,xshift=-15mm] {$\bm{b_3}$ \\ $v_3 \leftarrow 7$ \\
+                jump $b_4$};
+            \node[box] (b4) [below=35mm of b1] {$\bm{b_4}$ \\ $v_4 \leftarrow \Phi
+                    (b_2 \mapsto
+                    v_2, b_3
+                    \mapsto
+                    v_3)$\\print($v_4$)};
+
+            \begin{scope}[rounded corners, -latex]
+                \path (b1) edge (b2) (b2) edge (b4);
+                \path (b1) edge (b3) (b3) edge (b4);
+            \end{scope}
+        \end{tikzpicture}
+        \caption{Phi nodes}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \begin{tikzpicture}[auto,
+                node distance = 12mm,
+                start chain = going below,
+                box/.style = {draw, rounded corners, blur shadow, fill=white, on chain,
+                        align=center}
+            ]
+
+            \node[box] (b1) {$\bm{b_1}$ \\ $v_1 \leftarrow x + y$ \\ $(v_1 >= 0)$? $b_2$ :
+                $b_3$};
+            \node[box] (b2) [below left = of b1,xshift=20mm]{$\bm{b_2}$ \\ $v_2 \leftarrow 5$ \\
+                jump
+                $b_4(v_2)$};
+            \node[box] (b3) [below right = of b1,xshift=-20mm] {$\bm{b_3}$ \\ $v_3 \leftarrow 7$ \\
+                jump
+                $b_4(v_3)$};
+            \node[box] (b4) [below = 35mm of b1] {$\bm{b_4(v_4)}$ \\\\ print($v_4$)};
+
+            \begin{scope}[rounded corners, -latex]
+                \path (b1) edge (b2) (b2) edge (b4);
+                \path (b1) edge (b3) (b3) edge (b4);
+            \end{scope}
+        \end{tikzpicture}
+
+        \caption{Block parameters}
+
+    \end{subfigure}
+    \caption{Comparison of phi nodes and block parameters for SSA forms}
+    \label{fig:phi-bp}
+\end{figure}
+
 Cranelift, and by extension this project, uses an alternative formulation known as block
 parameters.
 Here the blocks appear as if they are functions taking arguments and the values to use for the
 arguments are provided by the predecessor block. This is a newer, slightly clearer formulation that
 avoids having special case Phi node meta-instructions.
 
+The difference between Phi nodes and block parameters is shown in Figure \ref{fig:phi-bp}.
 \section{x86\_64}
 
 \begin{table}[h]
