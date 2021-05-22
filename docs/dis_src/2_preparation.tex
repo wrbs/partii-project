@@ -216,7 +216,9 @@ x86\_64 is a large CISC (complex instruction set computer) architecture descendi
 It has 16 general purpose 64-bit registers: \texttt{r[abcd]x, rdi, rsi, rsp, rbp, r8-r15}.
 This
 project targets Linux only which uses the System V
-calling convention.
+calling convention. Assembly listings in this project use Intel
+    [\texttt{mov eax, 1}] rather than AT\&T [\texttt{movl
+    \$1, \%eax}] syntax.
 
 A summary of the System V calling convention is given in Table \ref{table:systemv} --- the relevant
 details for this dissertation are
@@ -224,17 +226,16 @@ that up to six 64-bit arguments can be passed to functions in registers, that up
 be returned by a
 function
 and the large number of caller-saved registers.
-
-Assembly listings in this project use Intel (\texttt{mov eax, 1}) rather than AT\&T (\texttt{movl
-    \$1,\%eax}) syntax.
-
 \section{Dependencies used}
-
-\textbf{TODO - table with licenses}
 
 I use a lot of open source libraries/crates (as is usual to do in Rust). Some dependencies needed
 to be tweaked slightly and where that is the case they are vendored in to the source tree. Other
 dependencies are included directly using \texttt{Cargo.toml}.
+
+Rust crate dependencies are under various licenses but all can be linked with my work in the main
+project which to be compatible with OCaml is LGPL 2.1 only with the OCaml linking exception. Most
+of
+these dependencies are transitive. A full list is given in Appendix \ref{appendix-license}.
 
 \subsection{Dynasm}
 
@@ -243,12 +244,11 @@ dependencies are included directly using \texttt{Cargo.toml}.
 \subsection{Cranelift}
 
 The second compiler uses the \texttt{cranelift} \cite{cranelift} library which is a low-level
-retargetable
-code generator with an emphasis on use in JITs\footnote{It's largest use is for JIT-compiling
-    webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar to LLVM but
-lower
-level and much simpler. It cannot perform many optimisations LLVM can but has significantly lower
-compilation time.
+retargetable code generator with an emphasis on use in JITs\footnote{It's largest use is for
+    JIT-compiling webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar to
+LLVM
+but lower level and much simpler. It cannot perform many optimisations LLVM can but has
+significantly lower compilation time.
 
 \subsection{Sandmark}
 
@@ -261,43 +261,102 @@ initially only benchmarked the native code compiler) but was able to reuse most 
 \section{Starting point}
 
 Before the formal project start I forked the OCaml compiler (version 4.11.1) and implemented a
-proof
-of concept bidirectional FFI between C and Rust. This was done to mitigate the risk of not being
-able to successfully link the OCaml runtime with Rust and helped build some familiarity with
-OCaml's
-existing runtime.
+proof of concept bidirectional FFI between C and Rust. This was done to mitigate the risk of not
+being able to successfully link the OCaml runtime with Rust and helped build some familiarity with
+OCaml's existing runtime.
 
 I also wrote a parser from the bytecode into Rust data types and a simple disassembler that uses
 it. This allowed me to explore the undocumented bytecode format and begin to understand how higher
 level OCaml constructs map to bytecode concepts.
 
-Both components were largely rewritten during the formal time allocated to the project.
-
-\textbf{TODO - make some kind of diff/way to really distinguish prior work}
+Both components were almost completely rewritten during the progress of the project.
 
 \section{Development methodology}
 
-\textbf{this is just an outline - todo expand}
+This project was developed in an iterative manner most closely aligned with the 'Agile'
+methodology.  A key focus was on working code that could be tested at every stage of the project.
+Support for opcodes were added incrementally as needed.
 
-Incremental method inspired by agile methods but simplified by only dealing with one developer.
-Focus on working code as early as possible while slowly expanding out the feature set.
+Components were initially developed as simply as possible with limited optimisation. Performance
+profiles were used to determine things to optimise. Some components were rewritten once they were
+determined to be too inflexible or lacking in performance --- the Rust type system was very
+effective
+at ensuring all places that needed to be changed in refactoring were updated.
 
-Some things were prototyped first before being rewritten with lessons learned from previous
-implementation. Focus on tools to aid in understanding and gain familiarity with instruction set.
-Tools could then be used in development.
+\subsection{Testing}
 
-Guided by major milestones.  Developed using my own machine. Code primarily in Rust with some
-written in C. No modifications to the OCaml compiler source made - only OCaml. Some bash scripts
-were used but more complicated scripts written in Rust.
+Automated testing was essential to the development of this project. A variety of testing strategies
+were
+employed: unit tests of easily isolatable components, comparison testing of input/output behaviour
+for phases of the compiler and whole system tests in the OCaml compiler. The most useful type of
+test
+was the trace comparison test against the behaviour of the existing interpreter.
 
-Highly test-driven implementation strategy described in section \ref{impl-strategy}. Single Git
-repository used for all aspects of the project including vendoring dependencies. The various build
-systems of the OCaml compiler and Rust (\texttt{cargo}) were managed by top-level Makefiles. The
-project is capable of being built by \texttt{opam} which helped with testing different compiler
-configurations for benchmarking.
+As OCaml bytecode has no specification outside of the behaviour of the interpreter, it makes sense
+to test
+directly against this behaviour. The VM state was printed at every instruction and automated
+tooling would
+compare the JIT's trace against the interpreter's one. More details are given in Section
+\label{trace-comparison}.  \ref{trace-comparison} to ensure identical execution behaviour to the
 
-Expect tests used to compare output to snapshots and detect regressions - also serves as useful
-documentation of 'what the compiler does'.
+To develop larger components like the optimising compiler before enough code was written to allow
+running the entire compiler, I made use of `expect tests'. These consist of tests that compare a
+string representation of the compiler output against a reference string included in the source. The
+expect test runner will show the diff on failure and has support for `promoting' the new version
+replacing the reference string with the new output. In addition to effectively detecting unforeseen
+regressions these tests serve as good self-contained test cases of components.
 
-Backing up was done to GitHub. Monorepo. The repository contains everything needed to bootstrap the
-project assuming a \texttt{x86\_64} Linux system with the required compilers and system libraries.
+\subsection{Tools}
+
+All project code was stored in a single Git repository with all of the different subcomponents
+version controlled together (typically known as a `monorepo'). GitHub was used as a reliable remote
+
+storage for backup. Experimental ideas were developed on branches to allow evaluation of different
+strategies and I used self-reviewed pull requests to review changes.
+
+Most development of the project mostly occurred in periods of a few days/weeks where nearly
+all of my working time was dedicated to the project. However, I made sure to spend at least 1 day
+on the project per week even when focussing on other commitments. This helped retain the project
+knowledge between the more intense working sessions.
+
+The OCaml test suite was used towards the later stages of completeness and failures were added as
+cases to my test suite as trace comparisons. This helped isolate and fix rare bugs in uncommon
+code.
+
+The \texttt{cargo} build system was used for all Rust code. Linking in to the OCaml runtime
+was done by modifying OCaml's rather messy \texttt{autoconf} \& handwritten \texttt{Makefile} build
+system. Smaller automation was done with bash scripts with more complicated tools written in Rust.
+
+All of these components are tied together with a toplevel Makefile. The project can be used as a
+custom
+\texttt{opam} switch making it easy to test the system with the entire ecosystem of OCaml
+dependencies.
+This is used by the Sandmark benchmark suite which itself uses \texttt{dune} to build and run
+benchmark programs.
+
+Data analysis is done using the standard Python stack (pandas, matplotlib, jupyter, etc.). A frozen
+list of Python dependencies is at \texttt{benchmarks/requirements.txt}.
+
+I used a combination of neovim, Visual Studio Code (with \texttt{rust-analyzer}) and CLion as text
+editors/IDEs for the project. All documentation and research was done solely using the Internet.
+Clippy was used for linting Rust code and all code was autoformatted using \texttt{rustfmt}.
+
+\subsection{Resources}
+
+I used a desktop I built in 2020 (Intel 10700K CPU, 32GB RAM on fast SSD) to develop the project.
+The machine triple-boots Windows, Arch Linux and macOS but by the end the simplifying assumption
+was made only to support Linux (meaning the project was developed both with WSL or on Arch). The
+project used to work perfectly on \texttt{macOS} and would likely only take minor modifications to
+restore support. However, with Apple moving away from x86\_64 I decided to stop testing it and
+since
+then one part of the project uses a Linux-only syscall. It would not require too much work to
+restore support to macOS.
+
+The project also works on my significantly older and less powerful laptop but compilation is
+slower.
+The repository contains everything needed to bootstrap the project and in case of catastrophic
+system failure I would only lose anything not pushed to GitHub.
+
+Separately of GitHub, I have automatic synchronisation set up to a server I rent. This server
+itself
+uploads encrypted, incremental backups to OneDrive.

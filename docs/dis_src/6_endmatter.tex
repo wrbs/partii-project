@@ -163,6 +163,48 @@ stack to its primitive values.
 
 Big table (maybe landscape orientation/multiple pages) with all of the benchmark data.
 
+\chapter{Rust dependencies and their licenses} \label{appendix-license}
+
+Names are according to the SPDX License List. Most dependencies are transitive dependencies
+of projects I directly depend on.
+
+\begin{description}
+    \item[Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT (2)] \hfill \\ wasi, wasi
+    \item[Apache-2.0 OR BSL-1.0 (1)] \hfill \\ ryu
+    \item[Apache-2.0 OR MIT (75)] anyhow, arrayvec, autocfg, base64, bitflags, bstr, cc,
+          cfg-if, cfg-if, crc32fast, crossbeam-utils, dirs, dissimilar, either, encode\_unicode,
+          env\_logger,
+          errno, expect-test, gcc, getrandom, getrandom, gimli, hashbrown, heck, hermit-abi,
+          humantime,
+          indexmap, itertools, itoa, lazy\_static, libc, log, memmap2, object, once\_cell,
+          ppv-lite86,
+          proc-macro-error, proc-macro-error-attr, proc-macro2, proc-macro2, quote, quote, rand,
+          rand\_chacha, rand\_core, rand\_hc, regex, regex-syntax, remove\_dir\_all, rust-argon2,
+          rustc-hash,
+          serde, serde\_derive, serde\_json, shell-words, smallvec, structopt, structopt-derive,
+          syn, syn,
+          tempfile, term, terminal\_size, thiserror, thiserror-impl, thread\_local,
+          unicode-segmentation,
+          unicode-width, unicode-xid, unicode-xid, vec\_map, version\_check, winapi,
+          winapi-i686-pc-windows-gnu, winapi-x86\_64-pc-windows-gnu
+    \item[Apache-2.0 WITH LLVM-exception (13)] \hfill \\ cranelift, cranelift-bforest,
+          cranelift-codegen,
+          cranelift-codegen-meta, cranelift-codegen-shared, cranelift-entity, cranelift-frontend,
+          cranelift-jit, cranelift-module, cranelift-native, cranelift-object, regalloc,
+          target-lexicon
+    \item[BSD-2-Clause (2)] \hfill \\ arrayref, mach
+    \item[BSD-3-Clause (1)] \hfill \\ prettytable-rs
+    \item[CC0-1.0] \hfill \\ constant\_time\_eq
+          % \item[LGPL-2.1-only WITH OCaml-LGPL-linking-exception (1)] \hfill \\  ocaml-jit-staticlib
+    \item[MIT (20)] \hfill \\ ansi\_term, atty, blake2b\_simd, clap, console, default-env,
+          errno-dragonfly, indicatif, nix, number\_prefix, os\_pipe, pretty-hex, redox\_syscall,
+          redox\_syscall, redox\_users, region, strsim, strum, strum\_macros, textwrap
+    \item[MIT OR Unlicense (8)] \hfill \\ aho-corasick, byteorder, csv, csv-core, memchr,
+          regex-automata, termcolor, winapi-util
+    \item[MPL-2.0 (3)] \hfill \\ colored, dynasm, dynasmrt
+          % \item[N/A (2)] \hfill \\ ocaml-jit-shared, ocaml-jit-tools
+\end{description}
+
 \chapter{Original proposal}
 
 \textbf{TODO - include the pdf/TeX source here}
