@@ -2,12 +2,11 @@
 \chapter{Introduction}
 
 This project introduces two new just-in-time (JIT) compilers to x86\_64 machine code for the OCaml
-programming language - one focussing on correctness and compile speed and the other on performance
-of the compiled code.  These compilers are integrated together dynamically, with the second
-compiler
-being used for frequently called functions.  The combination of compilers system
-outperforms\footnote{It is faster for 32/36 of the tested benchmarks: mean speedup = 1.46, $\sigma
-            = 0.40$} the
+programming language - one focusing on correctness and compile speed and the other on performance
+of the compiled code. These compilers are integrated together dynamically: the first compiler is
+used for all code and the second compiler is used for functions detected to be called often.  The
+combination of compilers system outperforms\footnote{It is faster for 32/36 of the tested
+      benchmarks: mean speedup = $1.46\times$, $\sigma = 0.40$} the
 OCaml bytecode interpreter on the majority of tested benchmarks and is capable of executing every
 OCaml program.
 
@@ -15,14 +14,15 @@ In this document, I will refer to the faster but less intelligent compiler as th
 `initial' compiler and the slower but more optimising compiler as the `second' or `optimising'
 compiler.
 
-\section{Motivations}
+\section{Motivation}
 
 OCaml is a compiled functional programming language with a strong, static type system. The OCaml
-compiler has two main backends: an optimised target-specific native code compiler and a compiler to
+compiler has two main backends: an optimised target-specific native-code compiler and a compiler to
 bytecode which is later run by the interpreter, \texttt{ocamlrun}.
 
-The default bytecode interpreter in OCaml is significantly slower than the output of the native
-code compiler. Although most users of OCaml use the native code compiler, the bytecode compiler is
+The default bytecode interpreter in OCaml is significantly slower than the output of the
+native-code compiler. Although most users of OCaml use the native-code compiler, the bytecode
+compiler is
 still useful. One of the largest use cases is it is the only method used by the OCaml `toplevel'
 read-evaluate-print-loop (REPL). JIT compilation techniques are particularly well suited to this
 use case.
@@ -32,7 +32,8 @@ the bytecode format and semantics. As the `toplevel' can only use
 bytecode, the JIT could be lead to better performance in interactive OCaml environments.
 
 Additionally, this project demonstrates two contrasting approaches to writing a JIT compiler in
-Rust and shows how they can be integrated together for performance better than either individually.
+Rust and shows how they can be integrated them together for performance better than either
+individually.
 
 \section{Related work}
 
@@ -43,14 +44,7 @@ similar design to that of \textsc{OCamlJit2} and my second was more sophisticate
 project.
 
 This project fits into the space of JITs more generally as a method-based (as opposed to
-trace-based) compiler \cite{pyket}. The initial compiler uses \texttt{dynasm-rs} \cite{dynasmrs}
-which works as a Rust macro turning assembly instructions into pre-assembled code and calls into
-a simple runtime for relocation. Its design is based on that of \texttt{DynASM} used in the
-\texttt{LuaJIT} project \cite{dynasm}.
-
-The optimising compiler uses the \texttt{cranelift} \cite{cranelift}
-library which is a low-level retargetable compiler with an emphasis on use in JITs.
-
+trace-based) compiler \cite{pyket}.
 \section{Work done}
 
 The project achieved on schedule three core goals as set out in the proposal:
@@ -64,8 +58,8 @@ The project achieved on schedule three core goals as set out in the proposal:
       \item It performs favourably compared to the original interpreter on benchmark programs
 \end{enumerate}
 
-I then implemented the significant extension project of the optimising compiler and integrated
-them together.
+I then implemented the significant extension of the optimising compiler and integrated
+it with the initial compiler.
 
 The project is primarily written in the Rust and C programming languages. It replaces the
 interpreter component of the existing OCaml runtime.
@@ -73,11 +67,11 @@ interpreter component of the existing OCaml runtime.
 \section{Summary of results}
 
 The system is capable of correctly compiling and executing all OCaml
-bytecode instructions and every test program I have tested. The features not supported are
+bytecode instructions and every program I have tested. The features not supported are
 the debugger and backtraces (which are not used by default in the existing runtime). The entire
 OCaml compiler test suite passes with the exception of tests of
 the debugger and backtraces. The JIT compiler can be used in the OCaml compiler's
 self-bootstrapping.
 
 The new JIT-using runtime significantly increases performance for most of the tested programs.
-The mean speedup achieved across the benchmark suite of 36 different programs was 1.46.
+The mean speedup achieved across the benchmark suite of 36 different programs was $1.46 \times$.

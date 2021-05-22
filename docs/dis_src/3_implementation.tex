@@ -14,54 +14,74 @@
 
 \chapter{Implementation}
 
-\input{graphs/arch.tex}
+\begin{figure}[h]
+      \centering
+      \begin{tikzpicture}[auto,
+                  node distance = 12mm,
+                  start chain = going below,
+                  box/.style = {draw, rounded corners, blur shadow, fill=white, on chain,
+                              align=center, minimum height=8mm}
+            ]
 
-I have written two compilers and integrated them to work together \textbf{TODO make better}
+            \node[box] (ocaml) {OCaml Runtime};
+            \node[box] (init) [right=of ocaml] {Initial Compiler};
+            \node[box] (code) [below=of init] {Machine Code};
+            \node[box] (opt) [right=of init] {Optimised Compiler};
+            \node[box] (optcode) [below=of opt] {Optimised Machine Code};
 
-I have implemented a Rust static library that is linked in to the OCaml runtime library and
-\texttt{ocamlrun} (the interpreter).
-\texttt{ocamlrun} hooks into this library when it loads bytecode and when it starts
-interpreting it.
-If the JIT is enabled, either by setting an environment variable or enabling it by default at
-compile time,
-when the bytecode load hook is run the \textbf{initial compiler} will execute.
+            \begin{scope}[rounded corners, -latex]
+                  \path (ocaml) edge (init) (init) edge (code) (code) edge (opt) (opt) edge
+                  (optcode);
+            \end{scope}
+      \end{tikzpicture}
+
+      \caption{Control flow through the compiler}
+\end{figure}
+
+I have developed two new JIT compilers from OCaml bytecode to x86\_64 assembly. The first compiler
+completely replaces OCaml's bytecode interpreter and
+is used for all programs and functions. The second is only used for functions which are called
+multiple times at runtime.
+
+\section{Overview}
+
+OCaml bytecode is executed using a program called \texttt{ocamlrun}. Both new compilers are
+implemented in a Rust static library which \texttt{ocamlrun} links to. \texttt{ocamlrun} hooks into
+this library when it loads bytecode and when it starts interpreting it.
+
+If the JIT is enabled, either by setting an environment variable or if it is enabled by default at
+compile time, when the bytecode load hook is run the \textbf{initial compiler} will execute.
 
 The initial compiler parses the bytecode into a stream of instructions and, for each bytecode
-instruction,
-emits assembly with the same semantics to a buffer. After all code has been emitted (including
-headers
-and footers with shared routines) relocations are performed and the buffer is marked as executable.
+instruction, emits assembly with the same semantics to a buffer. After all code has been emitted
+(including headers and footers with shared routines) relocations are performed and the buffer is
+marked as executable.
 
 When \texttt{ocamlrun} then calls the hook to start interpretation, the library instead jumps to
 this assembly code which then performs the same operations as the interpreter - except that every
 instruction has effectively been inlined.
 
 When an OCaml closure is applied,\footnote{All non-primitive function calls are translated to
-      closure application}
-a closure execution count is incremented. Once this count passes a configurable threshold, the code
-instead
-branches in to the \textbf{optimising compiler}.
+      closure application} a closure execution count is incremented. Once this count passes a
+configurable
+threshold, the code instead branches in to the \textbf{optimising compiler}.
 
-The optimising compiler operates on the level of a single function. It starts by performing a
-depth-first search to discover all the basic blocks in the function. It then iterates over this
-again producing Cranelift IR Format (CLIF) which is passed to the machinery of
-\textbf{cranelift}. The generates CLIF code abstracts away the use of the stack allowing cranelift
-to perform its register allocation. The function's code pointer is updated and any future calls
-(including the originally triggering call) will use the optimised implementation.
+The optimising compiler operates on the level of a single function. The code generate differs from
+the unoptimised machine code in that there is no concept of the OCaml stack and accumulator
+register; instead all values are stored in registers. The function's code pointer is updated and
+any
+future calls (including the originally triggering call) will use the optimised implementation.
 
 \section{Major milestones}
 
-In accordance with the agile methodology focus throughout all aspects of the project was focusing
-on
+In accordance with the agile methodology the focus throughout all aspects of the project was on
 working code that could be tested even if the total wasn't not complete. However it is worth noting
-the major milestones where some degree of completeness was achieved. These entries are listed in
-chronological order.
+the major milestones where some degree of completeness was achieved (in chronological order).
 
 \begin{enumerate}
       \item Execution of Hello World with the JIT
       \item Passing the OCaml test suite and bootstrapping the compiler
       \item Implementing the benchmark suite
-      \item (Extension) Developing the advanced disassembler tools
       \item (Extension) Implementing the optimising compiler
 \end{enumerate}
 
@@ -74,24 +94,23 @@ patches to be made. For OCaml and the sandmark benchmark suites the patches were
 for me to consider it a fork containing both my work and the work of others (marked \textbf{fork}).
 
 \dirtree{%
-.1 /.
-.2 benchmarks.
-.3 sandmark\DTcomment{\textbf{fork}: benchmark suite I significantly modified}.
-.3 analysis\DTcomment{\textbf{mine}: Jupyter notebooks analysing benchmark results}.
-.2 docs\DTcomment{\textbf{mine}: {\LaTeX} source of proposal, report and this document}.
-.2 scripts\DTcomment{\textbf{mine}: scripts to run tests and graph basic blocks}.
-.2 src.
-.3 rust.
-.4 ocaml-jit-shared\DTcomment{\textbf{mine}: shared library between the other two crates}.
-.4 ocaml-jit-staticlib\DTcomment{\textbf{mine}: crate linked in to OCaml runtime}.
-.4 ocaml-jit-tools\DTcomment{\textbf{mine}: binary crate with standalone development/testing
-      tools}.
-.3 ocaml\DTcomment{\textbf{vendor}: contains OCaml compiler 4.11.1}.
-.4 runtime\DTcomment{\textbf{fork}: contains most large patches for the JIT}.
-.3 vendor\DTcomment{\textbf{vendor}: vendored rust dependencies with small patches}.
-.2 test-programs\DTcomment{\textbf{mine/vendor}: OCaml source for the small test programs
-      used by the scripts}.
-.2 vendor/no-aslr\DTcomment{\textbf{vendor}: A simple wrapper to run a program without ASLR}.
+      .1 /.
+      .2 benchmarks.
+      .3 sandmark\DTcomment{\textbf{fork}: benchmark suite containing source \& tooling}.
+      .3 analysis\DTcomment{\textbf{mine}: Jupyter notebooks analysing benchmark results}.
+      .2 docs\DTcomment{\textbf{mine}: source of this document}.
+      .2 scripts\DTcomment{\textbf{mine}: scripts to run tests and graph basic blocks}.
+      .2 src.
+      .3 rust.
+      .4 ocaml-jit-shared\DTcomment{\textbf{mine}: shared code for the other two crates}.
+      .4 ocaml-jit-staticlib\DTcomment{\textbf{mine}: crate which is linked with
+            \texttt{ocamlrun}}.
+      .4 ocaml-jit-tools\DTcomment{\textbf{mine}: binary crate with standalone tools}.
+      .3 ocaml\DTcomment{\textbf{vendor}: contains OCaml compiler 4.11.1}.
+      .4 runtime\DTcomment{\textbf{fork}: contains most large patches for the JIT}.
+      .3 vendor\DTcomment{\textbf{vendor}: vendored rust dependencies with small patches}.
+      .2 test-programs\DTcomment{\textbf{mine, vendor}: OCaml source for test programs}.
+      .2 vendor/no-aslr\DTcomment{\textbf{vendor}: A simple wrapper to run a program without ASLR}.
 }
 
 All of these components were tied together using a combination of Makefiles, cargo workspaces, OPAM
@@ -662,6 +681,7 @@ As an example consider the simple OCaml function:
 
 This compiles to the sequence of bytecode instructions:
 
+%TC:ignore
 \begin{verbatim}
 Grab(1)          # Ensure 2 arguments passed
 Acc(1)           # Load 2nd element from top of stack to acc
@@ -670,6 +690,7 @@ Acc(1)           # Load new 2nd element from top of stack to acc
 ArithInt(Add)    # Add the top of stack to the acc and pop it
 Return(2)        # Pop 2 items, then return acc
 \end{verbatim}
+%TC:endignore
 
 Instead of translating all of these inefficient stack manipulations as the initial compiler does,
 the optimised compiler keeps track of the stack as it compiles. For an example of this, see Table
@@ -981,6 +1002,7 @@ runtime we keep track of the state of these registers as we compile.
 
 To show this example in complete context consider the add function:
 
+%TC:ignore
 \mint{ocaml}|let add a b = a + b|
 
 \begin{verbatim}
@@ -994,6 +1016,7 @@ Acc(1)
 ArithInt(Add)
 Exit: Return(2)
 \end{verbatim}
+%TC:endignore
 
 As it is an OCaml function taking two arguments, it is compiled to a machine function taking 3
 arguments - the closure environment (unused for this function) and the two original arguments,
@@ -1003,6 +1026,7 @@ It compiles to something like this\footnote{the actual IR is larger as it uses \
       and bitcasts for GC as
       described in section \ref{gc-ir} but the principle is the same}:
 
+%TC:ignore
 \begin{verbatim}
 function u0:0(i64, i64, i64) -> i64, i64 system_v {
 
@@ -1017,6 +1041,7 @@ block1:
     return v6, v3
 }
 \end{verbatim}
+%TC:endignore
 
 Despite the original function and the translation code making use of the stack and accumulator,
 there is no site of this in the emitted IR. Values pass directly from the function parameters to
@@ -1036,6 +1061,7 @@ Cranelift compiles the IR to this machine code. Note: in the System V calling co
 three arguments are passed in \texttt{rdi} and \texttt{rsi}, \texttt{rdx} respectively and return
 values (up to 2) are in \texttt{rax} and \texttt{rdx} respectively:
 
+%TC:ignore
 \begin{verbatim}
 0000000000000000 <arith_add>:
    0:	55           push   rbp                    ; set up rbp chain
@@ -1048,6 +1074,7 @@ values (up to 2) are in \texttt{rax} and \texttt{rdx} respectively:
   14:	5d           pop    rbp                    ;
   15:	c3           ret    
 \end{verbatim}
+%TC:endignore
 
 This assembly is high quality and uses significantly less instructions than the output of the
 compiler would need. No memory accesses are done at all outside of the entry and exits, compared to
@@ -1149,6 +1176,7 @@ typed values are located. To store these entries efficiently cranelift uses a bi
 structure. The interpretation of these offsets is shown in the following diagram (where \texttt{x}
 is each member of the stack map's set):
 
+%TC:ignore
 \begin{verbatim}
           Stack
         +-------------------+
@@ -1174,6 +1202,7 @@ is each member of the stack map's set):
       This diagram is directly copied from Nick Fitzgerald's blog post \cite{refblog} describing
       cranelift's GC. License: CC-BY-SA.
 }
+%TC:endignore
 
 \subsubsection{Integration with OCaml}
 

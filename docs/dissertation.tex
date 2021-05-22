@@ -1,9 +1,19 @@
 \nonstopmode
 
-\documentclass[12pt,a4paper,headings=scrreprt,titlepage]{scrreprt}
+\documentclass[12pt,a4paper,headings=scrreprt,titlepage,DIV=14]{scrreprt}
 
-\usepackage[margin=2cm, includefoot]{geometry}
-\usepackage{layout}
+\usepackage[dvipsnames]{xcolor}
+
+\usepackage[
+    a4paper,
+    margin=2cm,
+    %showframe,
+    includeheadfoot,
+    headheight=12pt,
+    headsep=4pt,
+    marginparsep=0pt,
+    footskip=16pt,
+]{geometry}
 
 \usepackage{hyperref}
 
@@ -55,8 +65,6 @@
 \DeclareMathOperator{\dfslabels}{labels}
 
 \begin{document}
-
-\layout
 
 \algnewcommand\algorithmicmatch{\textbf{match}}
 \algnewcommand\algorithmiccase{\textbf{case}}
