@@ -1,6 +1,30 @@
 % !TeX root = ../dissertation.tex
 \chapter{Preparation}
 
+The project has its theoretical foundation in the Compiler Construction and Optimising Compilers
+course. Implementation of JIT compilation and garbage collection are beyond what is covered in the
+Tripos.
+
+OCaml has no specification (formal or otherwise) and a large part of project preparation was
+familiarising myself with the low-level details of OCaml and gaining familiarity with the existing
+runtime's source code.
+
+\section{Technology choices}
+
+The Rust programming language is not covered in the Tripos but I am already very familiar with
+it from personal projects. Its combination of ML-like static type system, excellent performance
+comparable to C and excellent FFI with C made it a good fit for this project. The language's
+support
+for algebraic data types and pattern matching (with the compiler verifying all cases are matched)
+were particularly useful for the project.
+
+Although many beginners to the language find themselves fighting the borrow checker I had used Rust
+enough that I ran into no such problems. The language supports building high-level abstractions
+while retaining performance.
+
+x86\_64 assembly was new to me but did not prove too challenging to learn given my experience with
+a variety of other architectures.
+
 \section{The OCaml bytecode interpreter}
 
 OCaml bytecode is interpreted by a stack-based abstract machine optimised for patterns in
@@ -43,7 +67,7 @@ In addition to these registers there is the \texttt{Caml\_state} struct whose fi
 considered as another 30 or so registers. They are used by the interpreter mainly for supporting
 the garbage collector, exceptions and growing and reallocating the OCaml stack.
 
-\subsection{Core design decisions}
+\subsection{Function calling model}
 
 The interpreter traces its lineage from the ZINC Abstract Machine (ZAM) \cite{zinc} through various
 iterations of the Caml system. The most significant feature of these abstract machines for this
@@ -66,72 +90,9 @@ returned by a function) the caller must contain the code to handle these cases.
 
 By contrast, in the push-enter model the callee must support any number of arguments passed to it.
 This is the method used by the OCaml bytecode compiler and interpreter. The mechanism for doing
-this is
-the combination of the stack and \texttt{extra\_args} register. The way the system works is
-somewhat intricate
-and becomes relevant in this project in section \ref{dyn-recomp} where it is explained in more
-detail.
-
-% Consider a simple de Bruijin-indexed lambda calculus:
-% 
-% \begin{align*}
-%     e \Coloneqq | & 0 | 1 | \ldots \qq{Variable} \\
-%     |             & \lambda e \qq{Abstraction}   \\
-%     |             & e\: e \qq{Application}       \\
-% \end{align*}
-% 
-% \subsubsection{Simple scheme}
-% 
-% A simple scheme\footnote{Similar to that of the Part IB Compiler Construction course} is to define
-% the following:
-% 
-% \newcommand{\compile}[1]{\ensuremath{\mathcal{C}\llbracket #1 \rrbracket}}
-% 
-% \begin{align*}
-%     \compile{n}          & = \texttt{ACCESS}(n)                             \\
-%     \compile{\lambda e}  & = \texttt{CLOSURE}(\compile{a}; \texttt{RETURN}) \\
-%     \compile{e_1 \: e_2} & = \compile{e_1}; \compile{e_2}; \texttt{APPLY}   \\
-% \end{align*}
-% 
-% The machine has code, an environment and a stack (where all behave someone like linked lists). The
-% transitions are:
-% 
-% \begin{tabular}{llllll}\toprule
-%     \multicolumn{3}{c}{Before} & \multicolumn{3}{c}{After}
-%     \\\cmidrule(lr){1-3}\cmidrule(lr){4-6}
-%     Code                       & Env                       & Stack                          & Code
-%                                & Env                       & Stack
-%     \\\midrule
-%     \(\texttt{ACCESS}(n);c\)   & \(e\)                     & \(s\)                          & \(c\)
-%                                & \(e\)                     & \(e(n);s\)
-%     \\
-%     \(\texttt{CLOSURE}(c');c\) & \(e\)                     & \(s\)                          & \(c\)
-%                                & \(e\)                     & \(\langle c',
-%     e'\rangle;s\)
-%     \\
-%     \(\texttt{APPLY};c\)       & \(e\)                     & \(v;\langle c', e\rangle ; s\) &
-%     \(c'\)
-%                                & \(v; e\)                  & \(c; e; s\)
-%     \\
-%     \(\texttt{RETURN}(n);c\)   & \(e\)                     & \(v;c';e';s\)                  &
-%     \(c'\)
-%                                & \(e'\)                    & \(v;s\)
-%     \\\bottomrule
-% \end{tabular}
-% 
-% \(\langle c, e\rangle\) denotes a closure
-% 
-% While conceptually simple, this module has problems with multiple argument curried functions.
-% Calling any multiple-function argument requires creating
-% and then discarding multiple closures. In order to deal with this we need special support.
-
-\subsubsection{Implications}
-
-The push-enter/`callee deals with arity mismatch' model was one of the biggest complexities
-involved with
-making this JIT. In the bytecode compiler every single call is an indirect lookup through a
-closure, whereas the eval-apply model allows calls to be translated down to simple direct function
-calls.
+this is the combination of the stack and \texttt{extra\_args} register. The way the system works is
+somewhat intricate and becomes relevant in this project in section \ref{dyn-recomp} where it is
+explained in more detail.
 
 \subsection{Garbage collector}
 
@@ -196,82 +157,147 @@ For example \texttt{PUSHGETGLOBALFIELD(x, y)} can be expanded to \texttt{PUSH,
     GETGLOBAL(x), GETFIELD(y)} or \texttt{ACC2} (only opcode) is the same as \texttt{ACC(2)}
 (\texttt{ACC} opcode with the 2 as the operand).
 
-For this project I expanded these aliases to arrive at 62 instructions\footnote{where all binary
-    arithmetic and comparison instructions use the same instruction type -- so in practice about 80
-    distinct instructions}.
-
-Most operations are fairly standard for a stack based machine with an accumulator - there are
-commands for stack manipulation and loading and storing the accumulator to the stack, performing
-arithmetic using the accumulator and the stack, conditional branches, switch statements and
-allocation of OCaml blocks. More complicated operations are done by using the \texttt{CCall*}
-operations to call into primitives referenced in C.
-
 \section{Compiler concepts}
 
-Give overview of basic classical optimising compiler concepts like basic blocks, dataflow analysis
-and SSA.
+A \emph{basic block} represents a sequence of instructions with only one entry and exit - all
+instructions
+in the block will be executed in order without any control flow.
 
-Describe the distinction between block parameters and Phi nodes.
-
-\subsection{Basic blocks and control-flow graph}
-
-Defn of basic block, back edges, numbering in reverse post-order.
+These blocks are typically combined to make a data structure called a \emph{control flow graph}.
+Each vertex represents a basic block and the (directed) edges represent the potential flow of
+control between basic blocks.
 
 \subsection{SSA form}
 
-Defn of ssa form, benefits
+\textbf{Todo: add simple running example: if x = 2 then 5 else 7?}
 
-\subsubsection{Phi nodes}
+A useful intermediate form used in compilers is single static assignment (SSA) form. If a program
+is in this form,
+every variable is assigned to only once and only binds a single immutable value.
 
-These are typical way to deal with things like if statements
+This form is very useful to compiler writers as it can simplify the presentation and implementation
+of many optimisations.
 
-\subsubsection{Block parameters}
+In order to allow for conditional branching in the program, the form needs some method to mark
+choosing between values to use depending on the path taken through the program. The typical
+method, as covered in the Optimising Compilers course, uses special Phi instructions to allow for
+this type
+of branching. The successor blocks have a node which marks the value that should be used in the
+case
+of each entry edge into the function.
 
-These are newer (cite introducing paper) and slightly better - although largely the same concept.
+Cranelift, and by extension this project, uses an alternative formulation known as block
+parameters.
+Here the blocks appear as if they are functions taking arguments and the values to use for the
+arguments are provided by the predecessor block. This is a newer, slightly clearer formulation that
+avoids having special case Phi node meta-instructions.
 
 \section{x86\_64}
 
-\textbf{Give paragraph overview of the architecture. CISC. General purpose registers.}
+\begin{table}[h]
+    \centering
 
-\subsection{System V calling convention}
+    \begin{tabular}{ll}\toprule
+        Argument registers     & rdi, rsi, rdx, rcx, r8, r9                \\
+        Return registers       & rax, rdx                                  \\
+        Stack alignment        & 16-byte at call                           \\
+        Callee-saved registers & rax, rdi, rsi, rdx, rcx, r8, r9, r10, r11 \\
+        Caller-saved registers & rbx, rsp, rbp, r12, r13, r14, r15         \\
+        \bottomrule
+    \end{tabular}
 
-\textbf{Put in the table from osdev, highlight the callee-saved registers and multiple return
-    values.}
+    \caption{Summary of the System V x86\_64 calling convention}
+    \label{table:systemv}
 
-\subsection{Frame pointers}
+\end{table}
 
-\textbf{Explain role of frame pointers \& \texttt{rbp}, why they are usually omitted and why we
-    might want
-    not do that}
+x86\_64 is a large CISC (complex instruction set computer) architecture descending from the Intel
+8086 processor.
+It has 16 general purpose 64-bit registers: \texttt{r[abcd]x, rdi, rsi, rsp, rbp, r8-r15}.
+This
+project targets Linux only which uses the System V
+calling convention.
 
-\subsection{Assembly format}
+A summary of the System V calling convention is given in Table \ref{table:systemv} --- the relevant
+details for this dissertation are
+that up to six 64-bit arguments can be passed to functions in registers, that up to two values may
+be returned by a
+function
+and the large number of caller-saved registers.
 
-\textbf{Give brief overview of intel/AT\&T difference. Say I'm using Intel because that's what
-    \texttt{dynasm-rs} except for inline asm in C where GCC wants AT\&T.}
+Assembly listings in this project use Intel (\texttt{mov eax, 1}) rather than AT\&T (\texttt{movl
+    \$1,\%eax}) syntax.
 
-\section{Starting point}
+\section{Dependencies used}
 
-\subsection{Before formal start}
-
-Before formal project start I forked the OCaml compiler (version 4.11.1) and implemented a proof
-of concept bidirectional FFI between C and Rust.
-
-I also wrote a parser from the bytecode into Rust data types and a simple disassembler that uses
-it.
-
-Both components were rewritten during the formal time allocated to the project.
-
-\textbf{TODO - make some kind of diff/way to really distinguish prior work}
-
-\subsection{Dependencies used and forked}
+\textbf{TODO - table with licenses}
 
 I use a lot of open source libraries/crates (as is usual to do in Rust). Some dependencies needed
-to
-be tweaked slightly and where that is the case they are vendored in to the source tree. Other
+to be tweaked slightly and where that is the case they are vendored in to the source tree. Other
 dependencies are included directly using \texttt{Cargo.toml}.
+
+\subsection{Dynasm}
+
+\textbf{TODO - Pull a bit out of impl for this}
+
+\subsection{Cranelift}
+
+The second compiler uses the \texttt{cranelift} \cite{cranelift} library which is a low-level
+retargetable
+code generator with an emphasis on use in JITs\footnote{It's largest use is for JIT-compiling
+    webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar to LLVM but
+lower
+level and much simpler. It cannot perform many optimisations LLVM can but has significantly lower
+compilation time.
+
+\subsection{Sandmark}
 
 I based my benchmark suite from the excellent Sandmark project by OCaml Labs at Cambridge. The
 project consists of benchmark sources, build scripts (using \texttt{dune}), a benchmark runner,
 compiler definitions (using \texttt{opam}) and a complicated \texttt{Makefile} to tie it all
 together.  I made some larger changes to the tool to support bytecode benchmarks (the project
 initially only benchmarked the native code compiler) but was able to reuse most of the machinery.
+
+\section{Starting point}
+
+Before the formal project start I forked the OCaml compiler (version 4.11.1) and implemented a
+proof
+of concept bidirectional FFI between C and Rust. This was done to mitigate the risk of not being
+able to successfully link the OCaml runtime with Rust and helped build some familiarity with
+OCaml's
+existing runtime.
+
+I also wrote a parser from the bytecode into Rust data types and a simple disassembler that uses
+it. This allowed me to explore the undocumented bytecode format and begin to understand how higher
+level OCaml constructs map to bytecode concepts.
+
+Both components were largely rewritten during the formal time allocated to the project.
+
+\textbf{TODO - make some kind of diff/way to really distinguish prior work}
+
+\section{Development methodology}
+
+\textbf{this is just an outline - todo expand}
+
+Incremental method inspired by agile methods but simplified by only dealing with one developer.
+Focus on working code as early as possible while slowly expanding out the feature set.
+
+Some things were prototyped first before being rewritten with lessons learned from previous
+implementation. Focus on tools to aid in understanding and gain familiarity with instruction set.
+Tools could then be used in development.
+
+Guided by major milestones.  Developed using my own machine. Code primarily in Rust with some
+written in C. No modifications to the OCaml compiler source made - only OCaml. Some bash scripts
+were used but more complicated scripts written in Rust.
+
+Highly test-driven implementation strategy described in section \ref{impl-strategy}. Single Git
+repository used for all aspects of the project including vendoring dependencies. The various build
+systems of the OCaml compiler and Rust (\texttt{cargo}) were managed by top-level Makefiles. The
+project is capable of being built by \texttt{opam} which helped with testing different compiler
+configurations for benchmarking.
+
+Expect tests used to compare output to snapshots and detect regressions - also serves as useful
+documentation of 'what the compiler does'.
+
+Backing up was done to GitHub. Monorepo. The repository contains everything needed to bootstrap the
+project assuming a \texttt{x86\_64} Linux system with the required compilers and system libraries.

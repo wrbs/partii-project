@@ -1,18 +1,57 @@
 % !TeX root = ../dissertation.tex
 \chapter{Introduction}
 
-This project introduces two just-in-time (JIT) compilers for the OCaml programming language - one
-focussing on correctness and compile speed and the other on performance of the compiled code
+This project introduces two new just-in-time (JIT) compilers to x86\_64 machine code for the OCaml
+programming language - one focussing on correctness and compile speed and the other on performance
+of the compiled code.  These compilers are integrated together dynamically, with the second
+compiler
+being used for frequently called functions.  The combination of compilers system
+outperforms\footnote{It is faster for 32/36 of the tested benchmarks: mean speedup = 1.46, $\sigma
+            = 0.40$} the
+OCaml bytecode interpreter on the majority of tested benchmarks and is capable of executing every
+OCaml program.
 
-\section{Overview}
+In this document, I will refer to the faster but less intelligent compiler as the `first' or
+`initial' compiler and the slower but more optimising compiler as the `second' or `optimising'
+compiler.
 
-OCaml is a compiled functional programming language with a strong, static type system.
+\section{Motivations}
 
-The OCaml compiler has two main backends: an optimised target-specific native code compiler and a
-compiler to bytecode which is later run by the interpreter, \texttt{ocamlrun}.
+OCaml is a compiled functional programming language with a strong, static type system. The OCaml
+compiler has two main backends: an optimised target-specific native code compiler and a compiler to
+bytecode which is later run by the interpreter, \texttt{ocamlrun}.
 
-My project set out to create a just-in-time (JIT) compiler from OCaml bytecode to x86\_64 machine
-code with the hope of achieving performance benefits.
+The default bytecode interpreter in OCaml is significantly slower than the output of the native
+code compiler. Although most users of OCaml use the native code compiler, the bytecode compiler is
+still useful. One of the largest use cases is it is the only method used by the OCaml `toplevel'
+read-evaluate-print-loop (REPL). JIT compilation techniques are particularly well suited to this
+use case.
+
+This project demonstrates how JIT compilation techniques can be applied to OCaml while retaining
+the bytecode format and semantics. As the `toplevel' can only use
+bytecode, the JIT could be lead to better performance in interactive OCaml environments.
+
+Additionally, this project demonstrates two contrasting approaches to writing a JIT compiler in
+Rust and shows how they can be integrated together for performance better than either individually.
+
+\section{Related work}
+
+This project has been attempted before at least twice: with \textsc{OCamlJit} in 2004 \cite{ocjit1}
+and \textsc{OCamlJit2} in 2010 \cite{ocjit2}. On advice of my supervisor I decided not to closely
+read these papers until after implementation; my first compiler independently ended up with a very
+similar design to that of \textsc{OCamlJit2} and my second was more sophisticated than either
+project.
+
+This project fits into the space of JITs more generally as a method-based (as opposed to
+trace-based) compiler \cite{pyket}. The initial compiler uses \texttt{dynasm-rs} \cite{dynasmrs}
+which works as a Rust macro turning assembly instructions into pre-assembled code and calls into
+a simple runtime for relocation. Its design is based on that of \texttt{DynASM} used in the
+\texttt{LuaJIT} project \cite{dynasm}.
+
+The optimising compiler uses the \texttt{cranelift} \cite{cranelift}
+library which is a low-level retargetable compiler with an emphasis on use in JITs.
+
+\section{Work done}
 
 The project achieved on schedule three core goals as set out in the proposal:
 
@@ -25,105 +64,20 @@ The project achieved on schedule three core goals as set out in the proposal:
       \item It performs favourably compared to the original interpreter on benchmark programs
 \end{enumerate}
 
-I then implemented a significant extension project --- a slower but
-more optimising compiler being conditionally used for functions which are called often.
+I then implemented the significant extension project of the optimising compiler and integrated
+them together.
 
-The project is primarily written in the Rust and C programming languages, integrating into the
-framework of the existing OCaml runtime.
-
-I will refer to the faster but less intelligent compiler as the `first' or `initial' compiler and
-the slower but more optimising compiler as the `second' or `optimising' compiler.
+The project is primarily written in the Rust and C programming languages. It replaces the
+interpreter component of the existing OCaml runtime.
 
 \section{Summary of results}
 
-The JIT compiler produced is very complete. It is capable of compiling and executing all OCaml
-bytecode instructions and every test program I have tested. The only features not supported are
-the
-debugger and backtraces. All of the OCaml compiler test suite passes with the exception of tests of
-the debugger and backtraces. The JIT compiler can be used to bootstrap the entire OCaml compiler.
+The system is capable of correctly compiling and executing all OCaml
+bytecode instructions and every test program I have tested. The features not supported are
+the debugger and backtraces (which are not used by default in the existing runtime). The entire
+OCaml compiler test suite passes with the exception of tests of
+the debugger and backtraces. The JIT compiler can be used in the OCaml compiler's
+self-bootstrapping.
 
-Performance results were good; across the benchmark suite mean speedup was $1.46$ (range $[0.81,
-                  2.20]$,
-$\sigma = 0.40$, $n = 36$).
-
-\section{Motivations}
-
-The default bytecode interpreter in OCaml is significantly slower than the native code compiler -
-however
-the design of the interpreter is very sophisticated. Its design descends from that of the ZINC
-Abstract Machine (ZAM) \cite{zinc}.
-
-Although most users of OCaml use the native code compiler, the bytecode
-compiler is still useful. It is used primarily:
-
-\begin{enumerate}
-      \item To run the OCaml REPL (`toplevel')
-      \item As a more stable binary format for tools such as \texttt{js\_of\_ocaml} to use as input
-      \item As a portable executable format for different machines
-      \item To run programs under a debugger
-      \item To allow language developers to experiment with new language features without needing
-            to write target-specific code
-\end{enumerate}
-
-This project demonstrates how JIT compilation techniques can be applied to the OCaml interpreter
-with benefit while retaining the bytecode format and semantics. As the `toplevel' can only use
-bytecode, the JIT could be lead to better performance in interactive OCaml environments.
-
-Additionally, this project demonstrates two contrasting approaches to writing a JIT compiler in
-Rust
-and shows how they can be integrated together for performance better than either individually.
-
-\section{Related work}
-
-This project has been attempted at least twice: with \textsc{OCamlJit} in 2004 \cite{ocjit1} and
-\textsc{OCamlJit2} in 2010 \cite{ocjit2}. On advice of my supervisor I decided not to closely
-read these papers until after implementation - my first compiler independently ended up working
-in a similar way to \textsc{OCamlJit2} and my second was more sophisticated than either project.
-
-This project fits into the space of JITs more generally as a method-based (as opposed to
-trace-based) compiler \cite{pyket}. The first compiler uses \texttt{dynasm-rs} \cite{dynasmrs}
-which works as a Rust macro turning assembly instructions into pre-assembled code and calls into
-a simple runtime for relocation. Its design is based on that of \texttt{DynASM} used in the
-\texttt{LuaJIT} project \cite{dynasm}.
-
-The second compiler uses the \texttt{cranelift} \cite{cranelift} library which is a low-level
-retargetable
-code generator with an emphasis on use in JITs\footnote{It's largest use is for JIT-compiling
-      webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar to LLVM but
-lower
-level and much simpler. It cannot perform many optimisations LLVM can but has significantly lower
-compilation time.
-
-\section{Implementation constraints}
-
-In order to limit the scope of the project some decisions were made upfront.
-
-\begin{enumerate}
-      \item This project only modifies the runtime components of the OCaml compiler and does not
-            modify the bytecode format or behaviour of the compiler
-      \item The only target considered is x86\_64 Linux
-      \item Correctness should be prioritised over completeness and existing OCaml semantics should
-            be preserved
-\end{enumerate}
-
-Although it was not a priority, the initial compiler is both correct and can run fully
-JIT-compiled every OCaml program I have tested. With the exception of the debugger and backtraces,
-both correctness and completeness were achieved.
-
-\section{Development methodology}
-
-\textbf{todo- expand}
-
-Incremental method inspired by agile methods but simplified by only dealing with one developer.
-Guided by major milestones.  Developed using my own machine. Code primarily in Rust with some
-written in C. No modifications to the OCaml compiler source made - only OCaml. Some bash scripts
-were used but more complicated scripts written in Rust.
-
-Highly test-driven implementation strategy described in section \ref{impl-strategy}. Single Git
-repository used for all aspects of the project including vendoring dependencies. The various build
-systems of the OCaml compiler and Rust (\texttt{cargo}) were managed by top-level Makefiles. The
-project is capable of being built by \texttt{opam} which helped with testing different compiler
-configurations for benchmarking.
-
-Backing up was done to GitHub. The repository contains everything needed to bootstrap the project
-assuming a \texttt{x86\_64} Linux system with the required compilers and system libraries.
+The new JIT-using runtime significantly increases performance for most of the tested programs.
+The mean speedup achieved across the benchmark suite of 36 different programs was 1.46.

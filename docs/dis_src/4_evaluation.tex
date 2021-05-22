@@ -20,7 +20,7 @@ of a previous version of the compiler with the JIT enabled.
 
 The OCaml toplevel REPL works correctly allowing for interactive use of the JIT.
 
-\subsection{Optimising compiler}
+\subsection{Optimising compiler} \label{eval-opt-comp-qual}
 
 The optimising compiler has a slightly weaker completeness guarantee - the compiler is not built to
 handle functions which take more than 5 arguments and the compiled functions cannot contain
@@ -58,7 +58,7 @@ create or
 integrate a suite of performance benchmarks. There are two somewhat recent attempts to create such
 a
 suite. The older of the two was created for the flambda\footnote{additional optimisations to OCaml
-    IR} project but proved difficult to set up from the scripts provided. It used out of date
+      IR} project but proved difficult to set up from the scripts provided. It used out of date
 packages
 on the public OPAM\footnote{OCaml package manager} repository which no longer worked.
 
@@ -94,12 +94,12 @@ used many different language features with different workloads.
 Four different configurations of the OCaml runtime are described in this section:
 
 \begin{enumerate}
-    \item The stock OCaml 4.11.1 bytecode interpreter without any modifications
-    \item The state of the JIT after creating the initial compiler
-    \item The current state of JIT with the optimising compiler disabled, but retaining
-          the modifications made to the initial compiler to support dynamic recompilation
-    \item The full current JIT including the optimising compiler with the hot function threshold
-          set to 50
+      \item The stock OCaml 4.11.1 bytecode interpreter without any modifications
+      \item The state of the JIT after creating the initial compiler
+      \item The current state of JIT with the optimising compiler disabled, but retaining
+            the modifications made to the initial compiler to support dynamic recompilation
+      \item The full current JIT including the optimising compiler with the hot function threshold
+            set to 50
 \end{enumerate}
 
 I additionally measured the performance of the native code compiler's output but I will not
@@ -116,9 +116,9 @@ dividing the stock interpreter time by the corresponding JIT time.
 \subsection{Overview}
 
 \begin{figure}[h]
-    \includegraphics[width=\textwidth]{box}
-    \caption{Distribution of speedup values for each version of the JIT}
-    \label{fig:box}
+      \includegraphics[width=\textwidth]{box}
+      \caption{Distribution of speedup values for each version of the JIT}
+      \label{fig:box}
 \end{figure}
 
 Figure \ref{fig:box} shows the high level summary of results on the execution speedup time. The
@@ -142,11 +142,11 @@ unchanged or decreased performance.
 \subsection{Detailed results}
 
 \begin{landscape}
-    \begin{figure}[h]
-        \includegraphics{perf}
-        \caption{Speedup values for each benchmark}
-        \label{fig:perf}
-    \end{figure}
+      \begin{figure}[h]
+            \includegraphics{perf}
+            \caption{Speedup values for each benchmark}
+            \label{fig:perf}
+      \end{figure}
 \end{landscape}
 
 Show table of some results and graph of speedups. Mention distinction between tracing code + it
