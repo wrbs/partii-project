@@ -511,20 +511,9 @@ Clippy was used for linting Rust code and all code was autoformatted using \text
 
 \subsection{Resources}
 
-I used a desktop I built in 2020 (Intel 10700K CPU, 32GB RAM on fast SSD) to develop the project.
-The machine triple-boots Windows, Arch Linux and macOS but by the end the simplifying assumption
-was made only to support Linux (meaning the project was developed both with WSL or on Arch). The
-project used to work perfectly on \texttt{macOS} and would likely only take minor modifications to
-restore support. However, with Apple moving away from x86\_64 I decided to stop testing it and
-since
-then one part of the project uses a Linux-only syscall. It would not require too much work to
-restore support to macOS.
+I used my machine (Intel 10700K CPU, 32GB RAM on fast SSD) to develop the project. The project also
+works on my older and less powerful laptop but compilation is slower --- but still usable as a
+backup system.
 
-The project also works on my significantly older and less powerful laptop but compilation is
-slower.
 The repository contains everything needed to bootstrap the project and in case of catastrophic
 system failure I would only lose anything not pushed to GitHub.
-
-Separately of GitHub, I have automatic synchronisation set up to a server I rent. This server
-itself
-uploads encrypted, incremental backups to OneDrive.

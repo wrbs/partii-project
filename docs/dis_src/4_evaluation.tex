@@ -1,78 +1,82 @@
 % !TeX root = ../dissertation.tex
 \chapter{Evaluation}
 
+There are three main criteria by which the work is evaluated: correctness of implementation,
+completeness of support for the OCaml language and runtime performance.
+
 \section{Correctness and completeness}
+
+Both correctness and completeness are verified by automatic testing. There are two main methods
+used
+for this:
+
+\begin{itemize}
+      \item Trace comparison as described in Section \ref{trace-comparison}
+      \item The large existing OCaml compiler test suite
+\end{itemize}
+
+Trace comparison guarantees the behaviour is observably identical to the existing interpreter. The
+OCaml test suite tests a large body of edge cases ensuring correctness and completeness.
 
 \subsection{Initial compiler}
 
 The initial compiler fully covers the entire bytecode instruction set. The only features not
-supported are
-the debugger and backtraces. Implementing support for both of these features is feasible with some
-work but
-I did not consider them important enough to spend the time to get them working.
+supported are the debugger and backtraces. Implementing support for both of these features is
+feasible with some work but I did not consider them important enough to spend the time to get them
+working.
 
 The compiler passes every test in the OCaml test suite apart from those that test backtrace
 functionality. The test suite is large and extensive, accumulating many tests over OCaml's now
 18 year history.
 
 The OCaml compiler is capable of bootstrapping itself from saved bytecode sources
-of a previous version of the compiler with the JIT enabled.
-
-The OCaml toplevel REPL works correctly allowing for interactive use of the JIT.
+of a previous version of the compiler with the JIT enabled. The OCaml toplevel REPL works
+correctly allowing for interactive use of the JIT.
 
 \subsection{Optimising compiler} \label{eval-opt-comp-qual}
 
 The optimising compiler has a slightly weaker completeness guarantee - the compiler is not built to
 handle functions which take more than 5 arguments and the compiled functions cannot contain
-exception
-handlers (try-catch statements) although they can raise exceptions.
+exception handlers (try-catch statements) although they can raise exceptions.
 
 The compiler gracefully fails in these cases and falls back to using the existing machine code
-emitted
-by the initial compiler. For this reason, although the optimising compiler is not complete in
-isolation
-the combination of the two compilers retains most of the completeness. The one additional
-restriction
-is any dynamic libraries containing primitives using OCaml's C FFI must be compiled to use base
-pointers
-so that the mechanisms of section \ref{gc-support} work.
+emitted by the initial compiler. For this reason, although the optimising compiler is not complete
+in isolation the combination of the two compilers retains most of the completeness. The one
+additional restriction is any dynamic libraries containing primitives using OCaml's C FFI must be
+compiled to use base pointers so that the mechanisms of section \ref{gc-support} work.
 
-Correctness is mostly maintained with one annoying exception. As the C/machine stack is used rather
-than
-the OCaml stack, highly recursive functions operating on large inputs can cause a stack overflow
-where they would not if stack frames were on the OCaml stack instead which pushes smaller frames,
-has support for growing itself to larger sizes and dynamically setting the stack limit. However,
-this limitation does not apply to tail-recursive functions which means that this problem is rare.
+Correctness is tested both by the OCaml compiler test suite and using a variant of the trace
+comparison system comparing function parameters, return values and parameters and results of calls
+to C primitives.
+
+Correctness is mostly maintained from the original compiler with one exception: as the C/machine
+stack is used rather than the OCaml stack, highly recursive functions operating on large inputs can
+cause a stack overflow where they would not if stack frames were on the OCaml stack instead which
+pushes smaller frames, has support for growing itself to larger sizes and dynamically setting the
+stack limit.  However, this limitation does not apply to tail-recursive functions which means that
+this problem is rare.
 
 However, this issue did cause a small number test cases to segfault on stack overflow and
-represents
-a minor regression in number of passing tests.
+represents a small regression in number of passing tests. Fixing this requires implementing tail
+call optimisation within the Cranelift compiler and so was deemed out of scope.
 
-The optimising compiler and initial compiler retains the ability to bootstrap the compiler and run
-the OCaml toplevel.
+The optimising compiler retains the ability to bootstrap the compiler and run the OCaml toplevel.
 
 \section{The benchmark suite - Sandmark}
 
 As a large part of the motivation of the project is increased performance, a core goal was to
-create or
-integrate a suite of performance benchmarks. There are two somewhat recent attempts to create such
-a
-suite. The older of the two was created for the flambda\footnote{additional optimisations to OCaml
-      IR} project but proved difficult to set up from the scripts provided. It used out of date
-packages
-on the public OPAM\footnote{OCaml package manager} repository which no longer worked.
-
-The second suite I discovered was much more useful. It is called Sandmark and is created primarily
-by OCaml labs here in the department for their work on multicore OCaml. It uses the \texttt{dune}
-build tool\footnote{current OCaml best practice} and its own local OPAM repository to compile and
-execute benchmarks. Although the nature of the multicore OCaml project means many benchmarks were
-parallel, the project also includes many sequential benchmarks with the purpose of ensuring the
-work
-on the multicore runtime does not create single core performance regressions.
+create or integrate a suite of performance benchmarks. To do this I adapted an existing suite
+called Sandmark. It is created primarily by OCaml labs at Cambridge for their work on
+multicore OCaml. It uses the \texttt{dune} build tool\footnote{current OCaml best practice} and its
+own local OPAM repository to compile and execute benchmarks. Although the nature of the multicore
+OCaml project means many benchmarks were parallel, the project also includes many sequential
+benchmarks with the purpose of ensuring the work on the multicore runtime does not create single
+core performance regressions.
 
 It took a somewhat significant effort to adapt the suite to work for my purposes. The existing
-suite was
-only supported native code programs so it had to be adapted to work with bytecode instead.
+suite was only supported native code programs so it had to be adapted to work with bytecode
+instead. However once this was done, running all the benchmarks and collating the results required
+starting only one script.
 
 \subsection{Selection of programs}
 
@@ -102,15 +106,8 @@ Four different configurations of the OCaml runtime are described in this section
             set to 50
 \end{enumerate}
 
-I additionally measured the performance of the native code compiler's output but I will not
-describe
-this except to say it is much more optimised and faster than anything using bytecode and this is
-due
-to the lack of optimisation performed by the OCaml compiler when compiling to bytecode.
-
 In order to allow for easier comparison between programs, I am comparing all JIT results relative
-to
-the baseline of the stock bytecode interpreter to obtain speedup values. These are calculated by
+to the baseline of the stock bytecode interpreter to obtain speedup values. These are calculated by
 dividing the stock interpreter time by the corresponding JIT time.
 
 \subsection{Overview}
@@ -136,10 +133,55 @@ lower quartile value.  However it had a slightly increased median and much bette
 of the distribution with a cluster of 8 programs managing to half the execution time relative to
 the stock interpreter.
 
-Although most programs tested benefited from the changes, about 5 programs did not and had
-unchanged or decreased performance.
+Although most programs tested benefited from the changes, about 4 programs did not and had
+decreased
+performance.
 
 \subsection{Detailed results}
+
+In order to understand these trends and investigate anomalies it is useful to show the results for
+each individual benchmark program. Figure \ref{fig:perf} shows the relative speedup values for each
+benchmark program, ordered by decreasing optimising compiler speedup.
+
+We notice that there are a few different patterns:
+
+\begin{itemize}
+      \item Programs for which the improvements were roughly equivalent for all types of program
+            such as \texttt{chameneos\_redux\_lwt}.
+      \item Programs for which the optimising compiler addded significant performance gains such as
+            \texttt{revcomp2} and \texttt{pidigits5}.
+      \item Programs for which the optimising compiler had decreased performance such as
+            \texttt{LU\_decomposition}.
+\end{itemize}
+
+In order to explain these patterns it is necessary to consider the cost and potential benefits of
+each version of the compiler:
+
+\subsubsection{Initial version of initial compiler}
+
+The main change from the bytecode is replacing the interpreter with machine code performing the
+same
+operations but with the operations inlined into their uses. The main cost of this is an increased
+pressure on the instruction cache. However, this also allows for the CPU to more effectively
+predict
+the sequence of execution allowing for less pipeline hazards, better branch prediction and
+out-of-order execution across bytecode boundaries.
+
+For most programs this trade-off is worth it.  The programs where it isn't (\texttt{fft},
+\texttt{nbody} and \texttt{durand-kerner-arberth}) all show heavy use of floating point operations
+meaning most of the work is done using C primitives and boxed floats. This means most of the time
+spent executing these programs is in allocating and freeing boxed floats from the heap within the C
+primitives implementing floating point operations.
+
+\subsubsection{Current version of initial compiler}
+
+The main significant change in this version was the extra level of pointer indirection on closure
+code fields requiring one more memory load to call a closure. For this reason, in nearly all cases
+this represented a slowdown from the initial compiler. The differing amounts of slowdown reflects
+the variation in benchmark hot path behaviour. Where it is a large drop, it reflects programs with
+large number of calls to shorter programs and where it is small it indicates larger functions
+making
+less calls or spending much of their time in C primitives.
 
 \begin{landscape}
       \begin{figure}[h]
@@ -149,58 +191,54 @@ unchanged or decreased performance.
       \end{figure}
 \end{landscape}
 
-Show table of some results and graph of speedups. Mention distinction between tracing code + it
-disabled.
+\subsubsection{Optimising compiler}
 
-\subsection{Overhead of supporting recompilation}
+The optimising compiler has a more significant compilation cost. However, this is easily amortised
+over the long running time of the benchmark programs (see \ref{bias-exec-time}). The major change
+from the other two methods and the interpreter is the use of registers rather than the OCaml stack
+for storing intermediate values. We would expect the most significant gains where a chain of
+multiple
+optimised functions can call each-other in turn: this is the pattern shown by many of the cases
+where the optimising exceeds the performance of the initial compilers
 
-Show table/graph showing performance loss by extra indirection
+One case not covered is demonstrated in \texttt{mandlebrot6} - here the main loop is implemented in
+imperative style at the root level of the module using a while loop rather than recursion. This
+means that the optimising compiler will never attempt to optimise it. It additionally makes use of
+exceptions which are not particularly optimised by the optimising compiler (see Section
+\ref{exception-handling}).
 
-\subsection{Optimised compiler}
+\section{Bias}
 
-Show table graph
+Although Sandmark is much more representive of real OCaml workloads than I would be able to achive
+myself,
+like all benchmark suites there are some some biases imposed
 
-\section{Evaluation of results and design trade-offs}
-
-Write some stuff about when to use which compiler. Explain why certain ones were good/bad.
-
-Quantify overhead for shorter running programs and explain it's likely to be slower. Use
-self-hosting the compiler as a particularly bad case for the system.
-
-Go into better cases for it and explain why it works. Possibly include code snippets.
-
-\subsection{Bias}
-
-The nature of the programs tested imposed some biases.
-
-\subsubsection{Execution time}
+\subsubsection{Execution time} \label{bias-exec-time}
 
 Execution times ranged from \SI{1}{\second} to \SI{500}{\second}. Of the 36 benchmarks, 13 took
-below \SI{10}{\second} and 7 took above \SI{50}{\second}.
-
-In the context of these projects this means all programs classify as somewhat long-running and time
-spent on compilation was a rather small goal.
+below \SI{10}{\second} and 7 took above \SI{50}{\second}.  In the context of this project, this
+means all programs classify as somewhat long-running and time spent on compilation was a negligible
+factor - my manual testing estimates this overhead to be the order of magnitude of at most
+\SI{300}{\nano\second} for JIT-compiling the entire OCaml compiler, which is a particularly large
+OCaml program.
 
 \subsubsection{Work done}
 
 Nearly all of the benchmarks included the same work being done many times in a hot loop. This is
-the best
-case for modern CPUs and dynamically optimising compilers.
+the best case for modern CPUs and dynamically optimising compilers.
 
 Although the performance of programs is dominated by the hot path loops, larger programs tend to
-also
-have more cold code executed once or only a few times. The nature of the benchmarks means the
-impact
-of this is less well tested.
+also have more cold code executed once or only a few times. The nature of the benchmarks means the
+impact of this is less well tested.
 
 \section{Summary}
 
 The initial compiler increased performance for most tested programs while retaining the semantics
-and the
-ability to run all OCaml bytecode programs.
+and the ability to run all OCaml bytecode programs.
 
 Adding the optimised compiler led to significantly increased execution time on some tested programs
-while decreasing the time for others.
+while decreasing the time for others. Across the suite of benchmark programs it was an overall
+improvement, especially in the upper two quartiles of programs.
 
-The project met its success criteria early and was able to successfully implemented a significant
-extension.
+All of this was achieved while retaining support for all OCaml features without compromising
+correctness.

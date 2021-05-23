@@ -24,46 +24,61 @@
 
 \pagenumbering{roman}
 
+\section*{Declaration of originality}
+
+I, William Robson of Selwyn College, being a candidate for Part II of the Computer Science Tripos,
+hereby declare that this dissertation and the work described in it are my own work, unaided except
+as may be specified below, and that the dissertation does not contain material that has already
+been used to any substantial extent for a comparable purpose. I am content for my dissertation to
+be
+made available to the students and staff of the University
+
+Signed William Robson
+
+Date \thedate
+
+\clearpage
+
 \section*{Proforma}
 
  {\large
 
   \begin{tabular}{ll}
-      Name:               & \textbf{William Robson}                        \\
-      College:            & \textbf{Selwyn College}                        \\
-      Title:              & \textbf{A JIT compiler for OCAml bytecode}     \\
+      Candidate number:   & \textbf{2352A}                                 \\
+      Title               & \textbf{A JIT compiler for OCaml bytecode}     \\
       Examination:        & \textbf{Computer Science Tripos Part II, 2021} \\
-      Word Count:         & \textbf{TODO\footnotemark}
-      \\
-      Project Originator: & \textbf{William Robson \& Timothy Jones}       \\
-      Project Supervisor: & \textbf{Timothy Jones}                         \\
+      Word Count:         & \textbf{TODO\footnotemark}                     \\
+      Code Line Count     & \textbf{12,523\footnotemark}                   \\
+      Project Originator: & \textbf{The author \& Dr Timothy Jones}        \\
+      Project Supervisor: & \textbf{Dr Timothy Jones}                      \\
   \end{tabular}
  }
-\footnotetext{computed using \texttt{texcount -1 -inc dissertation.tex | cut -d "+" -f 1}}
+\footnotetext{Computed using \texttt{texcount -1 -inc dissertation.tex | cut -d "+" -f 1}}
+\footnotetext{Underestimate only counting Rust code. Computed by \texttt{cloc src/rust/ocaml-jit*}
+    and taking the Rust
+    number for code lines (excluding blank and comment lines)}
+
 \section*{Original Aims of the Project}
 
-\textbf{TODO - Copy in from proposal}
+The project aimed to implement a just-in-time compiler for OCaml bytecode to x86\_64 machine code
+on
+Linux. The compiler would be integrated into the existing OCaml runtime and would support all
+functionality but debugging and introspection. The project would collect a suite of benchmark
+programs
+and build an automated method to use them to compare performance to the existing compiler. It was
+hoped
+that the compiler would lead to faster execution times than the existing OCaml bytecode
+interpreter.
 
 \section*{Work Completed}
 
-\textbf{TODO - say everything was completed and more}
+All original project aims were completed without issue. In addition to this, I built a significant
+extension in a second compiler which focuses on performance of the compiled code. The
+two compilers are integrated with the second used for functions which are called often.
 
 \section*{Special Difficulties}
 
-Either no special difficulties/mention hospitalisation and corresponding extension.
-
-\pagebreak
-
-\section*{Declaration}
-
-I, William Robson of Selwyn College, being a candidate for Part II of the Computer Science Tripos,
-hereby declare that this dissertation and the work described in it are my own work, unaided except
-as may be specified below, and that the dissertation does not contain material that has already
-been used to any substantial extent for a comparable purpose.
-
-Signed William Robson
-
-Date \thedate
+The author received a two week extension due to a hospitalisation close to the deadline.
 
 \cleardoublepage
 

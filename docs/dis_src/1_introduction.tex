@@ -5,8 +5,10 @@ This project introduces two new just-in-time (JIT) compilers to x86\_64 machine 
 programming language - one focusing on correctness and compile speed and the other on performance
 of the compiled code. These compilers are integrated together dynamically: the first compiler is
 used for all code and the second compiler is used for functions detected to be called often.  The
-combination of compilers system outperforms\footnote{It is faster for 32/36 of the tested
-      benchmarks: mean speedup = $1.46\times$, $\sigma = 0.40$} the
+combination of compilers system outperforms
+\footnote{It is faster for 32/36 of the tested benchmarks: mean speedup = $1.46\times$, $\sigma =
+            0.40$}
+the
 OCaml bytecode interpreter on the majority of tested benchmarks and is capable of executing every
 OCaml program.
 

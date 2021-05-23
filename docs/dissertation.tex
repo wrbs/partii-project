@@ -1,5 +1,9 @@
 \nonstopmode
 
+%TC:macro \inputminted 2
+%TC:envir minted [ignore] xall
+%TC:envir algorithm [ignore] xall
+
 \documentclass[12pt,a4paper,headings=scrreprt,titlepage,DIV=14]{scrreprt}
 
 \usepackage[dvipsnames]{xcolor}
@@ -66,6 +70,7 @@
 
 \begin{document}
 
+%TC:ignore
 \algnewcommand\algorithmicmatch{\textbf{match}}
 \algnewcommand\algorithmiccase{\textbf{case}}
 \algnewcommand\algorithmicassert{\textbf{assert}}
@@ -77,13 +82,18 @@
     \algorithmiccase}%
 \algtext*{EndMatch}%
 \algtext*{EndCase}%
+%TC:endignore
 
+%TC:ignore
 \include{dis_src/0_frontmatter}
+%TC:endignore
 \include{dis_src/1_introduction}
 \include{dis_src/2_preparation}
 \include{dis_src/3_implementation}
 \include{dis_src/4_evaluation}
 \include{dis_src/5_conclusions}
+%TC:ignore
 \include{dis_src/6_endmatter}
+%TC:endignore
 
 \end{document}

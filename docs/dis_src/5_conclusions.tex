@@ -1,28 +1,46 @@
 % !TeX root = ../dissertation.tex
 \chapter{Conclusions}
 
-This project was a great success
+This project demonstrates how the use of JIT compilation techniques can beat the performance
+of manually optimised interpreters. It contrasts two approaches to JIT compilation showing how
+more sophisticated compilers can be applied only when needed for better performance.
 
-\section{Lessons learned}
-
-Testing is good.
-
-Rust is great.
-
-OCaml is nice but sometimes messy. Lack of documentation is bad. Trace comparison is good.
-
-JITs are fun.
-
-Stack unwinding is a mess on Unix.
+The project shows how automated testing against the behaviour of an existing can support
+incrementally replacing it entirely while keeping the existing functionality.  It demonstrates how
+Rust can be a productive and performant choice for the implementation of compilers combining the
+type system and higher level abstractions of functional languages like OCaml and Haskell with the
+runtime performance of C and C++.
 
 \section{Possible extensions}
 
-More sophisticated analysis for the optimising compiler. eg. detect floats.
+\subsubsection{More sophisticated analysis of types in the optimising compiler}
 
-Extending cranelift to support tail calls.
+Performance could be greatly improved by adding OCaml-specific type information to the optimising
+compiler. For example, once a value is statically known to be a floating point value the compiler
+can avoid boxing intermediate values and inline the operations rather than call out to C
+primitives.
+This would greatly help with some of the worst cases for the system which were all heavy uses of
+floating point numbers.
 
-Experimenting with specialising at the closure level.
+Another potential example would be determining a value had to be an integer and therefore being
+able to exclude it
+from being spilled at safepoints and included in the stack map.
 
-Better thresholds for when to optimise a function.
+Both of these would require adding an additional intermediate representation and dataflow analysis
+passes in between the basic block stage and Cranelift IR but would be fairly simple optimisations
+once
+the machinery for this is built.
 
-Replace recursion with direct calls.
+\subsubsection{Tail-call recursion optimisation within functions}
+
+The current compiler could be extended with a moderate amount of work to lower tail-recursive
+functions to loops rather than function calls. This is something the native code compiler does and
+so tail-recursion is a common pattern in OCaml. This does not require any support from Cranelift
+--- only an analysis pass to detect this pattern.
+
+\subsubsection{Extending cranelift to handle tail calls directly}
+
+Cranelift is a new project and its major user, WASM, has no support for emitting efficient machine
+code for tail calls.  For this reason, there is no support within the library for avoiding pushing
+another stack frame on tail calls. I had to implement tail calls by use of a wrapper which hurt
+performance.

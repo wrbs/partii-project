@@ -677,7 +677,9 @@ The method used to remove the use of the stack is to convert the OCaml bytecode 
 by keeping track of the contents of a virtual stack and accumulator as the closure is translated.
 As an example consider the simple OCaml function:
 
+%TC:ignore
 \mint{ocaml}|let add a b = a + b|
+%TC:endignore
 
 This compiles to the sequence of bytecode instructions:
 
@@ -897,7 +899,9 @@ corresponds to an \texttt{extra\_args} offset used for doing tail calls.
 
 For example,
 
+%TC:ignore
 \mint{ocaml}|let add a b = a + b|
+%TC:endignore
 
 \noindent
 is translated to a function with signature
@@ -1004,6 +1008,7 @@ To show this example in complete context consider the add function:
 
 %TC:ignore
 \mint{ocaml}|let add a b = a + b|
+%TC:endignore
 
 \begin{verbatim}
 Arity: 2
@@ -1016,7 +1021,6 @@ Acc(1)
 ArithInt(Add)
 Exit: Return(2)
 \end{verbatim}
-%TC:endignore
 
 As it is an OCaml function taking two arguments, it is compiled to a machine function taking 3
 arguments - the closure environment (unused for this function) and the two original arguments,
@@ -1026,7 +1030,6 @@ It compiles to something like this\footnote{the actual IR is larger as it uses \
       and bitcasts for GC as
       described in section \ref{gc-ir} but the principle is the same}:
 
-%TC:ignore
 \begin{verbatim}
 function u0:0(i64, i64, i64) -> i64, i64 system_v {
 
@@ -1041,7 +1044,6 @@ block1:
     return v6, v3
 }
 \end{verbatim}
-%TC:endignore
 
 Despite the original function and the translation code making use of the stack and accumulator,
 there is no site of this in the emitted IR. Values pass directly from the function parameters to
@@ -1061,7 +1063,6 @@ Cranelift compiles the IR to this machine code. Note: in the System V calling co
 three arguments are passed in \texttt{rdi} and \texttt{rsi}, \texttt{rdx} respectively and return
 values (up to 2) are in \texttt{rax} and \texttt{rdx} respectively:
 
-%TC:ignore
 \begin{verbatim}
 0000000000000000 <arith_add>:
    0:	55           push   rbp                    ; set up rbp chain
@@ -1074,13 +1075,10 @@ values (up to 2) are in \texttt{rax} and \texttt{rdx} respectively:
   14:	5d           pop    rbp                    ;
   15:	c3           ret    
 \end{verbatim}
-%TC:endignore
 
 This assembly is high quality and uses significantly less instructions than the output of the
 compiler would need. No memory accesses are done at all outside of the entry and exits, compared to
 the multiple reads and writes to the OCaml stack in the original instruction.
-
-\subsubsection{Summary}
 
 The combination of Cranelift and my virtual stack allows me to write code which is in mostly 1-1
 correspondence with the interpreter source while compiling to register-using optimised machine
@@ -1262,7 +1260,7 @@ to use of the \texttt{-fno-omit-frame-pointer} compile flag worked well.
 I paid some performance penalty by using frame pointers and my hash map for looking up stack frames
 was unoptimised. However, once all components were in place the system worked remarkably well.
 
-\subsection{Exception handling}
+\subsection{Exception handling} \label{exception-handling}
 
 Exception handling was a particularly intricate detail to the project and explaining all the
 intricacies of how OCaml deals with exceptions would take many pages. In fact, the only bytecode
@@ -1273,8 +1271,6 @@ in implementing \texttt{try-catch} operations.\footnote{One particularly hard to
       problem
       to fix. I had unknowingly re-introduced the conditions that led to that bug and unfortunately
       did not find it as interesting to fix.}
-
-I will cover one
 
 At a very high level, exception support in the existing interpreter is complicated by the fact the
 interpreter could call a C primitive that itself calls back into the interpreter in a different C
@@ -1297,6 +1293,7 @@ means. I ended up writing my own jump code to do this:\footnote{Note inline gcc 
       not Intel
       syntax as I have used for the rest of the project}
 
+%TC:ignore
 \begin{minted}{c}
 asm (
       "movq %0, %%rbp\n"
@@ -1306,6 +1303,7 @@ asm (
       , "r" (buf->data.asm_saved.pc)
 );
 \end{minted}
+%TC:endignore
 
 \subsubsection{Implementation and testing}
 
