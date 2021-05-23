@@ -12,6 +12,11 @@
       \subsubsection[#1]{#1\\\codeat{#2}}
 }
 
+%TC:macro \codeat 1
+%TC:macro \codesection 2
+%TC:macro \codesubsection 2
+%TC:macro \codesubsubsection 2
+
 \chapter{Implementation}
 
 \begin{figure}[h]
@@ -93,6 +98,7 @@ were `vendored' (marked \textbf{vendor}) - where the source code is included to 
 patches to be made. For OCaml and the sandmark benchmark suites the patches were significant enough
 for me to consider it a fork containing both my work and the work of others (marked \textbf{fork}).
 
+%TC:ignore
 \dirtree{%
       .1 /.
       .2 benchmarks.
@@ -112,6 +118,7 @@ for me to consider it a fork containing both my work and the work of others (mar
       .2 test-programs\DTcomment{\textbf{mine, vendor}: OCaml source for test programs}.
       .2 vendor/no-aslr\DTcomment{\textbf{vendor}: A simple wrapper to run a program without ASLR}.
 }
+%TC:endignore
 
 All of these components were tied together using a combination of Makefiles, cargo workspaces, OPAM
 and dune.
