@@ -1319,28 +1319,28 @@ After tests were working the OCaml test suite was used for verification. The res
 in Section
 \ref{eval-opt-comp-qual}.
 
-\subsection{Limitations of Cranelift}
-
-Despite allowing me to achieve this incredibly complicated system in a relatively short amount of
-time, Cranelift is a young project which is not without its flaws.
-
-\begin{enumerate}
-      \item Cranelift has no support for tail calls yet. I had to instead perform tail calls in a
-            hand-written wrapper function.
-      \item There is no way to mark a primitive (such as a call to OCaml's GC write barrier,
-            \texttt{caml\_modify}) as not requiring a safepoint which means the emitted assembly
-            tends to have
-            too many spills
-      \item Despite my \texttt{R64} $\leftrightarrow$ \texttt{I64} workaround mostly working, I
-            managed to trigger some obscure bugs in the register allocator by the non-standard use
-            of reference
-            types.
-      \item Cranelift has limited support for other calling conventions, or operating outside of
-            the context of a C function.
-      \item Exception/trap handling is difficult in cranelift and essentially requires the use of
-            libunwind. As such I do not support catching exceptions in optimised code
-\end{enumerate}
-
-However, despite this, I had a much easier time integrating cranelift than LLVM. I think its core
-design decisions make it fill a unique niche where LLVM cannot. I have no hesitations in
-recommending it for other Rust JIT projects.
+% \subsection{Limitations of Cranelift}
+% 
+% Despite allowing me to achieve this incredibly complicated system in a relatively short amount of
+% time, Cranelift is a young project which is not without its flaws.
+% 
+% \begin{enumerate}
+%       \item Cranelift has no support for tail calls yet. I had to instead perform tail calls in a
+%             hand-written wrapper function.
+%       \item There is no way to mark a primitive (such as a call to OCaml's GC write barrier,
+%             \texttt{caml\_modify}) as not requiring a safepoint which means the emitted assembly
+%             tends to have
+%             too many spills
+%       \item Despite my \texttt{R64} $\leftrightarrow$ \texttt{I64} workaround mostly working, I
+%             managed to trigger some obscure bugs in the register allocator by the non-standard use
+%             of reference
+%             types.
+%       \item Cranelift has limited support for other calling conventions, or operating outside of
+%             the context of a C function.
+%       \item Exception/trap handling is difficult in cranelift and essentially requires the use of
+%             libunwind. As such I do not support catching exceptions in optimised code
+% \end{enumerate}
+% 
+% However, despite this, I had a much easier time integrating cranelift than LLVM. I think its core
+% design decisions make it fill a unique niche where LLVM cannot. I have no hesitations in
+% recommending it for other Rust JIT projects.
