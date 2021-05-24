@@ -34,6 +34,8 @@ let clamp h l (x : int) =
     x
 \end{minted}
 
+\section{Basic blocks}
+
 It is compiled to bytecode which basic block conversions parses to:
 
 % \begin{verbatim}
@@ -69,7 +71,9 @@ It is compiled to bytecode which basic block conversions parses to:
 
 \input{graphs/clamp-new.tex}
 
-My CLIF generation produces this:
+\section{Cranelift IR}
+
+My Cranelift IR generation produces this:
 
 \begin{verbatim}
 function u0:0(r64, r64, r64, r64) -> r64, i64 system_v {
@@ -119,7 +123,9 @@ block5(v25: r64):
 }
 \end{verbatim}
 
-When cranelift compiles to
+\section{Machine code}
+
+The IR is compiled to
 
 \begin{verbatim}
 0000000000000000 <clamp>:
@@ -163,7 +169,7 @@ stack to its primitive values.
 
 Big table (maybe landscape orientation/multiple pages) with all of the benchmark data.
 
-\chapter{Rust dependencies and their licenses} \label{appendix-license}
+\chapter{Rust dependencies and their licences} \label{appendix-licence}
 
 Names are according to the SPDX License List. Most dependencies are transitive dependencies
 of projects I directly depend on.
@@ -199,7 +205,7 @@ of projects I directly depend on.
     \item[MIT (20)] \hfill \\ ansi\_term, atty, blake2b\_simd, clap, console, default-env,
           errno-dragonfly, indicatif, nix, number\_prefix, os\_pipe, pretty-hex, redox\_syscall,
           redox\_syscall, redox\_users, region, strsim, strum, strum\_macros, textwrap
-    \item[MIT OR Unlicense (8)] \hfill \\ aho-corasick, byteorder, csv, csv-core, memchr,
+    \item[MIT OR Unlicence (8)] \hfill \\ aho-corasick, byteorder, csv, csv-core, memchr,
           regex-automata, termcolor, winapi-util
     \item[MPL-2.0 (3)] \hfill \\ colored, dynasm, dynasmrt
           % \item[N/A (2)] \hfill \\ ocaml-jit-shared, ocaml-jit-tools

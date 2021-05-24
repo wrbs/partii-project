@@ -2,43 +2,51 @@
 \chapter{Preparation}
 
 The OCaml bytecode interpreter has no collected specification or documentation. Although aspects of
-the runtime system are explained in the OCaml documentation from the perspective of writing FFI to
-C, most necessary implementation details can only be found through study of the compiler's source
-code. For this reason, I had done a significant amount of work prior to formal project start
+the runtime system are explained in the OCaml documentation from the perspective of writing foreign
+function interface (FFI) to C, most necessary implementation details can only be found through
+study
+of the compiler's source
+code. For this reason, I had performed a significant amount of work prior to the formal project
+start,
 investigating whether the project was even feasible. Investigation into OCaml's low-level details
 continued to be required throughout the project.
 
-After this work was done, I was in a position to write and then immediately start on the project
+After this work was complete, I was in a position to write and then immediately start on the
+project
 plan given in the proposal. This plan set out the steps required to build a simpler version of the
 initial compiler. Work proceeded according to the optimistic schedule leaving time to build the
 significantly more sophisticated optimising compiler.
 
 \section{Relation to the Tripos}
 
-This project builds on concepts from many areas of the Tripos. The most directly
-relevant courses are Compiler Construction and Optimising Compilers, but the project required
+This project built on concepts from many areas of the Tripos. The most directly
+relevant courses are Part IB Compiler Construction and Part II Optimising Compilers, but the
+project required
 reading beyond the scope of either.
 
 This project also used a large amount of low-level knowledge of the x86\_64 architecture and Linux,
 as covered in Programming in C and C++, Computer Design and Operating Systems.
 
 OCaml was not covered in the Tripos beyond its use as the implementation language for Compiler
-Construction but shares many similarities with Standard ML as covered in Foundations of Computer
-Science. Although this project operated at a much lower level of abstraction, knowledge of the
+Construction but shares many similarities with Standard ML as was covered in Foundations of
+Computer
+Science\footnote{When I took the course --- it now uses OCaml}. Although this project operated at a
+much
+lower level of abstraction, knowledge of the
 source language was crucial for understanding what a sequence of bytecode instructions was doing.
 
 \section{Technology choices}
 
-The Rust programming language is not covered in the Tripos but I am already very familiar with
+The Rust programming language is not covered in the Tripos but I as already very familiar with
 it from personal projects. IThe language's support for algebraic data types and pattern matching
-(with the compiler verifying all cases are matched) were particularly useful for the project.
+(with the compiler verifying all cases are matched) was particularly useful for the project.
 
 x86\_64 assembly was new to me but did not prove too challenging to learn given my experience with
 a variety of other architectures.
 
 \section{The OCaml bytecode interpreter}
 
-OCaml bytecode is interpreted by a stack-based abstract machine optimised for patterns in
+OCaml bytecode is interpreted by a stack-based abstract machine optimised, for patterns in
 functional programming.
 
 \subsection{Data representation}
@@ -48,13 +56,13 @@ Pointers to heap-allocated values are stored directly - but due to alignment the
 have a 0 in
 the LSB. Integers are 63 bits long with the unused LSB storing a value of 1.
 
-Every heap allocated value has a 64-bit header containing the number of words stored (called
+Every heap-allocated value has a 64-bit header containing the number of words stored (called
 the \texttt{wosize}) and a \texttt{u8} tag. Most tag values correspond to a block which can be
 thought of as a tagged tuple containing \texttt{wosize} fields. Each field is treated as an OCaml
 value by the garbage collector.
 
-There are special tag values and cases in the garbage collector for things like floating point
-numbers (which due to the uniform representation must be stored boxed on the heap),
+There are special tag values and cases in the garbage collector for elements like floating point
+numbers (which, due to the uniform representation, must be stored boxed on the heap),
 closures, objects and \texttt{f64}/\texttt{u8} arrays.
 
 \subsection{Registers}
@@ -62,14 +70,14 @@ closures, objects and \texttt{f64}/\texttt{u8} arrays.
 The OCaml abstract machine uses five registers:
 
 \begin{itemize}
-    \item \texttt{sp} is a stack pointer for the OCaml stack which is used extensively
+    \item \texttt{sp} is a stack pointer for the OCaml stack, which is used extensively
           in the bytecode.
     \item \texttt{accu} is an accumulator register used for the return values of functions
           and primitives as well as for most arithmetic operations.
-    \item \texttt{env} holds a pointer to the current closure (an OCaml block) which is used for
+    \item \texttt{env} holds a pointer to the current closure (an OCaml block), which is used for
           referencing closure variables (stored as fields in the block)
     \item \texttt{extra\_args} is used to mark the number of arguments passed on the stack
-    \item \texttt{pc} contains the pointer to the bytecode instruction to be interpreted next
+    \item \texttt{pc} contains the pointer to the bytecode instruction to be interpreted next.
 \end{itemize}
 
 In addition to these registers there is the \texttt{Caml\_state} struct whose fields can be
@@ -85,25 +93,25 @@ of partial application.
 
 \subsubsection{Eval-apply vs push-enter}
 
-In a 2005 talk at the KAZAM workshop \cite{xavtalk}, Xavier Leroy describes the concept of a
-distinction between the \emph{eval-apply} and \emph{push-enter} models when implementing OCaml.
+In a 2005 talk at the KAZAM workshop \cite{xavtalk}, the creator of OCaml, Xavier Leroy, describes
+the concept of a distinction between the \emph{eval-apply} and \emph{push-enter} model.
 These models were originally due to Simon Peyton Jones \cite{jones}\cite{marlow-jones}. This
 distinction has to do with how functions deal with taking multiple arguments and is particularly
 relevant to functions taking curried arguments.
 
 In the eval-apply model --- followed by most imperative programming languages and the OCaml native
 code backend --- a function has a set number of arguments it takes. If a caller
-provides more or less than the required arguments (partial application or calling a function
+provides fewer or more than the required arguments (partial application or calling a function
 returned by a function) the caller must contain the code to handle these cases.
 
 By contrast, in the push-enter model the callee must support any number of arguments passed to it.
 This is the method used by the OCaml bytecode compiler and interpreter. The mechanism for doing
-this is somewhat intricate and becomes relevant in this project in section \ref{dyn-recomp} where
+this is somewhat intricate and becomes relevant in this project in section \ref{dyn-recomp}, where
 it is explained in more detail.
 
 \subsection{Garbage collection}
 
-OCaml is a garbage collected language - memory is managed by the runtime and released once it is
+OCaml is a garbage collected language --- memory is managed by the runtime and released once it is
 no longer reachable from any other live object by the garbage collector (GC). The OCaml garbage
 collector is precise --- it needs to be able to identify exactly the set of values at any point in
 the program. This requirement was a significant source of complication, especially towards the end
@@ -214,11 +222,11 @@ control between basic blocks. Figure \ref{fig:phi-bp} shows example control flow
         \caption{Block parameters}
 
     \end{subfigure}
-    \caption{Comparison of phi nodes and block parameters for SSA forms}
+    \caption{Comparison of phi nodes and block parameters for SSA forms.}
     \label{fig:phi-bp}
 \end{figure}
 
-\subsection{SSA form}
+\subsection{SSA form} \label{ssa}
 
 A useful intermediate form used in compilers is single static assignment (SSA) form. If a program
 is in this form,
@@ -229,13 +237,18 @@ of many optimisations.
 
 In order to support conditional branching in the program, the form needs some method to mark
 choosing between values to use depending on the path taken through the program. The typical
-method\footnote{As covered in the Optimising Compilers course} uses special phi nodes to allow for
-in the successor block to mark thse cases.
+method\footnote{As covered in the Optimising Compilers course.} uses special phi in the successor
+block to mark these cases.
 
 This project uses an alternative method for this: \emph{block parameters}.
 Here the blocks appear as if they are functions taking arguments and the values to use for the
 arguments are provided by the predecessor block in the branch instructions --- see Figure
-\ref{fig:phi-bp} for an example.
+\ref{fig:phi-bp} for an example. This is a newer and slightly cleaner formulation --- but in
+typical uses
+the two representations are isomorphic.\footnote{In fact, block parameters are slightly more
+    general as different values can be passed from the same predecessor block --- such as if both
+    branches of a conditional branch entered the same block with a different value. This is rare in
+    practice.}
 
 \section{x86\_64}
 
@@ -256,7 +269,7 @@ arguments are provided by the predecessor block in the branch instructions --- s
 
 \end{table}
 
-x86\_64 is a large CISC (complex instruction set computer) architecture descending from the Intel
+x86\_64 is a large CISC (complex instruction-set computer) architecture descending from the Intel
 8086 processor.
 Assembly listings in this project use Intel
     [\texttt{mov eax, 1}] rather than AT\&T [\texttt{movl
@@ -269,13 +282,13 @@ to two values may be returned by a function and the large number of caller-saved
 
 \section{Requirements analysis}
 
-The project plan set out an ambitious success criteria.
+The project plan set out ambitious success criteria.
 
 \begin{enumerate}
     \item There is a JIT compiler implemented into the existing OCaml source
           replacing the interpreter with all functionality but debugging
           and introspection.
-    \item There is a comprehensive and automated suite of benchmarks built
+    \item There is a comprehensive and automated suite of benchmarks built,
           comparing its performance to other alternatives.
     \item It performs favourably to the interpreter.
 \end{enumerate}
@@ -290,28 +303,28 @@ To avoid scope creep, I decided on some additional requirements:
 The last of these requirements was changed during the implemenation of the second compiler:
 performance was considered more important than completeness.
 
-\section{Dependencies and licenses}
+\section{Dependencies and licences}
 
-As is common within the Rust ecosystem I made use of third party dependencies. There are many
+As is common within the Rust ecosystem, I made use of third-party dependencies. There are many
 transitive dependencies that I have not explicitly chosen linked in to the final binary. My project
-integrates heavily with the OCaml runtime so is licensed under LGPL 2.1 too.
+integrates heavily with the OCaml runtime so is licenced under LGPL 2.1 too.
 
-Rust crate dependencies are under various licenses. A full list is given in Appendix
-\ref{appendix-license}; all licenses are compatible with LGPL 2.1.
+Rust crate dependencies are under various licences. A full list is given in Appendix
+\ref{appendix-licence}; all licences are compatible with LGPL 2.1.
 
 Some of my Rust dependencies needed to be tweaked slightly; their source is
-vendored in to the project tree. My tweaks there are licensed under the licenses of the modified
+vendored in to the project tree. My tweaks there are licenced under the licences of the modified
 crates.
 
 \subsection{Dynasm-rs}
 
-The initial compiler uses \texttt{dynasm-rs} \cite{dynasmrs} which works as a Rust macro turning
-assembly instructions into pre-assembled code and calls into a simple runtime for relocation. Its
+The initial compiler uses \texttt{dynasm-rs} \cite{dynasmrs}, which works as a Rust macro, turning
+assembly instructions into pre-assembled code, and calls into a simple runtime for relocation. Its
 design is based on that of \texttt{DynASM} used in the \texttt{LuaJIT} project \cite{dynasm}.
 
 \subsection{Cranelift}
 
-The second compiler is designed around the cranelift \cite{cranelift} library which is a
+The second compiler is designed around the cranelift \cite{cranelift}, library which is a
 low-level retargetable code generator with an emphasis on use in JITs\footnote{It's largest use is
     for JIT-compiling webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar
 to
@@ -325,19 +338,20 @@ I based my benchmark suite on the excellent Sandmark project by OCaml Labs at Ca
 project consists of benchmark sources, build scripts (using \texttt{dune}), a benchmark runner,
 compiler definitions (using \texttt{opam}) and a complicated \texttt{Makefile} to tie it all
 together.  I made some larger changes to the tool to support bytecode benchmarks (the project
-initially only benchmarked the native code compiler) but was able to reuse most of the machinery.
+initially only benchmarked the native-code compiler) but was able to reuse most of the machinery.
 
-Sandmark is licensed under CC0 (that it is it is effectively public domain).
+Sandmark is licenced under CC0 (it is effectively public domain).
 
 \section{Starting point}
 
-The starting point of this project is the OCaml compiler 4.11.1, Sandmark from the commit hash
+The starting point of this project was the OCaml compiler 4.11.1, Sandmark from the commit hash
 starting \texttt{09862492} and the source of any other vendored dependencies (identifiable by being
 included in under directories called \texttt{vendor}). The patches made to vendored dependencies
 are
-so small that it is best to consider them not my work for the purpose of this assesment.
+so small that it is best to consider them not my work for the purpose of this assessment.
 
-Some prototyping work was done before project start.  The first aspect of this work was modifying
+Some prototyping performed was done before project start.  The first aspect of this work was
+modifying
 the Makefiles of the OCaml compiler to link with a
 Rust-produced static library and ensure they could both call functions from the other. The other
 component was a simple disassembler for OCaml bytecode to gain familiarity with the format. Both
@@ -347,9 +361,9 @@ minimal --- limited to some of the changes to the OCaml Makefiles and the list o
 more sophisticated one\footnote{Not covered in this document due to space constraints but it
     can be found in the \texttt{src/rust/ocaml-jit-tools} directory}.
 
-\section{Development methodology}
+\section{Development methodology} \label{dev-methodology}
 
-This project was developed in an iterative manner most closely aligned with the agile
+This project was developed in an iterative manner most closely aligned with the Agile
 methodology. Much of the Agile manifesto is based around customer and team collaboration which is
 not as relevant for this largely solitary project. However, many of the principles are still useful
 for single-developer projects. There are many practices which call themselves Agile. I mean:
@@ -376,34 +390,34 @@ time on over-engineering. To mitigate this problem I used two strategies:
 \begin{enumerate}
     \item Set deadlines for each major component of the project with my supervisor leading to
           accountability and external motivation.
-    \item Agree the goals and tasks for each week in a meeting with my project supervisor
+    \item Agree the goals and tasks for each week in a meeting with my project supervisor,
           allowing us to keep track of the progress towards the major deadlines.
 \end{enumerate}
 
 Development followed an rapid iterative cycle of experimentation, short plans, implementation and
-testing all directed to solving a clearly defined goal. I found this a particularly effective
+testing, all directed to solving a clearly defined goal. I found this a particularly effective
 methodology for this project and my style of working.
 
 \subsection{Testing}
 
 Automated testing was essential to the development of this project. I used unit tests where it was
 appropriate for small functions or modules. However, by far the most useful class of test was
-automated trace comparison test against the exact behaviour of the existing interpreter:
+automated trace comparison against the exact behaviour of the existing interpreter.
 
-As OCaml bytecode has no specification outside of the behaviour of the interpreter it can be hard
+As OCaml bytecode has no specification outside the behaviour of the interpreter it can be hard
 to know exactly what the behaviour should be in all cases solely from the interpreter source code.
 To get around this I used automated comparison testing: the VM state was printed at every
 instruction and automated
 tooling would compare the JIT's trace against the interpreter's one. More details are given in
 Section \ref{trace-comparison}.
 
-To develop larger components like the optimising compiler before enough code was written to allow
+To develop larger components, like the optimising compiler, before enough code was written to allow
 running the entire compiler, I made use of `expect tests'. These consist of tests that compare
 output of components against a reference string included in the source. The expect test runner will
-show the diff on failure and has support for `promoting' the new version replacing the reference
+show the diff on failure and has support for `promoting' the new version, replacing the reference
 string with the new output. In addition to detecting regressions these tests serve as good
-self-contained esamples of components and are the source of most of the output examples in this
-document. They are somewhat detached from the exact implementation details while testing comopnents
+self-contained examples of components and are the source of most of the output examples in this
+document. They are somewhat detached from the exact implementation details while testing components
 in isolation which makes them useful from refactoring.
 
 The OCaml test suite was used towards the later stages of completeness and failures were added as
@@ -417,7 +431,7 @@ code.
 \subsection{Tools}
 
 All project code was stored in a single Git repository (a `monorepo' model). GitHub was used to
-host a the repository online. Experimental ideas were developed on
+host the repository online. Experimental ideas were developed on
 branches to allow evaluation of different
 strategies. I occasionally used self-reviewed pull requests for large changes.
 
@@ -427,15 +441,17 @@ strategies. I occasionally used self-reviewed pull requests for large changes.
 % knowledge between the more intense working sessions.
 
 The \texttt{cargo} build system was used for all Rust code. Linking in to the OCaml runtime was
-done by modifying OCaml's build system (autoconf and hand written Makefiles). Smaller automation
+achieved by modifying OCaml's build system (autoconf and hand-written Makefiles). Smaller
+automation
 was done with bash scripts with more complicated tools written in Rust.  All of these components
 are tied together with a toplevel Makefile.
 
 The project can be used as a custom \texttt{opam} switch making it easy to test the system under
 different compile-time options with the entire ecosystem of OCaml dependencies --- this is used in
-the implementaiton of the benchmark suite.
+the implementation of the benchmark suite.
 
-Data analysis is done using the standard Python stack (pandas, matplotlib, jupyter, etc.). A frozen
+Data analysis is preformed using the standard Python stack (pandas, matplotlib, jupyter, etc.). A
+frozen
 list of Python dependencies is at \texttt{benchmarks/requirements.txt}.
 
 I used a combination of neovim, Visual Studio Code (with \texttt{rust-analyzer}) and CLion as text

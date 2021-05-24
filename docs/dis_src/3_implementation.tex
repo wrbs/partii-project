@@ -51,20 +51,22 @@ multiple times at runtime.
 \section{Overview}
 
 OCaml bytecode is executed using a program called \texttt{ocamlrun}. Both new compilers are
-implemented in a Rust static library which \texttt{ocamlrun} links to. \texttt{ocamlrun} hooks into
+implemented in a Rust static library which is linked with \texttt{ocamlrun}. \texttt{ocamlrun}
+hooks into
 this library when it loads bytecode and when it starts interpreting it.
 
-If the JIT is enabled, either by setting an environment variable or if it is enabled by default at
-compile time, when the bytecode load hook is run the \textbf{initial compiler} will execute.
+If the JIT is enabled, either by setting an environment variable or compile-time setting, the
+bytecode load hook will trigger the \textbf{initial compiler}.
 
-The initial compiler parses the bytecode into a stream of instructions and, for each bytecode
-instruction, emits assembly with the same semantics to a buffer. After all code has been emitted
+The initial compiler parses the bytecode into a stream of instructions. For each bytecode
+instruction it emits assembly with the same semantics to a buffer. After all code has been emitted
 (including headers and footers with shared routines) relocations are performed and the buffer is
 marked as executable.
 
-When \texttt{ocamlrun} then calls the hook to start interpretation, the library instead jumps to
-this assembly code which then performs the same operations as the interpreter - except that every
-instruction has effectively been inlined.
+When \texttt{ocamlrun} calls the hook to start interpretation, execution jumps to
+this assembly code. The same operations are performed in the same order as the interpreter - except
+that every
+instruction has been inlined.
 
 When an OCaml closure is applied,\footnote{All non-primitive function calls are translated to
       closure application} a closure execution count is incremented. Once this count passes a
@@ -73,15 +75,15 @@ threshold, the code instead branches in to the \textbf{optimising compiler}.
 
 The optimising compiler operates on the level of a single function. The code generate differs from
 the unoptimised machine code in that there is no concept of the OCaml stack and accumulator
-register; instead all values are stored in registers. The function's code pointer is updated and
-any
+register; instead all values are stored in machine registers and the C stack. The function's code
+pointer is updated and any
 future calls (including the originally triggering call) will use the optimised implementation.
 
 \section{Major milestones}
 
-In accordance with the agile methodology the focus throughout all aspects of the project was on
-working code that could be tested even if the total wasn't not complete. However it is worth noting
-the major milestones where some degree of completeness was achieved (in chronological order).
+In accordance with the development methodology (see Section \ref{dev-methodology}) the focus
+throughout all aspects of the project was on working code that could be tested. However it is worth
+noting the order of major milestones where some degree of full-system completeness was achieved.
 
 \begin{enumerate}
       \item Execution of Hello World with the JIT
@@ -93,9 +95,9 @@ the major milestones where some degree of completeness was achieved (in chronolo
 \section{Repository overview}
 
 The project was developed using a `monorepo' where everything for the project was contained in one
-Git repository. Some components were solely my work (marked \textbf{mine} below). Some components
-were `vendored' (marked \textbf{vendor}) - where the source code is included to allow for small
-patches to be made. For OCaml and the sandmark benchmark suites the patches were significant enough
+Git repository. Some components are solely my work (marked \textbf{mine} below). Some components
+are `vendored' (marked \textbf{vendor}) - where the source code is included to allow for small
+patches to be made. For OCaml and the sandmark benchmark suites the patches are significant enough
 for me to consider it a fork containing both my work and the work of others (marked \textbf{fork}).
 
 %TC:ignore
@@ -120,9 +122,6 @@ for me to consider it a fork containing both my work and the work of others (mar
 }
 %TC:endignore
 
-All of these components were tied together using a combination of Makefiles, cargo workspaces, OPAM
-and dune.
-
 \section{Initial compiler}
 
 The initial compiler was developed before any work on the optimising compiler was performed. In the
@@ -132,19 +131,16 @@ state.
 
 \subsection{Overview}
 
-The basic compiler consists of two large components - an instruction parser and an assembly
-emitter.
-
-Most of the rest of the files are support for these components and deal with the FFI from and into
-the existing runtime.
+The basic compiler consists of two major components - an instruction parser and an assembly
+emitter. The instruction parser converts bytecode into Rust data types and the assembly emitter
+translates the instructions into machine code.
 
 \subsubsection{Mapping of the OCaml abstract machine}
 
-The initial compiler operates by converting every bytecode instruction into a stream of assembly
-instructions with the same semantics. Abstract machine registers are mapped to x86\_64 registers. A
-pointer to the \texttt{Caml\_state} struct containing other global interpreter state is also
-stored in a register called \texttt{r\_cs} for access to its fields with small code size. The
-mapping used is shown in Table \ref{table:regmap}.
+Abstract machine registers are mapped to x86\_64 registers. A pointer to the \texttt{Caml\_state}
+struct containing other global interpreter state is also stored in a register called \texttt{r\_cs}
+for access to its fields with small code size. The mapping used is shown in Table
+\ref{table:regmap}.
 
 \begin{table}[h]
       \centering
@@ -186,8 +182,8 @@ improvements of the JITed code. The benefits are
             instructions.
 \end{itemize}
 
-However, this approach does lead to more contention on the instruction cache - rather than only
-containing a single copy of the implementation of each instruction there are many.
+However, this approach does lead to more contention on the instruction cache as instruction
+implementation can no longer be shared.
 
 \codesubsection{Hooks from OCaml}{src/rust/ocaml-jit-staticlib/src/c\_entrypoints.rs}
 
@@ -200,16 +196,12 @@ The existing OCaml runtime was modified to hook into the JIT at three points:
 \end{enumerate}
 
 In most programs there are is only one section loaded (two if callbacks from C to OCaml are
-used). However, the interpreter is used in other places such as the toplevel REPL which motivates
-the more general multiple section support. Here each section corresponds to a line of code entered
-on the toplevel.
+used). However, the interpreter is also used in the toplevel REPL where each section corresponds to
+a line of code entered by the user toplevel.
 
 Compilation happens after the first hook and an entry is written to a global table containing the
 pointer to the buffer. The compiled code takes the form of a single large C function taking no
-arguments.
-
-The interpreter call hook calls into the compiled function stored in the section table.  When a
-section is released this entry is dropped which frees the memory associated with the section.
+arguments, meaning branching into the code consists only of calling a function pointer.
 
 \subsection{Instruction parsing}
 
@@ -221,97 +213,79 @@ The first stage in the pipeline is to parse the bytes into a stream of elements 
 \label{instruction-type}
 
 OCaml has 149 opcodes, each of which can take different number of operands. Arguments and operands
-are all stored as \texttt{i32} values. As described in section \ref{ocaml-bytecode-format}, some
-opcodes
-are space-saving aliases for the composition of multiple simpler instructions. To simplify
-implementation
-I expand these aliases at parse time so generating code only considers the simple primitives.
+are all stored as \texttt{i32} values. Some opcodes are space-saving aliases for the composition of
+multiple simpler instructions. To simplify implementation I expand these aliases at parse time so
+generating code only considers the simple primitives. There are about 60 such simplified
+instructions.
 
-Rust has support for algebraic sum types called enums (not to be confused with the much more
-limited
-enums in a language like C or Java). I use this to store the Instruction type with one variant
-\footnote{Usually called type constructor in functional programming contexts} per simple
-instruction.
+Rust has support for algebraic sum types called enums. I use this to store the \texttt{Instruction}
+type with one variant \footnote{Also known as type constructor} per simple instruction.
 
 Instructions such as integer comparisons and conditional branches have many variations varying only
 in the conditional used. This is extracted into its type allowing for a single instruction to
-represent
-all conditional branches.
+represent all conditional branches.
 
 Some instructions like branches have label arguments referencing the location of another opcode in
-memory. The instruction type is polymorphic over the type of the label to allow for different label
-representations depending on use case.
+memory. The \texttt{Instruction} type is polymorphic over the type of the label to allow for
+different label representations depending on use case.
 
 \codesubsubsection{Parser}{src/rust/ocaml-jit-shared/src/instruction/parse.rs}
 
 The parser is implemented using Rust iterators; the parser takes an iterator of \texttt{i32}s and
-produces an iterator producing values of type \texttt{Result<Instruction,
-      ParseError>}\footnote{Standard rust error handling type defined as \texttt{enum Result<T,E>
-            \{Ok(T), Err(E)\}} like OCaml's \texttt{('a, 'b) result}}.
+produces an iterator producing values of type \texttt{Result<Instruction, ParseError>}.
 
-This use of iterators makes the instruction parser consistently performant for large bytecodes -
-consumers of the instruction stream take each instruction as they need it and users do not need to
-store a vector of parsed instructions in their entirety.
+This use of iterators makes the instruction parser consistently performant for large programs -
+consumers of the instruction stream take each instruction as they need rather than storing
+a vector of all instructions in memory.
 
-Labels are stored in the OCaml bytecode as indirect offsets relative to the current PC. To simplify
-later uses, these are converted to absolute offsets relative to the start of the section.
+In OCaml bytecode, jumps are encoded as offsets relative to the current PC. To simplify later uses,
+these are converted to absolute offsets relative to the start of the bytecode address.
 
 As single OCaml instructions may parse to more than one \texttt{Instruction}, the type
 contains a pseudo-instruction called \texttt{LabelDef} which is emitted at
-the start of every OCaml instruction. This also allows a map to be be built from OCaml bytecode
-instruction offsets in the translated code.
+the start of every OCaml instruction. This also allows a map to be be built from labels to
+locations in the translated code.
 
 \codesubsection{Code generation}{src/rust/ocaml-jit-staticlib/src/compiler/emit\_code.rs}
+\label{code-generation}
 
 The code generation is the largest aspect of the compiler. It makes use of the \texttt{dynasm-rs}
 library. This library manages emitting machine code and relocation information, relocating and
 using \texttt{mmap} to mark the code as executable.
 
-The compiler is triggered on the first time a `section' is loaded - for normal programs this is at
-startup and for programs using the OCaml toplevel REPL this is after every statement is typed.
-
-The compiler first emits a standard function-header entrypoint which saves callee-saved registers
-used by the compiler and aligns the C stack. A longjmp handler is set up for exceptions and then,
-for each bytecode instruction, assembly with the same semantics is emitted.
-
 During this process \texttt{dynasm-rs} dynamic labels are used to set up relocations: these
 labels are defined before every bytecode instruction and can be referenced by any other
-instruction. DynASM translates these at runtime into pc-relative jumps.
+instruction. \texttt{dynasm-rs} translates these at runtime into (machine pc)-relative jumps (as is
+usual on x86\_64).
 
 After all instructions are done, some shared code used by the instructions is emitted.
 \texttt{dynasm-rs} then performs relocations and uses \texttt{mmap} to mark the region of code as
 executable.
-
-The overall signature of the assembly produced by this process is a single function taking no
-arguments and returning an OCaml value. OCaml closure applications (function calls) do not produce
-a stack frame on the C stack - the existing machinery using the OCaml stack is used instead.
 
 \subsubsection{Simple example}
 
 The main code of the compiler itself is contained in a 2,000 line file
 (\texttt{src/rust/ocaml-jit-staticlib/src/compiler/emit\_code.rs}). Most of this is taken up by a
 Rust large pattern match for each of the bytecode instructions. As a very simple example of what
-the code looks like, consider the implementation of the \texttt{Add} instruction. It adds the value
-at the top of the OCaml stack to the accumulator and stores the result in the accumulator. Note
-that the OCaml integer format means a decrement is required. In the original assembler it is
+the code looks like, consider the implementation of the \texttt{ADDINT} opcode. It adds the value
+at the top of the OCaml stack to the accumulator and stores the result in the accumulator.In the
+original interpreter it is
 implemented:
 
 \inputminted{c}{snippets/add.c}
 
-In the compiler the case becomes:
+Note that the OCaml integer format means a decrement is required to keep a 1 is the LSB. In the
+compiler the relevant case is:
 
 \inputminted{rust}{snippets/add.rs}
 
-This has exactly the same semantics. Note \texttt{r\_accu} and \texttt{r\_sp}
-are aliases for \texttt{r13} and \texttt{r15}.	At compile time, the macro component of
-\texttt{dynasm-rs} translates it to:
+This has exactly the same semantics as the interpreter source. At compile time, the macro component
+of \texttt{dynasm-rs} translates it to:
 
 \inputminted{rust}{snippets/add_comp.rs}
 
-Most assembly work is performed at compile time. The byte string above contains the machine code
-for
-those instructions. This leads to less work being done at compile time, improving the performance
-of the compiler.
+In this way most translation from assembly to machine code is performed at compile time. The byte
+string above contains the machine code for those instructions. This strategy is very performant.
 
 \subsubsection{Branches}
 
@@ -333,30 +307,19 @@ This shows the assembler work still needing to be done at compile time - relocat
 
 \subsubsection{Other cases}
 
-Most other cases follow these patterns. Some more involved instructions call into C primitives
-I wrote instead (passing and then restoring the registers from the stack).
-
-However, the basic structure of snippets of combined assembly and Rust in a large pattern match
-statement remains for all cases.
+All other cases follow this pattern. Some more involved instructions call into C primitives
+I wrote instead but most of them inline the operations directly in hand written assembly. The main
+exception is function calling --- this is covered in Section \ref{dyn-recomp}.
 
 \subsection{Implementation strategy}
 
-Implementation followed an incremental and highly test-driven strategy over multiple weeks. The
-initial focus was on building a system sophisticated enough to run a hello world program
-implementing the bare minimum instructions to support this.
+Implementation was incremental and highly test-driven. The initial focus was on building a system
+supporting only the opcodes required to run a hello world program. I then slowly expanded the
+complexity of programs, using them to drive the implementation of new instructions and fixing of
+bugs.
 
-I then slowly expanded the complexity of programs, using them to drive the implementation of new
-instructions and fixing bugs.
-
-As is mostly inevitable in a project of this complexity there were a significant number of bugs.
-Traditional debugging methods like print debugging or using a debugger are difficult to apply in
-a JIT context. Some errors resulted in confusing segfaults without any clear indication of what
-went
-wrong or ability to extract a stack trace (although manually poking registers).
-
-Despite this the actual implementation was remarkably efficient. This is mainly due to the trace
-comparison tooling I developed at the very start of the project and continued to expand throughout
-the project.
+The implementation was remarkably efficient, proceeding according to my most optimistic plan. This
+is mainly due to the trace comparison tooling.
 
 \subsubsection{Trace comparison} \label{trace-comparison}
 
@@ -366,19 +329,14 @@ what
 tooling to test the behaviour of my JIT-compiled code directly against the behaviour of the
 interpreter.
 
-In order to do this I added support for tracing after every instruction in both the existing
-interpreter and the JIT-compiled code. The log entry contains the instruction executed, state of
-all of the OCaml registers and the top five entries on the stack.
+I added support for tracing after every instruction in both the existing interpreter and the
+JIT-compiled code. The log entry contains the instruction executed, state of all of the OCaml
+registers and the top five entries on the stack.
 
-There are a few log formats that it can print - for this application I used \texttt{serde} to
-serialise and deserialise the trace entries as JSON. The trace comparison program launches the
-program: once with the interpreter and once using the JITed code
-
-A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a specified program with
-tracing enabled twice simultaneously - one run uses the JIT and the other the
-existing interpreter.  Then for every trace entry received it compares the two lines. If there is a
-difference between the lines it shows a diff and then exits, as shown in Figure
-\ref{fig:trace-comparison}.
+A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a specified program with tracing
+enabled twice simultaneously - one run uses the JIT and the other the existing interpreter.  For
+every trace entry printed it compares the two lines. If there is a difference between the lines it
+shows a diff and then exits, as shown in Figure \ref{fig:trace-comparison}.
 
 As many of the values are pointers there is a risk of non-determinism making this comparison fail.
 I used a small open source wrapper program called \texttt{no-aslr} to disable ASLR\footnote{GPLv2
@@ -392,8 +350,8 @@ The only expected difference comes from the use of the machine PC rather than th
 instruction pointers, like return addresses on the stack, could differ. This required a special
 case during the check.
 
-I added a script to 11 test programs that together mostly covered the entire instruction
-set. Running this frequently allowed me to test for regressions when making changes.
+I wrote a script to run 11 test programs under trace comparison, failing if any of them failed.
+Running this frequently allowed me to test for regressions when making changes.
 
 \begin{figure}[h]
       \includegraphics[width=\textwidth]{trace-comparison}
@@ -401,7 +359,7 @@ set. Running this frequently allowed me to test for regressions when making chan
       \label{fig:trace-comparison}
 \end{figure}
 
-\subsubsection{Towards full correctness}
+\subsubsection{Final stages}
 
 Once I was happy that I had implemented every instruction, I started using
 the OCaml compiler's internal test suite. I discovered some subtle bugs and used it to add new test
@@ -409,11 +367,9 @@ programs and fix them by trace comparison. One test heavily used callbacks from 
 discovered my initial implementation was too slow.
 
 I eventually managed to get nearly all tests in the test suite working - the only failures were
-testing the backtrace support and the debugger.
-
-After this I successfully managed to bootstrap the compiler using the JIT which gave me a high
-level
-of confidence in the accuracy of the JIT-compiled code.
+testing the backtrace support and the debugger.  After this I successfully managed to bootstrap the
+compiler using the JIT which gave me a high level of confidence in the accuracy of the JIT-compiled
+code.
 
 \subsection{Omitted details}
 
@@ -421,17 +377,11 @@ Although the basic structure as described holds, some details are omitted but ap
 \texttt{emit\_code.rs}.
 
 \begin{itemize}
-      \item There is extensive optional support for tracing instructions and events)
       \item Callbacks from C to OCaml code require special handling
       \item The compiler returns a pointer to the first instruction to support OCaml's
             metaprogramming \texttt{ocaml\_reify\_bytecode} program used in the implementation of
             things like the
             toplevel \texttt{ocaml} program.
-      \item Function application is a fairly involved process and there are checks to resize the
-            stack and check for signals as well as the fundamental complexity of the push-enter
-            model
-      \item Registers need to be saved and restored at safepoints to allow the garbage collector to
-            use them
       \item Certain operations (like \texttt{ClosureRec(...)}) are involved enough that instead of
             inlining the definition in
             hand-written assembly, I push the registers to the C stack and call a C primitive to
@@ -589,7 +539,7 @@ if (regs->extra_args < f->required_extra_args) {
 
 Even though most of the above snippets are pseudo-code, the function metadata struct as listed with
 its four fields (code pointer, original bytecode location, required extra args, count/status)
-exists in the compilation. Before implementing the optmising compiler, the initial compiler was
+exists in the compilation. Before implementing the optimising compiler, the initial compiler was
 modified to generate, store and use it.
 
 In order to generate this table, I added another pass to the initial compiler that discovers the
@@ -612,7 +562,7 @@ The previous section a way to determine hot closures and dynamically call
 into an optimising compiler. This section describes the implementation of this optimising compiler
 and how calls are done.
 
-The time left for the prjoect meant building a complete x86\_64 compiler backend (with register
+The time left for the project meant building a complete x86\_64 compiler backend (with register
 allocation,
 instruction scheduling, etc.) from scratch was infeasible. The usual toolkit used to avoid
 replicating this work is LLVM \cite{llvm}. Although is more typically known for its use in
@@ -621,52 +571,33 @@ complexity and AOT focus made it difficult to integrate.
 
 \subsubsection{Cranelift}
 
-Instead I used the \texttt{cranelift} project. Like LLVM it is a retargetable code generator with
-an IR. However, it has a number of different design decisions which made it much better suited for
-my planned uses:
+Instead I used the Cranelift library. Like LLVM it is a retargetable code generator with an IR.
+However, it has a number of different design decisions which made it much better suited for my
+planned uses:
 
 \begin{itemize}
-      \item It is written in Rust which means the API is fairly idiomatic when using it in Rust
+      \item It is written in Rust so the API follows Rust idioms
       \item It is designed primarily for JITs and focuses heavily on compilation performance
-      \item The project is actively developed and I could communicate with the developers online
-      \item Although the support for garbage collection is not as extensible, with the help of the
-            developers I was able to come up with a model that is a good fit for the OCaml garbage
-            collector's
-            requirements.
+            % \item The project is actively developed and I could communicate with the developers online
+      \item Although the support for garbage collection is not extensible, it fits well with the
+            OCaml garbage collector.
       \item When I encountered any bugs or missing features I could easily submit and get merged
-            patches to the project which uses a familiar Github workflow rather than the LLVM
-            project's legacy
-            systems.
+            patches to the project --- I did this twice.
 \end{itemize}
 
-There were still some missing features in Cranelift which are described later but for the most
-part it was a good fit for my needs and was in a large part responsible for my being able to
-complete this ambitious extension.
+It didn't have all features I wanted but it is a good fit for my needs and was in a large part
+responsible for my being able to complete this ambitious extension.
 
 \subsection{Overview}
 
-At a high level the optimised compiler is a function taking two inputs and returning two outputs.
-The inputs are a slice (Rust $(\text{pointer}, \text{length})$ tuple representing a reference to an
-array) to a bytecode, and the offset within that slice containing the first instruction in the
-function to be optimised.
-
-The first output is a pointer to a compiled function that can be called to execute the code
-represented by that function. The second output is a vector of stack map entries which are used
-to support finding GC roots (explained in \ref{optgc}). The first output becomes the new code
-pointer in the function metadata table.
-
-The compiler consists of three major components in a pipeline.
+At a high level the optimised compiler is a function from function bytecode to optimised code
+performing the same operations.  The compiler consists of three major components in a pipeline.
 
 \begin{enumerate}
       \item Basic block conversion and stack-start analysis (section \ref{opt-bb})
       \item IR generation from the basic blocks using the analysis (section \ref{opt-irgen})
       \item Compilation of IR to x86\_64 assembly (performed by Cranelift)
 \end{enumerate}
-
-As described later in section \ref{dyn-recomp}, this compiler is triggered once a function is
-called enough times to become `hot'. After the function has been compiled the optimised
-implementation
-will always be used.
 
 \subsection{Optimisations done}
 
@@ -677,34 +608,30 @@ of the OCaml stack with machine registers which spill to the C stack when needed
 
 Arguments are passed to a function according to the System V C calling convention - the first
 argument is always the closure environment, \texttt{env}, and the remaining arguments are passed
-in registers. Direct calls from optimised functions to optimised functions can avoid the use of
-the OCaml stack entirely. Other cases need more work (described in section \ref{dyn-recomp}).
+in registers (further details are given later in Section \ref{calling-conventions}). The work done
+of Section \ref{dyn-recomp} means the function will only be called with the complete number of
+arguments it is expecting.
 
 The method used to remove the use of the stack is to convert the OCaml bytecode into an SSA form
 by keeping track of the contents of a virtual stack and accumulator as the closure is translated.
-As an example consider the simple OCaml function:
+Consider the simple OCaml function:
 
 %TC:ignore
 \mint{ocaml}|let add a b = a + b|
 %TC:endignore
 
-This compiles to the sequence of bytecode instructions:
+The OCaml compiler produces this sequence of bytecode instructions:
 
 %TC:ignore
 \begin{verbatim}
 Grab(1)          # Ensure 2 arguments passed
-Acc(1)           # Load 2nd element from top of stack to acc
+Acc(1)           # Load 2nd element from top of stack (arg a) to acc
 Push             # Push acc onto top of stack
-Acc(1)           # Load new 2nd element from top of stack to acc
+Acc(1)           # Load new 2nd element from top of stack (arg b) to acc
 ArithInt(Add)    # Add the top of stack to the acc and pop it
-Return(2)        # Pop 2 items, then return acc
+Return(2)        # Pop 2 items, then return acc (now a + b)
 \end{verbatim}
 %TC:endignore
-
-Instead of translating all of these inefficient stack manipulations as the initial compiler does,
-the optimised compiler keeps track of the stack as it compiles. For an example of this, see Table
-\ref{table:stacktrans}. Ignore the \texttt{Grab(1)} for
-now as it is handled in a different way.
 
 \begin{table}[h]
       \centering
@@ -733,46 +660,40 @@ now as it is handled in a different way.
       \label{table:stacktrans}
 \end{table}
 
-Rather than store expressions in the virtualised state, all values use cranelift's concept of an
-SSA value.
-
-This method is effective when considering a single basic block at a time. However, in the presence
-of branching, joining and looping basic blocks more work is needed. Luckily the output of the OCaml
-compiler has the invariant that the stack size relative to the function's stack frame is constant
-at the start of each basic block, \emph{no matter the path taken to reach it}. This happens to be
-the key to allow efficient SSA conversion, completely removing any explicit notion of a stack and
-accumulator from the generated Cranelift IR.
+Instead of translating all of these inefficient stack manipulations as the initial compiler does,
+the optimised compiler keeps track of the stack as it compiles. For an example of this, see Table
+\ref{table:stacktrans}.
 
 \codesubsection{Conversion to basic blocks}{src/rust/ocaml-jit-shared/src/basic\_blocks/}
 \label{opt-bb}
 
 The typical data structure used in optimising compilers is the basic block. Cranelift is no
-exception and the IR for a function consists of basic blocks containing instructions.
+exception and the IR for a function consists of basic blocks containing instructions in SSA form
+with block parameters.
 
 However, the only information we have from the bytecode is a sequence of instructions with jumps.
 In order to move away from a heavy connection with the instructions the first step is to group them
-into
-basic blocks.
+into basic blocks. These bytecode instruction basic blocks are then translated into cranelift basic
+blocks.
 
 \codesubsubsection{Types}{basic\_blocks/types.rs}
 
-A \textbf{\texttt{BasicClosure}} consists of a vector of \textbf{\texttt{BasicBlock}} along with
-some other data. A basic block has a vector of \textbf{\texttt{BasicBlockInstruction}} and a single
-\textbf{\texttt{BasicBlockExit}}.
+A \texttt{BasicClosure} consists of a vector of \texttt{BasicBlock} along with
+some other data. A basic block has a vector of \texttt{BasicBlockInstruction} and a single
+\texttt{BasicBlockExit}.
 
 Some \texttt{Instruction}s map to a \texttt{BasicBlockInstruction} and others map to a
 \texttt{BasicBlockExit}. For example, \texttt{Instruction::Push} becomes
 \texttt{BasicBlockInstruction::Push} but \texttt{Instruction::BranchIf(label)} becomes
-\texttt{BasicBlockExit::BranchIf { then\_block, else\_block }}.
+\texttt{BasicBlockExit::BranchIf \{ then\_block, else\_block \}}.
 
 This enforces at the type level the basic invariant of basic blocks - one entry, one exit.
 
 \subsubsection{Stack starts}
 
 In addition to performing the conversion to basic blocks, the algorithm also keeps track of a
-concept I call the \textbf{stack start} of a basic block. Although, like all other aspects of the
-OCaml interpreter, it is not documented anywhere, inspecting the bytecode compiler's source and
-testing against all real programs finds an important invariant:
+concept I call the \emph{stack start} of a basic block. Inspecting the bytecode compiler's source
+and validating with many programs finds an important invariant:
 
 \begin{framed}
       \noindent
@@ -781,8 +702,8 @@ testing against all real programs finds an important invariant:
       relative to the start of the function's stack frame is the same.
 \end{framed}
 
-During the conversion to basic blocks this invariant is validated and the size of the stack before
-the first instruction of a block is stored. This is the \textbf{stack start} of the block.
+During the conversion the size of the stack on entry to each block stored. This is the \emph{stack
+      start} of the block.
 
 \codesubsubsection{Algorithm}{basic\_blocks/conversion.rs}
 
@@ -801,7 +722,8 @@ indexed. \(P\) can be thought of as a function \(\mathbb{N} \to I\).
 For simplicity, assume indices are consecutive\footnote{They're not, but it's fairly simple to
       handle}.
 
-Each instruction has four properties. Let $\mathbb{B} = \{ \textbf{true}, \textbf{false} \}$:
+Each instruction has four properties. With $\mathbb{B} = \{ \textbf{true}, \textbf{false} \}$,
+define:
 
 \begin{itemize}
       \item \(\delta(i) : I \to \mathbb{N} \) is the change to the stack pointer after executing
@@ -886,7 +808,7 @@ storing of the stack starts for each block. The actual search also performs more
 There isn't space to fit it in the main body of the text but Appendix \ref{appendix-example} shows
 an example of the output of the basic block conversion for a larger function with if statements.
 
-\subsection{Calling conventions}
+\subsection{Calling conventions} \label{calling-conventions}
 
 In the initial interpreter, all calling is performed using the OCaml interpreter's existing model.
 This
@@ -903,6 +825,8 @@ the function's arguments when fully applied with the arguments it expects.
 
 The function returns two values: the return value of the function and another value which
 corresponds to an \texttt{extra\_args} offset used for doing tail calls.
+\footnote{The details of this are beyond the scope of this dissertation --- it suffices to note
+      this allows for tail calls even though Cranelift doesn't support them}
 
 For example,
 
@@ -910,46 +834,50 @@ For example,
 \mint{ocaml}|let add a b = a + b|
 %TC:endignore
 
-\noindent
 is translated to a function with signature
 
-\[(\text{env: i64}, \text{a : i64}, \text{b : i64}) -> (\text{i64}, \text{i64})\]
+\begin{verbatim}
+(env: i64, a : i64, b : i64) -> (i64, i64)
+\end{verbatim}
 
-\noindent
-I limit the compiler to only work with functions of up to 5 arguments, which corresponds to the
-maximum number of registers that can be used for arguments before needing to use the stack in the
-System V calling convention. This simplified the interface code and in practice nearly every
+The compiler can only process functions of up to 5 arguments, which corresponds to the
+maximum number of arguments that can be passed in registers in the
+System V calling convention. This simplifies the interface code and in practice nearly every
 function in the standard library can work in this way.
 
-Calls from from optimised code to optimised code can be implemented with simple C function calls.
-Calls from the stack-using output of the initial compiler require the caller to read the arguments
-from the stack and call the function with this convention. Calls from optimised code to unoptimised
-code require writing the arguments back to the OCaml stack. All of these cases are implemented in
-hand-written assembly which checks first for the optimised->optimised case before falling back on
-slower
-stack-using operations. This allows for the hot path sequence of calls to be optimised.
+\begin{itemize}
+      \item Calls from from optimised code to optimised code can be implemented with simple C
+            function calls
+      \item Calls from the stack-using output of the initial compiler require the caller to read
+            the arguments
+            from the stack and call the function with this convention
+      \item Calls from optimised code to unoptimised
+            code require writing the arguments back to the OCaml stack
+\end{itemize}
+
+All of these cases are implemented in hand-written assembly optimising for the first case
+(optimised to optimised). This allows for the hot path sequence of calls to be without any need to
+store arguments in memory.
 
 \subsection{IR generation} \label{opt-irgen}
 
-Cranelift, much like LLVM, uses an IR with a binary, in-memory and textual representation. The
-basic concept is that of typed values where the types are things like \texttt{I64} and
-\texttt{F32}.
+Cranelift, much like LLVM, uses an IR with a binary, in-memory and textual representation. IR is
+stored in SSA form and each value has an associated type --- such as \texttt{I64} or \texttt{F32}.
 
-IR generation proceeds by initialising the function header and iterating over every basic block
-emitting cranelift IR.
+IR generation starts by initialising the function header. Then every basic block is considered in
+turn emitting cranelift IR.
 
-When constructing IR as part of the frontend, cranelift provides some assistance with
-translating mutable variables to SSA values as the IR is being emitted block parameters.
-This is similar to LLVM's \texttt{mem2reg} pass but more direct and runs online with the
-construction
-of the SSA.
+Although SSA form is very useful, it can be somewhat difficult to translate from higher level forms
+where the same variable can hold multiple values. Cranelift provides some assistance with this
+during the process of building the IR.	This is similar to LLVM's \texttt{mem2reg} pass but more
+direct, operating at the same time as IR is being built rather than as a separate optimisation
+pass.
 
 This functionality is the key method for removing use of the OCaml stack and accumulator. Cranelift
 \texttt{Variable}s are defined to correspond to each stack location used in the function and the
 accumulator.
-Each variable needs a unique integer id allowing Cranelift's instruction builder will then track
-the
-flow of values as the IR is being emitted.
+Each variable needs a unique integer id. This allows cranelift to perform dataflow analysis to
+track the loads and stores to the variable replacing them with SSA values.
 
 \begin{minted}{rust}
 let acc_var = Variable::new(0);
@@ -961,31 +889,34 @@ let stack_vars: Vec<_> = (0..max_stack_size).map(|i| {
 }).collect();
 \end{minted}
 
-As the function is compiled we keep track of the current stack size: the location of the stack
-pointer relative to the start of the frame. This is the purpose of computing the stack starts
-earlier -- whenever we start emitting code for a basic block we can set the current stack size to
-what it would be on block entry.
-
-As we generate code, we can get a reference to the current value of a variable or set a new value.
-The IR builder will take care of tracking this through the control flow we define automatically
-inserting the minimum number of block parameters needed to deal with different values being
-assigned
-to a variable in multiple different entry blocks.
+When emitting IR, cranelift provides functions to get a reference to the current value of a
+variable
+or set a new value.  The IR builder will track this against the control flow graph doing things
+like automatically inserting block parameters (see Section \ref{ssa}).
 
 For example, \texttt{PUSH} (push current accumulator to stack) is handled in this way:
 
 \begin{minted}{rust}
-let current_acc = self.builder.use_var(self.acc_var);
-self.builder.def_var(self.stack_vars[self.current_stack_size], current_acc);
-self.current_stack_size += 1;
+let current_acc = self.builder.use_var(self.acc_var);  // load acc
+self.builder.def_var(                                  // store to sp[0]
+      self.stack_vars[self.current_stack_size],
+      current_acc
+);
+self.current_stack_size += 1;                          // increment current sp
 \end{minted}
 
-In order to simplify this, I have defined utility methods for operations like pushing to and
-popping from the stack and modifying the accumulator.
+Note the use of \texttt{current\_stack\_size} --- as the function is compiled we keep track of the
+location of the stack pointer relative to the start of the frame. This is the purpose of computing
+the stack starts earlier; whenever we start emitting code for a basic block we can set the current
+stack size to what it would be on block entry.
+
+There are utility methods for operations like pushing to and popping from the stack and modifying
+the accumulator to abstract the details of keeping the current stack size up to date
 
 \subsubsection{Example: add}
 
-Let's consider the \texttt{ArithOp(Add)} example again. It adds the top of the stack to the current
+Consider the \texttt{ArithOp(Add)} example from Section. It adds the top of the stack to the
+current
 accumulator value (where adding integers in OCaml requires a decrement).
 
 \begin{minted}{rust}
@@ -1054,21 +985,27 @@ block1:
 
 Despite the original function and the translation code making use of the stack and accumulator,
 there is no site of this in the emitted IR. Values pass directly from the function parameters to
-nodes representing the arithmetic operations and in to the return values.
+nodes representing the arithmetic operations and to the return values. This is the result of our
+careful analysis of stack sizes combined with Cranelift's mutable variable elimination
 
 \subsubsection{Larger example}
 
 Appendix \ref{appendix-example} shows the translation for a function with multiple blocks where
-variables could have different values due to the branching and merging of control flow due to if
-statements. Note that at block 5 has a block parameter defined for the return value and jumps to it
-pass the specific values it could take. Inserting this block parameter was done automatically once
-cranelift determined it was needed.
+variables could have different values due to if statements.  Note that at block 5 has a block
+parameter defined for the return value and jumps to it pass the specific values it could take.
+Inserting this block parameter was done automatically once cranelift determined it was needed.
+
+\subsubsection{Summary}
+
+The process described in this section is fairly intricate and it may not be immediately clear how
+everything fits together. The most important thing to take away from the section is that the
+accumulator and OCaml stack can efficiently be eliminated and replaced with SSA variables while
+keeping the same semantics and that the implementation of the cases is in very close correspondence
+with the OCaml interpreter's source.
 
 \subsection{Machine code translation}
 
-Cranelift compiles the IR to this machine code. Note: in the System V calling convention, the first
-three arguments are passed in \texttt{rdi} and \texttt{rsi}, \texttt{rdx} respectively and return
-values (up to 2) are in \texttt{rax} and \texttt{rdx} respectively:
+Cranelift compiles the IR to this machine code:
 
 \begin{verbatim}
 0000000000000000 <arith_add>:
@@ -1083,29 +1020,51 @@ values (up to 2) are in \texttt{rax} and \texttt{rdx} respectively:
   15:	c3           ret    
 \end{verbatim}
 
-This assembly is high quality and uses significantly less instructions than the output of the
-compiler would need. No memory accesses are done at all outside of the entry and exits, compared to
-the multiple reads and writes to the OCaml stack in the original instruction.
+Note in the System V calling convention, the first three arguments are passed in \texttt{rdi},
+\texttt{rsi} and \texttt{rdx} respectively and return values are in \texttt{rax} and
+\texttt{rdx} respectively.
 
-The combination of Cranelift and my virtual stack allows me to write code which is in mostly 1-1
-correspondence with the interpreter source while compiling to register-using optimised machine
-code. Cranelift's optimisation for JIT use cases means the stages of the pipeline are fast - the
-register allocator uses linear scan and only simple and quick optimisation passes are done on the
-IR.
+This code uses significantly less instructions than the output of the initial compiler would need
+due to the use of registers to hold intermediate values. No memory accesses are
+done at all outside of the entry and exits, compared to the multiple reads and writes to the OCaml
+stacks the interpreter and initial compiler output does.
+
+The process is extensible to large functions with many basic blocks and complicated control flow
+patterns.
 
 \subsection{GC support} \label{gc-support}
 
-A key aspect of the OCaml runtime is its garbage collection support. In the bytecode interpreter no
-particular effort is needed for this as every value is stored on the OCaml stack. However, for my
-compiled code, which does not use the OCaml stack, it is necessary to build something more
-involved:
+A key aspect of the OCaml runtime is its garbage collector. It is a precise, generational,
+stop-the-world tracing garbage collector. The relevant requirement for this project is that
+whenever
+the GC runs it must be able to exactly determine the set of all live values in memory. During
+garbage collection the values may change because the garbage collector will move things in the
+heap.
+
+\subsubsection{Safepoints}
+
+The GC will only run at certain locations --- these are typically called safepoints. For OCaml,
+garbage collection occurs only on memory allocation if the minor heap (first generation) is full.
+This means every memory allocation operation is a safepoint. Additionally, every call to another
+function, C primitive or signal handler could also trigger allocation making them safepoints.
+
+In the original interpreter and initial compiler's output, the \texttt{accu} and \texttt{env}
+registers
+need to be pushed on to the stack before the call which is a safepoint. Afterwards the values are
+restored to account for the possibility garbage collection has caused them to change.
+
+In the bytecode interpreter no particular effort is needed for this as every value is stored on the
+OCaml stack. However, for my compiled code, which does not use the OCaml stack, it is necessary to
+build something more involved:
+
+\subsubsection{Overview}
 
 \begin{enumerate}
       \item During cranelift IR generation, I store everything that could contain a pointer to a
-            GC-managed value (a \textbf{local root}) in a cranelift \textbf{reference type}
+            GC-managed value (known as a \emph{local root}) in a cranelift \emph{reference type}
             (\texttt{R64}).
       \item Cranelift performs live variable analysis, spilling and restoring of registers to the C
-            stack and emission of \textbf{stack maps} at every GC \textbf{safepoint}.
+            stack and emission of \emph{stack maps} at every GC safepoint.
       \item My runtime stores the stack maps in a hash map keyed by the return address at time of
             the safepoint.
       \item During GC, my runtime walks the entire frame pointer (\texttt{rbp}) chain. By looking
@@ -1124,8 +1083,7 @@ when tracing. The opposite is a \emph{conservative} collector, which allows for 
 
 In order to use it my IR generation has to mark roots by storing them in values that have the
 \texttt{R64} type. The \texttt{R64} type means a 64-bit reference and is compiled identically to
-\texttt{I64}. However, cranelift support will use this type to differentiate GC-managed pointers
-from other values.
+\texttt{I64} --- the purpose of this is to differentiate GC-managed pointers from other integers.
 
 For this reason, anything that is an OCaml value and could be a pointer to the heap \textbf{must}
 be stored in a \texttt{R64} type at every point the GC could trigger (a \emph{safepoint}).
@@ -1151,8 +1109,8 @@ garbage collection.
 
 Cranelift's GC support works using the concept of safepoints. A safepoint is a point in the program
 where the garbage collector could run. Cranelift treats every function call as a
-safepoint\footnote{I planned a way to make this configurable per-function with the cranelift
-      developers but decided it would take too long at the late stage of the project}.
+safepoint which is a safe if a little inefficient over-estimate of the places that need to be
+safepoints for OCaml.
 
 At every safepoint (here function call), cranelift will ensure:
 
@@ -1165,10 +1123,6 @@ At every safepoint (here function call), cranelift will ensure:
 In order to determine the live reference types at every safepoint, cranelift performs a live
 variable analysis (LVA) pass. It then will spill and restore (push and pop) any reference
 type-containing machine registers to the C stack (other values will be on the stack already).
-
-This spilling takes place as part of register allocation. As is typical for optimised solvers of
-NP-complete problems, cranelift's register allocator is thousands of lines of incredibly dense
-algorithmic code that I do not fully understand.
 
 \subsubsection{Stack maps}
 
@@ -1211,32 +1165,26 @@ is each member of the stack map's set):
 
 \subsubsection{Integration with OCaml}
 
-After compilation is finished, I translate the nativeicode offsets to an absolute address by adding
+After compilation is finished, I translate the native code offsets to absolute addresses by adding
 the
 pointer to the first instruction in the compiled function. I store all stackmaps in a hashmap
 indexed by the native code offset.
 
-During garbage collection, the garbage collector has points where it scans all of the "local
-roots". It passes a callback function that takes two arguments: the address of the root in
+During garbage collection, the garbage collector has points where it scans all of the `local
+roots'. It passes a callback function that takes two arguments: the address of the root in
 memory
 and the value at that address.
 
 In order to use my return address map, it is necessary to walk up the chain of stack frames in the
-same way as a debugger does.  One way I initially tried was to use Apple's \texttt{libunwind}
-library which is capable of doing this and used for things like C++ exception handling or Rust
-backtraces on panic. However, integrating this with a JIT is involves emitting DWARF debug
-information and registering them against the runtime. There is no consolidated documentation for
-any
-of this. Wasmtime/cranelift have actually done this work for their own use of the GC. However, I
-would have to manually do it for every function in the initial compiler which is not really
-work that can be done by a human.
-
-I instead settled on a less complicated solution: use frame pointers. Frame pointer chains are`
-optional in \texttt{x86\_64} calling conventions and usually omitted by optimising compilers.
-However, by telling the Rust compilers and GCC to not emit frame pointers, and manually adding the
-\texttt{rbp} chain assembly to my initial compiler's output I could ensure that a linked list
-repeatedly dereferencing the initial \texttt{rbp} value would walk the entire stack. The code to do
-this is as follows:
+same way as a debugger does. To do this I use the \texttt{rbp} register which contains frame
+pointers. Supporting frame pointer chains are optional in \texttt{x86\_64} calling conventions and
+usually omitted by optimising compilers. However, it is possible to tell the Rust compiler and GCC
+to not omit frame pointers. Cranelift emits frame pointers by default and I manually added using
+them to my hand-written assembly in the initial compiler.
+The way they are used means it is possible to walk the stack like a linked list by following the
+chain starting at the current \texttt{rbp} value:
+\footnote{Note inline gcc assembly is AT\&T syntax (not the Intel syntax as for the rest of the
+      document}
 
 \begin{minted}{c}
 typedef void (*scanning_action) (value, value *);
@@ -1261,8 +1209,8 @@ each root found.
 
 Garbage collection is incredibly difficult to get right. Luckily, cranelift had some support for it
 I could reuse. My use of it was non-standard but ultimately successful. Once I had this I needed a
-way to walk through the C stack. Initial approaches were unsuccessful but ultimately falling back
-to use of the \texttt{-fno-omit-frame-pointer} compile flag worked well.
+way to walk through the C stack, which was done by enabling frame pointers and walking the stack
+using them.
 
 I paid some performance penalty by using frame pointers and my hash map for looking up stack frames
 was unoptimised. However, once all components were in place the system worked remarkably well.
@@ -1272,12 +1220,13 @@ was unoptimised. However, once all components were in place the system worked re
 Exception handling was a particularly intricate detail to the project and explaining all the
 intricacies of how OCaml deals with exceptions would take many pages. In fact, the only bytecode
 instruction unsupported by the optimised compiler is the \texttt{PushTrap} operation, which is used
-in implementing \texttt{try-catch} operations.\footnote{One particularly hard to debug problem led
-      to a 2003 bug
-      report in French where Xavier Leroy thanked the reporter for a particularly `interesting'
-      problem
-      to fix. I had unknowingly re-introduced the conditions that led to that bug and unfortunately
-      did not find it as interesting to fix.}
+in implementing \texttt{try-catch} operations.
+\footnote{One particularly hard to debug problem involving exceptions led to a 2003 bug report in
+      French where Xavier Leroy thanked the reporter for a particularly `interesting' problem to
+      fix. I
+      had unknowingly re-introduced the conditions that led to that bug and unfortunately did not
+      find it
+      as interesting to fix.}
 
 At a very high level, exception support in the existing interpreter is complicated by the fact the
 interpreter could call a C primitive that itself calls back into the interpreter in a different C
@@ -1293,12 +1242,10 @@ The buffer used to store the state to restore is rather large and in the naive i
 need to be allocated by \emph{every} function on the stack. This was a clear issue needing solving
 if there was any hope of the optimised compiler actually being faster.
 
-My solution was to note that I only needed two registers to completely restore my interpreter's
+My solution was to note that I only needed two registers to completely restore the VM state
 state - \texttt{rbp} and the x86\_64 instruction pointer. This is because the only places the
 longjmp could point to are at specific locations where all other registers can be seeded by other
-means. I ended up writing my own jump code to do this:\footnote{Note inline gcc assembly is AT\&T
-      not Intel
-      syntax as I have used for the rest of the project}
+means. I ended up writing my own jump code to do this:
 
 %TC:ignore
 \begin{minted}{c}
