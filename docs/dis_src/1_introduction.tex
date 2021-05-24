@@ -5,12 +5,9 @@ This project introduces two new just-in-time (JIT) compilers to x86\_64 machine 
 programming language - one focusing on correctness and compile speed and the other on performance
 of the compiled code. These compilers are integrated together dynamically: the first compiler is
 used for all code and the second compiler is used for functions detected to be called often.  The
-combination of compilers system outperforms
-\footnote{It is faster for 32/36 of the tested benchmarks: mean speedup = $1.46\times$, $\sigma =
-            0.40$}
-the
-OCaml bytecode interpreter on the majority of tested benchmarks and is capable of executing every
-OCaml program.
+combination of compilers outperforms \footnote{It is faster for 32/36 of the tested benchmarks:
+      mean speedup = $1.46\times$, $\sigma = 0.40$} the OCaml bytecode interpreter on the majority of
+tested benchmarks and is capable of executing every OCaml program.
 
 In this document, I will refer to the faster but less intelligent compiler as the `first' or
 `initial' compiler and the slower but more optimising compiler as the `second' or `optimising'
@@ -19,27 +16,27 @@ compiler.
 \section{Motivation}
 
 OCaml is a compiled functional programming language with a strong, static type system. The OCaml
-compiler has two main backends: an optimised target-specific native-code compiler and a compiler to
-bytecode which is later run by the interpreter, \texttt{ocamlrun}.
+compiler has two main backends: a target-specific native-code compiler and a compiler to
+bytecode which is interpreted by a program called \texttt{ocamlrun}.
 
 The default bytecode interpreter in OCaml is significantly slower than the output of the
 native-code compiler. Although most users of OCaml use the native-code compiler, the bytecode
 compiler is
-still useful. One of the largest use cases is it is the only method used by the OCaml `toplevel'
-read-evaluate-print-loop (REPL). JIT compilation techniques are particularly well suited to this
-use case.
+still used. It is the only target supported by the OCaml `toplevel' read-evaluate-print-loop
+(REPL).
+JIT compilation techniques to decrease bytecode execution time are particularly useful here.
 
 This project demonstrates how JIT compilation techniques can be applied to OCaml while retaining
 the bytecode format and semantics. As the `toplevel' can only use
 bytecode, the JIT could be lead to better performance in interactive OCaml environments.
 
-Additionally, this project demonstrates two contrasting approaches to writing a JIT compiler in
-Rust and shows how they can be integrated them together for performance better than either
-individually.
+Additionally, this project serves to demonstrate two contrasting approaches to writing a JIT
+compiler in Rust and shows how they can be integrated them together for performance better than
+either individually.
 
 \section{Related work}
 
-This project has been attempted before at least twice: with \textsc{OCamlJit} in 2004 \cite{ocjit1}
+This project has been attempted at least twice before: with \textsc{OCamlJit} in 2004 \cite{ocjit1}
 and \textsc{OCamlJit2} in 2010 \cite{ocjit2}. On advice of my supervisor I decided not to closely
 read these papers until after implementation; my first compiler independently ended up with a very
 similar design to that of \textsc{OCamlJit2} and my second was more sophisticated than either
@@ -60,8 +57,13 @@ The project achieved on schedule three core goals as set out in the proposal:
       \item It performs favourably compared to the original interpreter on benchmark programs
 \end{enumerate}
 
-I then implemented the significant extension of the optimising compiler and integrated
-it with the initial compiler.
+This gave time for a signficant extension:
+
+\begin{enumerate}
+      \item I have built a second compiler using more sophisticated analysis to generate faster
+            machine code
+      \item The first compiler dynamically decides to execute the second compiler at runtime.
+\end{enumerate}
 
 The project is primarily written in the Rust and C programming languages. It replaces the
 interpreter component of the existing OCaml runtime.
