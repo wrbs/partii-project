@@ -688,8 +688,8 @@ some other data. A basic block has a vector of \texttt{BasicBlockInstruction} an
 Some \texttt{Instruction}s map to a \texttt{BasicBlockInstruction} and others map to a
 \texttt{BasicBlockExit}. For example, \texttt{Instruction::Push} becomes
 \texttt{BasicBlockInstruction::Push} but \texttt{Instruction::BranchIf(label)} becomes
-\texttt{BasicBlockExit::BranchIf \{ then\_block, else\_block \}}. This enforces at the type level
-the basic invariant of basic blocks --- one entry, one exit.
+\texttt{BasicBlockExit::BranchIf \{ then, else \}}. The distinction encodes
+at the type level that each block only has one exit and entry point.
 
 \subsubsection{Stack starts}
 
@@ -1124,36 +1124,40 @@ The output of this step is calls to a callback handler I provide with (native-co
 
 The stack map is a set of offsets relative to the stack pointer at time of call where reference
 typed values are located. To store these entries efficiently, cranelift uses a bitset data
-structure. The interpretation of these offsets is shown in the following diagram (where \texttt{x}
+structure. The interpretation of these offsets is shown in Figure \ref{fig:stack-frames} (where
+\texttt{x}
 is each member of the stack map's set):
 
-%TC:ignore
-\begin{verbatim}
-          Stack
-        +-------------------+
-        | Frame 0           |
-        |                   |
-   |    |                   |
-   |    +-------------------+ <--- Frame 0's SP
-   |    | Frame 1           |
- Grows  |                   |
- down   |                   |
-   |    | Live GC reference | --+--
-   |    |                   |   |
-   |    |                   |   |
-   V    |                   |   x = offset of live GC ref
-        |                   |   |
-        |                   |   |
-        +-------------------+ --+--  <--- Frame 1's SP
-        | Frame 2           |
-        | ...               |
+\begin{figure}[h]
+      \begin{verbatim}
+            Stack
+            +-------------------+
+            | Frame 0           |
+            |                   |
+       |    |                   |
+       |    +-------------------+ <--- Frame 0's SP
+       |    | Frame 1           |
+     Grows  |                   |
+     down   |                   |
+       |    | Live GC reference | --+--
+       |    |                   |   |
+       |    |                   |   |
+       V    |                   |   x = offset of live GC ref
+            |                   |   |
+            |                   |   |
+            +-------------------+ --+--  <--- Frame 1's SP
+            | Frame 2           |
+            | ...               |
 \end{verbatim}
 
-\noindent\emph{
-      This diagram is directly copied from Nick Fitzgerald's blog post \cite{refblog} describing
-      cranelift's GC. License: CC-BY-SA.
-}
-%TC:endignore
+      \noindent\emph{
+            This diagram is directly copied from Nick Fitzgerald's blog post \cite{refblog}
+            describing
+            cranelift's GC. License: CC-BY-SA.
+      }
+      \caption{Interpretation of stack map entries}
+      \label{fig:stack-frames}
+\end{figure}
 
 \subsubsection{Integration with OCaml}
 
@@ -1252,19 +1256,19 @@ asm (
 \end{minted}
 %TC:endignore
 
-\subsubsection{Implementation and testing}
-
-I used a similar method to that described in Section \ref{trace-comparison} with the same test
-files
-when implementing and debugging the compiler. Instead of tracing on every instruction, it only
-tested
-passed arguments on entry to functions and return values from functions as well as arguments and
-results of
-primitive C functions called \texttt{CCall(...)}.
-
-After tests were working the OCaml test suite was used for verification. The results are described
-in Section
-\ref{eval-opt-comp-qual}.
+% \subsubsection{Implementation and testing}
+% 
+% I used a similar method to that described in Section \ref{trace-comparison} with the same test
+% files
+% when implementing and debugging the compiler. Instead of tracing on every instruction, it only
+% tested
+% passed arguments on entry to functions and return values from functions as well as arguments and
+% results of
+% primitive C functions called \texttt{CCall(...)}.
+% 
+% After tests were working the OCaml test suite was used for verification. The results are described
+% in Section
+% \ref{eval-opt-comp-qual}.
 
 % \subsection{Limitations of Cranelift}
 % 
