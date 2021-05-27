@@ -2,14 +2,11 @@
 \chapter{Preparation}
 
 The OCaml bytecode interpreter has no collected specification or documentation. Although aspects of
-the runtime system are explained in the OCaml documentation from the perspective of writing foreign
-function interface (FFI) to C, most necessary implementation details can only be found through
-study
-of the compiler's source
-code. For this reason, I had performed a significant amount of work prior to the formal project
-start,
-investigating whether the project was even feasible. Investigation into OCaml's low-level details
-continued to be required throughout the project.
+the runtime system are explained in the OCaml documentation from the perspective of implementing a
+foreign-function interface (FFI) to C, most necessary implementation details can only be found
+through study of the compiler's source code. For this reason, I had performed a significant amount
+of work prior to the formal project start, investigating whether the project was even feasible.
+Investigation into OCaml's low-level details continued to be required throughout the project.
 
 After this work was complete, I was in a position to write and then immediately start on the
 project
@@ -28,17 +25,18 @@ This project also used a large amount of low-level knowledge of the x86\_64 arch
 as covered in Programming in C and C++, Computer Design and Operating Systems.
 
 OCaml was not covered in the Tripos beyond its use as the implementation language for Compiler
-Construction but shares many similarities with Standard ML as was covered in Foundations of
+Construction but shares many similarities with Standard ML, as was covered in Foundations of
 Computer
-Science\footnote{When I took the course --- it now uses OCaml}. Although this project operated at a
+Science\footnote{When I took the course --- it now uses OCaml.}. Although this project operated at
+a
 much
 lower level of abstraction, knowledge of the
 source language was crucial for understanding what a sequence of bytecode instructions was doing.
 
 \section{Technology choices}
 
-The Rust programming language is not covered in the Tripos but I as already very familiar with
-it from personal projects. IThe language's support for algebraic data types and pattern matching
+The Rust programming language is not covered in the Tripos but I was already very familiar with
+it from personal projects. The language's support for algebraic data types and pattern matching
 (with the compiler verifying all cases are matched) was particularly useful for the project.
 
 x86\_64 assembly was new to me but did not prove too challenging to learn given my experience with
@@ -46,7 +44,7 @@ a variety of other architectures.
 
 \section{The OCaml bytecode interpreter}
 
-OCaml bytecode is interpreted by a stack-based abstract machine optimised, for patterns in
+OCaml bytecode is interpreted by a stack-based abstract machine, optimised for patterns in
 functional programming.
 
 \subsection{Data representation}
@@ -57,7 +55,7 @@ have a 0 in
 the LSB. Integers are 63 bits long with the unused LSB storing a value of 1.
 
 Every heap-allocated value has a 64-bit header containing the number of words stored (called
-the \texttt{wosize}) and a \texttt{u8} tag. Most tag values correspond to a block which can be
+the \texttt{wosize}) and a \texttt{u8} tag. Most tag values correspond to a block, which can be
 thought of as a tagged tuple containing \texttt{wosize} fields. Each field is treated as an OCaml
 value by the garbage collector.
 
@@ -75,8 +73,8 @@ The OCaml abstract machine uses five registers:
     \item \texttt{accu} is an accumulator register used for the return values of functions
           and primitives as well as for most arithmetic operations.
     \item \texttt{env} holds a pointer to the current closure (an OCaml block), which is used for
-          referencing closure variables (stored as fields in the block)
-    \item \texttt{extra\_args} is used to mark the number of arguments passed on the stack
+          referencing closure variables (stored as fields in the block).
+    \item \texttt{extra\_args} is used to mark the number of arguments passed on the stack.
     \item \texttt{pc} contains the pointer to the bytecode instruction to be interpreted next.
 \end{itemize}
 
@@ -84,11 +82,11 @@ In addition to these registers there is the \texttt{Caml\_state} struct whose fi
 considered as another 30 or so registers. They are used by the interpreter mainly for supporting
 the garbage collector, exceptions and growing and reallocating the OCaml stack.
 
-\subsection{Function calling model}
+\subsection{Function-calling model}
 
 The interpreter descends from the ZINC Abstract Machine (ZAM) \cite{zinc} through various
 iterations of the Caml system. The most significant feature of these abstract machines for this
-project is the model used for calling functions and dealing with the functional language concept
+project is the model used for calling functions and dealing with the functional-language concept
 of partial application.
 
 \subsubsection{Eval-apply vs push-enter}
@@ -96,13 +94,13 @@ of partial application.
 In a 2005 talk at the KAZAM workshop \cite{xavtalk}, the creator of OCaml, Xavier Leroy, describes
 the concept of a distinction between the \emph{eval-apply} and \emph{push-enter} model.
 These models were originally due to Simon Peyton Jones \cite{jones}\cite{marlow-jones}. This
-distinction has to do with how functions deal with taking multiple arguments and is particularly
+distinction has to do with how functions deal with taking multiple arguments, and is particularly
 relevant to functions taking curried arguments.
 
-In the eval-apply model --- followed by most imperative programming languages and the OCaml native
-code backend --- a function has a set number of arguments it takes. If a caller
-provides fewer or more than the required arguments (partial application or calling a function
-returned by a function) the caller must contain the code to handle these cases.
+In the eval-apply model --- followed by most imperative programming languages and the OCaml
+native-code backend --- a function has a set number of arguments it takes. If a caller provides
+fewer or more than the required arguments (partial application or calling a function returned by a
+function) the caller must contain the code to handle these cases.
 
 By contrast, in the push-enter model the callee must support any number of arguments passed to it.
 This is the method used by the OCaml bytecode compiler and interpreter. The mechanism for doing
@@ -111,11 +109,11 @@ it is explained in more detail.
 
 \subsection{Garbage collection}
 
-OCaml is a garbage collected language --- memory is managed by the runtime and released once it is
+OCaml is a garbage-collected language --- memory is managed by the runtime and released once it is
 no longer reachable from any other live object by the garbage collector (GC). The OCaml garbage
 collector is precise --- it needs to be able to identify exactly the set of values at any point in
 the program. This requirement was a significant source of complication, especially towards the end
-of the project
+of the project.
 
 % \subsubsection{Precise}
 % 
@@ -228,7 +226,7 @@ control between basic blocks. Figure \ref{fig:phi-bp} shows example control flow
 
 \subsection{SSA form} \label{ssa}
 
-A useful intermediate form used in compilers is single static assignment (SSA) form. If a program
+A useful intermediate form used in compilers is static single assignment (SSA) form. If a program
 is in this form,
 every variable is assigned to only once and only binds a single immutable value.
 
@@ -237,8 +235,8 @@ of many optimisations.
 
 In order to support conditional branching in the program, the form needs some method to mark
 choosing between values to use depending on the path taken through the program. The typical
-method\footnote{As covered in the Optimising Compilers course.} uses special phi in the successor
-block to mark these cases.
+method\footnote{As covered in the Optimising Compilers course.} uses special phi node in the
+successor block to mark these cases.
 
 This project uses an alternative method for this: \emph{block parameters}.
 Here the blocks appear as if they are functions taking arguments and the values to use for the
@@ -275,10 +273,12 @@ Assembly listings in this project use Intel
     [\texttt{mov eax, 1}] rather than AT\&T [\texttt{movl
     \$1, \%eax}] syntax.
 
-This project targets Linux only which uses the System V calling convention.  A summary of the
+This project targets Linux only, which uses the System V calling convention.  A summary of the
 System V calling convention is given in Table \ref{table:systemv} --- the relevant details for this
 dissertation are that up to six 64-bit arguments can be passed to functions in registers, that up
-to two values may be returned by a function and the large number of caller-saved registers.
+to two values may be returned by a function and that there are a larger large number of
+caller-saved
+registers.
 
 \section{Requirements analysis}
 
@@ -307,7 +307,7 @@ performance was considered more important than completeness.
 
 As is common within the Rust ecosystem, I made use of third-party dependencies. There are many
 transitive dependencies that I have not explicitly chosen linked in to the final binary. My project
-integrates heavily with the OCaml runtime so is licenced under LGPL 2.1 too.
+integrates heavily with the OCaml runtime, so is licensed under LGPL 2.1 too.
 
 Rust crate dependencies are under various licences. A full list is given in Appendix
 \ref{appendix-licence}; all licences are compatible with LGPL 2.1.
@@ -326,11 +326,8 @@ design is based on that of \texttt{DynASM} used in the \texttt{LuaJIT} project \
 
 The second compiler is designed around the cranelift \cite{cranelift}, library which is a
 low-level retargetable code generator with an emphasis on use in JITs\footnote{It's largest use is
-    for JIT-compiling webassembly as part of \texttt{wasmtime} and Firefox}. It is somewhat similar
-to
-LLVM but lower level and much simpler. It cannot perform many of the optimisations LLVM can but has
-significantly lower compilation time. It is written in Rust and so benefits from an API designed
-for the language.
+    for JIT-compiling webassembly as part of \texttt{wasmtime} and Firefox}. It is written in Rust
+and so benefits from an API designed for the language.
 
 \subsection{Sandmark}
 
@@ -340,12 +337,15 @@ compiler definitions (using \texttt{opam}) and a complicated \texttt{Makefile} t
 together.  I made some larger changes to the tool to support bytecode benchmarks (the project
 initially only benchmarked the native-code compiler) but was able to reuse most of the machinery.
 
-Sandmark is licenced under CC0 (it is effectively public domain).
+Sandmark is licensed under CC0 (it is effectively public domain).
 
 \section{Starting point}
 
 The starting point of this project was the OCaml compiler 4.11.1, Sandmark from the commit hash
-starting \texttt{09862492} and the source of any other vendored dependencies (identifiable by being
+starting
+\texttt{09862492}\footnote{\url{https://github.com/ocaml-bench/sandmark/commit/09862492680c296fd659
+        ceef9b34035ab97f7fe6}}, and the source of any other vendored dependencies (identifiable by
+being
 included in under directories called \texttt{vendor}). The patches made to vendored dependencies
 are
 so small that it is best to consider them not my work for the purpose of this assessment.
@@ -359,7 +359,7 @@ aspects of this work were extended during the project and the current remnants o
 minimal --- limited to some of the changes to the OCaml Makefiles and the list of opcodes in
 \texttt{src/rust/ocaml-jit-shared/src/opcodes.rs}).  The original disassembler was replaced with a
 more sophisticated one\footnote{Not covered in this document due to space constraints but it
-    can be found in the \texttt{src/rust/ocaml-jit-tools} directory}.
+    can be found in the \texttt{src/rust/ocaml-jit-tools} directory.}.
 
 \section{Development methodology} \label{dev-methodology}
 
@@ -384,11 +384,11 @@ aspects of the existing OCaml runtime. I did not have the knowledge to create a 
 dealing with these systems. Agile embraces changing requirements making it an effective choice for
 this project.
 
-Working without a detailed plans introduces a risk of falling behind without realising or wasting
+Working without a detailed plan introduces a risk of falling behind without realising or wasting
 time on over-engineering. To mitigate this problem I used two strategies:
 
 \begin{enumerate}
-    \item Set deadlines for each major component of the project with my supervisor leading to
+    \item Set deadlines for each major component of the project with my supervisor, leading to
           accountability and external motivation.
     \item Agree the goals and tasks for each week in a meeting with my project supervisor,
           allowing us to keep track of the progress towards the major deadlines.
@@ -408,12 +408,12 @@ As OCaml bytecode has no specification outside the behaviour of the interpreter 
 to know exactly what the behaviour should be in all cases solely from the interpreter source code.
 To get around this I used automated comparison testing: the VM state was printed at every
 instruction and automated
-tooling would compare the JIT's trace against the interpreter's one. More details are given in
+tooling would compare the JIT's trace against the interpreter's. More details are given in
 Section \ref{trace-comparison}.
 
 To develop larger components, like the optimising compiler, before enough code was written to allow
 running the entire compiler, I made use of `expect tests'. These consist of tests that compare
-output of components against a reference string included in the source. The expect test runner will
+output of components against a reference string included in the source. The expect-test runner will
 show the diff on failure and has support for `promoting' the new version, replacing the reference
 string with the new output. In addition to detecting regressions these tests serve as good
 self-contained examples of components and are the source of most of the output examples in this
@@ -442,9 +442,8 @@ strategies. I occasionally used self-reviewed pull requests for large changes.
 
 The \texttt{cargo} build system was used for all Rust code. Linking in to the OCaml runtime was
 achieved by modifying OCaml's build system (autoconf and hand-written Makefiles). Smaller
-automation
-was done with bash scripts with more complicated tools written in Rust.  All of these components
-are tied together with a toplevel Makefile.
+automation was achieved with bash scripts with more complicated tools written in Rust.	All of
+these components are tied together with a toplevel Makefile.
 
 The project can be used as a custom \texttt{opam} switch making it easy to test the system under
 different compile-time options with the entire ecosystem of OCaml dependencies --- this is used in

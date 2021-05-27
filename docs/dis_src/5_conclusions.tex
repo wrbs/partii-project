@@ -2,44 +2,40 @@
 \chapter{Conclusions}
 
 This project demonstrates how the use of JIT compilation techniques can beat the performance
-of manually optimised interpreters. It contrasts two approaches to JIT compilation showing how
+of manually optimised interpreters. It contrasts two approaches to JIT compilation, showing how
 more sophisticated compilers can be applied only when needed for better performance.
 
-Unlike many Part II compiler projects it covers the complete functionality of a large real world
+Unlike many Part II compiler projects it covers the complete functionality of a large real-world
 programming language with a focus on correctness --- beyond not supporting the debugger and
-backtraces,
-no simplifications are made to the language.
+backtraces, no simplifications are made to the language.
 
 \section{Possible extensions}
 
 \subsubsection{More sophisticated analysis of types in the optimising compiler}
 
 Performance could be greatly improved by adding OCaml-specific type information to the optimising
-compiler. For example, once a value is statically known to be a floating point value the compiler
-can avoid boxing intermediate values and inline the operations rather than call out to C
-primitives.
-This would greatly help with some of the worst cases for the system which were all heavy uses of
-floating point numbers.
+compiler. For example, once a value is statically known to be a floating-point value the compiler
+can avoid boxing intermediate values and inline the operations, rather than call out to C
+primitives. This would greatly help with some of the worst cases for the system which were all
+heavy uses of floating-point numbers.
 
 Another potential example would be determining a value had to be an integer and therefore being
-able to exclude it
-from being spilled at safepoints and included in the stack map.
+able to exclude it from being spilled at safepoints and included in the stack map.
 
 Both of these would require adding an additional intermediate representation and dataflow analysis
-passes in between the basic block stage and Cranelift IR but would be fairly simple optimisations
-once
-the machinery for this is built.
+passes in between the basic-block stage and cranelift IR, but would be fairly simple optimisations
+once the machinery for this was built.
 
 \subsubsection{Tail-call recursion optimisation within functions}
 
 The current compiler could be extended with a moderate amount of work to lower tail-recursive
-functions to loops rather than function calls. This is something the native code compiler does and
-so tail-recursion is a common pattern in OCaml. This does not require any support from Cranelift
+functions to loops rather than function calls. This is something the native-code compiler does,
+since tail-recursion is a common pattern in OCaml. This does not require any support from cranelift
 --- only an analysis pass to detect this pattern.
 
 \subsubsection{Extending cranelift to handle tail calls directly}
 
 Cranelift is a new project and its major user, WASM, has no support for emitting efficient machine
 code for tail calls.  For this reason, there is no support within the library for avoiding pushing
-another stack frame on tail calls. I had to implement tail calls by use of a wrapper which hurt
+another stack frame on tail calls. I had to implement tail calls by use of a wrapper, which hurt
 performance.
