@@ -66,7 +66,7 @@ Nevertheless, this issue did cause a small number test cases to segfault on stac
 represents a small regression in the number of passing tests from those supported by the initial
 compiler.
 
-\section{The benchmark suite - Sandmark}
+\section{The benchmark suite --- Sandmark}
 
 As a large part of the motivation of the project was increased performance, a core goal was to
 create or integrate a suite of performance benchmarks. To do this, I adapted an existing suite
@@ -222,7 +222,7 @@ In the other half of cases, performance for the optimising compiler is comparabl
 worse
 than the new initial compiler.
 
-One case causing this is demonstrated in \texttt{mandlebrot6} - here the main loop is implemented
+One case causing this is demonstrated in \texttt{mandlebrot6} --- here the main loop is implemented
 in
 imperative style at the root level of the module using a while loop rather than recursion. This
 means that the optimising compiler will never attempt to optimise it. It additionally makes use of
@@ -239,7 +239,7 @@ are some biases:
 Execution times ranged from \SI{1}{\second} to \SI{500}{\second}. Of the 36 benchmarks, 13 took
 below \SI{10}{\second} and 7 took above \SI{50}{\second}.  In the context of this project, this
 means all programs classify as somewhat long-running and time spent on compilation was a negligible
-factor - my manual testing estimates this overhead to be the order of magnitude of at most
+factor --- my manual testing estimates this overhead to be the order of magnitude of at most
 \SI{300}{\nano\second} for JIT-compiling the entire OCaml compiler, which is a particularly large
 OCaml program.
 

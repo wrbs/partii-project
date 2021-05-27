@@ -64,7 +64,7 @@ instruction it emits assembly with the same semantics to a buffer. After all cod
 marked as executable.
 
 When \texttt{ocamlrun} calls the hook to start interpretation, execution jumps to
-this assembly code. The operations are performed in the same order as the interpreter - except
+this assembly code. The operations are performed in the same order as the interpreter --- except
 that every
 instruction has been inlined.
 
@@ -97,7 +97,7 @@ noting the order of major milestones, where some degree of full-system completen
 
 The project was developed using a `monorepo' where everything for the project was contained in one
 Git repository. Some components are solely my work (marked \textbf{mine} below). Some components
-are `vendored' (marked \textbf{vendor}) - where the source code is included to allow for small
+are `vendored' (marked \textbf{vendor}) --- where the source code is included to allow for small
 patches to be made. For OCaml and the sandmark benchmark suites, the patches are significant enough
 for me to consider it a fork containing both my work and the work of others (marked \textbf{fork}).
 
@@ -131,7 +131,7 @@ state.
 
 \subsection{Overview}
 
-The initial compiler consists of two major components - an instruction parser and an assembly
+The initial compiler consists of two major components --- an instruction parser and an assembly
 emitter. The instruction parser converts bytecode into Rust data types and the assembly emitter
 translates the instructions into machine code.
 
@@ -172,7 +172,8 @@ system's instruction pointer. This change is responsible for nearly all of the p
 improvements of the JITed code. The benefits are
 
 \begin{itemize}
-      \item Memory accesses are reduced - rather than loading operands and opcodes, they are baked
+      \item Memory accesses are reduced --- rather than loading operands and opcodes, they are
+            baked
             in to the machine code.
       \item The CPU can predict execution and fill its pipeline further than it can with the use of
             native code pointers.
@@ -304,7 +305,7 @@ The macros translate it to:
 
 \inputminted{rust}{snippets/branchcmp_comp.rs}
 
-This shows the assembler work still needing to be done at compile time - relocations.
+This shows the assembler work still needing to be done at compile time --- relocations.
 
 \subsubsection{Other cases}
 
@@ -335,7 +336,7 @@ JIT-compiled code. The log entry contains the instruction executed, state of all
 registers and the top five entries on the stack.
 
 A wrapper program (in the \texttt{ocaml-jit-tools} crate) runs a specified program with tracing
-enabled twice simultaneously - one run uses the JIT and the other the existing interpreter.  For
+enabled twice simultaneously --- one run uses the JIT and the other the existing interpreter.  For
 every trace entry printed it compares the two lines. If there is a difference between the lines it
 shows a diff and then exits, as shown in Figure \ref{fig:trace-comparison}.
 
@@ -367,7 +368,7 @@ the OCaml compiler's internal test suite. I discovered some subtle bugs and used
 programs and fix them by trace comparison. One test heavily used callbacks from C to OCaml and I
 discovered my initial implementation was too slow.
 
-I eventually managed to get nearly all tests in the test suite working - the only failures were
+I eventually managed to get nearly all tests in the test suite working --- the only failures were
 testing the backtrace support and the debugger, which I had decided not to support in my proposal.
 After this I successfully managed to bootstrap the compiler using the JIT which gave me a high
 level of confidence in the accuracy of the JIT-compiled code.
@@ -414,7 +415,8 @@ application.
 
 \subsection{Existing OCaml calls} \label{exist-ocaml}
 
-All functions in OCaml are implemented as closures - a heap-allocated tuple of a code pointer and a
+All functions in OCaml are implemented as closures --- a heap-allocated tuple of a code pointer and
+a
 list of data. Function calls are implemented as:
 
 \begin{minted}{c}
@@ -426,7 +428,7 @@ call_function(regs, f->code_ptr);
 Note the actual call logic is performed in hand-written assembly and these structs do not exist
 anywhere
 - this and subsequent examples are just pseudo-code. However, it is easier to understand the logic
-at a higher level. \texttt{regs} is a pointer to a struct containing the OCaml registers - in the
+at a higher level. \texttt{regs} is a pointer to a struct containing the OCaml registers --- in the
 actual assembly these are machine registers.
 
 \subsubsection{Partial applications}
@@ -453,7 +455,7 @@ The number of arguments passed minus 1 is stored in the \texttt{extra\_args} reg
 will insert a \texttt{GRAB(req\_extra\_args)} instruction at the start of any functions that take
 more than one argument.  This instruction will cause an early return from the function if
 \texttt{extra\_args} <
-\texttt{passed\_extra\_args}. The return value will be a closure itself - this represents partial
+\texttt{passed\_extra\_args}. The return value will be a closure itself --- this represents partial
 application of curried functions. The data of this closure will be the arguments that were passed.
 The code pointer of this returned closure points to a \texttt{RESTART} opcode immediately
 preceding the grab, which moves the passed arguments off  the closure's data section onto the
@@ -481,7 +483,7 @@ struct function_metadata *f = c->code_ptr;
 call_function(regs, f->code);
 \end{minted}
 
-\subsection{Moving the responsibility to the caller - eval/apply model}
+\subsection{Moving the responsibility to the caller --- eval/apply model}
 
 I do not wish for optimised functions to do any of the work described in section \ref{exist-ocaml}.
 As is described later, most of the speed increases of the optimised compiler comes from completely
@@ -607,7 +609,7 @@ generates
 code that uses the OCaml stack and accumulator registers. This is achieved by replacing these uses
 of the OCaml stack with machine registers that spill to the C stack when needed.
 
-Arguments are passed to a function according to the System V C calling convention - the first
+Arguments are passed to a function according to the System V C calling convention --- the first
 argument is always the closure environment, \texttt{env}, and the remaining arguments are passed
 in registers (further details are given later in Section \ref{calling-conventions}). The work done
 of Section \ref{dyn-recomp} means the function will only be called with the complete number of
@@ -687,7 +689,7 @@ Some \texttt{Instruction}s map to a \texttt{BasicBlockInstruction} and others ma
 \texttt{BasicBlockExit}. For example, \texttt{Instruction::Push} becomes
 \texttt{BasicBlockInstruction::Push} but \texttt{Instruction::BranchIf(label)} becomes
 \texttt{BasicBlockExit::BranchIf \{ then\_block, else\_block \}}. This enforces at the type level
-the basic invariant of basic blocks - one entry, one exit.
+the basic invariant of basic blocks --- one entry, one exit.
 
 \subsubsection{Stack starts}
 
@@ -931,7 +933,8 @@ let result = self.builder.ins().iadd_imm(added, -1);
 self.set_acc_int(result);
 \end{minted}
 
-The code implementing this case is remarkably similar to the original interpreter - however, rather
+The code implementing this case is remarkably similar to the original interpreter --- however,
+rather
 than directly performing the operation it is, instead making calls that trigger the emission of IR
 with the same semantics.
 
@@ -960,7 +963,7 @@ Exit: Return(2)
 \end{verbatim}
 
 As it is an OCaml function taking two arguments, it is compiled to a machine function taking 3
-arguments - the closure environment (unused for this function) and the two original arguments,
+arguments --- the closure environment (unused for this function) and the two original arguments,
 \texttt{a} and \texttt{b}.
 
 It compiles to something like this\footnote{The actual IR is larger as it uses \texttt{R64} types
@@ -1237,7 +1240,7 @@ need to be allocated by \emph{every} function on the stack. This was a clear iss
 if there was any hope of the optimised compiler actually being faster.
 
 My solution was to note that I only needed two registers to completely restore the VM state
-state - \texttt{rbp} and the x86\_64 instruction pointer. This is because the only places the
+state --- \texttt{rbp} and the x86\_64 instruction pointer. This is because the only places the
 longjmp could point to are at specific locations where all other registers can be seeded by other
 means. I ended up writing my own jump code to do this:
 

@@ -50,7 +50,8 @@ functional programming.
 \subsection{Data representation}
 
 OCaml has a uniform data representation for its \emph{values}. Values are 64 bits long.
-Pointers to heap-allocated values are stored directly - but due to alignment they are guaranteed to
+Pointers to heap-allocated values are stored directly --- but due to alignment they are guaranteed
+to
 have a 0 in
 the LSB. Integers are 63 bits long with the unused LSB storing a value of 1.
 
@@ -150,7 +151,7 @@ of the project.
 
 \section{Compiler concepts}
 
-A \emph{basic block} represents a sequence of instructions with only one entry and exit - all
+A \emph{basic block} represents a sequence of instructions with only one entry and exit --- all
 instructions
 in the block will be executed in order.
 
@@ -425,7 +426,7 @@ cases to my test suite as trace comparisons. This helped isolate and fix rare bu
 code.
 
 % Another technique enabled by Rust's powerful type system was encoding invariants into the type
-% system - commonly referred to as `making illegal states unrepresentable'. I tended to find that if
+% system --- commonly referred to as `making illegal states unrepresentable'. I tended to find that if
 % code compiled it worked the first time.
 
 \subsection{Tools}

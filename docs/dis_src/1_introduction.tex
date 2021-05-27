@@ -2,11 +2,11 @@
 \chapter{Introduction}
 
 This project introduces two new just-in-time (JIT) compilers to x86\_64 machine code for the OCaml
-programming language - one focusing on correctness and compile speed and the other on performance
+programming language --- one focusing on correctness and compile speed and the other on performance
 of the compiled code. These compilers are integrated together dynamically: the first compiler is
 used for all code and the second compiler is used for functions detected to be called often.  The
 combination of compilers outperforms\footnote{It is faster for 32/36 of the tested benchmarks:
-    mean speedup = $1.46\times$, $\sigma = 0.40$.} the OCaml bytecode interpreter on the majority
+      mean speedup = $1.46\times$, $\sigma = 0.40$.} the OCaml bytecode interpreter on the majority
 of
 tested benchmarks and is capable of executing every OCaml program.
 
@@ -51,20 +51,20 @@ trace-based) compiler \cite{pyket}.
 The project achieved, on schedule, three core goals as set out in the proposal:
 
 \begin{enumerate}
-    \item There is a JIT compiler implemented into the existing OCaml source
-          replacing the interpreter with all functionality but debugging
-          and introspection.
-    \item There is a comprehensive and automated suite of benchmarks built
-          comparing its performance to other alternatives.
-    \item It performs favourably compared to the original interpreter on benchmark programs.
+      \item There is a JIT compiler implemented into the existing OCaml source
+            replacing the interpreter with all functionality but debugging
+            and introspection.
+      \item There is a comprehensive and automated suite of benchmarks built
+            comparing its performance to other alternatives.
+      \item It performs favourably compared to the original interpreter on benchmark programs.
 \end{enumerate}
 
 This gave time for a signficant extension:
 
 \begin{enumerate}
-    \item I have built a second compiler using more sophisticated analysis to generate faster
-          machine code.
-    \item The first compiler dynamically decides to execute the second compiler at runtime.
+      \item I have built a second compiler using more sophisticated analysis to generate faster
+            machine code.
+      \item The first compiler dynamically decides to execute the second compiler at runtime.
 \end{enumerate}
 
 The project is primarily written in the Rust and C programming languages. It replaces the
