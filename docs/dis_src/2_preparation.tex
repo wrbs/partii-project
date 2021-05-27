@@ -105,7 +105,7 @@ function) the caller must contain the code to handle these cases.
 
 By contrast, in the push-enter model the callee must support any number of arguments passed to it.
 This is the method used by the OCaml bytecode compiler and interpreter. The mechanism for doing
-this is somewhat intricate and becomes relevant in this project in section \ref{dyn-recomp}, where
+this is somewhat intricate and becomes relevant in this project in Section \ref{dyn-recomp}, where
 it is explained in more detail.
 
 \subsection{Garbage collection}
@@ -171,12 +171,15 @@ control between basic blocks. Figure \ref{fig:phi-bp} shows example control flow
 
             \node[box] (b1) {$\bm{b_1:}$ \\ $v_1 \leftarrow x + y$ \\ $(v_1 \ge 0)$? $b_2$ :
                 $b_3$};
-            \node[box] (b2) [below left=of b1,xshift=15mm]{$\bm{b_2:}$ \\ $v_2 \leftarrow 5$ \\
+            \node[box] (b2) [below left=of b1,xshift=15mm]{$\bm{b_2:}$ \\ $v_2 \leftarrow 5$
+                \\
                 jump
                 $b_4$};
-            \node[box] (b3) [below right=of b1,xshift=-15mm] {$\bm{b_3:}$ \\ $v_3 \leftarrow 7$ \\
+            \node[box] (b3) [below right=of b1,xshift=-15mm] {$\bm{b_3:}$ \\ $v_3 \leftarrow
+                    7$ \\
                 jump $b_4$};
-            \node[box] (b4) [below=35mm of b1] {$\bm{b_4:}$ \\ {\color{Bittersweet}$v_4 \leftarrow
+            \node[box] (b4) [below=35mm of b1] {$\bm{b_4:}$ \\ {\color{Bittersweet}$v_4
+                \leftarrow
                 \Phi
                 (b_2 \mapsto
                 v_2, b_3
@@ -202,10 +205,12 @@ control between basic blocks. Figure \ref{fig:phi-bp} shows example control flow
 
             \node[box] (b1) {$\bm{b_1:}$ \\ $v_1 \leftarrow x + y$ \\ $(v_1 \ge 0)$? $b_2$ :
                 $b_3$};
-            \node[box] (b2) [below left = of b1,xshift=20mm]{$\bm{b_2:}$ \\ $v_2 \leftarrow 5$ \\
+            \node[box] (b2) [below left = of b1,xshift=20mm]{$\bm{b_2:}$ \\ $v_2 \leftarrow
+                5$ \\
             jump
             $b_4{\color{Bittersweet}(v_2)}$};
-            \node[box] (b3) [below right = of b1,xshift=-20mm] {$\bm{b_3:}$ \\ $v_3 \leftarrow 7$
+            \node[box] (b3) [below right = of b1,xshift=-20mm] {$\bm{b_3:}$ \\ $v_3
+                \leftarrow 7$
             \\
             jump
             $b_4{\color{Bittersweet}(v_3)}$};
@@ -234,7 +239,7 @@ every variable is assigned to only once and only binds a single immutable value.
 This form is very useful to compiler writers as it can simplify the presentation and implementation
 of many optimisations.
 
-In order to support conditional branching in the program, the form needs some method to mark
+In order to support conditional branching in the program, the form needs some way to mark
 choosing between values to use depending on the path taken through the program. The typical
 method\footnote{As covered in the Optimising Compilers course.} uses special phi node in the
 successor block to mark these cases.
@@ -246,7 +251,8 @@ arguments are provided by the predecessor block in the branch instructions --- s
 typical uses
 the two representations are isomorphic.\footnote{In fact, block parameters are slightly more
     general as different values can be passed from the same predecessor block --- such as if both
-    branches of a conditional branch entered the same block with a different value. This is rare in
+    branches of a conditional branch entered the same block with a different value. This is rare
+    in
     practice.}
 
 \section{x86\_64}
@@ -327,7 +333,8 @@ design is based on that of \texttt{DynASM} used in the \texttt{LuaJIT} project \
 
 The second compiler is designed around the cranelift \cite{cranelift}, library which is a
 low-level retargetable code generator with an emphasis on use in JITs\footnote{It's largest use is
-    for JIT-compiling webassembly as part of \texttt{wasmtime} and Firefox}. It is written in Rust
+    for JIT-compiling webassembly as part of \texttt{wasmtime} and Firefox}. It is written in
+Rust
 and so benefits from an API designed for the language.
 
 \subsection{Sandmark}
@@ -345,7 +352,8 @@ Sandmark is licensed under CC0 (it is effectively public domain).
 The starting point of this project was the OCaml compiler 4.11.1, Sandmark from the commit hash
 starting
 \texttt{09862492}\footnote{\url{https://github.com/ocaml-bench/sandmark/commit/09862492680c296fd659
-        ceef9b34035ab97f7fe6}}, and the source of any other vendored dependencies (identifiable by
+        ceef9b34035ab97f7fe6}}, and the source of any other vendored dependencies (identifiable
+by
 being
 included in under directories called \texttt{vendor}). The patches made to vendored dependencies
 are
@@ -371,7 +379,8 @@ for single-developer projects. There are many practices which call themselves Ag
 
 \begin{itemize}
     \item Prioritise delivering working software as frequently as possible.
-    \item Work on small achievable tasks in a tight development loop encompassing all stages of the
+    \item Work on small achievable tasks in a tight development loop encompassing all stages of
+          the
           development lifecycle (planning, implementation and testing).
     \item Favour responding to change over following a plan; use tests and static type systems to
           make refactoring existing code an inexpensive and safe process.
@@ -385,7 +394,7 @@ aspects of the existing OCaml runtime. I did not have the knowledge to create a 
 dealing with these systems. Agile embraces changing requirements making it an effective choice for
 this project.
 
-Working without a detailed plan introduces a risk of falling behind without realising or wasting
+Working detailed plans introduces a risk of falling behind without realising or wasting
 time on over-engineering. To mitigate this problem I used two strategies:
 
 \begin{enumerate}
@@ -450,7 +459,7 @@ The project can be used as a custom \texttt{opam} switch making it easy to test 
 different compile-time options with the entire ecosystem of OCaml dependencies --- this is used in
 the implementation of the benchmark suite.
 
-Data analysis is preformed using the standard Python stack (pandas, matplotlib, jupyter, etc.). A
+Data analysis is performed using the standard Python stack (pandas, matplotlib, jupyter, etc.). A
 frozen
 list of Python dependencies is at \texttt{benchmarks/requirements.txt}.
 
@@ -462,4 +471,5 @@ using \texttt{rustfmt}.
 
 I used my machine (Intel 10700K CPU, 32GB RAM on fast SSD) to develop the project. The project also
 works on my older and less powerful laptop but compilation is slower --- but still usable as a
-backup system. The repository contains everything needed to bootstrap the project.
+backup system. The repository contains everything needed to bootstrap the project allowing for any
+Linux environment to be used in the case of disaster

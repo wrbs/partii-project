@@ -3,16 +3,16 @@
 
 This project introduces two new just-in-time (JIT) compilers to x86\_64 machine code for the OCaml
 programming language --- one focusing on correctness and compile speed and the other on performance
-of the compiled code. These compilers are integrated together dynamically: the first compiler is
-used for all code and the second compiler is used for functions detected to be called often.  The
-combination of compilers outperforms\footnote{It is faster for 32/36 of the tested benchmarks:
-      mean speedup = $1.46\times$, $\sigma = 0.40$.} the OCaml bytecode interpreter on the majority
-of
-tested benchmarks and is capable of executing every OCaml program.
+of the compiled code. When combined these compilers are capable of executing every OCaml program,
+including bootstrapping OCaml itself, and outperform the OCaml bytecode interpreter in the majority
+of cases.\footnote{
+      Faster for 32/36 of the tested benchmarks: mean speedup = $1.46\times$, $\sigma =
+            0.40$.}
 
-In this document, I will refer to the faster but less intelligent compiler as the `first' or
-`initial' compiler and the slower but more optimising compiler as the `second' or `optimising'
-compiler.
+These compilers are integrated dynamically: the first compiler is
+used for all code and the second compiler is used for functions detected to be called often.  In
+this document, I will refer to the faster but less intelligent compiler as the `first' or `initial'
+compiler and the slower but more optimising compiler as the `second' or `optimising' compiler.
 
 \section{Motivation}
 
@@ -22,8 +22,9 @@ bytecode, which is interpreted by a program called \texttt{ocamlrun}.
 
 The default bytecode interpreter in OCaml is significantly slower than the output of the
 native-code compiler. Although most users of OCaml use the native-code compiler, the bytecode
-compiler is
-still used. It is the only target supported by the OCaml `toplevel' read-evaluate-print-loop
+compiler is still widely used.
+
+It is the only target supported by the OCaml `toplevel' read-evaluate-print-loop
 (REPL).
 JIT compilation techniques to decrease bytecode execution time are particularly useful here.
 

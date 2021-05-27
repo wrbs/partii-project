@@ -213,7 +213,8 @@ The first stage in the pipeline is to parse the bytes into a stream of elements 
       type}{src/rust/ocaml-jit-shared/src/instructions/types.rs}
 \label{instruction-type}
 
-OCaml has 149 opcodes, each of which can take different numbers of operands. Arguments and operands
+OCaml has 149 opcodes, each of which can take a different number of operands. Arguments and
+operands
 are all stored as \texttt{i32} values. Some opcodes are space-saving aliases for the composition of
 multiple simpler instructions. To simplify implementation I expand these aliases at parse time, so
 generating code only considers the simple primitives. There are about 60 such simplified
@@ -224,8 +225,7 @@ type with one variant\footnote{Also known as type constructor.} per simple instr
 
 Instructions such as integer comparisons and conditional branches have many variations varying only
 in the conditional used. The variants are extracted into a type allowing for a single instruction
-to
-represent all conditional branches.
+to represent all conditional branches.
 
 Some instructions, like branches, have label arguments referencing the location of another opcode
 in
@@ -401,7 +401,7 @@ done ahead-of-time with some more work on linking. The main benefit to operating
 allows for OCaml toplevel sessions to be JIT-compiled. Adding dynamic recompilation allows for the
 system to discover hot paths in the code and optimise them more, which is something that requires
 information about runtime behaviour. This is a popular technique for many existing optimising JITs,
-like V8 for JavaScript.
+like V8 for JavaScript. \cite{v8}
 
 The structure of the bytecode means it is natural to make the optimised compiler operate at the
 granularity of a whole function, rather than a basic block or execution trace. Counting calls and
@@ -805,10 +805,8 @@ storing of the stack starts for each block. The actual search also performs more
             the IR generation phase.
 \end{itemize}
 
-\subsubsection{Example}
-
-There isn't space to fit it in the main body of the text but Appendix \ref{appendix-example} shows
-an example of the output of the basic block conversion for a larger function with if statements.
+Appendix \ref{appendix-example} shows an example of the output of the basic block conversion for a
+larger function with if statements.
 
 \subsection{Calling conventions} \label{calling-conventions}
 
@@ -858,8 +856,7 @@ work in this way.
 \end{itemize}
 
 All of these cases are implemented in hand-written assembly, optimising for the first case
-(optimised to optimised). This allows for the hot path sequence of calls to be without any need to
-store arguments in memory.
+(optimised to optimised). Thus the hot path call sequence can avoid storing arguments in memory.
 
 \subsection{IR generation} \label{opt-irgen}
 
@@ -986,7 +983,7 @@ block1:
 \end{verbatim}
 
 Despite the original function and the translation code making use of the stack and accumulator,
-there is no sight of this in the emitted IR. Values pass directly from the function parameters to
+there is no sign of this in the emitted IR. Values pass directly from the function parameters to
 nodes representing the arithmetic operations and to the return values. This is the result of our
 careful analysis of stack sizes combined with cranelift's mutable variable elimination
 
@@ -1045,7 +1042,7 @@ heap.
 
 \subsubsection{Safepoints}
 
-The GC will only run at certain locations --- these are typically called safepoints. For OCaml,
+The GC will only run at certain locations --- these are called safepoints. For OCaml,
 garbage collection occurs only on memory allocation if the minor heap (first generation) is full.
 This means every memory-allocation operation is a safepoint. Additionally, every call to another
 function, C primitive or signal handler could also trigger allocation, making them safepoints.
@@ -1236,8 +1233,9 @@ the callback stack. However, my optimised compiler emits most functions as C fun
 general, exception raises do require a longjmp.
 
 The buffer used to store the state to restore is rather large and in the naive implementation would
-need to be allocated by \emph{every} function on the stack. This was a clear issue needing solving
-if there was any hope of the optimised compiler actually being faster.
+need to be allocated by \emph{every} function on the stack.  This would have imposed an
+unacceptable
+performance penalty and thus needed to be addressed.
 
 My solution was to note that I only needed two registers to completely restore the VM state
 state --- \texttt{rbp} and the x86\_64 instruction pointer. This is because the only places the

@@ -10,9 +10,9 @@ Both correctness and completeness are verified by automatic testing. There are t
 used for this:
 
 \begin{itemize}
-      \item Trace comparison, as described in Section \ref{trace-comparison}.
-      \item The large existing OCaml compiler test suite.
-      \item Automated Rust tests of components using \texttt{cargo test}.
+    \item Trace comparison, as described in Section \ref{trace-comparison}.
+    \item The large existing OCaml compiler test suite.
+    \item Automated Rust tests of components using \texttt{cargo test}.
 \end{itemize}
 
 Trace comparison guarantees the behaviour is observably identical to the existing interpreter. The
@@ -35,10 +35,8 @@ correctly allowing for interactive use of the JIT.
 
 \subsection{Optimising compiler} \label{eval-opt-comp-qual}
 
-\subsubsection{Completeness}
-
 The optimising compiler has a slightly weaker completeness guarantee, due the limited time
-available to work on this extension. Not all features are supported but those that are work
+available to work on this extension; not all features are supported but those that are work
 correctly. The limitations are that compiler does not handle functions that take more than five
 arguments and the compiled functions cannot contain exception handlers (try-catch statements),
 although they can raise exceptions.
@@ -47,10 +45,8 @@ The compiler gracefully fails in these cases and falls back to using the existin
 emitted by the initial compiler. For this reason, although the optimising compiler is not complete
 in isolation, the combination of the two compilers retains most of the completeness. The one
 additional restriction is that any dynamic libraries containing primitives using OCaml's C FFI must
-be compiled to use base pointers so that the stack walking (as described in Section
+be compiled to use base pointers so that stack walking (as described in Section
 \ref{gc-support}) works.
-
-\subsubsection{Correctness}
 
 Correctness is tested both by the OCaml compiler test suite and using a variant of the
 trace-comparison system comparing function parameters, return values, and the parameters and
@@ -96,31 +92,31 @@ the \texttt{yojson} JSON parser.
 Four different configurations of the OCaml runtime are described in this section:
 
 \begin{enumerate}
-      \item The stock OCaml 4.11.1 bytecode interpreter without any modifications.
-      \item The state of the JIT after creating the initial compiler (the `old' initial compiler).
-      \item The current state of the JIT with the optimising compiler disabled, but retaining
-            the modifications made to the initial compiler to support dynamic recompilation (the
-            `current' initial compiler).
-      \item The full current JIT including the optimising compiler with the hot function threshold
-            set to 50 (the optimised compiler).
+    \item The stock OCaml 4.11.1 bytecode interpreter without any modifications.
+    \item The state of the JIT after creating the initial compiler (the `old' initial compiler).
+    \item The current state of the JIT with the optimising compiler disabled, but retaining
+          the modifications made to the initial compiler to support dynamic recompilation (the
+          `current' initial compiler).
+    \item The full current JIT including the optimising compiler with the hot function threshold
+          set to 50 (the optimised compiler).
 \end{enumerate}
 
-In order to allow for easier comparison between programs, I compare all JIT results relative
+In order to allow for easier comparison between programs, I compared all JIT results relative
 to the baseline of the stock bytecode interpreter to obtain relative speedup values; these are
 calculated by dividing the stock interpreter time by the corresponding JIT time.
 
 \subsection{Overview}
 
 \begin{figure}[h]
-      \includegraphics[width=\textwidth]{box}
-      \caption{Distribution of speedup values for each version of the JIT}
-      \label{fig:box}
+    \includegraphics[width=\textwidth]{box}
+    \caption{Distribution of speedup values for each version of the JIT}
+    \label{fig:box}
 \end{figure}
 
 Figure \ref{fig:box} shows the high-level summary of results on execution speedup. The
 chart shows a standard box plot\footnote{Lines for minimum, lower quartile, median, upper quartile
-      and maximum. Outliers (outside
-      1.5 of the interquartile range) are not included in the whiskers.}
+    and maximum. Outliers (outside
+    1.5 of the interquartile range) are not included in the whiskers.}
 with points for each result overlaid. The points are vertically
 offset randomly.
 
@@ -146,15 +142,15 @@ each individual benchmark. Figure \ref{fig:perf} shows the relative speedup valu
 benchmark program, ordered by decreasing optimising-compiler speedup. There are a few patterns:
 
 \begin{itemize}
-      \item In some programs, the improvements were roughly equivalent for all types of
-            program, such as \texttt{chameneos\_redux\_lwt}.
-      \item In some the optimising compiler added significant performance gains, such as
-            \texttt{revcomp2} and \texttt{pidigits5}.
-      \item In nearly all cases, the new version of the initial compiler was slower than the
-            initial
-            version.
-      \item In most cases, the optimising compiler increased performance above the initial compiler
-            alone.
+    \item In some programs, the improvements were roughly equivalent for all types of
+          program, such as \texttt{chameneos\_redux\_lwt}.
+    \item In some the optimising compiler added significant performance gains, such as
+          \texttt{revcomp2} and \texttt{pidigits5}.
+    \item In nearly all cases, the new version of the initial compiler was slower than the
+          initial
+          version.
+    \item In most cases, the optimising compiler increased performance above the initial compiler
+          alone.
 \end{itemize}
 
 In order to explain these patterns it is necessary to consider the cost and potential benefits of
@@ -170,25 +166,25 @@ prediction and out-of-order execution across bytecode boundaries.
 
 For most programs this trade-off is worth it.  The programs where it isn't (\texttt{fft},
 \texttt{nbody} and \texttt{durand-kerner-arberth}) all show heavy use of floating-point operations,
-meaning most of the work is performed using C primitives and boxed floats. Most of the execution
+meaning most of the work is performed using C primitives and boxed floats. Much of the execution
 time is spent allocating and freeing these boxed floats which cannot be sped up through the use of
 native code.
 
 \subsubsection{Current version of initial compiler}
 
 The main significant change in this version was the extra level of pointer indirection on closure
-code fields, requiring one more memory load to call a closure. For this reason, in nearly all cases
+code fields, requiring one more memory load to call a closure. In nearly all cases
 this represented a slowdown from the initial compiler. The differing amounts of slowdown reflects
-the variation in benchmark hot-path behaviour. Where it is a large drop, it reflects programs with
+the variation in benchmark hot-path behaviour. A large drop reflects programs with
 a large number of calls to shorter functions and where it is small it indicates larger functions
 making fewer calls or spending much of their time in C primitives.
 
 \begin{landscape}
-      \begin{figure}[h]
-            \includegraphics{perf}
-            \caption{Speedup values for each benchmark.}
-            \label{fig:perf}
-      \end{figure}
+    \begin{figure}[h]
+        \includegraphics{perf}
+        \caption{Speedup values for each benchmark.}
+        \label{fig:perf}
+    \end{figure}
 \end{landscape}
 
 \subsubsection{Optimising compiler}
@@ -215,12 +211,9 @@ initial-compiler-only runs (which themselves ran at about the same speed as the 
 
 In half of the cases where the optimising compiler is faster than the current initial
 compiler, it is able to overcome the overhead imposed by the extra pointer lookup on function
-calls; in many
-case significantly slow.
-
-In the other half of cases, performance for the optimising compiler is comparable but slightly
-worse
-than the new initial compiler.
+calls.	In the other half of cases, performance for the optimising compiler is comparable but
+slightly
+worse than the new initial compiler.
 
 One case causing this is demonstrated in \texttt{mandlebrot6} --- here the main loop is implemented
 in
@@ -239,9 +232,9 @@ are some biases:
 Execution times ranged from \SI{1}{\second} to \SI{500}{\second}. Of the 36 benchmarks, 13 took
 below \SI{10}{\second} and 7 took above \SI{50}{\second}.  In the context of this project, this
 means all programs classify as somewhat long-running and time spent on compilation was a negligible
-factor --- my manual testing estimates this overhead to be the order of magnitude of at most
-\SI{300}{\nano\second} for JIT-compiling the entire OCaml compiler, which is a particularly large
-OCaml program.
+factor --- when testing the OCaml compiler (a particularly large program in terms of linked
+bytecode), I could not show any statistically significant difference in execution times due to
+enabling compilation.
 
 \subsubsection{Work perormed}
 
