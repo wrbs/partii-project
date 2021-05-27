@@ -10,9 +10,9 @@ Both correctness and completeness are verified by automatic testing. There are t
 used for this:
 
 \begin{itemize}
-    \item Trace comparison, as described in Section \ref{trace-comparison}.
-    \item The large existing OCaml compiler test suite.
-    \item Automated Rust tests of components using \texttt{cargo test}.
+      \item Trace comparison, as described in Section \ref{trace-comparison}.
+      \item The large existing OCaml compiler test suite.
+      \item Automated Rust tests of components using \texttt{cargo test}.
 \end{itemize}
 
 Trace comparison guarantees the behaviour is observably identical to the existing interpreter. The
@@ -92,13 +92,13 @@ the \texttt{yojson} JSON parser.
 Four different configurations of the OCaml runtime are described in this section:
 
 \begin{enumerate}
-    \item The stock OCaml 4.11.1 bytecode interpreter without any modifications.
-    \item The state of the JIT after creating the initial compiler (the `old' initial compiler).
-    \item The current state of the JIT with the optimising compiler disabled, but retaining
-          the modifications made to the initial compiler to support dynamic recompilation (the
-          `current' initial compiler).
-    \item The full current JIT including the optimising compiler with the hot function threshold
-          set to 50 (the optimised compiler).
+      \item The stock OCaml 4.11.1 bytecode interpreter without any modifications.
+      \item The state of the JIT after creating the initial compiler (the `old' initial compiler).
+      \item The current state of the JIT with the optimising compiler disabled, but retaining
+            the modifications made to the initial compiler to support dynamic recompilation (the
+            `current' initial compiler).
+      \item The full current JIT including the optimising compiler with the hot function threshold
+            set to 50 (the optimised compiler).
 \end{enumerate}
 
 In order to allow for easier comparison between programs, I compared all JIT results relative
@@ -108,15 +108,15 @@ calculated by dividing the stock interpreter time by the corresponding JIT time.
 \subsection{Overview}
 
 \begin{figure}[h]
-    \includegraphics[width=\textwidth]{box}
-    \caption{Distribution of speedup values for each version of the JIT}
-    \label{fig:box}
+      \includegraphics[width=\textwidth]{box}
+      \caption{Distribution of speedup values for each version of the JIT}
+      \label{fig:box}
 \end{figure}
 
 Figure \ref{fig:box} shows the high-level summary of results on execution speedup. The
 chart shows a standard box plot\footnote{Lines for minimum, lower quartile, median, upper quartile
-    and maximum. Outliers (outside
-    1.5 of the interquartile range) are not included in the whiskers.}
+      and maximum. Outliers (outside
+      1.5 of the interquartile range) are not included in the whiskers.}
 with points for each result overlaid. The points are vertically
 offset randomly.
 
@@ -142,15 +142,15 @@ each individual benchmark. Figure \ref{fig:perf} shows the relative speedup valu
 benchmark program, ordered by decreasing optimising-compiler speedup. There are a few patterns:
 
 \begin{itemize}
-    \item In some programs, the improvements were roughly equivalent for all types of
-          program, such as \texttt{chameneos\_redux\_lwt}.
-    \item In some the optimising compiler added significant performance gains, such as
-          \texttt{revcomp2} and \texttt{pidigits5}.
-    \item In nearly all cases, the new version of the initial compiler was slower than the
-          initial
-          version.
-    \item In most cases, the optimising compiler increased performance above the initial compiler
-          alone.
+      \item In some programs, the improvements were roughly equivalent for all types of
+            program, such as \texttt{chameneos\_redux\_lwt}.
+      \item In some the optimising compiler added significant performance gains, such as
+            \texttt{revcomp2} and \texttt{pidigits5}.
+      \item In nearly all cases, the new version of the initial compiler was slower than the
+            initial
+            version.
+      \item In most cases, the optimising compiler increased performance above the initial compiler
+            alone.
 \end{itemize}
 
 In order to explain these patterns it is necessary to consider the cost and potential benefits of
@@ -180,11 +180,11 @@ a large number of calls to shorter functions and where it is small it indicates 
 making fewer calls or spending much of their time in C primitives.
 
 \begin{landscape}
-    \begin{figure}[h]
-        \includegraphics{perf}
-        \caption{Speedup values for each benchmark.}
-        \label{fig:perf}
-    \end{figure}
+      \begin{figure}[h]
+            \includegraphics{perf}
+            \caption{Speedup values for each benchmark.}
+            \label{fig:perf}
+      \end{figure}
 \end{landscape}
 
 \subsubsection{Optimising compiler}

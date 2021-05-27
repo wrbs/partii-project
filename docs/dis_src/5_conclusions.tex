@@ -9,7 +9,32 @@ Unlike many Part II compiler projects it covers the complete functionality of a 
 programming language with a focus on correctness --- beyond not supporting the debugger and
 backtraces, no simplifications are made to the language.
 
+\section{Lessons learned}
+
+I found the automated testing strategy very effective for this project --- especially the trace
+comparison aspect. Starting with the tooling for doing this meant I could continuously verify my
+work and meant I could accurately find which instructions had mistakes at the point of failure
+rather than their indirect effects later in execution. I will try to use this approach wherever
+it is appropriate in future projects.
+
+I have gained a lot of OCaml domain knowledge over the course of the project and with hindsight
+there are a things I would have done differently or ended up having to later replace.  This is
+somewhat unavoidable when working within a large existing system. However, I could have done
+a better job mitigating some of the time this took; at the start of the project, there were points
+where I started with a complicated approach to a problem before eventually taking the simple but
+less sophisticated method. Over the course of the project I learned to try the simple approach by
+default and this was much more effective.
+
+I found the type system of Rust to be of immense assistance with ensuring every possible case was
+covered. It was especially useful when refactoring existing code; quite often all I had to do was
+modify a type, fix all the new compiler errors and end up with something which works the first
+time. I find myself missing these features when working in dynamically typed languages and I think
+I will use languages like Rust and OCaml more often.
+
 \section{Possible extensions}
+
+There were some extensions to the optimising compiler I determined were feasible but could not do
+due to time constraints towards the end of the project:
 
 \subsubsection{More sophisticated analysis of types in the optimising compiler}
 
@@ -17,14 +42,9 @@ Performance could be greatly improved by adding OCaml-specific type information 
 compiler. For example, once a value is statically known to be a floating-point value the compiler
 can avoid boxing intermediate values and inline the operations, rather than call out to C
 primitives. This would greatly help with some of the worst cases for the system which were all
-heavy uses of floating-point numbers.
-
-Another potential example would be determining a value had to be an integer and therefore being
-able to exclude it from being spilled at safepoints and included in the stack map.
-
-Both of these would require adding an additional intermediate representation and dataflow analysis
-passes in between the basic-block stage and cranelift IR, but would be fairly simple optimisations
-once the machinery for this was built.
+heavy uses of floating-point numbers. Implementing this would require adding an additional
+intermediate representation and dataflow analysis passes in between the basic-block stage and
+cranelift IR, but would be fairly simple optimisations once the machinery for this was built.
 
 \subsubsection{Tail-call recursion optimisation within functions}
 

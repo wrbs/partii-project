@@ -126,7 +126,7 @@ for me to consider it a fork containing both my work and the work of others (mar
 
 The initial compiler was developed before any work on the optimising compiler was performed. In the
 process of implementing the initial compiler some modifications had to be made. These modifications
-will be covered later in section \ref{dyn-recomp} and this section will mainly cover the initial
+will be covered later in Section \ref{dyn-recomp} and this section will mainly cover the initial
 state.
 
 \subsection{Overview}
@@ -485,7 +485,7 @@ call_function(regs, f->code);
 
 \subsection{Moving the responsibility to the caller --- eval/apply model}
 
-I do not wish for optimised functions to do any of the work described in section \ref{exist-ocaml}.
+I do not wish for optimised functions to do any of the work described in Section \ref{exist-ocaml}.
 As is described later, most of the speed increases of the optimised compiler comes from completely
 eliminating use of the OCaml stack and the call method above makes heavy use of it.
 
@@ -597,8 +597,8 @@ At a high level the optimised compiler is a function from function bytecode to o
 performing the same operations.  The compiler consists of three major components in a pipeline.
 
 \begin{enumerate}
-      \item Basic block conversion and stack-start analysis (section \ref{opt-bb}).
-      \item IR generation from the basic blocks using the analysis (section \ref{opt-irgen}).
+      \item Basic block conversion and stack-start analysis (Section \ref{opt-bb}).
+      \item IR generation from the basic blocks using the analysis (Section \ref{opt-irgen}).
       \item Compilation of IR to x86\_64 assembly (performed by cranelift).
 \end{enumerate}
 
@@ -748,7 +748,7 @@ define:
             \{\text{branch\_loc}\}\). It is only relevant if \(\dfsexit(i)\).
 \end{itemize}
 
-Under this model, the algorithm to find all the blocks and their starts is shown in algorithm
+Under this model, the algorithm to find all the blocks and their starts is shown in Algorithm
 \ref{alg-dfs}.
 
 \begin{algorithm}[t]
@@ -948,9 +948,7 @@ To show this example in complete context consider the add function:
 %TC:endignore
 
 \begin{verbatim}
-Arity: 2
-Max stack size: 3
-
+Arity: 2 / Max stack size: 3
 # Block 0 (stack_start = 2)
 Acc(1)
 Push
@@ -965,7 +963,7 @@ arguments --- the closure environment (unused for this function) and the two ori
 
 It compiles to something like this\footnote{The actual IR is larger as it uses \texttt{R64} types
       and bitcasts for GC as
-      described in section \ref{gc-ir} but the principle is the same.}:
+      described in Section \ref{gc-ir} but the principle is the same.}:
 
 \begin{verbatim}
 function u0:0(i64, i64, i64) -> i64, i64 system_v {
