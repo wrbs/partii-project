@@ -4,8 +4,8 @@ A JIT compiler from OCaml bytecode to x86_64 written in Rust. This was my disser
 
 If you know anything about OCaml, you'll know this project is entirely useless in practice as 'jit compiling ocaml bytecode' isn't really a thing that makes much sense when 
 
-a) the bytecode isn't really portable anyway so you might as well use the native code compiler
-b) bytecode isn't really ever executed except in the toplevel, and for that the native toplevel is likely to be better,
+1. the bytecode isn't really portable anyway so you might as well use the native code compiler
+2. bytecode isn't really ever executed except in the toplevel, and for that the native toplevel is likely to be better,
 
 It was a lot of fun though! 
 
