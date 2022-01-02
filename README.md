@@ -1,5 +1,33 @@
 # Part II Project
 
+A JIT compiler from OCaml bytecode to x86_64 written in Rust. This was my dissertation for Part II of the Computer Science Tripos at Cambridge.
+
+If you know anything about OCaml, you'll know this project is entirely useless in practice as 'jit compiling ocaml bytecode' isn't really a thing that makes much sense when 
+
+a) the bytecode isn't really portable anyway so you might as well use the native code compiler
+b) bytecode isn't really ever executed except in the toplevel, and for that the native toplevel is likely to be better,
+
+It was a lot of fun though! 
+
+There are two compilers:
+
+- one that works by going through replacing each bytecode instruction with equivalent assembly
+- one that uses cranelift to be a bit more clever about things, converting first to IR and then to assembly (main optimisation is it eliminates local uses of the ocaml stack)
+
+For more details, see [the dissertation](https://raw.githubusercontent.com/wrbs/partii-project/master/docs/dissertation.pdf).
+
+I thought it was bug-free at time of submission but there's actually one edge-case leading to a miscompile:
+
+https://github.com/bytecodealliance/wasmtime/issues/3217
+
+Apart from that, everything seems to work and all language features are supported (with the exception of debugger + backtrackes, which are optional).
+
+It will also break if you try to link in non-ocaml code that does ocaml allocations that isn't compiled to use rbp to set up a frame pointer chain due to how I deal with GC roots in the cranelift compiler.
+
+So not practical, but leaving public for posterity in case anyone ever finds any use for something lime this.
+
+# Warning - rest of this is somewhat stale
+
 ## Initial setup
 
 ### Requirements
